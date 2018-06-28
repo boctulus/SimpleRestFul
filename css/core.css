@@ -1,0 +1,7 @@
+			.th_blue { background-color: #4a89dc; color:eee; }
+			
+			.modal-open .modal {
+				display: flex !important;
+				align-items: center;
+				justify-content: center;
+			}

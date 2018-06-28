@@ -4,14 +4,13 @@
 		
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 		<link href="css/toastr.css" rel="stylesheet"/>
+		<link href="css/core.css" rel="stylesheet"/>
 		
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>	
-		<script src="js/toastr.min.js"></script>			
+		<script src="js/toastr.min.js"></script><!-- flash notifications -->	
+		<script src="js/bootbox.min.js"></script><!-- confirmation boxes -->
 		
-		<style>
-			.th_blue { background-color: #4a89dc; color:eee; }
-		</style>
 	</head>
 
 <body>	
@@ -25,7 +24,7 @@
   <span class="glyphicon glyphicon-plus"></span> Add 
 </a>
 
-<!-- Modal -->
+<!-- Add Form Modal -->
 <div class="modal fade" id="saleModalAdd" tabindex="-1" role="dialog" aria-labelledby="saleModalAddLabel" aria-hidden="true">
 <div class="modal-dialog">
   <div class="modal-content">
@@ -65,7 +64,7 @@
 </div><!-- /.modal -->
 
 
-<!-- Modal -->
+<!-- Edit Form Modal -->
 <div class="modal fade" id="saleModalEdit" tabindex="-1" role="dialog" aria-labelledby="saleModalAddLabel" aria-hidden="true">
 <div class="modal-dialog">
   <div class="modal-content">
@@ -105,6 +104,7 @@
   </div><!-- /.modal-content -->
 </div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
+
 
 <script type="text/javascript">
 
@@ -149,6 +149,7 @@
 		}
 
 		$.ajax({
+			type: "POST",
 			type: "POST",
 			url: 'api/update.php',
 			data: encoded,
@@ -293,20 +294,29 @@
 	function borrar(id){
 		//console.log(id);
 		
-		$.ajax({
-			type: "POST",
-			url: 'api/delete.php',
-			data: JSON.stringify({"id": id}),
-			dataType: 'text json',
-			success: function(data){
-				$('#tr'+id.toString()).remove();
-				//console.log(data);
-			},
-			error: function(data){
-				console.log('Error');
-				console.log(data);
-			}
-		});		
+		bootbox.confirm("Are you sure you want to delete?", function(result) {
+			if (result)	
+				$.ajax({
+						type: "POST",
+						url: 'api/delete.php',
+						data: JSON.stringify({"id": id}),
+						dataType: 'text json',
+						success: function(data){
+							$('#tr'+id.toString()).remove();
+							//console.log(data);
+						},
+						error: function(data){
+							console.log('Error');
+							console.log(data);
+						}
+					});		
+		}).find('.modal-content').css({
+			'background-color': '#f99',
+			'font-weight' : 'bold',
+			'color': '#F00',
+			'font-size': '2em'
+		});
+		
 	}
 	
 	
