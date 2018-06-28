@@ -70,6 +70,21 @@
 	var $data = [];
 	
 	function editar(id){
+		
+		$.ajax({
+			type: "GET",
+			url: 'api/read.php',
+			data: JSON.stringify({"id": id}),
+			dataType: 'text',
+			success: function(data){
+				console.log(data);
+			},
+			error: function(data){
+				console.log('Error');
+				console.log(data);
+			}
+		});		
+		
 		$('#saleModalTitle').text('Edit sale');
 		$('#saleModal').modal('show');
 		
@@ -152,6 +167,8 @@
 	
 	
 	function borrar(id){
+		console.log(id);
+		
 		$.ajax({
 			type: "POST",
 			url: 'api/delete.php',
@@ -264,10 +281,10 @@
 			}
 			
 			btnEdit = row.insertCell(-1);
-			btnEdit.innerHTML = '<button type="button" class="btn btn-md btn-success" onClick="editar('+id+')">edit</button>';
+			btnEdit.innerHTML = '<button type="button" class="btn btn-md btn-success" onClick="editar('+$data[i][0]+')">edit</button>';
 			
 			btnDelete = row.insertCell(-1);
-			btnDelete.innerHTML = '<button type="button" class="btn btn-default btn-md btn-danger" onClick="borrar('+id+')">del</button>';
+			btnDelete.innerHTML = '<button type="button" class="btn btn-default btn-md btn-danger" onClick="borrar('+$data[i][0]+')">del</button>';
 		}
 	 
 		var dvTable = document.getElementById("dvTable");
