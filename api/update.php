@@ -25,6 +25,6 @@ $sale->description = $data->description;
 $sale->size = $data->size;
 $sale->cost = $data->cost;
  
-$msg = $sale->update() ? "Venta actualizada" : "Error al editar venta";
+$msg = $sale->update() ? "OK" : "Error";
 echo json_encode($msg);
 ?>

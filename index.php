@@ -21,38 +21,38 @@
 <div id="dvTable" class="table-responsive" style="margin-top:4em;">
 </div>
 
-<a href="#saleModal" class="btn btn-info btn-sm" data-toggle="modal" onClick="$('#saleModalTitle').text('Add sale')"> 
+<a href="#saleModalAdd" class="btn btn-info btn-sm" data-toggle="modal"> 
   <span class="glyphicon glyphicon-plus"></span> Add 
 </a>
 
 <!-- Modal -->
-<div class="modal fade" id="saleModal" tabindex="-1" role="dialog" aria-labelledby="saleModalLabel" aria-hidden="true">
+<div class="modal fade" id="saleModalAdd" tabindex="-1" role="dialog" aria-labelledby="saleModalAddLabel" aria-hidden="true">
 <div class="modal-dialog">
   <div class="modal-content">
 	<div class="modal-header">
 	  <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-	  <h4 class="modal-title" id="saleModalTitle">Add sale</h4>
+	  <h4 class="modal-title" id="saleModalAddTitle">Add sale</h4>
 	</div>
 	<div class="modal-body">
 		<form>
 			<div class="form-group">
 				<label for="first_name">Name</label>
-				<input type="text" class="form-control" id="name" name="name">
+				<input type="text" class="form-control" id="name"/>
 			</div>
 			
 			<div class="form-group">
 				<label for="last_name">Description</label>
-				<textarea type="text" class="form-control" id="description" name="description"></textarea>
+				<textarea type="text" class="form-control" id="description"></textarea>
 			</div>
 			
 			<div class="form-group">
 				<label for="last_name">Cost</label>
-				<input type="text" class="form-control" id="cost" name="cost">
+				<input type="text" class="form-control" id="cost"/>
 			</div>
 			
 			<div class="form-group">
 				<label for="last_name">Size</label>
-				<input type="text" class="form-control" id="size" name="size">
+				<input type="text" class="form-control" id="size"/>
 			</div>
 		</form>
 	</div>
@@ -65,19 +65,137 @@
 </div><!-- /.modal -->
 
 
+<!-- Modal -->
+<div class="modal fade" id="saleModalEdit" tabindex="-1" role="dialog" aria-labelledby="saleModalAddLabel" aria-hidden="true">
+<div class="modal-dialog">
+  <div class="modal-content">
+	<div class="modal-header">
+	  <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+	  <h4 class="modal-title" id="saleModalAddTitle">Edit sale</h4>
+	</div>
+	<div class="modal-body">
+		<form>
+			<input type="hidden" id="eid"/>
+		
+			<div class="form-group">
+				<label for="first_name">Name</label>
+				<input type="text" class="form-control" id="ename"/>
+			</div>
+			
+			<div class="form-group">
+				<label for="last_name">Description</label>
+				<textarea type="text" class="form-control" id="edescription"></textarea>
+			</div>
+			
+			<div class="form-group">
+				<label for="last_name">Cost</label>
+				<input type="text" class="form-control" id="ecost"/>
+			</div>
+			
+			<div class="form-group">
+				<label for="last_name">Size</label>
+				<input type="text" class="form-control" id="esize"/>
+			</div>
+		</form>
+	</div>
+	<div class="modal-footer">
+	  <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+	  <button type="button" class="btn btn-primary" onClick="salvar()">Save changes</button>
+	</div>
+  </div><!-- /.modal-content -->
+</div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
 <script type="text/javascript">
 
 	var $data = [];
 	
-	function editar(id){
+	function salvar(){
+		var obj ={};
 		
+		obj.id = $('#eid').val();	
+		obj.name = $('#ename').val();	
+		obj.description = $('#edescription').val();	
+		obj.cost = $('#ecost').val();
+		obj.size = $('#esize').val();		
+					
+		//console.log(obj);	
+					
+		var encoded = JSON.stringify(obj);
+		
+		toastr.options = {
+		  "closeButton": false,
+		  "debug": false,
+		  "newestOnTop": false,
+		  "progressBar": false,
+		  "positionClass": "toast-top-right",
+		  "preventDuplicates": false,
+		  "onclick": null,
+		  "showDuration": "300",
+		  "hideDuration": "1000",
+		  "timeOut": "5000",
+		  "extendedTimeOut": "1000",
+		  "showEasing": "swing",
+		  "hideEasing": "linear",
+		  "showMethod": "fadeIn",
+		  "hideMethod": "fadeOut"
+		}
+
+		$.ajax({
+			type: "POST",
+			url: 'api/update.php',
+			data: encoded,
+			dataType: 'text json',
+			success: function(data){
+				//console.log(data);
+				if (data=="OK"){
+					$('#saleModalEdit').modal('hide');
+
+					toastr.options = {
+					  "closeButton": false,
+					  "debug": false,
+					  "newestOnTop": false,
+					  "progressBar": false,
+					  "positionClass": "toast-top-right",
+					  "preventDuplicates": false,
+					  "onclick": null,
+					  "showDuration": "300",
+					  "hideDuration": "1000",
+					  "timeOut": "5000",
+					  "extendedTimeOut": "1000",
+					  "showEasing": "swing",
+					  "hideEasing": "linear",
+					  "showMethod": "fadeIn",
+					  "hideMethod": "fadeOut"
+					};
+				
+					
+					editRow([obj.id,obj.name,obj.description, obj.size,obj.cost]);
+					toastr["success"]("Sale edited!", "Success");
+				}else
+					toastr["error"]("An error ocurred!", "Error");				
+			},
+			error: function(data){
+				console.log('Error');
+				console.log(data);
+				toastr["error"]("An error ocurred!", "Error");
+			}
+		});
+	}
+	
+	function editar(id)
+	{
 		$.ajax({
 			type: "GET",
-			url: 'api/read.php',
-			data: JSON.stringify({"id": id}),
-			dataType: 'text',
+			url: 'api/read.php?id='+id.toString(),
+			dataType: 'json',
 			success: function(data){
-				console.log(data);
+				//console.log(data);
+				$('#eid').val(data.id);
+				$('#ename').val(data.name);	
+				$('#edescription').val(data.description);	
+				$('#ecost').val(data.cost);
+				$('#esize').val(data.size);	
 			},
 			error: function(data){
 				console.log('Error');
@@ -85,10 +203,9 @@
 			}
 		});		
 		
-		$('#saleModalTitle').text('Edit sale');
-		$('#saleModal').modal('show');
+		$('#saleModalEdit').modal('show');
 		
-		console.log(id);
+		//console.log(id);
 	}
 
 	function crear()
@@ -128,9 +245,9 @@
 			data: encoded,
 			dataType: 'text json',
 			success: function(data){
-				console.log(data);
+				//console.log(data);
 				if (data!="Error"){
-					$('#saleModal').modal('hide');
+					$('#saleModalAdd').modal('hide');
 
 					toastr.options = {
 					  "closeButton": false,
@@ -167,7 +284,7 @@
 	
 	
 	function borrar(id){
-		console.log(id);
+		//console.log(id);
 		
 		$.ajax({
 			type: "POST",
@@ -176,7 +293,7 @@
 			dataType: 'text json',
 			success: function(data){
 				$('#tr'+id.toString()).remove();
-				console.log(data);
+				//console.log(data);
 			},
 			error: function(data){
 				console.log('Error');
@@ -217,6 +334,14 @@
 		});		
 	}
 	
+	
+	function editRow(reg){
+		var id = reg[0];
+		
+		for (var j = 0; j < reg.length; j++) {
+			$('#tr'+id+' td:nth-child('+(j+1).toString()+')').text(reg[j]);
+		}
+	}
 	
 	function addRow(reg){
 		var table = document.getElementById("sales"); // hardcoded!
