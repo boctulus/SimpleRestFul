@@ -4,7 +4,7 @@ class Sale{
     private $conn;
     private $table_name = "sales";
  
-    // propiedades
+    // entity properties
     public $id;
     public $name;
     public $description;
@@ -15,6 +15,10 @@ class Sale{
         $this->conn = $db;
     }
 
+	/*
+		CRUD operations
+	*/
+	
 	function read()
 	{
 		$q  = "SELECT *FROM {$this->table_name} WHERE id=:id";

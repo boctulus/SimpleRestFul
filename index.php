@@ -21,7 +21,7 @@
 <div id="dvTable" class="table-responsive" style="margin-top:4em;">
 </div>
 
-<a href="#saleModalAdd" class="btn btn-info btn-sm" data-toggle="modal"> 
+<a href="#saleModalAdd" class="btn btn-info btn-sm" data-toggle="modal" onClick="clearForm()"> 
   <span class="glyphicon glyphicon-plus"></span> Add 
 </a>
 
@@ -109,6 +109,13 @@
 <script type="text/javascript">
 
 	var $data = [];
+	
+	function clearForm(){
+		$('#name').val("");	
+		$('#description').val("");	
+		$('#cost').val("");
+		$('#size').val("");
+	}
 	
 	function salvar(){
 		var obj ={};
