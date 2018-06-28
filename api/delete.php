@@ -9,16 +9,18 @@ require_once '../config/config.php';
 require_once '../libs/database.php';
 require_once '../models/sale.php';
  
+// Get db connection 
 $db = new Database($db_name);
 $conn = $db->conn;
 
 $sale = new Sale($conn);
  
+// Stream
 $data = json_decode(file_get_contents("php://input"));
  
-// id de la venta a ser eliminada
+// Id of sale to be erased 
 $sale->id = $data->id;
  
-$msg = $sale->delete() ? "Venta eliminada" : "Error al eliminar venta";
-echo json_encode($msg);
+$msg = $sale->delete() ? "OK" : "Error";
+echo json_encode($msg); // Send enconded response
 ?>

@@ -9,6 +9,7 @@ require_once '../config/config.php';
 require_once '../libs/database.php';
 require_once '../models/sale.php';
  
+//Get DB connection 
 $db = new Database($db_name);
 $conn = $db->conn;
 
@@ -21,5 +22,6 @@ $sale->id = $_GET['id'];
  
 $sale->read();
 
+// Send enconded response
 print_r(json_encode($sale));
 ?>

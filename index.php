@@ -368,16 +368,16 @@
 	
 	function generateTable(id) {
 	 
-		//Create a HTML Table element.
+		// Create a HTML Table element.
 		var table = document.createElement("TABLE");
 		table.border = "0";
 		table.className = "table";
 		table.id = id;
 	 
-		//Get the count of columns.
+		// Get the count of columns.
 		var columnCount = $data[0].length;
 	 
-		//Add the header row.
+		// Add the header row.
 		var row = table.insertRow(-1);
 		for (var i = 0; i < columnCount; i++) {
 			var headerCell = document.createElement("TH");
@@ -386,14 +386,14 @@
 			row.appendChild(headerCell);
 		}
 		
-		//Additional headers for buttons
+		// Additional headers for buttons
 		for (var i = 0; i < 2; i++) {
 			var headerCell = document.createElement("TH");
 			headerCell.className = "th_blue";
 			row.appendChild(headerCell);
 		}
 		
-		//Add the data rows.
+		// Add the data rows.
 		for (var i = 1; i < $data.length; i++) {
 			row = table.insertRow(-1);
 			
