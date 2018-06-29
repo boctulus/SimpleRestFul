@@ -3,34 +3,34 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-		<link href="css/toastr.css" rel="stylesheet"/>
-		<link href="css/core.css" rel="stylesheet"/>
+		<link href="assets/css/toastr.css" rel="stylesheet"/>
+		<link href="assets/css/core.css" rel="stylesheet"/>
 		
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>	
-		<script src="js/toastr.min.js"></script><!-- flash notifications -->	
-		<script src="js/bootbox.min.js"></script><!-- confirmation boxes -->
+		<script src="assets/js/toastr.min.js"></script><!-- flash notifications -->	
+		<script src="assets/js/bootbox.min.js"></script><!-- confirmation boxes -->
 		
 	</head>
 
 <body>	
 <div class="container">
-  <h1>Sales</h1>
+  <h1>Products</h1>
 
 <div id="dvTable" class="table-responsive" style="margin-top:4em;">
 </div>
 
-<a href="#saleModalAdd" class="btn btn-info btn-sm" data-toggle="modal" onClick="clearForm()"> 
+<a href="#productModalAdd" class="btn btn-info btn-sm" data-toggle="modal" onClick="clearForm()"> 
   <span class="glyphicon glyphicon-plus"></span> Add 
 </a>
 
 <!-- Add Form Modal -->
-<div class="modal fade" id="saleModalAdd" tabindex="-1" role="dialog" aria-labelledby="saleModalAddLabel" aria-hidden="true">
+<div class="modal fade" id="productModalAdd" tabindex="-1" role="dialog" aria-labelledby="productModalAddLabel" aria-hidden="true">
 <div class="modal-dialog">
   <div class="modal-content">
 	<div class="modal-header">
 	  <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-	  <h4 class="modal-title" id="saleModalAddTitle">Add sale</h4>
+	  <h4 class="modal-title" id="productModalAddTitle">Add product</h4>
 	</div>
 	<div class="modal-body">
 		<form>
@@ -65,12 +65,12 @@
 
 
 <!-- Edit Form Modal -->
-<div class="modal fade" id="saleModalEdit" tabindex="-1" role="dialog" aria-labelledby="saleModalAddLabel" aria-hidden="true">
+<div class="modal fade" id="productModalEdit" tabindex="-1" role="dialog" aria-labelledby="productModalAddLabel" aria-hidden="true">
 <div class="modal-dialog">
   <div class="modal-content">
 	<div class="modal-header">
 	  <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-	  <h4 class="modal-title" id="saleModalAddTitle">Edit sale</h4>
+	  <h4 class="modal-title" id="productModalAddTitle">Edit product</h4>
 	</div>
 	<div class="modal-body">
 		<form>
@@ -157,7 +157,7 @@
 			success: function(data){
 				//console.log(data);
 				if (data=="OK"){
-					$('#saleModalEdit').modal('hide');
+					$('#productModalEdit').modal('hide');
 
 					toastr.options = {
 					  "closeButton": false,
@@ -179,7 +179,7 @@
 				
 					
 					editRow([obj.id,obj.name,obj.description, obj.size,obj.cost]);
-					toastr["success"]("Sale edited!", "Success");
+					toastr["success"]("Product edited!", "Success");
 				}else
 					toastr["error"]("An error ocurred!", "Error");				
 			},
@@ -211,7 +211,7 @@
 			}
 		});		
 		
-		$('#saleModalEdit').modal('show');
+		$('#productModalEdit').modal('show');
 		
 		//console.log(id);
 	}
@@ -255,7 +255,7 @@
 			success: function(data){
 				//console.log(data);
 				if (data!="Error"){
-					$('#saleModalAdd').modal('hide');
+					$('#productModalAdd').modal('hide');
 
 					toastr.options = {
 					  "closeButton": false,
@@ -278,7 +278,7 @@
 					obj.id = data;
 					
 					addRow([obj.id,obj.name,obj.description, obj.size,obj.cost]);
-					toastr["success"]("Sale added!", "Success");
+					toastr["success"]("Product added!", "Success");
 				}else
 					toastr["error"]("An error ocurred!", "Error");				
 			},
@@ -342,7 +342,7 @@
 				// row classes
 				//$data.rowClasses = ['info','','warning'];
 				
-				generateTable("sales");
+				generateTable("products");
 			},
 			error: function(data){
 				console.log('Error');
@@ -361,7 +361,7 @@
 	}
 	
 	function addRow(reg){
-		var table = document.getElementById("sales"); // hardcoded!
+		var table = document.getElementById("products"); // hardcoded!
 		row = table.insertRow(-1);
 		
 		id = reg[0];

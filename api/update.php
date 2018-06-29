@@ -7,25 +7,25 @@ header("Content-Type: application/json; charset=UTF-8");
  
 require_once '../config/config.php';
 require_once '../libs/database.php';
-require_once '../models/sale.php';
+require_once '../models/product.php';
  
 // Get db connection  
 $db = new Database($db_name,$host,$user,$pass);
 $conn = $db->conn;
 
-$sale = new Sale($conn);
+$product = new Product($conn);
  
 // Stream
 $data =  json_decode(file_get_contents("php://input"));
  
-// Id of sale to be edited
-$sale->id = $data->id;
+// Id of product to be edited
+$product->id = $data->id;
  
-$sale->name = $data->name;
-$sale->description = $data->description;
-$sale->size = $data->size;
-$sale->cost = $data->cost;
+$product->name = $data->name;
+$product->description = $data->description;
+$product->size = $data->size;
+$product->cost = $data->cost;
  
-$msg = $sale->update() ? "OK" : "Error";
+$msg = $product->update() ? "OK" : "Error";
 echo json_encode($msg); // Send enconded response
 ?>

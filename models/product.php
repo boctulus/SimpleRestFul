@@ -1,8 +1,8 @@
 <?php
-class Sale{
+class Product{
  
     private $conn;
-    private $table_name = "sales";
+    private $table_name = "products";
  
     // entity properties
     public $id;

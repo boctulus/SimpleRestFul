@@ -25,10 +25,10 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
--- Table structure for table `sales`
+-- Table structure for table `products`
 --
 
-CREATE TABLE `sales` (
+CREATE TABLE `products` (
   `id` int(11) NOT NULL,
   `item_name` varchar(50) NOT NULL,
   `item_description` varchar(240) NOT NULL,
@@ -37,10 +37,10 @@ CREATE TABLE `sales` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
--- Dumping data for table `sales`
+-- Dumping data for table `products`
 --
 
-INSERT INTO `sales` (`id`, `item_name`, `item_description`, `item_size`, `item_cost`) VALUES
+INSERT INTO `products` (`id`, `item_name`, `item_description`, `item_size`, `item_cost`) VALUES
 (1, 'The Itcher', 'Scratch any itch', 'XL', 27),
 (2, 'The Blinger', 'Diamonds', 'L', 343),
 (3, 'Glitz and Gold', 'Gold handle and fancy emeralds make this shine', 'XL,L,M,S', 4343);
@@ -50,9 +50,9 @@ INSERT INTO `sales` (`id`, `item_name`, `item_description`, `item_size`, `item_c
 --
 
 --
--- Indexes for table `sales`
+-- Indexes for table `products`
 --
-ALTER TABLE `sales`
+ALTER TABLE `products`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -60,9 +60,9 @@ ALTER TABLE `sales`
 --
 
 --
--- AUTO_INCREMENT for table `sales`
+-- AUTO_INCREMENT for table `products`
 --
-ALTER TABLE `sales`
+ALTER TABLE `products`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 COMMIT;
 
