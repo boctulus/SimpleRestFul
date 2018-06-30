@@ -14,101 +14,140 @@
 	</head>
 
 <body>	
+
 <div class="container">
-  <h1>Products</h1>
 
-<div id="dvTable" class="table-responsive" style="margin-top:4em;">
-</div>
 
-<a href="#productModalAdd" class="btn btn-info btn-sm" data-toggle="modal" onClick="clearForm()"> 
-  <span class="glyphicon glyphicon-plus"></span> Add 
-</a>
+	<h1>Products</h1>
 
-<!-- Add Form Modal -->
-<div class="modal fade" id="productModalAdd" tabindex="-1" role="dialog" aria-labelledby="productModalAddLabel" aria-hidden="true">
-<div class="modal-dialog">
-  <div class="modal-content">
-	<div class="modal-header">
-	  <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-	  <h4 class="modal-title" id="productModalAddTitle">Add product</h4>
+	<div id="dvTable" class="table-responsive" style="margin-top:4em;">
 	</div>
-	<div class="modal-body">
-		<form>
-			<div class="form-group">
-				<label for="first_name">Name</label>
-				<input type="text" class="form-control" id="name"/>
-			</div>
+
+	<a href="#productModalAdd" class="btn btn-info btn-sm" data-toggle="modal" onClick="clearForm()"> 
+	  <span class="glyphicon glyphicon-plus"></span> Add 
+	</a>
+
+
+	<!-- Add Form Modal -->
+	<div class="modal fade" id="productModalAdd" tabindex="-1" role="dialog" aria-labelledby="productModalAddLabel" aria-hidden="true">
+	<div class="modal-dialog">
+	  <div class="modal-content">
+		<div class="modal-header">
+		  <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+		  <h4 class="modal-title" id="productModalAddTitle">Add product</h4>
+		</div>
+		<div class="modal-body">
+			<form>
+				<div class="form-group">
+					<label for="first_name">Name</label>
+					<input type="text" class="form-control" id="name"/>
+				</div>
+				
+				<div class="form-group">
+					<label for="last_name">Description</label>
+					<textarea type="text" class="form-control" id="description"></textarea>
+				</div>
+				
+				<div class="form-group">
+					<label for="last_name">Cost</label>
+					<input type="text" class="form-control" id="cost"/>
+				</div>
+				
+				<div class="form-group">
+					<label for="last_name">Size</label>
+					<input type="text" class="form-control" id="size"/>
+				</div>
+			</form>
+		</div>
+		<div class="modal-footer">
+		  <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+		  <button type="button" class="btn btn-primary" onClick="crear()">Save changes</button>
+		</div>
+	  </div><!-- /.modal-content -->
+	</div><!-- /.modal-dialog -->
+	</div><!-- /.modal -->
+
+
+	<!-- Edit Form Modal -->
+	<div class="modal fade" id="productModalEdit" tabindex="-1" role="dialog" aria-labelledby="productModalAddLabel" aria-hidden="true">
+	<div class="modal-dialog">
+	  <div class="modal-content">
+		<div class="modal-header">
+		  <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+		  <h4 class="modal-title" id="productModalAddTitle">Edit product</h4>
+		</div>
+		<div class="modal-body">
+			<form>
+				<input type="hidden" id="eid"/>
 			
-			<div class="form-group">
-				<label for="last_name">Description</label>
-				<textarea type="text" class="form-control" id="description"></textarea>
-			</div>
-			
-			<div class="form-group">
-				<label for="last_name">Cost</label>
-				<input type="text" class="form-control" id="cost"/>
-			</div>
-			
-			<div class="form-group">
-				<label for="last_name">Size</label>
-				<input type="text" class="form-control" id="size"/>
-			</div>
-		</form>
-	</div>
-	<div class="modal-footer">
-	  <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-	  <button type="button" class="btn btn-primary" onClick="crear()">Save changes</button>
-	</div>
-  </div><!-- /.modal-content -->
-</div><!-- /.modal-dialog -->
-</div><!-- /.modal -->
+				<div class="form-group">
+					<label for="first_name">Name</label>
+					<input type="text" class="form-control" id="ename"/>
+				</div>
+				
+				<div class="form-group">
+					<label for="last_name">Description</label>
+					<textarea type="text" class="form-control" id="edescription"></textarea>
+				</div>
+				
+				<div class="form-group">
+					<label for="last_name">Cost</label>
+					<input type="text" class="form-control" id="ecost"/>
+				</div>
+				
+				<div class="form-group">
+					<label for="last_name">Size</label>
+					<input type="text" class="form-control" id="esize"/>
+				</div>
+			</form>
+		</div>
+		<div class="modal-footer">
+		  <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+		  <button type="button" class="btn btn-primary" onClick="salvar()">Save changes</button>
+		</div>
+	  </div><!-- /.modal-content -->
+	</div><!-- /.modal-dialog -->
+	</div><!-- /.modal -->
 
-
-<!-- Edit Form Modal -->
-<div class="modal fade" id="productModalEdit" tabindex="-1" role="dialog" aria-labelledby="productModalAddLabel" aria-hidden="true">
-<div class="modal-dialog">
-  <div class="modal-content">
-	<div class="modal-header">
-	  <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-	  <h4 class="modal-title" id="productModalAddTitle">Edit product</h4>
-	</div>
-	<div class="modal-body">
-		<form>
-			<input type="hidden" id="eid"/>
+	
 		
-			<div class="form-group">
-				<label for="first_name">Name</label>
-				<input type="text" class="form-control" id="ename"/>
+	<div id="loginModal" class="modal fade in" style="display: none;">
+		<div class="modal-dialog modal-login">
+			<div class="modal-content">
+				<div class="modal-header">			
+					<h2 class="modal-title">Login</h2>	
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+				</div>
+				<div class="modal-body">
+					<form>
+						<div class="form-group">
+							<input type="text" class="form-control" name="username" placeholder="Username" required="required">		
+						</div>
+						<div class="form-group">
+							<input type="password" class="form-control" name="password" placeholder="Password" required="required">	
+						</div>        
+						<div class="form-group">
+							<button type="submit" class="btn btn-primary btn-lg btn-block login-btn">Login</button>
+						</div>
+					</form>
+				</div>
+				<div class="modal-footer">
+					<!-- a href="#">Forgot Password?</a -->
+				</div>
 			</div>
-			
-			<div class="form-group">
-				<label for="last_name">Description</label>
-				<textarea type="text" class="form-control" id="edescription"></textarea>
-			</div>
-			
-			<div class="form-group">
-				<label for="last_name">Cost</label>
-				<input type="text" class="form-control" id="ecost"/>
-			</div>
-			
-			<div class="form-group">
-				<label for="last_name">Size</label>
-				<input type="text" class="form-control" id="esize"/>
-			</div>
-		</form>
+		</div>
 	</div>
-	<div class="modal-footer">
-	  <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-	  <button type="button" class="btn btn-primary" onClick="salvar()">Save changes</button>
-	</div>
-  </div><!-- /.modal-content -->
-</div><!-- /.modal-dialog -->
-</div><!-- /.modal -->
 
 
 <script type="text/javascript">
 
 	var $data = [];
+	
+	//localStorage.setItem('token','frwffrffr');
+	
+	$(document).ready(()=>{
+		listar();
+	});
 	
 	function clearForm(){
 		$('#name').val("");	
@@ -375,10 +414,7 @@
 		}
 		
 		btnEdit = row.insertCell(-1);
-		btnEdit.innerHTML = '<button type="button" class="btn btn-md btn-success" onClick="editar('+id+')">edit</button>';
-		
-		btnDelete = row.insertCell(-1);
-		btnDelete.innerHTML = '<button type="button" class="btn btn-default btn-md btn-danger" onClick="borrar('+id+')">del</button>';
+		btnEdit.innerHTML = '<div style="display:inline;"> <button type="button" class="btn btn-md btn-success" onClick="editar('+id+')"><span class="glyphicon glyphicon-pencil"></span></button> &nbsp; <button type="button" class="btn btn-default btn-md btn-danger" onClick="borrar('+id+')"><span class="glyphicon glyphicon-trash"></span></button> </div>';
 		
 	}
 	
@@ -404,11 +440,10 @@
 		}
 		
 		// Additional headers for buttons
-		for (var i = 0; i < 2; i++) {
-			var headerCell = document.createElement("TH");
-			headerCell.className = "th_blue";
-			row.appendChild(headerCell);
-		}
+		var headerCell = document.createElement("TH");
+		headerCell.className = "th_blue";
+		row.appendChild(headerCell);
+		
 		
 		// Add the data rows.
 		for (var i = 1; i < $data.length; i++) {
@@ -423,18 +458,14 @@
 			}
 			
 			btnEdit = row.insertCell(-1);
-			btnEdit.innerHTML = '<button type="button" class="btn btn-md btn-success" onClick="editar('+$data[i][0]+')">edit</button>';
-			
-			btnDelete = row.insertCell(-1);
-			btnDelete.innerHTML = '<button type="button" class="btn btn-default btn-md btn-danger" onClick="borrar('+$data[i][0]+')">del</button>';
+			btnEdit.innerHTML = '<div style="display:inline;"> <button type="button" class="btn btn-md btn-success" onClick="editar('+$data[i][0]+')"><span class="glyphicon glyphicon-pencil"></span></button> &nbsp; <button type="button" class="btn btn-default btn-md btn-danger" onClick="borrar('+$data[i][0]+')"><span class="glyphicon glyphicon-trash"></span></button> </div>';
 		}
 	 
 		var dvTable = document.getElementById("dvTable");
 		dvTable.innerHTML = "";
 		dvTable.appendChild(table);
 	}
-	
-	$(document).ready(()=>{listar()});
+
 
 
 </script>
