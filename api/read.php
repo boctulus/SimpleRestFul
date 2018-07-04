@@ -5,12 +5,14 @@ header("Access-Control-Allow-Methods: GET");
 header("Access-Control-Allow-Credentials: true");
 header('Content-Type: application/json');
  
-require_once '../config/config.php';
+$config =  include '../config/config.php';
+require_once '../helpers/tokens.php';
 require_once '../libs/database.php';
 require_once '../models/product.php';
- 
+
+
 // Get db connection  
-$db = new Database($db_name,$host,$user,$pass);
+$db = new Database($config);
 $conn = $db->conn;
 
 $product = new Product($conn);

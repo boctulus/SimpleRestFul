@@ -3,7 +3,13 @@ class Database{
 
 	public $conn;
   
-	public function __construct($db_name,$host='localhost',$user='root',$pass=''){
+	public function __construct($config){
+		
+		$db_name = $config['db_name'];
+		$host    = $config['host'] ?? 'localhost';
+		$user    = $config['user'] ?? 'root';
+		$pass    = $config['pass'] ?? '';
+		
 		try {
 			$this->conn = new PDO("mysql:host=" . $host . ";dbname=" . $db_name, $user, $pass);
             $this->conn->exec("set names utf8");
