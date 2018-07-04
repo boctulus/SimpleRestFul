@@ -6,10 +6,8 @@ header("Access-Control-Allow-Credentials: true");
 header('Content-Type: application/json');
  
 $config =  include '../config/config.php';
-require_once '../helpers/tokens.php';
 require_once '../libs/database.php';
 require_once '../models/product.php';
-
 
 // Get db connection  
 $conn = Database::getConnection($config);

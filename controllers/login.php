@@ -12,6 +12,11 @@ function index(){
 	include "views/login.php";
 }
 
+function logout(){
+	// extraer del token el id del usuario
+	// destruir la "session" revocando el token
+}
+
 function login(){
 	$config =  include 'config/config.php';
 	
@@ -38,6 +43,6 @@ function login(){
 		echo json_encode(['token'=>$jwt]);
 		
 	}else
-		echo "Error en usuario o password";
+		echo json_encode(['error'=>"Error en usuario o password"]);
 }
 

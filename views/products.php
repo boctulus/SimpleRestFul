@@ -128,6 +128,22 @@
 		$('#size').val("");
 	}
 	
+	function logout(){
+		$.ajax({
+			type: "GET",
+			url: 'index.php?c=login&a=logout',
+			dataType: 'text json',
+			headers: {"Authorization": 'Bearer ' + store.getJWT()}, // token
+			success: function(data){
+				console.log(data);
+			},
+			error: function(data){
+				console.log('Error');
+				console.log(data);
+			}
+		});		
+	}
+	
 	function salvar(){
 		var obj ={};
 		
@@ -360,6 +376,9 @@
 				generateTable("products");
 			},
 			error: function(data){
+				if (data.statusText='Unauthorized')
+					window.location = 'index.php?c=login';
+				
 				console.log('Error');
 				console.log(data);
 			}

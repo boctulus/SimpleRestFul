@@ -40,7 +40,7 @@
 					</form>
 				</div>
 				<div class="modal-footer">
-					<!-- a href="#">Forgot Password?</a -->
+					<span style="color:red" id="loginError"></span>
 				</div>
 			</div>
 		</div>
@@ -64,8 +64,10 @@
 				if (typeof data.token != 'undefined'){
 					store.setJWT(data.token);
 					window.location = 'index.php';
+				}else{				
+					$('#loginError').text('Error en usuario o password');
+					console.log(data);
 				}
-				
 			},
 			error: function(data){
 				console.log('Error');

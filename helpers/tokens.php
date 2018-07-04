@@ -7,10 +7,11 @@ $headers = apache_request_headers();
 
 if (!isset($headers['Authorization'])){
 	header('HTTP/1.0 400 Bad Request');
-	throw new Exception('Token not found');
+	throw new Exception('Authorization not found');
 }
 	
 list($jwt) = sscanf($headers['Authorization'], 'Bearer %s');
+
 
 if($jwt)
 {
