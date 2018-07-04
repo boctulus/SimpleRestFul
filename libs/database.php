@@ -1,23 +1,26 @@
 <?php
-class Database{
 
-	public $conn;
-  
-	public function __construct($config){
-		
-		$db_name = $config['db_name'];
+class Database {
+
+    private static $conn;
+
+    private function __construct() {
+    }
+
+    public static function getConnection($config) {
+        $db_name = $config['db_name'];
 		$host    = $config['host'] ?? 'localhost';
 		$user    = $config['user'] ?? 'root';
 		$pass    = $config['pass'] ?? '';
 		
 		try {
-			$this->conn = new PDO("mysql:host=" . $host . ";dbname=" . $db_name, $user, $pass);
-            $this->conn->exec("set names utf8");
-			$this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_WARNING);
+			self::$conn = new PDO("mysql:host=" . $host . ";dbname=" . $db_name, $user, $pass);
+            self::$conn->exec("set names utf8");
+			self::$conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_WARNING);
 		} catch (PDOException $e) {
 			die($e->getMessage());
 		}	
-	}
-
+		
+		return self::$conn;
+    }
 }
-

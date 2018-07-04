@@ -17,6 +17,8 @@
 <body>	
 <div class="container">
 
+	<div class="pull-right" style="margin-bottom:1em;font-size:2em;"><a href="#">Log out</a></div>
+
 	<h1>Products</h1>
 
 	<div id="dvTable" class="table-responsive" style="margin-top:4em;">

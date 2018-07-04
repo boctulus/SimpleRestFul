@@ -12,8 +12,7 @@ require_once '../models/product.php';
 
 
 // Get db connection  
-$db = new Database($config);
-$conn = $db->conn;
+$conn = Database::getConnection($config);
 
 $product = new Product($conn);
  

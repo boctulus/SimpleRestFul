@@ -16,8 +16,7 @@ function login(){
 	$config =  include 'config/config.php';
 	
 	// Get db connection  
-	$db = new Database($config);
-	$conn = $db->conn;
+	$conn = Database::getConnection($config);
 	
 	$u = new User($conn);
 	$u->username = $_REQUEST['username'];
