@@ -11,13 +11,14 @@
 		<script src="assets/js/toastr.min.js"></script><!-- flash notifications -->	
 		<script src="assets/js/bootbox.min.js"></script><!-- confirmation boxes -->
 		<script src="vendor/byjg/jwt-wrapper/js/store.js"></script>
+		<script src="assets/js/core.js"></script>
 		
 	</head>
 
 <body>	
 <div class="container">
 
-	<div class="pull-right" style="margin-bottom:1em;font-size:2em;"><a href="#">Log out</a></div>
+	<div class="pull-right" style="margin-bottom:1em;font-size:2em;"><a href="#" onclick="logout()">Log out</a></div>
 
 	<h1>Products</h1>
 
@@ -128,21 +129,6 @@
 		$('#size').val("");
 	}
 	
-	function logout(){
-		$.ajax({
-			type: "GET",
-			url: 'index.php?c=login&a=logout',
-			dataType: 'text json',
-			headers: {"Authorization": 'Bearer ' + store.getJWT()}, // token
-			success: function(data){
-				console.log(data);
-			},
-			error: function(data){
-				console.log('Error');
-				console.log(data);
-			}
-		});		
-	}
 	
 	function salvar(){
 		var obj ={};
@@ -376,7 +362,7 @@
 				generateTable("products");
 			},
 			error: function(data){
-				if (data.statusText='Unauthorized')
+				if (data.statusText=='Unauthorized' || data.statusText=='Authorization not found' || data.statusText=='Token not found')
 					window.location = 'index.php?c=login';
 				
 				console.log('Error');

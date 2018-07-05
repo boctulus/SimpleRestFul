@@ -28,9 +28,14 @@ class User{
 	
 		$row = $st->fetch(PDO::FETCH_OBJ);
 	 
-		$this->username = $row->username;
-		$this->token = $row->token;
-		$this->tokenExpiration = $row->tokenExpiration;
+		if ($row){
+			$this->username = $row->username;
+			$this->token = $row->token;
+			$this->tokenExpiration = $row->tokenExpiration;
+			return true;
+		}
+		
+		return false;
 	}
 	
 	function exists()
@@ -52,7 +57,6 @@ class User{
 		
 		return false;
 	}
-	
 	
 	
 	function readAll()
@@ -90,6 +94,24 @@ class User{
 	 
 		return ($st->execute());
 	}
+	
+	function updateToken()
+	{
+		$q = "UPDATE {$this->table_name} SET
+					token = :token,
+					tokenExpiration = :tokenExpiration
+				WHERE
+					id = :id";
+	 
+		$st = $this->conn->prepare($q);
+	 
+		$st->bindParam(':id', $this->id);
+		$st->bindParam(':token', $this->token);
+		$st->bindParam(':tokenExpiration', $this->tokenExpiration);
+	 
+		return ($st->execute());
+	}
+	
 	
 	function delete()
 	{

@@ -63,6 +63,7 @@
 			success: function(data){
 				if (typeof data.token != 'undefined'){
 					store.setJWT(data.token);
+					localStorage.setItem('username',obj.username);
 					window.location = 'index.php';
 				}else{				
 					$('#loginError').text('Error en usuario o password');

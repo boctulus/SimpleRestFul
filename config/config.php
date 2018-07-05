@@ -8,4 +8,4 @@ return [
 	'pass' => '', // gogogo
 	
 	// JWT
-	'jwt_secret_key' =>'my_secret_key'];
+	'jwt_secret_key' =>'BHH#**@())0))@Jhr&@&#()_hrrK@911kk19))K)_!.S>!_)#I@#('];
