@@ -16,7 +16,7 @@
 	</head>
 
 <body>	
-<div class="container">
+<div class="container hidden">
 
 	<div class="pull-right" style="margin-bottom:1em;font-size:2em;"><a href="#" onclick="logout()">Log out</a></div>
 
@@ -343,6 +343,10 @@
 			dataType: 'text json',
 			headers: {"Authorization": 'Bearer ' + store.getJWT()},
 			success: function(data){
+				
+				// des-oculto la vista 
+				$('.container').removeClass('hidden');
+				
 				for (i=0;i<data.length;i++){
 					var row = [];
 					for(var key in data[i]) {
