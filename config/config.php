@@ -9,7 +9,7 @@ return [
 	
 	// JWT
 	'jwt_secret_key' =>'BHH#**@())0))@Jhr&@&#()_hrrK@911kk19))K)_!.S>!_)#I@#(',
-	// hours
-	'token_expiration_time' => 24
+	'token_expiration_time' => 24, // hours
+	'encryption' => 'HS256'
 	
 	];

@@ -3,7 +3,8 @@ require_once "../vendor/autoload.php";
 require_once '../libs/database.php';
 require_once '../models/user.php';
 
-$token = null;
+// Authorization checkin
+
 $headers = apache_request_headers();
 
 $auth = $headers['Authorization'] ?? $headers['authorization'];
@@ -21,7 +22,7 @@ if($jwt)
 	try{
 		$data = Firebase\JWT\JWT::decode($jwt, $config['jwt_secret_key'], array('HS256'));
 		
-		// chequeo que el token no haya sido revocado o este vencido  
+		// Checking for token invalidation or outdated token
 		$config =  include '../config/config.php';
 		$conn = Database::getConnection($config);
 	

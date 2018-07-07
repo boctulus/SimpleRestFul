@@ -6,7 +6,9 @@
 		var table = document.createElement("TABLE");
 		table.border = "0";
 		table.className = "table";
-		table.id = id;
+		
+		if (typeof id != 'undefined')
+			table.id = id;
 	 
 		// Get the count of columns.
 		var columnCount = $data[0].length;
