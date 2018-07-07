@@ -5,7 +5,7 @@ require_once 'models/product.php';
 require_once 'models/user.php';
 
 
-call_user_func($_REQUEST['a'] ?? 'index');
+call_user_func($a);
 
 
 function index(){
@@ -14,10 +14,7 @@ function index(){
 
 function logout(){
 	// destruir la "session" revocando el token
-	
-	$config =  include 'config/config.php';
-	$conn = Database::getConnection($config);
-	
+
 	// Extraigo id de usuario del token 
 	require_once "vendor/autoload.php";
 	
@@ -35,18 +32,19 @@ function logout(){
 	if($jwt)
 	{
 		try{
-			$data = Firebase\JWT\JWT::decode($jwt, $config['jwt_secret_key'], array('HS256'));
-			
-			// chequeo que el token no haya sido revocado o este vencido  
 			$config =  include 'config/config.php';
 			$conn = Database::getConnection($config);
-		
+			
+			// chequeo que el token no haya sido revocado o este vencido 
+			$data = Firebase\JWT\JWT::decode($jwt, $config['jwt_secret_key'], array('HS256'));
+			
 			$u = new User($conn);
 			$u->id = $data->data->id;
+			$u->read();
 			
 			$u->token = '';
 			$u->tokenExpiration = 0;
-			$u->updateToken();
+			$u->update();
 		
 				
 		} catch (Exception $e) {
@@ -79,7 +77,7 @@ function login()
 
 		$token = array(
 			'iat' => $time, // Tiempo que inició el token
-			'exp' => $time + (60*60), // Tiempo que expirará el token (+1 hora)
+			'exp' => $time + 3600*$config['token_expiration_time'], 
 			'data' => [ // información del usuario
 				'id' => $u->id,
 				'username' => $u->username
@@ -88,7 +86,7 @@ function login()
 	
 		$u->token = Firebase\JWT\JWT::encode($token, $config['jwt_secret_key']);
 		$u->tokenExpiration = $token['exp'];
-		$u->updateToken();
+		$u->update();
 		
 		echo json_encode(['token'=>$u->token]);
 		

@@ -1,6 +1,6 @@
 <?php
 	
-	call_user_func($_REQUEST['a'] ?? 'index');
+	call_user_func($a);
 	
 	
 	function index(){

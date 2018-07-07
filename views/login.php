@@ -11,6 +11,7 @@
 		<script src="assets/js/toastr.min.js"></script><!-- flash notifications -->	
 		<script src="assets/js/bootbox.min.js"></script><!-- confirmation boxes -->
 		<script src="vendor/byjg/jwt-wrapper/js/store.js"></script>
+		<script src="assets/js/login.js"></script>
 		
 	</head>
 
@@ -48,36 +49,6 @@
 
 </div>
 
-<script>
-
-	function login(){
-		var obj ={};
-		
-		obj.username = $('#username').val();	
-		obj.password = $('#password').val();	
-		
-		$.ajax({
-			type: "GET",
-			url: 'index.php?c=login&a=login&username='+obj.username+'&password='+obj.password,
-			dataType: 'json',
-			success: function(data){
-				if (typeof data.token != 'undefined'){
-					store.setJWT(data.token);
-					localStorage.setItem('username',obj.username);
-					window.location = 'index.php';
-				}else{				
-					$('#loginError').text('Error en usuario o password');
-					console.log(data);
-				}
-			},
-			error: function(data){
-				console.log('Error');
-				console.log(data);
-			}
-		});		
-	}
-
-</script>
 
 </body>
 </html>

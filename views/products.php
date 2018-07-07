@@ -11,7 +11,7 @@
 		<script src="assets/js/toastr.min.js"></script><!-- flash notifications -->	
 		<script src="assets/js/bootbox.min.js"></script><!-- confirmation boxes -->
 		<script src="vendor/byjg/jwt-wrapper/js/store.js"></script>
-		<script src="assets/js/core.js"></script>
+		<script src="assets/js/login.js"></script>
 		
 	</head>
 

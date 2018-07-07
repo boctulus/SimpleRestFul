@@ -30,6 +30,7 @@ class User{
 	 
 		if ($row){
 			$this->username = $row->username;
+			$this->password = $row->password;
 			$this->token = $row->token;
 			$this->tokenExpiration = $row->tokenExpiration;
 			return true;
@@ -49,6 +50,8 @@ class User{
 		
 		if ($row){
 			$this->id = $row->id;
+			$this->username = $row->username;
+			$this->password = $row->password;
 			$this->token = $row->token;
 			$this->tokenExpiration = $row->tokenExpiration;
 			
@@ -89,23 +92,6 @@ class User{
 		$st->bindParam(':id', $this->id);
 		$st->bindParam(':username', $this->username);
 		$st->bindParam(':password', $this->password);
-		$st->bindParam(':token', $this->token);
-		$st->bindParam(':tokenExpiration', $this->tokenExpiration);
-	 
-		return ($st->execute());
-	}
-	
-	function updateToken()
-	{
-		$q = "UPDATE {$this->table_name} SET
-					token = :token,
-					tokenExpiration = :tokenExpiration
-				WHERE
-					id = :id";
-	 
-		$st = $this->conn->prepare($q);
-	 
-		$st->bindParam(':id', $this->id);
 		$st->bindParam(':token', $this->token);
 		$st->bindParam(':tokenExpiration', $this->tokenExpiration);
 	 
