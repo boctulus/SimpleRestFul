@@ -16,11 +16,11 @@
 	</head>
 
 <body>	
-<div class="container hidden">
+<div class="container-fluid">
 
-	<div class="pull-right" style="margin-bottom:1em;font-size:2em;"><a href="#" onclick="logout()">Log out</a></div>
+	<?php include "views/navbar.php" ?>
 
-	<h1>Products</h1>
+	<h1 class="red-text text-center" style="font-size:2em">Products</h1>
 
 	<div id="dvTable" class="table-responsive" style="margin-top:4em;">
 	</div>
@@ -343,7 +343,7 @@
 			success: function(data){
 				
 				// des-oculto la vista 
-				$('.container').removeClass('hidden');
+				$('#dvTable').removeClass('hidden');
 				
 				for (i=0;i<data.length;i++){
 					var row = [];
@@ -364,10 +364,10 @@
 				generateTable("products");
 			},
 			error: function(data){
-				if (data.statusText=='Unauthorized' || data.statusText=='Authorization not found' || data.statusText=='Token not found')
+				if (data.statusText=='Unauthorized' || data.statusText=='error' )
 					window.location = 'index.php?c=login';
 				
-				console.log('Error');
+				console.log('Error!!!');
 				console.log(data);
 			}
 		});		

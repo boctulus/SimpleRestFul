@@ -1,5 +1,4 @@
 	
-	
 	function logout(){
 		//console.log('Loging out...');
 		

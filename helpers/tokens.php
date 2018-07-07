@@ -6,13 +6,14 @@ require_once '../models/user.php';
 $token = null;
 $headers = apache_request_headers();
 
+$auth = $headers['Authorization'] ?? $headers['authorization'];
 
-if (!isset($headers['Authorization'])){
+if (empty($auth)){
 	header('HTTP/1.0 400 Bad Request');
 	throw new Exception('Authorization not found');
 }
 	
-list($jwt) = sscanf($headers['Authorization'], 'Bearer %s');
+list($jwt) = sscanf($auth, 'Bearer %s');
 
 
 if($jwt)

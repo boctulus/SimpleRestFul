@@ -1,9 +1,15 @@
-			.th_blue { background-color: #4a89dc; color:eee; }
-			
-			/*
-			.modal-open .modal {
-				display: flex !important;
-				align-items: center;
-				justify-content: center;
-			}
-			*/
+	.th_blue { background-color: #4a89dc; color:eee; }
+	
+	/*
+	.modal-open .modal {
+		display: flex !important;
+		align-items: center;
+		justify-content: center;
+	}
+	*/
+	
+	.btn-logout {
+	  width: 100%;
+	  padding: 3px 20px !important;
+	  text-align: left !important;
+	}

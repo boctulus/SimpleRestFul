@@ -14,20 +14,21 @@ function index(){
 
 function logout(){
 	// destruir la "session" revocando el token
-
-	// Extraigo id de usuario del token 
+	
 	require_once "vendor/autoload.php";
 	
 	$token = null;
 	$headers = apache_request_headers();
 	
-	if (!isset($headers['Authorization'])){
+	$auth = $headers['Authorization'] ?? $headers['authorization'];
+	
+	if (empty($auth)){
 		header('HTTP/1.0 400 Bad Request');
 		throw new Exception('Authorization not found');
-	}	
-	
-	list($jwt) = sscanf($headers['Authorization'], 'Bearer %s');
-	
+	}
+		
+	list($jwt) = sscanf($auth, 'Bearer %s');
+
 	
 	if($jwt)
 	{
