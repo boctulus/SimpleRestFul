@@ -20,7 +20,7 @@ list($jwt) = sscanf($auth, 'Bearer %s');
 if($jwt)
 {
 	try{
-		$data = Firebase\JWT\JWT::decode($jwt, $config['jwt_secret_key'], array('HS256'));
+		$data = Firebase\JWT\JWT::decode($jwt, $config['jwt_secret_key'], [ $config['encryption'] ]);
 		
 		// Checking for token invalidation or outdated token
 		$config =  include '../config/config.php';

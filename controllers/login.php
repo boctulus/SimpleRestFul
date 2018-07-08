@@ -1,17 +1,11 @@
 <?php
-
 require_once 'libs/database.php';
 require_once 'models/product.php';
 require_once 'models/user.php';
-
-
 call_user_func($a);
-
-
 function index(){
 	include "views/login.php";
 }
-
 // token invalidation
 function logout(){
 	
@@ -33,7 +27,7 @@ function logout(){
 				$conn = Database::getConnection($config);
 				
 				// Checking for token invalidation or outdated token
-				$data = Firebase\JWT\JWT::decode($jwt, $config['jwt_secret_key'], array('HS256'));
+				$data = Firebase\JWT\JWT::decode($jwt, $config['jwt_secret_key'],  [ $config['encryption'] ]);
 				
 				$u = new User($conn);
 				$u->id = $data->data->id;
@@ -57,7 +51,6 @@ function logout(){
 			 throw new Exception('Token not found');
 		}
 }
-
 function login()
 {
 	$config =  include 'config/config.php';
@@ -70,17 +63,16 @@ function login()
 	
 	if ($u->exists()){
 		$time = time();
-
 		$token = array(
 			'iat' => $time, 
-			'exp' => $time + 3600*$config['token_expiration_time'], 
+			'exp' => $time + 60*$config['token_expiration_time'], 
 			'data' => [ 
 				'id' => $u->id,
 				'username' => $u->username
 			]
 		);
 	
-		$u->token = Firebase\JWT\JWT::encode($token, $config['jwt_secret_key']);
+		$u->token = Firebase\JWT\JWT::encode($token, $config['jwt_secret_key'],  $config['encryption']);
 		$u->tokenExpiration = $token['exp'];
 		$u->update();
 		
@@ -89,4 +81,3 @@ function login()
 	}else
 		echo json_encode(['error'=>"Error en usuario o password"]);
 }
-
