@@ -118,7 +118,22 @@
 	
 	$(document).ready(()=>{
 		listar();
+		
+		console.log(new Date()); ///
+		
+		// renew token
+		setInterval(function() {
+			if (localStorage.getItem('exp')==null)
+				return;
+			
+			// diff is less than 2 minute
+			if ( ((localStorage.getItem('exp')*1000) - (new Date()).getTime()) < 120000 ){
+				renew();
+			}
+			
+		}, 60 * 1000); /* 60 sec */
 	});
+	
 	
 	function clearForm(){
 		$('#name').val("");	

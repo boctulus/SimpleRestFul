@@ -3,7 +3,7 @@ header("Access-Control-Allow-Origin: *");
 header("Content-Type: application/json; charset=UTF-8");
  
 $config =  include '../config/config.php';
-require_once '../helpers/tokens.php';
+require_once '../helpers/auth_check.php';
 require_once '../libs/database.php';
 require_once '../models/product.php';
 

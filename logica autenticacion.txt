@@ -5,3 +5,6 @@ Logica que aplico:
 
 - Si tengo un token (en localstorage), lo envio en cada request en el authorization header
 - Si el token no es válido (está vacio, es incorrecto o está vencido), -> le muestro el login
+
+- Si el token está próximo a vencerse (<1 min), envio una petición de un nuevo token al servidor
+- El servidor chequea que el usuario esté autenticado y si es así, entrega un nuevo token.
