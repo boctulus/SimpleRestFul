@@ -1,8 +1,10 @@
 .idea
 composer.lock
-test.php
 _bk_
 *.sql
 *.rar
 *.zip
+test.php
+deleteTest.php
+
 
