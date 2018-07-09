@@ -16,8 +16,14 @@ $conn = Database::getConnection($config);
 
 $product = new Product($conn);
  
-// Stream
-$data =  json_decode(file_get_contents("php://input"));
+// Streaming for a POST request
+$method = $_SERVER['REQUEST_METHOD'];
+if ('POST' === $method) {
+	$data =  json_decode(file_get_contents("php://input"));
+}else{
+	echo "Error";
+	exit();
+}
 
 $product->name = $data->name;
 $product->description = $data->description;

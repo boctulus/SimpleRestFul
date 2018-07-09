@@ -6,9 +6,13 @@ header("Access-Control-Allow-Credentials: true");
 header('Content-Type: application/json');
  
 $config =  include '../config/config.php';
-require_once '../helpers/auth_check.php';
 require_once '../libs/database.php';
 require_once '../models/product.php';
+
+
+if ($_SERVER['REQUEST_METHOD'] !== 'GET'){
+	throw new Exception("Invalid request");
+}	
 
 // Get db connection  
 $conn = Database::getConnection($config);
