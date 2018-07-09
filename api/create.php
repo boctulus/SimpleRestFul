@@ -16,7 +16,7 @@ $conn = Database::getConnection($config);
 
 $product = new Product($conn);
  
-// escucho el stream
+// Stream
 $data =  json_decode(file_get_contents("php://input"));
 
 $product->name = $data->name;

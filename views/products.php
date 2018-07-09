@@ -142,7 +142,7 @@
 		$('#size').val("");
 	}
 	
-	
+	/* Edit */
 	function salvar(){
 		var obj ={};
 		
@@ -175,7 +175,7 @@
 		}
 
 		$.ajax({
-			type: "POST",
+			type: "PUT",	/* PUT VERB */
 			url: 'api/update.php',
 			data: encoded,
 			dataType: 'text json',
@@ -217,10 +217,11 @@
 		});
 	}
 	
+	/* just reading previous to save updated data */
 	function editar(id)
 	{
 		$.ajax({
-			type: "GET",
+			type: "GET",	/* lectura previa */
 			url: 'api/read.php?id='+id.toString(),
 			dataType: 'json',
 			headers: {"Authorization": 'Bearer ' + store.getJWT()},
@@ -243,6 +244,7 @@
 		//console.log(id);
 	}
 
+	/* Create */
 	function crear()
 	{
 		var obj ={};
@@ -318,14 +320,14 @@
 		});
 	}
 	
-	
+	/* Delete */
 	function borrar(id){
 		//console.log(id);
 		
 		bootbox.confirm("Are you sure you want to delete?", function(result) {
 			if (result)	
 				$.ajax({
-						type: "POST",
+						type: "DELETE",	/* DELETE VERB */
 						url: 'api/delete.php',
 						data: JSON.stringify({"id": id}),
 						dataType: 'text json',
@@ -348,7 +350,7 @@
 		
 	}
 	
-	
+	/* Read */
 	function listar(){
 		$.ajax({
 			type: "POST",
@@ -357,7 +359,7 @@
 			headers: {"Authorization": 'Bearer ' + store.getJWT()},
 			success: function(data){
 				
-				// des-oculto la vista 
+				// unhide				
 				$('#dvTable').removeClass('hidden');
 				
 				for (i=0;i<data.length;i++){

@@ -17,7 +17,13 @@ $conn = Database::getConnection($config);
 $product = new Product($conn);
  
 // Stream
-$data = json_decode(file_get_contents("php://input"));
+$method = $_SERVER['REQUEST_METHOD'];
+if ('DELETE' === $method) {
+	$data =  json_decode(file_get_contents("php://input"));
+}else{
+	echo "Error";
+	exit();
+}
  
 // Id of product to be erased 
 $product->id = $data->id;
