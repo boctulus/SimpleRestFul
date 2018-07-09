@@ -112,6 +112,16 @@
 	</div><!-- /.modal -->
 
 
+	<!-- footer                          -->
+	<div class="footer navbar-fixed-bottom" style="padding: 0 15px 0 15px; font-size: 1.2em;">
+	
+		<p>Los métodos PUT y DELETE no funcionan en el plan <b>free</b> de 000webhost donde he subido mi código así que lo he probado en mi localhost y he cambiado por POST los requests para Update y Delete donde debería usar PUT y DELETE respectivamente. En el <a href="https://github.com/boctulus/SimpleRestFul" target="_blank">repo</a> está como debe ser.</p><br/><p/>
+
+		<a href="https://www.000webhost.com/forum/t/delete-and-put-methods-not-working/61170">DELETE and PUT methods not working<a/>
+	</div>
+	
+	
+</div>		
 <script type="text/javascript">
 
 	var $data = [];
