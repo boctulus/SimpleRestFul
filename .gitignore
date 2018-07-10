@@ -1,7 +1,6 @@
 .idea
 composer.lock
 _bk_
-*.sql
 *.rar
 *.zip
 test.php
