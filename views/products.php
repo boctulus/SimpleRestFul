@@ -115,9 +115,6 @@
 	<!-- footer                          -->
 	<div class="footer navbar-fixed-bottom" style="padding: 0 15px 0 15px; font-size: 1.2em;">
 	
-		<p>Los métodos PUT y DELETE no funcionan en el plan <b>free</b> de 000webhost donde he subido mi código así que lo he probado en mi localhost y he cambiado por POST los requests para Update y Delete donde debería usar PUT y DELETE respectivamente. En el <a href="https://github.com/boctulus/SimpleRestFul" target="_blank">repo</a> está como debe ser.</p><br/><p/>
-
-		<a href="https://www.000webhost.com/forum/t/delete-and-put-methods-not-working/61170">DELETE and PUT methods not working<a/>
 	</div>
 	
 	
@@ -155,8 +152,9 @@
 	/* Edit */
 	function salvar(){
 		var obj ={};
-		
-		obj.id = $('#eid').val();	
+	
+		var id = $('#eid').val();
+	
 		obj.name = $('#ename').val();	
 		obj.description = $('#edescription').val();	
 		obj.cost = $('#ecost').val();
@@ -186,7 +184,7 @@
 
 		$.ajax({
 			type: "PUT",	/* PUT VERB */
-			url: 'api/update.php',
+			url: 'api/api.php?id='+id,
 			data: encoded,
 			dataType: 'text json',
 			headers: {"Authorization": 'Bearer ' + store.getJWT()},
@@ -214,7 +212,7 @@
 					};
 				
 					
-					editRow([obj.id,obj.name,obj.description, obj.size,obj.cost]);
+					editRow([id,obj.name,obj.description, obj.size,obj.cost]);
 					toastr["success"]("Product edited!", "Success");
 				}else
 					toastr["error"]("An error ocurred!", "Error");				
@@ -232,7 +230,7 @@
 	{
 		$.ajax({
 			type: "GET",	/* lectura previa */
-			url: 'api/read.php?id='+id.toString(),
+			url: 'api/api.php?id='+id.toString(),
 			dataType: 'json',
 			headers: {"Authorization": 'Bearer ' + store.getJWT()},
 			success: function(data){
@@ -288,7 +286,7 @@
 
 		$.ajax({
 			type: "POST",
-			url: 'api/create.php',
+			url: 'api/api.php',
 			data: encoded,
 			dataType: 'text json',
 			headers: {"Authorization": 'Bearer ' + store.getJWT()},
@@ -338,8 +336,7 @@
 			if (result)	
 				$.ajax({
 						type: "DELETE",	/* DELETE VERB */
-						url: 'api/delete.php',
-						data: JSON.stringify({"id": id}),
+						url: 'api/api.php?id='+id,
 						dataType: 'text json',
 						headers: {"Authorization": 'Bearer ' + store.getJWT()},
 						success: function(data){
@@ -363,8 +360,8 @@
 	/* Read */
 	function listar(){
 		$.ajax({
-			type: "POST",
-			url: 'api/read_all.php',
+			type: "GET",
+			url: 'api/api.php',
 			dataType: 'text json',
 			headers: {"Authorization": 'Bearer ' + store.getJWT()},
 			success: function(data){

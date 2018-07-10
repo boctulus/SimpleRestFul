@@ -5,4 +5,8 @@
 	$a = $_GET['a'] ?? 'index';
 	
 	include "controllers/$c.php";
+	
+	call_user_func($a);
+
+
 

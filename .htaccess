@@ -1,0 +1,11 @@
+Options FollowSymLinks
+RewriteEngine On
+
+RewriteRule api/products/([0-9]*)$ api/api.php?id=$1 [L]
+
+
+
+
+# HTID:4130911: DO NOT REMOVE OR MODIFY THIS LINE AND THE LINES BELOW
+php_value display_errors 1
+# DO NOT REMOVE OR MODIFY THIS LINE AND THE LINES ABOVE HTID:4130911:

@@ -3,8 +3,6 @@ require_once 'libs/database.php';
 require_once 'models/product.php';
 require_once 'models/user.php';
 
-call_user_func($a);
-
 
 function index(){
 	include "views/login.php";
