@@ -184,7 +184,7 @@
 
 		$.ajax({
 			type: "PUT",	/* PUT VERB */
-			url: 'api/api.php?id='+id,
+			url: 'api/products.php?id='+id,
 			data: encoded,
 			dataType: 'text json',
 			headers: {"Authorization": 'Bearer ' + store.getJWT()},
@@ -230,7 +230,7 @@
 	{
 		$.ajax({
 			type: "GET",	/* lectura previa */
-			url: 'api/api.php?id='+id.toString(),
+			url: 'api/products.php?id='+id.toString(),
 			dataType: 'json',
 			headers: {"Authorization": 'Bearer ' + store.getJWT()},
 			success: function(data){
@@ -286,7 +286,7 @@
 
 		$.ajax({
 			type: "POST",
-			url: 'api/api.php',
+			url: 'api/products.php',
 			data: encoded,
 			dataType: 'text json',
 			headers: {"Authorization": 'Bearer ' + store.getJWT()},
@@ -330,13 +330,11 @@
 	
 	/* Delete */
 	function borrar(id){
-		//console.log(id);
-		
 		bootbox.confirm("Are you sure you want to delete?", function(result) {
 			if (result)	
 				$.ajax({
 						type: "DELETE",	/* DELETE VERB */
-						url: 'api/api.php?id='+id,
+						url: 'api/products.php?id='+id,
 						dataType: 'text json',
 						headers: {"Authorization": 'Bearer ' + store.getJWT()},
 						success: function(data){
@@ -361,7 +359,7 @@
 	function listar(){
 		$.ajax({
 			type: "GET",
-			url: 'api/api.php',
+			url: 'api/products.php',
 			dataType: 'text json',
 			headers: {"Authorization": 'Bearer ' + store.getJWT()},
 			success: function(data){
