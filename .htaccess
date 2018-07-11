@@ -8,11 +8,6 @@ RewriteRule api/products$ api/products.php [L]
 RewriteRule api/products/([0-9]+)$ api/products.php?id=$1 [L]
 
 
-RewriteRule /([a-z]*)$ index.php?c=$1 [L]
-RewriteRule /([a-z]+)/([a-z]*)$ index.php?c=$1&a=$2 [L]
-
-
-
 # HTID:4130911: DO NOT REMOVE OR MODIFY THIS LINE AND THE LINES BELOW
 php_value display_errors 1
 # DO NOT REMOVE OR MODIFY THIS LINE AND THE LINES ABOVE HTID:4130911:
