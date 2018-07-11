@@ -12,7 +12,7 @@
 		<script src="assets/js/bootbox.min.js"></script><!-- confirmation boxes -->
 		<script src="vendor/byjg/jwt-wrapper/js/store.js"></script>
 		<script src="assets/js/login.js"></script>
-		<script src="assets/js/myjqtable.js"></script>
+		<script src="assets/js/jqtable.js"></script>
 	</head>
 
 <body>	
@@ -122,6 +122,7 @@
 <script type="text/javascript">
 
 	var $data = [];
+	var table = new JqTable('products');
 	
 	$(document).ready(()=>{
 		listar();
@@ -212,7 +213,7 @@
 					};
 				
 					
-					editRow([id,obj.name,obj.description, obj.size,obj.cost]);
+					table.editRow([id,obj.name,obj.description, obj.size,obj.cost]);
 					toastr["success"]("Product edited!", "Success");
 				}else
 					toastr["error"]("An error ocurred!", "Error");				
@@ -315,7 +316,7 @@
 					
 					obj.id = data;
 					
-					addRow([obj.id,obj.name,obj.description, obj.size,obj.cost]);
+					table.addRow([obj.id,obj.name,obj.description, obj.size,obj.cost]);
 					toastr["success"]("Product added!", "Success");
 				}else
 					toastr["error"]("An error ocurred!", "Error");				
@@ -383,7 +384,7 @@
 				// row classes
 				//$data.rowClasses = ['info','','warning'];
 				
-				generateTable("products");
+				table.render($data);
 			},
 			error: function(data){
 				if (data.statusText=='Unauthorized' || data.statusText=='error' )
