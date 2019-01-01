@@ -6,7 +6,8 @@ header("Content-Type: application/json; charset=UTF-8");
 
 $config =  include '../config/config.php';
 
-//require_once '../helpers/auth_check.php'; 
+if ($config['enabled_auth'])
+	require_once '../helpers/auth_check.php'; 
 
 require_once '../libs/database.php';
 require_once '../models/product.php';
