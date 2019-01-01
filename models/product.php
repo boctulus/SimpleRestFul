@@ -13,6 +13,7 @@ class Product{
  
     public function __construct($db){
         $this->conn = $db;
+		$this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     }
 
 	/*
@@ -25,8 +26,10 @@ class Product{
 		$st = $this->conn->prepare( $q );
 		$st->bindParam(":id", $this->id, PDO::PARAM_INT);
 		$st->execute();
-	
+		
 		$row = $st->fetch(PDO::FETCH_OBJ);
+		if (!$row)
+			return false;
 	 
 		$this->name = $row->item_name;
 		$this->description = $row->item_description;
@@ -84,7 +87,9 @@ class Product{
 		$st->bindParam(':size', $this->size);
 		$st->bindParam(':cost', $this->cost);
 	 
-		return ($st->execute());
+		$st->execute();
+		
+		return $st->rowCount();
 	}
 	
 	function delete()
@@ -93,7 +98,8 @@ class Product{
 		$st = $this->conn->prepare($q);
 		$st->bindParam(1, $this->id);
 	 
-		return ($st->execute());
+		$st->execute();
+		return $st->rowCount();
 	}
 	
 	

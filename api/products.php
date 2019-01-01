@@ -9,6 +9,7 @@ $config =  include '../config/config.php';
 if ($config['enabled_auth'])
 	require_once '../helpers/auth_check.php'; 
 
+require_once '../helpers/messages.php';
 require_once '../libs/database.php';
 require_once '../models/product.php';
 	
@@ -28,8 +29,12 @@ switch($_SERVER['REQUEST_METHOD'])
 		$product->size = $data->size;
 		$product->cost = $data->cost;
 
-		$msg = $product->create() ? $product->id : "Error";
-		echo json_encode($msg); 
+		$product->create();
+		if ($product->id){
+			sendData(['id' => $product->id], 201);
+		}	
+		else
+			sendError("Error: Create fails!");
 	break;
 	
 	/* UPDATE */
@@ -38,17 +43,21 @@ switch($_SERVER['REQUEST_METHOD'])
 		
 		if($id == null)
 		{
-			echo json_encode(['error' => 'NO id in the request']); return;  
-			//return http_response_code(400);	 
+			sendError("Lacks id in request",400);
 		}
 		$product->id = $id;
 		$product->name = $data->name;
 		$product->description = $data->description;
 		$product->size = $data->size;
 		$product->cost = $data->cost;
-		 
-		$msg = $product->update() ? "OK" : "Error";
-		echo json_encode($msg);
+		
+		if ($product->update()){
+			
+			sendData("OK");
+		}	
+		else
+			sendError("Error: update for id=$id fails!");
+		
 	break;
 	
 	/* DELETE */
@@ -57,28 +66,34 @@ switch($_SERVER['REQUEST_METHOD'])
 		
 		if($id == null)
 		{
-			echo json_encode(['error' => 'NO id in the request']); return;  
-			//return http_response_code(400);	 
+			sendError("Lacks id in request",400);
 		}
 		$product->id = $id;
 		
-		$msg = $product->delete() ? "OK" : "Error";
-		echo json_encode($msg);
+		if($product->delete()){
+			sendData("OK");
+		}	
+		else
+			sendError("Error: delete for id=$id fails!");
+			
 	break;
 	
 	/* READ */
 	case 'GET':
 		if (!isset($_GET['id'])){
 			$rows = $product->readAll();
-			echo json_encode($rows); 
-		}else{
+			sendData($rows,200); 
+		}else{ 
 			$product->id = $_GET['id'];
-			$product->read();
-			echo json_encode($product);
+			if ($product->read() === false)
+				sendError("Not found for id={$_GET['id']}",404);
+			else
+				sendData($product, 200);
 		}
 	break;
 	
 	default:
-		throw new Exception("Invalid http verb");
+		sendError("Invalid http verb",400);
 }
 
+	

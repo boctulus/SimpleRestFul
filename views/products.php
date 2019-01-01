@@ -285,11 +285,11 @@
 			type: "POST",
 			url: 'api/products',
 			data: encoded,
-			dataType: 'text json',
+			dataType: 'json',
 			headers: {"Authorization": 'Bearer ' + localStorage.getItem('tokenJwt')},
 			success: function(data){
 				//console.log(data);
-				if (data!="Error"){
+				if (!data.error){
 					$('#productModalAdd').modal('hide');
 
 					toastr.options = {
@@ -310,12 +310,14 @@
 					  "hideMethod": "fadeOut"
 					};
 					
-					obj.id = data;
+					obj.id = data.id;
 					
 					table.addRow([obj.id,obj.name,obj.description, obj.size,obj.cost]);
 					toastr["success"]("Product added!", "Success");
-				}else
-					toastr["error"]("An error ocurred!", "Error");				
+				}else{
+					toastr["error"]("An error ocurred!", "Error");	
+					console.log(data.error);
+				}		
 			},
 			error: function(data){
 				console.log('Error');
