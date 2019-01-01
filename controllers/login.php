@@ -11,47 +11,48 @@ function index(){
 // token invalidation
 function logout(){
 	
+	$out = [];
 	$headers = apache_request_headers();
 		
-		$auth = $headers['Authorization'] ?? $headers['authorization'];
+	$auth = $headers['Authorization'] ?? $headers['authorization'];
+	
+	if (empty($auth)){
+		header('HTTP/1.0 400 Bad Request');
+		throw new Exception('Authorization not found');
+	}
 		
-		if (empty($auth)){
-			header('HTTP/1.0 400 Bad Request');
-			throw new Exception('Authorization not found');
-		}
+	list($jwt) = sscanf($auth, 'Bearer %s');
+	
+	if($jwt)
+	{
+		try{
+			$config =  include 'config/config.php';
+			$conn = Database::getConnection($config);
 			
-		list($jwt) = sscanf($auth, 'Bearer %s');
+			// Checking for token invalidation or outdated token
+			$data = Firebase\JWT\JWT::decode($jwt, $config['jwt_secret_key'],  [ $config['encryption'] ]);
+			
+			$u = new User($conn);
+			$u->id = $data->data->id;
+			$u->read();
+			
+			$u->token = '';
+			$u->tokenExpiration = 0;
+			$u->update();
 		
-		if($jwt)
-		{
-			try{
-				$config =  include 'config/config.php';
-				$conn = Database::getConnection($config);
 				
-				// Checking for token invalidation or outdated token
-				$data = Firebase\JWT\JWT::decode($jwt, $config['jwt_secret_key'],  [ $config['encryption'] ]);
-				
-				$u = new User($conn);
-				$u->id = $data->data->id;
-				$u->read();
-				
-				$u->token = '';
-				$u->tokenExpiration = 0;
-				$u->update();
-			
-					
-			} catch (Exception $e) {
-				/*
-				 * the token was not able to be decoded.
-				 * this is likely because the signature was not able to be verified (tampered token)
-				 */
-				header('HTTP/1.0 401 Unauthorized');
-				throw new Exception("Unauthorized");
-			}	
-		}else{
-			 header('HTTP/1.0 400 Bad Request');
-			 throw new Exception('Token not found');
-		}
+		} catch (Exception $e) {
+			/*
+			 * the token was not able to be decoded.
+			 * this is likely because the signature was not able to be verified (tampered token)
+			 */
+			header('HTTP/1.0 401 Unauthorized');
+			throw new Exception("Unauthorized");
+		}	
+	}else{
+		 header('HTTP/1.0 400 Bad Request');
+		 throw new Exception('Token not found');
+	}
 }
 
 function login()

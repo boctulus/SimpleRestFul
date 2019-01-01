@@ -10,7 +10,6 @@
 		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>	
 		<script src="assets/js/toastr.min.js"></script><!-- flash notifications -->	
 		<script src="assets/js/bootbox.min.js"></script><!-- confirmation boxes -->
-		<script src="vendor/byjg/jwt-wrapper/js/store.js"></script>
 		<script src="assets/js/login.js"></script>
 		<script src="assets/js/jqtable.js"></script>
 	</head>
@@ -154,8 +153,7 @@
 	function salvar(){
 		var obj ={};
 	
-		var id = $('#eid').val();
-	
+		obj.id   = $('#eid').val();
 		obj.name = $('#ename').val();	
 		obj.description = $('#edescription').val();	
 		obj.cost = $('#ecost').val();
@@ -185,10 +183,10 @@
 
 		$.ajax({
 			type: "PUT",	/* PUT VERB */
-			url: 'api/products/'+id,
+			url: 'api/products',
 			data: encoded,
 			dataType: 'text json',
-			headers: {"Authorization": 'Bearer ' + store.getJWT()},
+			headers: {"Authorization": 'Bearer ' + localStorage.getItem('tokenJwt')},
 			success: function(data){
 				//console.log(data);
 				if (data=="OK"){
@@ -213,7 +211,7 @@
 					};
 				
 					
-					table.editRow([id,obj.name,obj.description, obj.size,obj.cost]);
+					table.editRow([obj.id,obj.name,obj.description, obj.size,obj.cost]);
 					toastr["success"]("Product edited!", "Success");
 				}else
 					toastr["error"]("An error ocurred!", "Error");				
@@ -226,16 +224,16 @@
 		});
 	}
 	
-	/* just reading previous to save updated data */
+	/* just previous reading to save updated data */
 	function editar(id)
 	{
 		$.ajax({
 			type: "GET",	/* lectura previa */
 			url: 'api/products/'+id.toString(),
 			dataType: 'json',
-			headers: {"Authorization": 'Bearer ' + store.getJWT()},
+			headers: {"Authorization": 'Bearer ' + localStorage.getItem('tokenJwt')},
 			success: function(data){
-				//console.log(data);
+				// console.log('data for id= '+id.toString(),data);
 				$('#eid').val(data.id);
 				$('#ename').val(data.name);	
 				$('#edescription').val(data.description);	
@@ -290,7 +288,7 @@
 			url: 'api/products',
 			data: encoded,
 			dataType: 'text json',
-			headers: {"Authorization": 'Bearer ' + store.getJWT()},
+			headers: {"Authorization": 'Bearer ' + localStorage.getItem('tokenJwt')},
 			success: function(data){
 				//console.log(data);
 				if (data!="Error"){
@@ -335,12 +333,14 @@
 			if (result)	
 				$.ajax({
 						type: "DELETE",	/* DELETE VERB */
-						url: 'api/products/'+id,
+						url: 'api/products',
+						data: JSON.stringify({id: id}),
 						dataType: 'text json',
-						headers: {"Authorization": 'Bearer ' + store.getJWT()},
+						headers: {"Authorization": 'Bearer ' + localStorage.getItem('tokenJwt')},
 						success: function(data){
 							$('#tr'+id.toString()).remove();
-							//console.log(data);
+							if(data.error)
+								console.log('Error',data.error);
 						},
 						error: function(data){
 							console.log('Error');
@@ -362,12 +362,13 @@
 			type: "GET",
 			url: 'api/products',
 			dataType: 'text json',
-			headers: {"Authorization": 'Bearer ' + store.getJWT()},
+			headers: {"Authorization": 'Bearer ' + localStorage.getItem('tokenJwt')},
 			success: function(data){
 				
 				// unhide				
 				$('#dvTable').removeClass('hidden');
 				
+				// array de objetos --> array de arrays
 				for (i=0;i<data.length;i++){
 					var row = [];
 					for(var key in data[i]) {
@@ -376,7 +377,7 @@
 					}
 					$data.push(row);
 				}
-	
+		
 				
 				// headers
 				$data.unshift(["Id","Name","Description","Size","Cost"]);

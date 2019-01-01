@@ -7,7 +7,7 @@ require_once '../models/user.php';
 
 $headers = apache_request_headers();
 
-$auth = $headers['Authorization'] ?? $headers['authorization'];
+$auth = $headers['Authorization'] ?? $headers['authorization'] ?? NULL;
 
 if (empty($auth)){
 	header('HTTP/1.0 400 Bad Request');

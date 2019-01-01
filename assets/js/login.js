@@ -1,24 +1,5 @@
 	
-	function logout(){
-		//console.log('Loging out...');
 		
-		$.ajax({
-			type: "GET",
-			url: 'index.php?c=login&a=logout',
-			dataType: 'text',
-			headers: {"Authorization": 'Bearer ' + store.getJWT()}, // token
-			success: function(data){
-				//console.log(data);
-				window.location = 'index.php?c=login';
-			},
-			error: function(data){
-				//console.log('Error');
-				//console.log(data);
-				window.location = 'index.php?c=login';
-			}
-		});		
-	}
-	
 	function login(){
 		var obj ={};
 		
@@ -31,7 +12,7 @@
 			dataType: 'json',
 			success: function(data){
 				if (typeof data.token != 'undefined'){
-					store.setJWT(data.token);
+					localStorage.setItem('tokenJwt',data.token);
 					localStorage.setItem('exp',data.exp);
 					localStorage.setItem('username',obj.username);
 					window.location = 'index.php';
@@ -47,18 +28,38 @@
 		});		
 	}
 	
+	
+	function logout(){
+		//console.log('Loging out...');
+		
+		$.ajax({
+			type: "GET",
+			url: 'index.php?c=login&a=logout',
+			dataType: 'text',
+			headers: {"Authorization": 'Bearer ' + localStorage.getItem('tokenJwt')}, 
+			success: function(data){
+				//console.log(data);
+				window.location = 'index.php?c=login';
+			},
+			error: function(data){
+				//console.log('Error');
+				//console.log(data);
+				window.location = 'index.php?c=login';
+			}
+		});		
+	}
+
 	function renew(){
-		console.log(localStorage.getItem('token'));
 		console.log('Renewing token at ...'+(new Date()).toString());
 	
 		$.ajax({
 			type: "GET",
 			url: 'index.php?c=login&a=renew',
 			dataType: 'json',
-			headers: {"Authorization": 'Bearer ' + store.getJWT()}, // token
+			headers: {"Authorization": 'Bearer ' + localStorage.getItem('tokenJwt')}, 
 			success: function(data){
 				if (typeof data.token != 'undefined'){
-					store.setJWT(data.token);
+					localStorage.setItem('tokenJwt',data.token);
 					localStorage.setItem('exp',data.exp);
 				}else{
 					console.log('Error en la renovación del token');
