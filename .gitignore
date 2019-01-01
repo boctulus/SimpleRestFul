@@ -4,7 +4,5 @@ composer.lock
 _bk_
 *.rar
 *.zip
-test.php
-deleteTest.php
-
+config/_en_server_/
 
