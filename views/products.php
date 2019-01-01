@@ -126,8 +126,6 @@
 	$(document).ready(()=>{
 		listar();
 		
-		console.log(new Date()); ///
-		
 		// renew token
 		setInterval(function() {
 			if (localStorage.getItem('exp')==null)

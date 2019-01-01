@@ -13,11 +13,8 @@ require_once '../libs/database.php';
 require_once '../models/product.php';
 	
 $data = json_decode(file_get_contents("php://input"));	
-	
-if ($_SERVER['REQUEST_METHOD']!='OPTIONS'){	
-	file_put_contents('log.txt',file_get_contents("php://input")."\n\n", FILE_APPEND);
-}
-	
+
+
 $conn = Database::getConnection($config);
 $product = new Product($conn);
 

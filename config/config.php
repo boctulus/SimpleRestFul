@@ -12,5 +12,5 @@ return [
 		'token_expiration_time' => 5, // minutes
 		'extended_token_expiration_time' => 3, // minutes
 		'encryption' => 'HS256',
-		'enabled_auth' => false
+		'enabled_auth' => true
 	];
