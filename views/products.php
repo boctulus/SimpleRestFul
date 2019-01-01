@@ -104,7 +104,7 @@
 		</div>
 		<div class="modal-footer">
 		  <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-		  <button type="button" class="btn btn-primary" onClick="salvar()">Save changes</button>
+		  <button type="button" class="btn btn-primary" onClick="sallet()">Save changes</button>
 		</div>
 	  </div><!-- /.modal-content -->
 	</div><!-- /.modal-dialog -->
@@ -119,9 +119,10 @@
 	
 </div>		
 <script type="text/javascript">
+	let endpoint = 'api/products';
 
-	var $data = [];
-	var table = new JqTable('products');
+	let $data = [];
+	let table = new JqTable('products');
 	
 	$(document).ready(()=>{
 		listar();
@@ -148,8 +149,8 @@
 	}
 	
 	/* Edit */
-	function salvar(){
-		var obj ={};
+	function sallet(){
+		let obj ={};
 	
 		obj.id   = $('#eid').val();
 		obj.name = $('#ename').val();	
@@ -159,7 +160,7 @@
 					
 		//console.log(obj);	
 					
-		var encoded = JSON.stringify(obj);
+		let encoded = JSON.stringify(obj);
 		
 		toastr.options = {
 		  "closeButton": false,
@@ -181,7 +182,7 @@
 
 		$.ajax({
 			type: "PUT",	/* PUT VERB */
-			url: 'api/products',
+			url: endpoint,
 			data: encoded,
 			dataType: 'text json',
 			headers: {"Authorization": 'Bearer ' + localStorage.getItem('tokenJwt')},
@@ -227,7 +228,7 @@
 	{
 		$.ajax({
 			type: "GET",	/* lectura previa */
-			url: 'api/products/'+id.toString(),
+			url: endpoint+'/'+id.toString(),
 			dataType: 'json',
 			headers: {"Authorization": 'Bearer ' + localStorage.getItem('tokenJwt')},
 			success: function(data){
@@ -252,7 +253,7 @@
 	/* Create */
 	function crear()
 	{
-		var obj ={};
+		let obj ={};
 		
 		obj.name = $('#name').val();	
 		obj.description = $('#description').val();	
@@ -261,7 +262,7 @@
 					
 		//console.log(obj);	
 					
-		var encoded = JSON.stringify(obj);
+		let encoded = JSON.stringify(obj);
 		
 		toastr.options = {
 		  "closeButton": false,
@@ -283,7 +284,7 @@
 
 		$.ajax({
 			type: "POST",
-			url: 'api/products',
+			url: endpoint,
 			data: encoded,
 			dataType: 'json',
 			headers: {"Authorization": 'Bearer ' + localStorage.getItem('tokenJwt')},
@@ -333,7 +334,7 @@
 			if (result)	
 				$.ajax({
 						type: "DELETE",	/* DELETE VERB */
-						url: 'api/products',
+						url: endpoint,
 						data: JSON.stringify({id: id}),
 						dataType: 'text json',
 						headers: {"Authorization": 'Bearer ' + localStorage.getItem('tokenJwt')},
@@ -343,8 +344,7 @@
 								console.log('Error',data.error);
 						},
 						error: function(data){
-							console.log('Error');
-							console.log(data);
+							console.log('Error', data);
 						}
 					});		
 		}).find('.modal-content').css({
@@ -360,7 +360,7 @@
 	function listar(){
 		$.ajax({
 			type: "GET",
-			url: 'api/products',
+			url: endpoint,
 			dataType: 'text json',
 			headers: {"Authorization": 'Bearer ' + localStorage.getItem('tokenJwt')},
 			success: function(data){
@@ -370,9 +370,9 @@
 				
 				// array de objetos --> array de arrays
 				for (i=0;i<data.length;i++){
-					var row = [];
-					for(var key in data[i]) {
-						var value = data[i][key];
+					let row = [];
+					for(let key in data[i]) {
+						let value = data[i][key];
 						row.push(value);
 					}
 					$data.push(row);

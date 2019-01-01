@@ -2,15 +2,13 @@
 
 function sendData($data, $http_code = null, $http_code_msg = null){
 	if ($http_code != null && is_int($http_code) && is_string($http_code_msg)){
-		
-		header("HTTP/1.0 $response_code $http_code_msg");
+		header(trim("HTTP/1.0 $response_code $http_code_msg"));
 		exit();
 	}	
 	
 	echo json_encode($data); 
 	exit();  	 
 }	
-
 
 function sendError($msg_error, $http_code = null){
 	sendData(['error' => $msg_error], $http_code);

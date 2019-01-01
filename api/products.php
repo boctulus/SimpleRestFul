@@ -74,7 +74,7 @@ switch($_SERVER['REQUEST_METHOD'])
 			sendData("OK");
 		}	
 		else
-			sendError("Error: delete for id=$id fails!");
+			sendError("Error: delete for id=$id fails!",410);
 			
 	break;
 	
