@@ -13,7 +13,7 @@ function sendError($msg_error, $http_code = null){
 	sendData(['error' => $msg_error], $http_code);
 }
 
-function logger($data, $file='log.txt'){
+function logger($data, $file='../logs/log.txt'){
 	if (is_array($data) || is_object($data))
 		$data = json_encode($data);
 	
