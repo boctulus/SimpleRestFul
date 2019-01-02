@@ -33,7 +33,8 @@ try {
 	switch($_SERVER['REQUEST_METHOD'])
 	{
 		case 'OPTIONS':
-			// pass (without any authorization check)
+			// pass (without any authorization check), see:
+			// https://stackoverflow.com/questions/35202347/angular2-to-rest-webapi-cors-issue
 			http_response_code(200);
 			exit();
 		break;
