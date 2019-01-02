@@ -119,7 +119,8 @@
 	
 </div>		
 <script type="text/javascript">
-	let endpoint = 'api/products';
+	const endpoint = 'api/products';
+	const minutes_for_token_renew = 3000 // 2
 
 	let $data = [];
 	let table = new JqTable('products');
@@ -133,7 +134,7 @@
 				return;
 			
 			// diff is less than 2 minute
-			if ( ((localStorage.getItem('exp')*1000) - (new Date()).getTime()) < 120000 ){
+			if ( ((localStorage.getItem('exp')*1000) - (new Date()).getTime()) < 60000 * minutes_for_token_renew){
 				renew();
 			}
 			
@@ -386,11 +387,10 @@
 				table.render($data);
 			},
 			error: function(data){
-				if (data.statusText=='Unauthorized' || data.statusText=='error' )
+				if (data.statusText=='Unauthorized' )
 					window.location = 'index.php?c=login';
 				
-				console.log('Error!!!');
-				console.log(data);
+				console.log('Error!!!', data);
 			}
 		});		
 	}

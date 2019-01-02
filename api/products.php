@@ -1,7 +1,7 @@
 <?php
 
 header('access-control-allow-credentials: true');
-header('access-control-allow-headers: content-type'); // : origin, content-type, x-auth-token'
+header('access-control-allow-headers: AccountKey,x-requested-with, Content-Type, origin, authorization, accept, client-security-token, host, date, cookie, cookie2'); 
 header('access-control-allow-Methods: GET,HEAD,PUT,PATCH,POST,DELETE'); 
 header('access-control-allow-Origin: *');
 header('content-type: application/json; charset=UTF-8');
@@ -14,17 +14,19 @@ header('content-type: application/json; charset=UTF-8');
 
 $config =  include '../config/config.php';
 
-if ($config['enabled_auth'])
-	require_once '../helpers/auth_check.php'; 
-
 require_once '../helpers/messages.php';
 require_once '../libs/database.php';
 require_once '../models/product.php';
-	
-$input = file_get_contents("php://input");	
-$data  = json_decode($input);	
+require_once '../helpers/auth_check.php'; 
 
 try {
+	if ($config['enabled_auth']){
+		check_auth();
+	}
+	
+	$input = file_get_contents("php://input");	
+	$data  = json_decode($input);	
+
 	$conn = Database::getConnection($config);
 	$product = new Product($conn);
 
