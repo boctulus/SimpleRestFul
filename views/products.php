@@ -152,7 +152,7 @@
 	function sallet(){
 		let obj ={};
 	
-		obj.id   = $('#eid').val();
+		let id   = $('#eid').val();
 		obj.name = $('#ename').val();	
 		obj.description = $('#edescription').val();	
 		obj.cost = $('#ecost').val();
@@ -182,7 +182,7 @@
 
 		$.ajax({
 			type: "PUT",	/* PUT VERB */
-			url: endpoint,
+			url: endpoint + '/' + id.toString(),
 			data: encoded,
 			dataType: 'text json',
 			headers: {"Authorization": 'Bearer ' + localStorage.getItem('tokenJwt')},
@@ -210,7 +210,7 @@
 					};
 				
 					
-					table.editRow([obj.id,obj.name,obj.description, obj.size,obj.cost]);
+					table.editRow([id,obj.name,obj.description, obj.size,obj.cost]);
 					toastr["success"]("Product edited!", "Success");
 				}else
 					toastr["error"]("An error ocurred!", "Error");				
@@ -333,8 +333,7 @@
 			if (result)	
 				$.ajax({
 						type: "DELETE",	/* DELETE VERB */
-						url: endpoint,
-						data: JSON.stringify({id: id}),
+						url: endpoint + '/' + id.toString(),
 						dataType: 'text json',
 						headers: {"Authorization": 'Bearer ' + localStorage.getItem('tokenJwt')},
 						success: function(data){

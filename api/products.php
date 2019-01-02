@@ -39,7 +39,7 @@ switch($_SERVER['REQUEST_METHOD'])
 	
 	/* UPDATE */
 	case 'PUT':
-		$id   = $data->id ?? NULL;
+		$id   = $_GET['id'] ?? NULL;
 		
 		if($id == null)
 		{
@@ -62,7 +62,7 @@ switch($_SERVER['REQUEST_METHOD'])
 	
 	/* DELETE */
 	case 'DELETE':
-		$id   = $data->id ?? NULL;
+		$id   = $_GET['id'] ?? NULL;
 		
 		if($id == null)
 		{
@@ -80,7 +80,9 @@ switch($_SERVER['REQUEST_METHOD'])
 	
 	/* READ */
 	case 'GET':
-		if (!isset($_GET['id'])){
+		$id   = $_GET['id'] ?? NULL;
+	
+		if (!$id){
 			$rows = $product->readAll();
 			sendData($rows,200); 
 		}else{ 
