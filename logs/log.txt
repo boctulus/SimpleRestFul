@@ -1,1 +1,20 @@
-aaa
+
+
+
+
+
+
+
+{"name":"Juice*","description":"Delicious juice*","cost":"3","size":"0.5L"}
+
+
+
+
+
+
+{"name":"AA","description":"BB","cost":"33242","size":"50"}
+
+
+
+
+

@@ -1,6 +1,6 @@
 <?php 
 
-function sendData($data, $http_code = null, $http_code_msg = null){
+function sendData($data, $http_code = 200, $http_code_msg = null){
 	if ($http_code != null && is_int($http_code)){
 		header(trim("HTTP/1.0 $http_code $http_code_msg"));
 	}	
