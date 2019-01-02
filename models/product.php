@@ -20,6 +20,25 @@ class Product{
 		CRUD operations
 	*/
 	
+	function exists($id = null)
+	{
+		$id = empty($id) ? $id : $this->id;
+			
+		
+		$q  = "SELECT *FROM {$this->table_name} WHERE id=:id";
+		$st = $this->conn->prepare( $q );
+		$st->bindParam(":id", $id, PDO::PARAM_INT);
+		$st->execute();
+		
+		$row = $st->fetch(PDO::FETCH_ASSOC);
+
+		if (!$row)
+			return false;
+		else
+			return true;
+	}
+	
+	
 	function read()
 	{
 		$q  = "SELECT *FROM {$this->table_name} WHERE id=:id";

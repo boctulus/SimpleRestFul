@@ -2,7 +2,7 @@
 
 header('access-control-allow-credentials: true');
 header('access-control-allow-headers: AccountKey,x-requested-with, Content-Type, origin, authorization, accept, client-security-token, host, date, cookie, cookie2'); 
-header('access-control-allow-Methods: GET,HEAD,PUT,PATCH,POST,DELETE'); 
+header('access-control-allow-Methods: GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS'); 
 header('access-control-allow-Origin: *');
 header('content-type: application/json; charset=UTF-8');
 
@@ -18,12 +18,11 @@ require_once '../helpers/messages.php';
 require_once '../libs/database.php';
 require_once '../models/product.php';
 require_once '../helpers/auth_check.php'; 
+include_once '../helpers/debug.php';
+
+// logger($_SERVER['REQUEST_METHOD']);
 
 try {
-	if ($config['enabled_auth']){
-		check_auth();
-	}
-	
 	$input = file_get_contents("php://input");	
 	$data  = json_decode($input);	
 
@@ -33,8 +32,17 @@ try {
 
 	switch($_SERVER['REQUEST_METHOD'])
 	{
+		case 'OPTIONS':
+			// pass (without any authorization check)
+			http_response_code(200);
+			exit();
+		break;
+		
 		/* CREATE */
 		case 'POST':
+			if ($config['enabled_auth'])
+				check_auth();
+		
 			$product->name = $data->name;
 			$product->description = $data->description;
 			$product->size = $data->size;
@@ -50,6 +58,9 @@ try {
 		
 		/* UPDATE */
 		case 'PUT':
+			if ($config['enabled_auth'])
+				check_auth();
+		
 			$id   = $_GET['id'] ?? NULL;
 			
 			if($id == null)
@@ -73,6 +84,9 @@ try {
 		
 		/* DELETE */
 		case 'DELETE':
+			if ($config['enabled_auth'])
+				check_auth();
+		
 			$id   = $_GET['id'] ?? NULL;
 			
 			if($id == null)
@@ -91,6 +105,9 @@ try {
 		
 		/* READ */
 		case 'GET':
+			if ($config['enabled_auth'])
+				check_auth();
+		
 			$id   = $_GET['id'] ?? NULL;
 		
 			if (!$id){
@@ -105,9 +122,11 @@ try {
 			}
 		break;
 		
-		default:
-			// other verbs
-			break;
+		/* UPDATE by PATCH */
+		case 'PATCH':
+			sendError('Not implemented',501);
+		break;
+		
 	}
 } catch (Exception $error) {
 	sendError($error);

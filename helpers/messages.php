@@ -1,9 +1,8 @@
 <?php 
 
 function sendData($data, $http_code = 200, $http_code_msg = null){
-	if ($http_code != null && is_int($http_code)){
-		header(trim("HTTP/1.0 $http_code $http_code_msg"));
-	}	
+	header(trim("HTTP/1.0 $http_code $http_code_msg"));
+	// logger("HTTP CODE: $http_code\n");
 	
 	echo json_encode($data); 
 	exit();  	 

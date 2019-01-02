@@ -9,7 +9,7 @@ require_once 'messages.php';
 function check_auth() {
 	$headers = apache_request_headers();
 	$auth = $headers['Authorization'] ?? $headers['authorization'] ?? NULL;
-
+	
 	if (empty($auth)){
 		sendError('Authorization not found',400);
 	}
@@ -38,6 +38,8 @@ function check_auth() {
 			/*
 			 * the token was not able to be decoded.
 			 * this is likely because the signature was not able to be verified (tampered token)
+			 *
+			 * reach this point if token is empty or invalid
 			 */
 			sendError('Unauthorized',401);
 		}	

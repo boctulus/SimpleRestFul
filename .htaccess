@@ -1,7 +1,6 @@
 Options FollowSymLinks
 RewriteEngine On
 
-
 # API RESTFUL
 
 RewriteRule api/products$ api/products.php [L]
