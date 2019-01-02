@@ -188,7 +188,7 @@
 			headers: {"Authorization": 'Bearer ' + localStorage.getItem('tokenJwt')},
 			success: function(data){
 				//console.log(data);
-				if (data=="OK"){
+				if (!data.error){
 					$('#productModalEdit').modal('hide');
 
 					toastr.options = {
@@ -216,8 +216,7 @@
 					toastr["error"]("An error ocurred!", "Error");				
 			},
 			error: function(data){
-				console.log('Error');
-				console.log(data);
+				console.log('Error', data);
 				toastr["error"]("An error ocurred!", "Error");
 			}
 		});
