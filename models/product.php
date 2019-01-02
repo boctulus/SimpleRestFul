@@ -22,8 +22,7 @@ class Product{
 	
 	function exists($id = null)
 	{
-		$id = empty($id) ? $id : $this->id;
-			
+		$id = !empty($id) ? $id : $this->id;
 		
 		$q  = "SELECT *FROM {$this->table_name} WHERE id=:id";
 		$st = $this->conn->prepare( $q );

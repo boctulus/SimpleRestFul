@@ -74,12 +74,19 @@ try {
 			$product->size = $data->size;
 			$product->cost = $data->cost;
 			
-			if ($product->update()){
-				
+			if(!$product->exists()){
+				sendError("Register for id=$id does not exists",404);
+			}
+			
+			try {
+				$product->update();
 				sendData("OK");
-			}	
-			else
-				sendData("WARNING: register with id=$id was not updated. Maybe has not changed (?)");
+			} catch (Exception $e) {
+				sendError("Error during update for id=$id with message: {$e->getMessage()}",500);
+			}
+				
+				
+			
 			
 		break;
 		
