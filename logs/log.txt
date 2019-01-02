@@ -1,20 +1,12 @@
+PUT
+{"headers":{"normalizedNames":{},"lazyUpdate":[{"name":"Content-Type","value":"application/json; charset=UTF-8","op":"a"}],"headers":{},"lazyInit":{"normalizedNames":{},"lazyUpdate":null,"headers":{}}},"body":{"name":"Juice*","description":"Delicious juice*","size":"XL","cost":3}}
+PUT
+{"name":"Juice*","description":"Delicious juice*","size":"XL","cost":3}
+PUT
+{"name":"Juice*","description":"Delicious!!!!!","size":"XXL","cost":3}
+createPUT
 
-
-
-
-
-
-
-{"name":"Juice*","description":"Delicious juice*","cost":"3","size":"0.5L"}
-
-
-
-
-
-
-{"name":"AA","description":"BB","cost":"33242","size":"50"}
-
-
-
-
-
+{"name":"Juice*","description":"Delicious!!!!!","size":"XXL","cost":3}
+create
+PUT
+{"name":"Juice","description":"Delicious!!!!!","size":"1L","cost":35}
