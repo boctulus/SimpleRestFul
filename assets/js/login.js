@@ -30,7 +30,7 @@
 	
 	function logout(){
 		localStorage.removeItem('tokenJwt');
-		window.location.href = 'http://localhost/SimpleRestFul/index.php?c=login';
+		window.location.href = '?c=login';
 	}
 
 	function renew(){
@@ -47,13 +47,13 @@
 					localStorage.setItem('exp',data.exp);
 				}else{
 					console.log('Error en la renovación del token');
-					window.location = 'index.php?c=login';
+					window.location = '?c=login';
 				}
 			},
 			error: function(data){
 				console.log('Error en la renovación del token!!!!!!!!!!!!');
 				console.log(data);
-				window.location = 'index.php?c=login';
+				window.location = '?c=login';
 			}
 		});		
 	}

@@ -406,7 +406,7 @@
 			},
 			error: function(data){
 				if (data.statusText=='Unauthorized' ){
-					window.location = 'index.php?c=login';
+					window.location = '?c=login';
 				}
 				console.log('Error in GET all', data);
 			}
