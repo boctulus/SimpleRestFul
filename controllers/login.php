@@ -8,53 +8,6 @@ function index(){
 	include "views/login.php";
 }
 
-// token invalidation
-function logout(){
-	
-	$out = [];
-	$headers = apache_request_headers();
-		
-	$auth = $headers['Authorization'] ?? $headers['authorization'];
-	
-	if (empty($auth)){
-		header('HTTP/1.0 400 Bad Request');
-		throw new Exception('Authorization not found');
-	}
-		
-	list($jwt) = sscanf($auth, 'Bearer %s');
-	
-	if($jwt)
-	{
-		try{
-			$config =  include 'config/config.php';
-			$conn = Database::getConnection($config);
-			
-			// Checking for token invalidation or outdated token
-			$data = Firebase\JWT\JWT::decode($jwt, $config['jwt_secret_key'],  [ $config['encryption'] ]);
-			
-			$u = new User($conn);
-			$u->id = $data->data->id;
-			$u->read();
-			
-			$u->token = '';
-			$u->tokenExpiration = 0;
-			$u->update();
-		
-				
-		} catch (Exception $e) {
-			/*
-			 * the token was not able to be decoded.
-			 * this is likely because the signature was not able to be verified (tampered token)
-			 */
-			header('HTTP/1.0 401 Unauthorized');
-			throw new Exception("Unauthorized");
-		}	
-	}else{
-		 header('HTTP/1.0 400 Bad Request');
-		 throw new Exception('Token not found');
-	}
-}
-
 function login()
 {
 	$config =  include 'config/config.php';
@@ -67,23 +20,27 @@ function login()
 	
 	if ($u->exists()){
 		$time = time();
-		$token = array(
+		$payload = array(
 			'iat' => $time, 
-			'exp' => $time + 60*$config['token_expiration_time'], 
-			'data' => [ 
-				'id' => $u->id,
-				'username' => $u->username
+			'exp' => $time + 60*$config['token_expiration_time'],
+			'id'  => $u->id,
+			'username' => $u->username,
+			'ip' => [
+				'REMOTE_ADDR' => $_SERVER['REMOTE_ADDR'] ?? '',
+				'HTTP_CLIENT_IP' => $_SERVER['HTTP_CLIENT_IP'] ?? '',
+				'HTTP_FORWARDED' => $_SERVER['HTTP_FORWARDED'] ?? '',
+				'HTTP_FORWARDED_FOR' => $_SERVER['HTTP_FORWARDED_FOR'] ?? '',
+				'HTTP_X_FORWARDED' => $_SERVER['HTTP_X_FORWARDED'] ?? '',
+				'HTTP_X_FORWARDED_FOR' => $_SERVER['HTTP_X_FORWARDED_FOR'] ?? ''
 			]
 		);
 	
-		$u->token = Firebase\JWT\JWT::encode($token, $config['jwt_secret_key'],  $config['encryption']);
-		$u->tokenExpiration = $token['exp'];
-		$u->update();
+		$token = Firebase\JWT\JWT::encode($payload, $config['jwt_secret_key'],  $config['encryption']);
 		
-		echo json_encode(['token'=>$u->token, 'exp' => $token['exp'] ]);
+		echo json_encode(['token'=>$token, 'exp' => $payload['exp'] ]);
 		
 	}else
-		echo json_encode(['error'=>"Error en usuario o password"]);
+		echo json_encode(['error'=>"User or password are incorrect"]);
 }
 
 function renew()
@@ -102,33 +59,29 @@ function renew()
 	if($jwt)
 	{
 		try{
-			$config =  include 'config/config.php';
-			$conn = Database::getConnection($config);
-			
 			// Checking for token invalidation or outdated token
 			$data = Firebase\JWT\JWT::decode($jwt, $config['jwt_secret_key'],  [ $config['encryption'] ]);
-			
-			$u = new User($conn);
-			$u->id = $data->data->id;
-			$u->read();
-			
+	
 			$time = time();
-			$token = array(
+			$payload = array(
 				'iat' => $time, 
 				'exp' => $time + 60*$config['extended_token_expiration_time'], 
-				'data' => [ 
-					'id' => $u->id,
-					'username' => $u->username
+				'id' => $data->id,
+				'username' => $data->username,
+				'ip' => [
+					'REMOTE_ADDR' => $_SERVER['REMOTE_ADDR'] ?? '',
+					'HTTP_CLIENT_IP' => $_SERVER['HTTP_CLIENT_IP'] ?? '',
+					'HTTP_FORWARDED' => $_SERVER['HTTP_FORWARDED'],
+					'HTTP_FORWARDED_FOR' => $_SERVER['HTTP_FORWARDED_FOR'] ?? '',
+					'HTTP_X_FORWARDED' => $_SERVER['HTTP_X_FORWARDED'],
+					'HTTP_X_FORWARDED_FOR' => $_SERVER['HTTP_X_FORWARDED_FOR']
 				]
 			);
-		
-			$u->token = Firebase\JWT\JWT::encode($token, $config['jwt_secret_key'],  $config['encryption']);
-			$u->tokenExpiration = $token['exp'];
-			$u->update();
 			
-			echo json_encode(['token'=>$u->token, 'exp' => $token['exp'] ]);
-		
-				
+			$token = Firebase\JWT\JWT::encode($payload, $config['jwt_secret_key'],  $config['encryption']);
+			
+			echo json_encode(['token'=>$token, 'exp' => $payload['exp'] ]);
+			
 		} catch (Exception $e) {
 			/*
 			 * the token was not able to be decoded.

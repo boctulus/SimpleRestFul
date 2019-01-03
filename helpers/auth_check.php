@@ -29,19 +29,11 @@ function check_auth() {
 			
 			$data = Firebase\JWT\JWT::decode($jwt, $config['jwt_secret_key'], [ $config['encryption'] ]);
 			
-			// deberia guardar los tokens en otra tabla y hacer un INNER JOIN
-			//
-			// Payload: meter 'id', 'username', 'IP', 'createad_at', 'expiration_time' (los ultimos de tipo TIMESTAMP)
-			//
-			// No hacer mas consultas....... confiar en la criptografia
-			//
-			$u = new User($conn);
-			$u->id = $data->data->id;
-			$u->read();
-			
-			if (empty($u->token) || $jwt!=$u->token || $u->tokenExpiration<time()){
+			if (empty($data))
 				sendError('Unauthorized',401);
-			}
+			
+			if ($data->exp<time())
+				sendError('Token expired',401);
 				
 		} catch (Exception $e) {
 			/*

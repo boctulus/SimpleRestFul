@@ -22,31 +22,16 @@
 				}
 			},
 			error: function(data){
-				console.log('Error');
-				console.log(data);
+				console.log('Error',data);
 			}
 		});		
 	}
 	
 	
 	function logout(){
-		//console.log('Loging out...');
-		
-		$.ajax({
-			type: "GET",
-			url: 'index.php?c=login&a=logout',
-			dataType: 'text',
-			headers: {"Authorization": 'Bearer ' + localStorage.getItem('tokenJwt')}, 
-			success: function(data){
-				//console.log(data);
-				window.location = 'index.php?c=login';
-			},
-			error: function(data){
-				//console.log('Error');
-				//console.log(data);
-				window.location = 'index.php?c=login';
-			}
-		});		
+		localStorage.removeItem('tokenJwt');
+		console.log('log out!');
+		window.location = getSiteRoot() + '?c=login';
 	}
 
 	function renew(){
@@ -69,9 +54,8 @@
 			error: function(data){
 				console.log('Error en la renovación del token!!!!!!!!!!!!');
 				console.log(data);
-				window.location = 'index.php?c=login';
+				window.location = getSiteRoot()+ 'index.php?c=login';
 			}
 		});		
 	}
-	
 	

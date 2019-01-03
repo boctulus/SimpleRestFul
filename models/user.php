@@ -8,8 +8,6 @@ class User{
     public $id;
     public $username;
     public $password;
-	public $token;
-    public $tokenExpiration;
  
     public function __construct($db){
         $this->conn = $db;
@@ -52,9 +50,6 @@ class User{
 			$this->id = $row->id;
 			$this->username = $row->username;
 			$this->password = $row->password;
-			$this->token = $row->token;
-			$this->tokenExpiration = $row->tokenExpiration;
-			
 			return true;
 		}
 		
@@ -92,9 +87,7 @@ class User{
 		$st->bindParam(':id', $this->id);
 		$st->bindParam(':username', $this->username);
 		$st->bindParam(':password', $this->password);
-		$st->bindParam(':token', $this->token);
-		$st->bindParam(':tokenExpiration', $this->tokenExpiration);
-	 
+		
 		return ($st->execute());
 	}
 	

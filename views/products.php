@@ -2,6 +2,15 @@
 	<head> 
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		
+		<script src="assets/js/helpers.js"></script>
+		<script>
+		function notLoggedGoHome(){
+			if (localStorage.getItem('tokenJwt') === null)
+				window.location = getSiteRoot()+ 'index.php?c=login';
+		}
+		notLoggedGoHome();
+		</script>
+		
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 		<link href="assets/css/toastr.css" rel="stylesheet"/>
 		<link href="assets/css/core.css" rel="stylesheet"/>
@@ -24,7 +33,7 @@
 	<div id="dvTable" class="table-responsive" style="margin-top:4em;">
 	</div>
 
-	<a href="#productModalAdd" class="btn btn-info btn-sm" data-toggle="modal" onClick="clearForm()"> 
+	<a href="#productModalAdd" class="btn btn-info btn-sm" data-toggle="modal" onClick="notLoggedGoHome(); clearForm();"> 
 	  <span class="glyphicon glyphicon-plus"></span> Add 
 	</a>
 
@@ -135,6 +144,7 @@
 			
 			// diff is less than 2 minute
 			if ( ((localStorage.getItem('exp')*1000) - (new Date()).getTime()) < 60000 * minutes_for_token_renew){
+				notLoggedGoHome(); //
 				renew();
 			}
 			
@@ -151,8 +161,9 @@
 	
 	/* Edit */
 	function sallet(){
+		notLoggedGoHome();
+		
 		let obj ={};
-	
 		let id   = $('#eid').val();
 		obj.name = $('#ename').val();	
 		obj.description = $('#edescription').val();	
@@ -226,6 +237,8 @@
 	/* just previous reading to save updated data */
 	function editar(id)
 	{
+		notLoggedGoHome();
+		
 		$.ajax({
 			type: "GET",	/* lectura previa */
 			url: endpoint+'/'+id.toString(),
@@ -253,8 +266,9 @@
 	/* Create */
 	function crear()
 	{
-		let obj ={};
+		notLoggedGoHome();
 		
+		let obj ={};
 		obj.name = $('#name').val();	
 		obj.description = $('#description').val();	
 		obj.cost = $('#cost').val();
@@ -330,6 +344,8 @@
 	
 	/* Delete */
 	function borrar(id){
+		notLoggedGoHome();
+		
 		bootbox.confirm("Are you sure you want to delete?", function(result) {
 			if (result)	
 				$.ajax({
@@ -357,6 +373,8 @@
 	
 	/* Read */
 	function listar(){
+		notLoggedGoHome();
+		
 		$.ajax({
 			type: "GET",
 			url: endpoint,
@@ -387,10 +405,10 @@
 				table.render($data);
 			},
 			error: function(data){
-				if (data.statusText=='Unauthorized' )
-					window.location = 'index.php?c=login';
-				
-				console.log('Error!!!', data);
+				if (data.statusText=='Unauthorized' ){
+					window.location = getSiteRoot()+ 'index.php?c=login';
+				}
+				console.log('Error in GET all', data);
 			}
 		});		
 	}
