@@ -7,9 +7,6 @@ if (!defined('CORE_PATH'))
 	define('CORE_PATH', ROOT_PATH . DIRECTORY_SEPARATOR . 'core/');
 
 return [
-		// 'ROOT_PATH' => dirname(__DIR__) . '/',
-		// 'CORE_PATH' => ROOT_PATH . DIRECTORY_SEPARATOR . 'core/',
-
 		// DB
 		'host' => 'localhost',
 		'db_name' => 'api_sb', 

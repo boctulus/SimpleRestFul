@@ -141,9 +141,10 @@
 			if (localStorage.getItem('exp')==null)
 				return;
 			
+			notLoggedGoHome();
+			
 			// diff is less than 2 minute
 			if ( ((localStorage.getItem('exp')*1000) - (new Date()).getTime()) < 60000 * minutes_for_token_renew){
-				notLoggedGoHome(); //
 				renew();
 			}
 			
@@ -252,13 +253,14 @@
 				$('#edescription').val(data.description);	
 				$('#ecost').val(data.cost);
 				$('#esize').val(data.size);	
+				
+				$('#productModalEdit').modal('show');
 			},
 			error: function(data){
 				console.log('Error');
 				console.log(data);
 			}
 		});		
-		$('#productModalEdit').modal('show');
 		
 		//console.log(id);
 	}
@@ -273,9 +275,7 @@
 		obj.description = $('#description').val();	
 		obj.cost = $('#cost').val();
 		obj.size = $('#size').val();		
-					
-		//console.log(obj);	
-					
+				
 		let encoded = JSON.stringify(obj);
 		
 		toastr.options = {
@@ -335,8 +335,7 @@
 				}		
 			},
 			error: function(data){
-				console.log('Error');
-				console.log(data);
+				console.log('Error', data);
 				toastr["error"]("An error ocurred!", "Error");
 			}
 		});

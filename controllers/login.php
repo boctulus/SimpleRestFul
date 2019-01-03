@@ -45,8 +45,9 @@ function login()
 
 function renew()
 {
-	$headers = apache_request_headers();
+	$config =  include 'config/config.php';
 	
+	$headers = apache_request_headers();
 	$auth = $headers['Authorization'] ?? $headers['authorization'];
 	
 	if (empty($auth)){
@@ -71,10 +72,10 @@ function renew()
 				'ip' => [
 					'REMOTE_ADDR' => $_SERVER['REMOTE_ADDR'] ?? '',
 					'HTTP_CLIENT_IP' => $_SERVER['HTTP_CLIENT_IP'] ?? '',
-					'HTTP_FORWARDED' => $_SERVER['HTTP_FORWARDED'],
+					'HTTP_FORWARDED' => $_SERVER['HTTP_FORWARDED'] ?? '',
 					'HTTP_FORWARDED_FOR' => $_SERVER['HTTP_FORWARDED_FOR'] ?? '',
-					'HTTP_X_FORWARDED' => $_SERVER['HTTP_X_FORWARDED'],
-					'HTTP_X_FORWARDED_FOR' => $_SERVER['HTTP_X_FORWARDED_FOR']
+					'HTTP_X_FORWARDED' => $_SERVER['HTTP_X_FORWARDED'] ?? '',
+					'HTTP_X_FORWARDED_FOR' => $_SERVER['HTTP_X_FORWARDED_FOR'] ?? ''
 				]
 			);
 			
