@@ -1,4 +1,5 @@
 <?php
+	require_once("config/config.php");
 	include "vendor/autoload.php";
 
 	$c = $_GET['c'] ?? 'products';

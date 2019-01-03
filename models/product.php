@@ -1,5 +1,8 @@
 <?php
-class Product{
+
+include CORE_PATH. 'model.php';
+
+class Product extends Model {
  
     private $conn;
     private $table_name = "products";
@@ -20,13 +23,11 @@ class Product{
 		CRUD operations
 	*/
 	
-	function exists($id = null)
+	function exists()
 	{
-		$id = !empty($id) ? $id : $this->id;
-		
 		$q  = "SELECT *FROM {$this->table_name} WHERE id=:id";
 		$st = $this->conn->prepare( $q );
-		$st->bindParam(":id", $id, PDO::PARAM_INT);
+		$st->bindParam(":id", $this->id, PDO::PARAM_INT);
 		$st->execute();
 		
 		$row = $st->fetch(PDO::FETCH_ASSOC);

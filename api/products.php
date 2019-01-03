@@ -20,7 +20,10 @@ require_once '../models/product.php';
 require_once '../helpers/auth_check.php'; 
 include_once '../helpers/debug.php';
 
-// logger($_SERVER['REQUEST_METHOD']);
+
+logger($_SERVER['REQUEST_METHOD']);
+// logger(file_get_contents("php://input"));
+
 
 try {
 	$input = file_get_contents("php://input");	
@@ -28,8 +31,8 @@ try {
 
 	$conn = Database::getConnection($config);
 	$product = new Product($conn);
-
-
+		
+	
 	switch($_SERVER['REQUEST_METHOD'])
 	{
 		case 'OPTIONS':
@@ -43,7 +46,13 @@ try {
 		case 'POST':
 			if ($config['enabled_auth'])
 				check_auth();
-		
+			
+			if ($data == null)
+				sendError('Invalid JSON',400);
+			
+			if (!$product->has_properties($data, ['id']))
+				sendError('Lack some properties in your request: '.implode(',',$product->getMissingProperties()));
+			
 			$product->name = $data->name;
 			$product->description = $data->description;
 			$product->size = $data->size;
@@ -64,17 +73,24 @@ try {
 		
 			$id   = $_GET['id'] ?? NULL;
 			
-			if($id == null)
+			if ($id == null)
 			{
 				sendError("Lacks id in request",400);
 			}
+			
+			if ($data == null)
+				sendError('Invalid JSON',400);
+			
+			if (!$product->has_properties($data, ['id']))
+				sendError('Lack some properties in your request: '.implode(',',$product->getMissingProperties()));
+			
 			$product->id = $id;
 			$product->name = $data->name;
 			$product->description = $data->description;
 			$product->size = $data->size;
 			$product->cost = $data->cost;
 			
-			if(!$product->exists()){
+			if (!$product->exists()){
 				sendError("Register for id=$id does not exists",404);
 			}
 			
@@ -84,10 +100,6 @@ try {
 			} catch (Exception $e) {
 				sendError("Error during update for id=$id with message: {$e->getMessage()}",500);
 			}
-				
-				
-			
-			
 		break;
 		
 		/* DELETE */
@@ -130,9 +142,42 @@ try {
 			}
 		break;
 		
-		/* UPDATE by PATCH */
+		/* 
+		
+			UPDATE by PATCH  (easy way implementation)
+			
+			TODO: perform a better implementation because ...
+			... this one make an innecesary SQL fetch
+		*/
 		case 'PATCH':
-			sendError('Not implemented',501);
+			if ($config['enabled_auth'])
+				check_auth();
+		
+			$id   = $_GET['id'] ?? NULL;
+			
+			if ($id == null)
+			{
+				sendError("Lacks id in request",400);
+			}
+			
+			if ($data == null)
+				sendError('Invalid JSON',400);
+			
+			$product->id = $id;
+			
+			if ($product->read() === false)
+					sendError("Not found for id={$_GET['id']}",404);
+			
+			foreach ($data as $key => $value){
+				$product->{$key} = $value;
+			}
+			
+			try {
+				$product->update();
+				sendData("OK");
+			} catch (Exception $e) {
+				sendError("Error during update for id=$id with message: {$e->getMessage()}",500);
+			}
 		break;
 		
 	}

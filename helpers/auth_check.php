@@ -10,6 +10,9 @@ function check_auth() {
 	$headers = apache_request_headers();
 	$auth = $headers['Authorization'] ?? $headers['authorization'] ?? NULL;
 	
+	logger($headers);
+	logger("\n-----------------------------\n\n");
+	
 	if (empty($auth)){
 		sendError('Authorization not found',400);
 	}
@@ -30,7 +33,7 @@ function check_auth() {
 			$u->id = $data->data->id;
 			$u->read();
 			
-			if (empty($u->token) || $u->tokenExpiration<time()){
+			if (empty($u->token) || $jwt!=$u->token || $u->tokenExpiration<time()){
 				sendError('Unauthorized',401);
 			}
 				

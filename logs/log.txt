@@ -1,29 +1,62 @@
+PATCH
+{"Content-Type":"application\/json","Authorization":"Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1NDY0NjMxNjMsImV4cCI6MTU0Njc2MzE2MywiZGF0YSI6eyJpZCI6IjQiLCJ1c2VybmFtZSI6InBib3p6b2xvIn19.HIJpiU7-Vg4kM_bitq6RRA5GRckDSO5s9tFza3C--i5","cache-control":"no-cache","Postman-Token":"bebc6cf3-6cf7-4765-9a6a-f91de8a14e53","User-Agent":"PostmanRuntime\/7.4.0","Accept":"*\/*","Host":"localhost","accept-encoding":"gzip, deflate","content-length":"20","Connection":"keep-alive"}
+
+-----------------------------
+
+
+PATCH
+{"Content-Type":"application\/json","Authorization":"Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1NDY0NjMxNjMsImV4cCI6MTU0Njc2MzE2MywiZGF0YSI6eyJpZCI6IjQiLCJ1c2VybmFtZSI6InBib3p6b2xvIn19.HIJpiU7-Vg4kM_bitq6RRA5GRckDSO5s9tFza3C--i5","cache-control":"no-cache","Postman-Token":"a01ea420-3af3-4f74-98a6-cb867cff7fad","User-Agent":"PostmanRuntime\/7.4.0","Accept":"*\/*","Host":"localhost","accept-encoding":"gzip, deflate","content-length":"20","Connection":"keep-alive"}
+
+-----------------------------
+
+
 GET
-HTTP CODE: 400
+{"Content-Type":"application\/json","Authorization":"Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1NDY0NjMxNjMsImV4cCI6MTU0Njc2MzE2MywiZGF0YSI6eyJpZCI6IjQiLCJ1c2VybmFtZSI6InBib3p6b2xvIn19.HIJpiU7-Vg4kM_bitq6RRA5GRckDSO5s9tFza3C--i5","cache-control":"no-cache","Postman-Token":"65c71808-ab23-4919-a0f2-ede37fe0a8d8","User-Agent":"PostmanRuntime\/7.4.0","Accept":"*\/*","Host":"localhost","accept-encoding":"gzip, deflate","content-length":"20","Connection":"keep-alive"}
+
+-----------------------------
+
+
+GET
+{"Content-Type":"application\/json","Authorization":"Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1NDY0NjMxNjMsImV4cCI6MTU0Njc2MzE2MywiZGF0YSI6eyJpZCI6IjQiLCJ1c2VybmFtZSI6InBib3p6b2xvIn19.HIJpiU7-Vg4kM_bitq6RRA5GRckDSO5s9tFza3C--i5","cache-control":"no-cache","Postman-Token":"9049b0c4-ca92-45c9-8440-2525e422ddc8","User-Agent":"PostmanRuntime\/7.4.0","Accept":"*\/*","Host":"localhost","accept-encoding":"gzip, deflate","content-length":"20","Connection":"keep-alive"}
+
+-----------------------------
+
+
+GET
+{"Content-Type":"application\/json","Authorization":"Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1NDY0NjMxNjMsImV4cCI6MTU0Njc2MzE2MywiZGF0YSI6eyJpZCI6IjQiLCJ1c2VybmFtZSI6InBib3p6b2xvIn19.HIJpiU7-Vg4kM_bitq6RRA5GRckDSO5s9tFza3C--i5","cache-control":"no-cache","Postman-Token":"01387b34-197a-4655-be68-beb44d6aa9aa","User-Agent":"PostmanRuntime\/7.4.0","Accept":"*\/*","Host":"localhost","accept-encoding":"gzip, deflate","content-length":"20","Connection":"keep-alive"}
+
+-----------------------------
+
+
+GET
+{"Content-Type":"application\/json","Authorization":"Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1NDY0ODA5MDQsImV4cCI6MTU0Njc4MDkwNCwiZGF0YSI6eyJpZCI6IjQiLCJ1c2VybmFtZSI6InBib3p6b2xvIn19.ZCJGTdUtRQ7Ce8by4pxXTTwyAUpR-4AEcfRq83_RF-o","cache-control":"no-cache","Postman-Token":"a876bbee-26f1-4ba5-8191-3035e7dcd3fd","User-Agent":"PostmanRuntime\/7.4.0","Accept":"*\/*","Host":"localhost","accept-encoding":"gzip, deflate","content-length":"20","Connection":"keep-alive"}
+
+-----------------------------
+
+
+GET
+{"Content-Type":"application\/json","Authorization":"Bearer EyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1NDY0ODA5MDQsImV4cCI6MTU0Njc4MDkwNCwiZGF0YSI6eyJpZCI6IjQiLCJ1c2VybmFtZSI6InBib3p6b2xvIn19.ZCJGTdUtRQ7Ce8by4pxXTTwyAUpR-4AEcfRq83_RF-o","cache-control":"no-cache","Postman-Token":"77c5a0be-3f8f-484f-a340-6583930a6d7b","User-Agent":"PostmanRuntime\/7.4.0","Accept":"*\/*","Host":"localhost","accept-encoding":"gzip, deflate","content-length":"20","Connection":"keep-alive"}
+
+-----------------------------
+
+
+GET
+{"Content-Type":"application\/json","Authorization":"Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1NDY0ODA5MDQsImV4cCI6MTU0Njc4MDkwNCwiZGF0YSI6eyJpZCI6IjQiLCJ1c2VybmFtZSI6InBib3p6b2xvIn19.ZCJGTdUtRQ7Ce8by4pxXTTwyAUpR-4AEcfRq83_RF-o","cache-control":"no-cache","Postman-Token":"88db67e3-bcee-4b6e-a50a-d59f7a9557df","User-Agent":"PostmanRuntime\/7.4.0","Accept":"*\/*","Host":"localhost","accept-encoding":"gzip, deflate","content-length":"20","Connection":"keep-alive"}
+
+-----------------------------
+
 
 OPTIONS
-GET
-HTTP CODE: 200
+PUT
+{"Host":"localhost","Connection":"keep-alive","Content-Length":"70","Accept":"application\/json, text\/plain, *\/*","Origin":"http:\/\/localhost:5500","Authorization":"Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1NDY0NjMxNjMsImV4cCI6MTU0Njc2MzE2MywiZGF0YSI6eyJpZCI6IjQiLCJ1c2VybmFtZSI6InBib3p6b2xvIn19.HIJpiU7-Vg4kM_bitq6RRA5GRckDSO5s9tFza3C--i5","User-Agent":"Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/71.0.3578.98 Safari\/537.36","DNT":"1","Content-Type":"application\/json; charset=UTF-8","Referer":"http:\/\/localhost:5500\/","Accept-Encoding":"gzip, deflate, br","Accept-Language":"en-US,en;q=0.9,it-IT;q=0.8,it;q=0.7,ja;q=0.6,pt;q=0.5,id;q=0.4,zh-CN;q=0.3,zh;q=0.2"}
+
+-----------------------------
+
 
 OPTIONS
-GET
-HTTP CODE: 200
+PUT
+{"Host":"localhost","Connection":"keep-alive","Content-Length":"70","Accept":"application\/json, text\/plain, *\/*","Origin":"http:\/\/localhost:5500","Authorization":"Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1NDY0ODA5MDQsImV4cCI6MTU0Njc4MDkwNCwiZGF0YSI6eyJpZCI6IjQiLCJ1c2VybmFtZSI6InBib3p6b2xvIn19.ZCJGTdUtRQ7Ce8by4pxXTTwyAUpR-4AEcfRq83_RF-o","User-Agent":"Mozilla\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/71.0.3578.98 Safari\/537.36","DNT":"1","Content-Type":"application\/json; charset=UTF-8","Referer":"http:\/\/localhost:5500\/","Accept-Encoding":"gzip, deflate, br","Accept-Language":"en-US,en;q=0.9,it-IT;q=0.8,it;q=0.7,ja;q=0.6,pt;q=0.5,id;q=0.4,zh-CN;q=0.3,zh;q=0.2"}
 
-OPTIONS
-GET
-HTTP CODE: 200
+-----------------------------
 
-OPTIONS
-GET
-HTTP CODE: 200
-
-GET
-HTTP CODE: 400
-
-GET
-HTTP CODE: 400
-
-OPTIONS
-GET
-HTTP CODE: 200
 
