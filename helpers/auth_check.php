@@ -10,8 +10,8 @@ function check_auth() {
 	$headers = apache_request_headers();
 	$auth = $headers['Authorization'] ?? $headers['authorization'] ?? NULL;
 	
-	logger($headers);
-	logger("\n-----------------------------\n\n");
+	// logger($headers);
+	// logger("\n-----------------------------\n\n");
 	
 	if (empty($auth)){
 		sendError('Authorization not found',400);
@@ -29,6 +29,12 @@ function check_auth() {
 			
 			$data = Firebase\JWT\JWT::decode($jwt, $config['jwt_secret_key'], [ $config['encryption'] ]);
 			
+			// deberia guardar los tokens en otra tabla y hacer un INNER JOIN
+			//
+			// Payload: meter 'id', 'username', 'IP', 'createad_at', 'expiration_time' (los ultimos de tipo TIMESTAMP)
+			//
+			// No hacer mas consultas....... confiar en la criptografia
+			//
 			$u = new User($conn);
 			$u->id = $data->data->id;
 			$u->read();

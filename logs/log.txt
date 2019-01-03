@@ -60,3 +60,13 @@ PUT
 -----------------------------
 
 
+PATCH
+PATCH
+PATCH
+GET
+PUT
+GET
+PUT
+POST
+GET
+POST

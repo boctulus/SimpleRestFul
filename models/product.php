@@ -2,6 +2,9 @@
 
 include CORE_PATH. 'model.php';
 
+/*
+	@author based mostly in published code from codeofaninja.com
+*/
 class Product extends Model {
  
     private $conn;
@@ -16,7 +19,6 @@ class Product extends Model {
  
     public function __construct($db){
         $this->conn = $db;
-		$this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     }
 
 	/*

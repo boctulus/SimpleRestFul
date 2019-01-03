@@ -21,17 +21,22 @@ require_once '../helpers/auth_check.php';
 include_once '../helpers/debug.php';
 
 
-logger($_SERVER['REQUEST_METHOD']);
+// logger($_SERVER['REQUEST_METHOD']);
 // logger(file_get_contents("php://input"));
 
 
 try {
 	$input = file_get_contents("php://input");	
 	$data  = json_decode($input);	
-
-	$conn = Database::getConnection($config);
-	$product = new Product($conn);
+	
+	
+	if ($config['enabled_auth'] && $_SERVER['REQUEST_METHOD']!='OPTIONS'){
+		check_auth();	
 		
+		$conn = Database::getConnection($config);
+		$product = new Product($conn);
+	}	
+	
 	
 	switch($_SERVER['REQUEST_METHOD'])
 	{
@@ -44,33 +49,26 @@ try {
 		
 		/* CREATE */
 		case 'POST':
-			if ($config['enabled_auth'])
-				check_auth();
-			
 			if ($data == null)
 				sendError('Invalid JSON',400);
 			
 			if (!$product->has_properties($data, ['id']))
 				sendError('Lack some properties in your request: '.implode(',',$product->getMissingProperties()));
 			
-			$product->name = $data->name;
-			$product->description = $data->description;
-			$product->size = $data->size;
-			$product->cost = $data->cost;
+			foreach ($data as $key => $value){
+				$product->{$key} = $value;
+			}
 
 			$product->create();
 			if ($product->id){
 				sendData(['id' => $product->id], 201);
 			}	
 			else
-				sendError("Error: Create fails!");
+				sendError("Error: creation of resource fails!");
 		break;
 		
 		/* UPDATE */
 		case 'PUT':
-			if ($config['enabled_auth'])
-				check_auth();
-		
 			$id   = $_GET['id'] ?? NULL;
 			
 			if ($id == null)
@@ -85,10 +83,9 @@ try {
 				sendError('Lack some properties in your request: '.implode(',',$product->getMissingProperties()));
 			
 			$product->id = $id;
-			$product->name = $data->name;
-			$product->description = $data->description;
-			$product->size = $data->size;
-			$product->cost = $data->cost;
+			foreach ($data as $key => $value){
+				$product->{$key} = $value;
+			}
 			
 			if (!$product->exists()){
 				sendError("Register for id=$id does not exists",404);
@@ -104,9 +101,6 @@ try {
 		
 		/* DELETE */
 		case 'DELETE':
-			if ($config['enabled_auth'])
-				check_auth();
-		
 			$id   = $_GET['id'] ?? NULL;
 			
 			if($id == null)
@@ -125,9 +119,6 @@ try {
 		
 		/* READ */
 		case 'GET':
-			if ($config['enabled_auth'])
-				check_auth();
-		
 			$id   = $_GET['id'] ?? NULL;
 		
 			if (!$id){
@@ -147,12 +138,9 @@ try {
 			UPDATE by PATCH  (easy way implementation)
 			
 			TODO: perform a better implementation because ...
-			... this one make an innecesary SQL fetch
+			... this one makes an avoidable previous SQL fetch
 		*/
 		case 'PATCH':
-			if ($config['enabled_auth'])
-				check_auth();
-		
 			$id   = $_GET['id'] ?? NULL;
 			
 			if ($id == null)
