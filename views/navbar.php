@@ -60,10 +60,7 @@
 					  <li><a href="#">Separated link</a>
 					  </li-->
 					  <li>
-						<form>
-						
 						<button type="submit" class="btn btn-link btn-logout" onclick="logout()"><span class="glyphicon glyphicon-log-out"></span> Logout</button>
-						</form>
 					  </li>
 					</ul>
 				  </li>

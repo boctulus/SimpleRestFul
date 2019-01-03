@@ -2,11 +2,10 @@
 	<head> 
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		
-		<script src="assets/js/helpers.js"></script>
 		<script>
 		function notLoggedGoHome(){
-			if (localStorage.getItem('tokenJwt') === null)
-				window.location = getSiteRoot()+ 'index.php?c=login';
+			if (localStorage.getItem('tokenJwt') == null)
+				window.location = '?c=login';
 		}
 		notLoggedGoHome();
 		</script>
@@ -33,7 +32,7 @@
 	<div id="dvTable" class="table-responsive" style="margin-top:4em;">
 	</div>
 
-	<a href="#productModalAdd" class="btn btn-info btn-sm" data-toggle="modal" onClick="notLoggedGoHome(); clearForm();"> 
+	<a href="#productModalAdd" class="btn btn-info btn-sm" data-toggle="modal" onClick="clearForm();"> 
 	  <span class="glyphicon glyphicon-plus"></span> Add 
 	</a>
 
@@ -153,6 +152,8 @@
 	
 	
 	function clearForm(){
+		notLoggedGoHome();
+		
 		$('#name').val("");	
 		$('#description').val("");	
 		$('#cost').val("");
@@ -240,7 +241,7 @@
 		notLoggedGoHome();
 		
 		$.ajax({
-			type: "GET",	/* lectura previa */
+			type: "GET",	// lectura previa //
 			url: endpoint+'/'+id.toString(),
 			dataType: 'json',
 			headers: {"Authorization": 'Bearer ' + localStorage.getItem('tokenJwt')},
@@ -257,7 +258,6 @@
 				console.log(data);
 			}
 		});		
-		
 		$('#productModalEdit').modal('show');
 		
 		//console.log(id);
@@ -406,7 +406,7 @@
 			},
 			error: function(data){
 				if (data.statusText=='Unauthorized' ){
-					window.location = getSiteRoot()+ 'index.php?c=login';
+					window.location = 'index.php?c=login';
 				}
 				console.log('Error in GET all', data);
 			}
