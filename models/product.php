@@ -3,7 +3,8 @@
 include CORE_PATH. 'model.php';
 
 /*
-	@author based mostly in published code from codeofaninja.com
+	Product extends Model to have access to reflection
+	Another way could be to use traits 
 */
 class Product extends Model {
  

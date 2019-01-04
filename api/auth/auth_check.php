@@ -1,9 +1,7 @@
 <?php
 
 require_once '../vendor/autoload.php';
-require_once '../libs/database.php'; 
-require_once '../models/user.php';
-include_once '../helpers/messages.php';
+include_once 'helpers/http.php';
 // include_once '../helpers/debug.php';
 
 

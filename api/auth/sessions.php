@@ -6,10 +6,10 @@ header('access-control-allow-Methods: GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS');
 header('access-control-allow-Origin: *');
 header('content-type: application/json; charset=UTF-8');
 
+include_once '../helpers/http.php';
 require_once '../../vendor/autoload.php';
 require_once '../../libs/database.php'; 
 require_once '../../models/user.php';
-include_once '../../helpers/messages.php';
 include_once '../../helpers/debug.php';
 
 

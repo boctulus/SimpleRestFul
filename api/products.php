@@ -15,9 +15,9 @@ header('content-type: application/json; charset=UTF-8');
 $config =  include '../config/config.php';
 
 require_once ROOT_PATH.'api/auth/auth_check.php';
+require_once ROOT_PATH.'api/helpers/http.php';; 
 require_once ROOT_PATH.'libs/database.php';
 require_once ROOT_PATH.'models/product.php';
-require_once ROOT_PATH.'helpers/messages.php';; 
 include_once ROOT_PATH.'helpers/debug.php';
 
 
