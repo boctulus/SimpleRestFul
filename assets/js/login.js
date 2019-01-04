@@ -1,5 +1,5 @@
 	
-		
+		 
 	function login(){
 		var obj ={};
 		
@@ -7,8 +7,9 @@
 		obj.password = $('#password').val();	
 		
 		$.ajax({
-			type: "GET",
-			url: 'index.php?c=login&a=login&username='+obj.username+'&password='+obj.password,
+			type: "POST",
+			url: 'api/auth/login', // ?username='+obj.username+'&password='+obj.password,
+			data: JSON.stringify(obj),
 			dataType: 'json',
 			success: function(data){
 				if (typeof data.token != 'undefined'){
@@ -16,7 +17,7 @@
 					localStorage.setItem('exp',data.exp);
 					localStorage.setItem('username',obj.username);
 					window.location = 'index.php';
-				}else{				
+				}else{		
 					$('#loginError').text('Error en usuario o password');
 					console.log(data);
 				}
@@ -37,8 +38,8 @@
 		console.log('Renewing token at ...'+(new Date()).toString());
 	
 		$.ajax({
-			type: "GET",
-			url: '?c=login&a=renew',
+			type: "POST",
+			url: 'api/auth/token/renew',
 			dataType: 'json',
 			headers: {"Authorization": 'Bearer ' + localStorage.getItem('tokenJwt')}, 
 			success: function(data){
@@ -53,7 +54,7 @@
 			error: function(data){
 				console.log('Error en la renovación del token!!!!!!!!!!!!');
 				console.log(data);
-				//window.location = '?c=login';
+				window.location = '?c=login';
 			}
 		});		
 	}

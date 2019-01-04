@@ -30,13 +30,13 @@ try {
 	$data  = json_decode($input);	
 	
 	
-	if ($config['enabled_auth'] && $_SERVER['REQUEST_METHOD']!='OPTIONS'){
+	if ($config['enabled_auth'] && $_SERVER['REQUEST_METHOD']!='OPTIONS')
 		check_auth();	
-		
+	
+	if ($_SERVER['REQUEST_METHOD']!='OPTIONS') {	
 		$conn = Database::getConnection($config);
 		$product = new Product($conn);
 	}	
-	
 	
 	switch($_SERVER['REQUEST_METHOD'])
 	{
@@ -140,7 +140,7 @@ try {
 			TODO: perform a better implementation because ...
 			... this one makes an avoidable previous SQL fetch
 		*/
-		case 'PATCH':
+		case 'PATCH':	
 			$id   = $_GET['id'] ?? NULL;
 			
 			if ($id == null)

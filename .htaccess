@@ -3,8 +3,21 @@ RewriteEngine On
 
 # API RESTFUL
 
-RewriteRule api/products$ api/products.php [L]
-RewriteRule api/products/([0-9]+)$ api/products.php?id=$1 [L]
+RewriteRule ^api/auth/login?(.*)$ api/session.php?a=login&$1 [L,QSA]
+
+RewriteRule ^api/auth/signin$ api/session.php?a=signin [L]
+RewriteRule ^api/auth/token/revoke api/session.php?a=revoke [L]
+RewriteRule ^api/auth/token/renew api/session.php?a=renew [L]
+
+RewriteRule ^api/products$ api/products.php [L]
+RewriteRule ^api/products/([0-9]+)$ api/products.php?id=$1 [L]
+
+
+# Intento por generalizar lo anterior.......
+#
+# RewriteRule ^api/([a-zA-Z]+)$ api/$1.php [L]
+# RewriteRule ^api/([a-zA-Z]+)/([0-9]+)$ api/$1?id=$2 [L]
+
 
 
 # HTID:4130911: DO NOT REMOVE OR MODIFY THIS LINE AND THE LINES BELOW

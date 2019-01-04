@@ -4,7 +4,9 @@
 		
 		<script>
 		function notLoggedGoHome(){
-			if (localStorage.getItem('tokenJwt') == null)
+			const expired = ((localStorage.getItem('exp')!=null) && ((localStorage.getItem('exp')*1000) - (new Date()).getTime())<0);
+			
+			if ((localStorage.getItem('tokenJwt') == null) || expired)
 				window.location = '?c=login';
 		}
 		notLoggedGoHome();
@@ -18,7 +20,7 @@
 		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>	
 		<script src="assets/js/toastr.min.js"></script><!-- flash notifications -->	
 		<script src="assets/js/bootbox.min.js"></script><!-- confirmation boxes -->
-		<script src="assets/js/login.js"></script>
+		<script src="assets/js/login.js?v=1"></script>
 		<script src="assets/js/jqtable.js"></script>
 	</head>
 
@@ -128,7 +130,7 @@
 </div>		
 <script type="text/javascript">
 	const endpoint = 'api/products';
-	const minutes_for_token_renew = 3000 // 2
+	const minutes_for_token_renew = 2 // 2
 
 	let $data = [];
 	let table = new JqTable('products');
@@ -140,8 +142,8 @@
 		setInterval(function() {
 			if (localStorage.getItem('exp')==null)
 				return;
-			
-			notLoggedGoHome();
+			else
+				notLoggedGoHome();
 			
 			// diff is less than 2 minute
 			if ( ((localStorage.getItem('exp')*1000) - (new Date()).getTime()) < 60000 * minutes_for_token_renew){

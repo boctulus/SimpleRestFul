@@ -8,7 +8,7 @@ require_once 'messages.php';
 
 function check_auth() {
 	$headers = apache_request_headers();
-	$auth = $headers['Authorization'] ?? $headers['authorization'] ?? NULL;
+	$auth = $headers['Authorization'] ?? $headers['authorization'] ?? null;
 	
 	// logger($headers);
 	// logger("\n-----------------------------\n\n");
