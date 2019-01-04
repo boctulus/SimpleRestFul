@@ -14,15 +14,11 @@ header('content-type: application/json; charset=UTF-8');
 
 $config =  include '../config/config.php';
 
-require_once '../helpers/messages.php';
-require_once '../libs/database.php';
-require_once '../models/product.php';
-require_once '../helpers/auth_check.php'; 
-include_once '../helpers/debug.php';
-
-
-// logger($_SERVER['REQUEST_METHOD']);
-// logger(file_get_contents("php://input"));
+require_once ROOT_PATH.'api/auth/auth_check.php';
+require_once ROOT_PATH.'libs/database.php';
+require_once ROOT_PATH.'models/product.php';
+require_once ROOT_PATH.'helpers/messages.php';; 
+include_once ROOT_PATH.'helpers/debug.php';
 
 
 try {

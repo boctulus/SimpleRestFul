@@ -1,17 +1,18 @@
 <?php
-require_once "../vendor/autoload.php";
-require_once '../libs/database.php';
+
+require_once '../vendor/autoload.php';
+require_once '../libs/database.php'; 
 require_once '../models/user.php';
-require_once 'messages.php';
+include_once '../helpers/messages.php';
+// include_once '../helpers/debug.php';
 
-// Authorization checkin
 
+/* 
+	Authorization checkin
+*/
 function check_auth() {
 	$headers = apache_request_headers();
 	$auth = $headers['Authorization'] ?? $headers['authorization'] ?? null;
-	
-	// logger($headers);
-	// logger("\n-----------------------------\n\n");
 	
 	if (empty($auth)){
 		sendError('Authorization not found',400);

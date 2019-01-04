@@ -6,15 +6,16 @@ header('access-control-allow-Methods: GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS');
 header('access-control-allow-Origin: *');
 header('content-type: application/json; charset=UTF-8');
 
+require_once '../../vendor/autoload.php';
+require_once '../../libs/database.php'; 
+require_once '../../models/user.php';
+include_once '../../helpers/messages.php';
+include_once '../../helpers/debug.php';
 
-$config =  include '../config/config.php';
 
-require_once '../vendor/autoload.php';
-require_once '../libs/database.php'; 
-require_once '../models/user.php';
-include_once '../helpers/messages.php';
-include_once '../helpers/debug.php';
-
+/*
+	Mini-router
+*/
 $allowed = ['signin', 'login', 'renew', 'revoke'];
 
 if (in_array($_GET['a'],$allowed)){
@@ -59,13 +60,11 @@ function login()
 		break;	
 	}	
 	
-	//logger($input);
-	
 	if (empty($username) || empty($password)){
 		sendError('Username and password are required',400);
 	}
 	
-	$config =  include '../config/config.php';
+	$config =  include '../../config/config.php';
 	
 	$conn = Database::getConnection($config);
 	
@@ -112,7 +111,7 @@ function renew()
 	}elseif ($_SERVER['REQUEST_METHOD']!='POST')
 		sendError('Incorrect verb',405);
 	
-	$config =  include '../config/config.php';
+	$config =  include '../../config/config.php';
 	
 	$headers = apache_request_headers();
 	$auth = $headers['Authorization'] ?? $headers['authorization'] ?? null;
