@@ -3,20 +3,19 @@ RewriteEngine On
 
 # API RESTFUL
 
-RewriteRule ^api/auth/login?(.*)$ api/auth/sessions.php?a=login&$1 [L,QSA]
+RewriteRule ^api/auth/login$ api/auth/sessions.php?a=login [L]
 
 RewriteRule ^api/auth/signin$ api/auth/sessions.php?a=signin [L]
 RewriteRule ^api/auth/token/revoke api/auth/sessions.php?a=revoke [L]
 RewriteRule ^api/auth/token/renew api/auth/sessions.php?a=renew [L]
 
-RewriteRule ^api/products$ api/products.php [L]
-RewriteRule ^api/products/([0-9]+)$ api/products.php?id=$1 [L]
-
-
-# Intento por generalizar lo anterior.......
 #
-# RewriteRule ^api/([a-zA-Z]+)$ api/$1.php [L]
-# RewriteRule ^api/([a-zA-Z]+)/([0-9]+)$ api/$1?id=$2 [L]
+# si generalizo el nombre de la api, entra en conflico con api/auth/login
+#
+RewriteRule ^api/products/([0-9]+)$ api/products.php?id=$1 [L]
+RewriteRule ^api/products?(.*)$ api/products.php?$1 [L,QSA]
+
+
 
 
 

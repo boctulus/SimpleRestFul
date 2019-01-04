@@ -49,12 +49,7 @@ function login()
 			$username = $data->username ?? null;
 			$password = $data->password ?? null;
 		break;
-		
-		case 'GET':
-			$username = $_GET['username'] ?? null;
-			$password = $_GET['password'] ?? null;
-		break;
-		
+
 		default:
 			sendError('Incorrect verb',405);
 		break;	

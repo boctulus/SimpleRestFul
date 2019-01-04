@@ -43,6 +43,29 @@ try {
 			exit();
 		break;
 		
+		/* READ */
+		case 'GET':
+			$id   = $_GET['id'] ?? NULL;
+		
+			if (!$id){
+				if (isset($_GET['_php']))
+					unset($_GET['_php']);
+				
+				// now $_GET contains filter options
+				// var_dump($_GET);
+				
+				$rows = $product->read();
+				sendData($rows,200); 
+			}else{ 
+				// one product by id
+				$product->id = $_GET['id'];
+				if ($product->readById() === false)
+					sendError("Not found for id={$_GET['id']}",404);
+				else
+					sendData($product, 200);
+			}
+		break;
+		
 		/* CREATE */
 		case 'POST':
 			if ($data == null)
@@ -111,22 +134,6 @@ try {
 			else
 				sendError("Error: delete for id=$id fails!",410);
 				
-		break;
-		
-		/* READ */
-		case 'GET':
-			$id   = $_GET['id'] ?? NULL;
-		
-			if (!$id){
-				$rows = $product->readAll();
-				sendData($rows,200); 
-			}else{ 
-				$product->id = $_GET['id'];
-				if ($product->read() === false)
-					sendError("Not found for id={$_GET['id']}",404);
-				else
-					sendData($product, 200);
-			}
 		break;
 		
 		/* 

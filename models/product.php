@@ -42,10 +42,10 @@ class Product extends Model {
 	}
 	
 	
-	function read()
+	function readById()
 	{
 		$q  = "SELECT *FROM {$this->table_name} WHERE id=:id";
-		$st = $this->conn->prepare( $q );
+		$st = $this->conn->prepare($q);
 		$st->bindParam(":id", $this->id, PDO::PARAM_INT);
 		$st->execute();
 		
@@ -53,14 +53,14 @@ class Product extends Model {
 		if (!$row)
 			return false;
 	 
-		$this->name = $row->item_name;
-		$this->description = $row->item_description;
-		$this->size = $row->item_size;
-		$this->cost = $row->item_cost;
+		$this->name = $row->name;
+		$this->description = $row->description;
+		$this->size = $row->size;
+		$this->cost = $row->cost;
 	}
 	
 	
-	function readAll()
+	function read()
 	{
 		$q  = "SELECT *FROM {$this->table_name} ORDER BY id";
 		$st = $this->conn->prepare($q);
@@ -73,7 +73,7 @@ class Product extends Model {
 	{
 		$q = "INSERT INTO {$this->table_name} 
 				SET
-					item_name=:name, item_description=:description, item_size=:size, item_cost=:cost";
+					name=:name, description=:description, size=:size, cost=:cost";
 	 
 		$st = $this->conn->prepare($q);
 	 
@@ -94,10 +94,10 @@ class Product extends Model {
 	function update()
 	{
 		$q = "UPDATE {$this->table_name} SET
-					item_name = :name,
-					item_description = :description,
-					item_size = :size,
-					item_cost = :cost
+					name = :name,
+					description = :description,
+					size = :size,
+					cost = :cost
 				WHERE
 					id = :id";
 	 
