@@ -1,8 +1,9 @@
 <?php
 
-class User{
- 
-    private $conn;
+include CORE_PATH. 'model.php';
+
+class User extends Model
+ {
     private $table_name = "users";
  
     // entity properties
@@ -10,15 +11,25 @@ class User{
     public $username;
     public $password;
  
+	/*
+		Types are INT, STR and BOOL among others
+		see: https://secure.php.net/manual/en/pdo.constants.php 
+	*/
+	protected $schema = [
+		'id' => 'INT',
+		'username' => 'STR',
+		'password' => 'STR'
+	];
+
     public function __construct($db){
-        $this->conn = $db;
+        parent::__construct($db);
     }
 
 	/*
 		CRUD operations
 	*/
 	
-	function read()
+	function readById()
 	{
 		$q  = "SELECT * FROM {$this->table_name} WHERE id=:id";
 		$st = $this->conn->prepare( $q );
@@ -58,7 +69,7 @@ class User{
 	}
 	
 	
-	function readAll()
+	function read()
 	{
 		$q  = "SELECT * FROM {$this->table_name} ORDER BY id";
 		$st = $this->conn->prepare($q);

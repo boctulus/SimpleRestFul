@@ -4,8 +4,19 @@ require_once 'reflection_helper.php';
 
 class Model {
 	
+	protected $conn;
 	protected $missing_properties = [];
+	protected $schema;
 	
+
+	public function __construct($db){
+        $this->conn = $db;
+	}
+
+	public function schema(){
+		return $this->schema;
+	}	
+
 	function getMissingProperties() {
 		return $this->missing_properties;
 	}

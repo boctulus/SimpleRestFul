@@ -51,11 +51,14 @@ try {
 				if (isset($_GET['_php']))
 					unset($_GET['_php']);
 				
-				// now $_GET contains filter options
-				// var_dump($_GET);
-				
-				$rows = $product->read();
-				sendData($rows,200); 
+				if (!empty($_GET)){
+					// apply a filter
+					$rows = $product->filter($_GET);
+					SendData($rows,200); 
+				}else {
+					$rows = $product->read();
+					sendData($rows,200); 
+				}	
 			}else{ 
 				// one product by id
 				$product->id = $_GET['id'];

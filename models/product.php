@@ -6,22 +6,36 @@ include CORE_PATH. 'model.php';
 	Product extends Model to have access to reflection
 	Another way could be to use traits 
 */
-class Product extends Model {
- 
-    private $conn;
+class Product extends Model 
+{
     private $table_name = "products";
  
-    // entity properties
+	/* 
+		Entity properties
+
+		Must be the only public properties
+	*/	
     public $id;
     public $name;
     public $description;
 	public $size;
-    public $cost;
- 
-    public function __construct($db){
-        $this->conn = $db;
-    }
+	public $cost;
+	
+	/*
+		Types are INT, STR and BOOL among others
+		see: https://secure.php.net/manual/en/pdo.constants.php 
+	*/
+	protected $schema = [
+		'name' => 'STR',
+		'description' => 'STR',
+		'size' => 'STR',
+		'cost' => 'INT'
+	];
 
+    public function __construct($db){
+		parent::__construct($db);
+	}
+	
 	/*
 		CRUD operations
 	*/
@@ -59,12 +73,33 @@ class Product extends Model {
 		$this->cost = $row->cost;
 	}
 	
-	
+	function filter($conditions)
+	{
+		$vars   = array_keys($conditions);
+		$values = array_values($conditions);
+
+		$where = '';
+		foreach($vars as $ix => $var){
+			$where .= "$var = :$var AND ";
+		}
+		$where =trim(substr($where, 0, strrpos( $where, 'AND ')));
+		
+		$q  = "SELECT * FROM {$this->table_name} WHERE $where";
+		$st = $this->conn->prepare($q);
+
+		foreach($values as $ix => $val){
+			$st->bindValue(":{$vars[$ix]}", $val, constant("PDO::PARAM_{$this->schema[$vars[$ix]]}"));
+		}
+
+		$st->execute();
+		return $st->fetchAll(PDO::FETCH_ASSOC);
+	}
+
 	function read()
 	{
-		$q  = "SELECT *FROM {$this->table_name} ORDER BY id";
+		$q  = "SELECT * FROM {$this->table_name} ORDER BY id";
 		$st = $this->conn->prepare($q);
-		$result = $st->execute();
+		$st->execute();
 	 
 		return $st->fetchAll(PDO::FETCH_ASSOC);
 	}
