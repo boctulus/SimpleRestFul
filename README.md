@@ -57,4 +57,4 @@ GET /api/products?offset=40&limit=10
 
 ## MORE EXAMPLES
 
-GET /api/products?limit=10&order[cost]=DESC&name=Vodka
+GET /api/products?limit=10&order[cost]=DESC&name=Vodka&size=2L
