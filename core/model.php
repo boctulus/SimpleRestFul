@@ -92,7 +92,7 @@ class Model {
 		foreach($vars as $ix => $var){
 			$where .= "$var = :$var AND ";
 		}
-		$where =trim(substr($where, 0, strrpos( $where, 'AND ')));
+		$where =trim(substr($where, 0, strlen($where)-5));
 		
 		$q  = "SELECT * FROM {$this->table_name} WHERE $where";
 		
@@ -166,7 +166,7 @@ class Model {
 		foreach($vars as $ix => $var){
 			$set .= " $var = :$var, ";
 		}
-		$set =trim(substr($set, 0, strrpos( $set, ',')));
+		$set =trim(substr($set, 0, strlen($set)-2));
 
 		$q = "UPDATE {$this->table_name} 
 				SET $set
