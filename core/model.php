@@ -6,7 +6,7 @@ class Model {
 	protected $id_name = 'id';
 	protected $conn;
 	protected $properties = [];
-	protected $values = [];
+	// protected $values = [];
 	protected $missing_properties = [];
 	protected $schema;
 
