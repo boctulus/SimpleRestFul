@@ -76,7 +76,7 @@ try {
 			if (!$product->has_properties($data, ['id']))
 				sendError('Lack some properties in your request: '.implode(',',$product->getMissingProperties()));
 		
-			if ($product->create($data)){
+			if ($product->create($data)!==false){
 				sendData(['id' => $product->id], 201);
 			}	
 			else
@@ -88,9 +88,7 @@ try {
 			$id   = $_GET['id'] ?? NULL;
 			
 			if ($id == null)
-			{
 				sendError("Lacks id in request",400);
-			}
 			
 			if (empty($data))
 				sendError('Invalid JSON',400);
@@ -118,9 +116,8 @@ try {
 			$id   = $_GET['id'] ?? NULL;
 			
 			if($id == null)
-			{
 				sendError("Lacks id in request",400);
-			}
+
 			$product->id = $id;
 			
 			if($product->delete()){
@@ -128,16 +125,8 @@ try {
 			}	
 			else
 				sendError("Record not found",404);
-				
 		break;
 		
-		/* 
-		
-			UPDATE by PATCH  (easy way implementation)
-			
-			TODO: perform a better implementation because ...
-			... this one makes an avoidable previous SQL fetch
-		*/
 		case 'PATCH':	
 			$id   = $_GET['id'] ?? NULL;
 			

@@ -27,7 +27,7 @@ if (in_array($_GET['a'],$allowed)){
 
 /*
 	Login for API Rest
-	
+		
 	@param username
 	@param password
 */
@@ -68,7 +68,7 @@ function login()
 	$u->username = $username;
 	$u->password = $password;
 	
-	if ($u->exists()){
+	if ($u->getUserIfExists()){
 		$time = time();
 		$payload = array(
 			'iat' => $time, 

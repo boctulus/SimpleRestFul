@@ -21,16 +21,11 @@ class User extends Model
         parent::__construct($db);
     }
 	
-	/*
-		It overrides exits() which checks by id
-		for this custom version which do by username & password 
-	*/
-	function exists()
+	function getUserIfExists()
 	{
 		$q  = "SELECT * FROM {$this->table_name} WHERE username=? AND password=?";
 		$st = $this->conn->prepare($q);
-		$pass = sha1($this->password);
-		$st->execute([$this->username,sha1($this->password)]);
+		$st->execute([$this->username, sha1($this->password)]);
 	
 		$row = $st->fetch(PDO::FETCH_OBJ);
 		
