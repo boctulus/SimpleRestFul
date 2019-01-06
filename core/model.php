@@ -1,6 +1,6 @@
 <?php
-
 declare(strict_types=1);
+
 require_once 'paginator.php';
 
 class Model {
@@ -9,7 +9,6 @@ class Model {
 	protected $id_name = 'id';
 	protected $conn;
 	protected $properties = [];
-	// protected $values = [];
 	protected $missing_properties = [];
 	protected $schema;
 
@@ -62,10 +61,22 @@ class Model {
 
 	function fetchAll(Paginator $paginator = null)
 	{
-		$str_pagination = ($paginator!=null) ? $paginator->getSql() : '';
-		
-		$q  = "SELECT * FROM {$this->table_name} $str_pagination";
+		$q  = "SELECT * FROM {$this->table_name}";
+
+		/// start pagination
+		if($paginator!=null)
+			$q .= $paginator->getQuery();
+
 		$st = $this->conn->prepare($q);
+
+		if($paginator!=null){	
+			$bindings = $paginator->getBinding();
+			foreach($bindings as $binding){
+				$st->bindParam(...$binding);
+			}
+		} 
+		/// end pagination
+
 		if ($st->execute())
 			return $st->fetchAll(PDO::FETCH_ASSOC);
 		else
@@ -74,8 +85,6 @@ class Model {
 
 	function filter($conditions, Paginator $paginator = null)
 	{
-		$str_pagination = ($paginator!=null) ? $paginator->getSql() : '';
-
 		$vars   = array_keys($conditions);
 		$values = array_values($conditions);
 
@@ -85,9 +94,22 @@ class Model {
 		}
 		$where =trim(substr($where, 0, strrpos( $where, 'AND ')));
 		
-		$q  = "SELECT * FROM {$this->table_name} WHERE $where $str_pagination";
+		$q  = "SELECT * FROM {$this->table_name} WHERE $where";
+		
+		/// start pagination
+		if($paginator!=null)
+			$q .= $paginator->getQuery();
+			
 		$st = $this->conn->prepare($q);
 
+		if($paginator!=null){	
+			$bindings = $paginator->getBinding();
+			foreach($bindings as $binding){
+				$st->bindValue(...$binding);
+			}
+		} 
+		/// end pagination
+		
 		foreach($values as $ix => $val){
 			$st->bindValue(":{$vars[$ix]}", $val, constant("PDO::PARAM_{$this->schema[$vars[$ix]]}"));
 		}
@@ -191,4 +213,12 @@ class Model {
 		return $success;
 	}
 	
+
+	/**
+	 * Get the value of properties
+	 */ 
+	public function getProperties()
+	{
+		return $this->properties;
+	}
 }

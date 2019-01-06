@@ -1,5 +1,4 @@
 <?php
-
 declare(strict_types=1);
 
 header('access-control-allow-credentials: true');
@@ -49,6 +48,7 @@ try {
 
 			admit a Paginator to accept urls like:
 			/api/products&order[cost]=DESC&limit=3&offset=1
+			/api/products&order[cost]=DESC&order[name]=ASC&limit=2&offset=1&size=2L
 		*/
 		case 'GET':
 			$id   = $_GET['id'] ?? NULL;
@@ -64,10 +64,16 @@ try {
 				unset($_GET['order']);
 				
 				if($limit>0 || $order!=NULL){
-					$paginator = new Paginator();
-					$paginator->limit  = $limit;
-					$paginator->offset = $offset;
-					$paginator->orders = $order;
+					try {
+						$paginator = new Paginator();
+						$paginator->limit  = $limit;
+						$paginator->offset = $offset;
+						$paginator->orders = $order;
+						$paginator->properties = $product->getProperties();
+						$paginator->compile();
+					}catch (Exception $e){
+						sendError("Pagination error: {$e->getMessage()}");
+					}
 				}else
 					$paginator = null;
 
@@ -170,6 +176,6 @@ try {
 		
 	}
 } catch (Exception $error) {
-	sendError($error);
+	sendError($error->getMessage());
 }
 	
