@@ -1,11 +1,15 @@
 <?php
 
+declare(strict_types=1);
+require_once 'paginator.php';
+
 class Model {
 
 	protected $table_name;
 	protected $id_name = 'id';
 	protected $conn;
 	protected $properties = [];
+	// protected $values = [];
 	protected $missing_properties = [];
 	protected $schema;
 
@@ -23,16 +27,6 @@ class Model {
 	public function schema(){
 		return $this->schema;
 	}	
-
-	function fetchAll($order = 'ASC')
-	{
-		$q  = "SELECT * FROM {$this->table_name} ORDER BY {$this->id_name} $order";
-		$st = $this->conn->prepare($q);
-		if ($st->execute())
-			return $st->fetchAll(PDO::FETCH_ASSOC);
-		else
-			return false;	
-	}
 
 	function fetchOne()
 	{
@@ -66,8 +60,22 @@ class Model {
 			return true;
 	}
 
-	function filter($conditions)
+	function fetchAll(Paginator $paginator = null)
 	{
+		$str_pagination = ($paginator!=null) ? $paginator->getSql() : '';
+		
+		$q  = "SELECT * FROM {$this->table_name} $str_pagination";
+		$st = $this->conn->prepare($q);
+		if ($st->execute())
+			return $st->fetchAll(PDO::FETCH_ASSOC);
+		else
+			return false;	
+	}
+
+	function filter($conditions, Paginator $paginator = null)
+	{
+		$str_pagination = ($paginator!=null) ? $paginator->getSql() : '';
+
 		$vars   = array_keys($conditions);
 		$values = array_values($conditions);
 
@@ -77,7 +85,7 @@ class Model {
 		}
 		$where =trim(substr($where, 0, strrpos( $where, 'AND ')));
 		
-		$q  = "SELECT * FROM {$this->table_name} WHERE $where";
+		$q  = "SELECT * FROM {$this->table_name} WHERE $where $str_pagination";
 		$st = $this->conn->prepare($q);
 
 		foreach($values as $ix => $val){

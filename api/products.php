@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 header('access-control-allow-credentials: true');
 header('access-control-allow-headers: AccountKey,x-requested-with, Content-Type, origin, authorization, accept, client-security-token, host, date, cookie, cookie2'); 
 header('access-control-allow-Methods: GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS'); 
@@ -42,20 +44,38 @@ try {
 			exit();
 		break;
 		
-		/* READ */
+		/* 
+			READ 
+
+			admit a Paginator to accept urls like:
+			/api/products&order[cost]=DESC&limit=3&offset=1
+		*/
 		case 'GET':
 			$id   = $_GET['id'] ?? NULL;
 		
 			if (!$id){
-				if (isset($_GET['_php']))
-					unset($_GET['_php']);
+				$limit  = $_GET['limit'] ?? NULL;
+				$offset = $_GET['offset'] ?? 0;
+				$order  = $_GET['order'] ?? NULL;
+
+				unset($_GET['_php']); // junk
+				unset($_GET['limit']);
+				unset($_GET['offset']);
+				unset($_GET['order']);
 				
+				if($limit>0 || $order!=NULL){
+					$paginator = new Paginator();
+					$paginator->limit  = $limit;
+					$paginator->offset = $offset;
+					$paginator->orders = $order;
+				}else
+					$paginator = null;
+
 				if (!empty($_GET)){
-					// apply a filter
-					$rows = $product->filter($_GET);
+					$rows = $product->filter($_GET, $paginator);
 					SendData($rows,200); 
 				}else {
-					$rows = $product->fetchAll();
+					$rows = $product->fetchAll($paginator);
 					sendData($rows,200); 
 				}	
 			}else{ 

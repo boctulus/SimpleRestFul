@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 require_once 'constants.php';
 
 return [
@@ -14,5 +16,5 @@ return [
 		'token_expiration_time' => 5, // minutes, i.e 5
 		'extended_token_expiration_time' => 3, // minutes, i.e 3
 		'encryption' => 'HS256',
-		'enabled_auth' => true
+		'enabled_auth' => false
 	];

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 header('access-control-allow-credentials: true');
 header('access-control-allow-headers: AccountKey,x-requested-with, Content-Type, origin, authorization, accept, client-security-token, host, date, cookie, cookie2'); 
 header('access-control-allow-Methods: GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS'); 
@@ -27,7 +29,7 @@ if (in_array($_GET['a'],$allowed)){
 
 /*
 	Login for API Rest
-		
+
 	@param username
 	@param password
 */
