@@ -20,11 +20,10 @@ require_once ROOT_PATH.'libs/database.php';
 require_once ROOT_PATH.'models/product.php';
 include_once ROOT_PATH.'helpers/debug.php';
 
-
+// logger(file_get_contents("php://input"));
 try {
 	$input = file_get_contents("php://input");	
-	$data  = json_decode($input);	
-	
+	$data  = json_decode($input, true);	
 	
 	if ($config['enabled_auth'] && $_SERVER['REQUEST_METHOD']!='OPTIONS')
 		check_auth();	
@@ -56,13 +55,13 @@ try {
 					$rows = $product->filter($_GET);
 					SendData($rows,200); 
 				}else {
-					$rows = $product->read();
+					$rows = $product->fetchAll();
 					sendData($rows,200); 
 				}	
 			}else{ 
 				// one product by id
 				$product->id = $_GET['id'];
-				if ($product->readById() === false)
+				if ($product->fetchOne() === false)
 					sendError("Not found for id={$_GET['id']}",404);
 				else
 					sendData($product, 200);
@@ -76,13 +75,8 @@ try {
 			
 			if (!$product->has_properties($data, ['id']))
 				sendError('Lack some properties in your request: '.implode(',',$product->getMissingProperties()));
-			
-			foreach ($data as $key => $value){
-				$product->{$key} = $value;
-			}
-
-			$product->create();
-			if ($product->id){
+		
+			if ($product->create($data)){
 				sendData(['id' => $product->id], 201);
 			}	
 			else
@@ -98,24 +92,22 @@ try {
 				sendError("Lacks id in request",400);
 			}
 			
-			if ($data == null)
+			if (empty($data))
 				sendError('Invalid JSON',400);
 			
 			if (!$product->has_properties($data, ['id']))
 				sendError('Lack some properties in your request: '.implode(',',$product->getMissingProperties()));
 			
 			$product->id = $id;
-			foreach ($data as $key => $value){
-				$product->{$key} = $value;
-			}
-			
 			if (!$product->exists()){
 				sendError("Register for id=$id does not exists",404);
 			}
 			
 			try {
-				$product->update();
-				sendData("OK");
+				if($product->update($data)!==false)
+					sendData("OK");
+				else
+					sendError("Error in UPDATE");
 			} catch (Exception $e) {
 				sendError("Error during update for id=$id with message: {$e->getMessage()}",500);
 			}
@@ -135,7 +127,7 @@ try {
 				sendData("OK");
 			}	
 			else
-				sendError("Error: delete for id=$id fails!",410);
+				sendError("Record not found",404);
 				
 		break;
 		
@@ -150,27 +142,20 @@ try {
 			$id   = $_GET['id'] ?? NULL;
 			
 			if ($id == null)
-			{
 				sendError("Lacks id in request",400);
-			}
-			
+				
 			if ($data == null)
 				sendError('Invalid JSON',400);
 			
 			$product->id = $id;
-			
-			if ($product->read() === false)
-					sendError("Not found for id={$_GET['id']}",404);
-			
-			foreach ($data as $key => $value){
-				$product->{$key} = $value;
-			}
-			
+
 			try {
-				$product->update();
-				sendData("OK");
+				if($product->update($data)!==false)
+					sendData("OK");
+				else
+					sendError("Error in PATCH",404);	
 			} catch (Exception $e) {
-				sendError("Error during update for id=$id with message: {$e->getMessage()}",500);
+				sendError("Error during PATCH for id=$id with message: {$e->getMessage()}",500);
 			}
 		break;
 		

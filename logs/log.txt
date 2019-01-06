@@ -1,2 +1,6 @@
-username=pbozzolo&password=gogogo2k
-username=pbozzolo&password=gogogo2k
+    {
+        "name": "Vodka",
+        "description": "from RussiaaaaX",
+        "size": "1L",
+        "cost": 275
+    },

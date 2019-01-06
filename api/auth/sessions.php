@@ -72,7 +72,7 @@ function login()
 		$time = time();
 		$payload = array(
 			'iat' => $time, 
-			'exp' => $time + 60*$config['token_expiration_time'],
+			'exp' => $time + 60 * $config['token_expiration_time'],
 			'id'  => $u->id,
 			'username' => $u->username,
 			'ip' => [
