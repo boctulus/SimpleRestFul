@@ -27,9 +27,20 @@ class Model {
 		return $this->schema;
 	}	
 
-	function fetchOne()
+	/** 
+	 * Get by id
+	 */
+	function fetchOne(array $fields = null)
 	{
-		$q  = "SELECT *FROM {$this->table_name} WHERE {$this->id_name} = :id";
+		if ($fields == null){
+			$q  = 'SELECT *';
+			$select_fields_array = $this->properties;
+		} else {
+			$select_fields_array = array_intersect($fields, $this->properties);
+			$q  = "SELECT ".implode(", ", $select_fields_array);
+		}
+
+		$q  .= " FROM {$this->table_name} WHERE {$this->id_name} = :id";
 
 		$st = $this->conn->prepare($q);
 		$st->bindParam(":id", $this->{$this->id_name}, constant('PDO::PARAM_'.$this->schema[$this->id_name]));
@@ -39,7 +50,7 @@ class Model {
 		if (!$row)
 			return false;
 	 
-		foreach ($this->properties as $prop){
+		foreach ($select_fields_array as $prop){
 			$this->{$prop} = $row->{$prop};
 		}	
 	}
@@ -59,9 +70,16 @@ class Model {
 			return true;
 	}
 
-	function fetchAll(Paginator $paginator = null)
+	function fetchAll(array $fields = null, Paginator $paginator = null)
 	{
-		$q  = "SELECT * FROM {$this->table_name}";
+		if ($fields == null)
+			$q  = 'SELECT *';
+		else {
+			$select_fields_array = array_intersect($fields, $this->properties);
+			$q  = "SELECT ".implode(", ", $select_fields_array);
+		}
+
+		$q  .= ' FROM '.$this->table_name;
 
 		/// start pagination
 		if($paginator!=null)
@@ -83,8 +101,17 @@ class Model {
 			return false;	
 	}
 
-	function filter($conditions, Paginator $paginator = null)
+	function filter(array $fields = null, array $conditions, Paginator $paginator = null)
 	{
+		if ($fields == null)
+			$q  = 'SELECT *';
+		else {
+			$select_fields_array = array_intersect($fields, $this->properties);
+			$q  = "SELECT ".implode(", ", $select_fields_array);
+		}
+
+		$q  .= ' FROM '.$this->table_name;
+
 		$vars   = array_keys($conditions);
 		$values = array_values($conditions);
 
@@ -94,7 +121,7 @@ class Model {
 		}
 		$where =trim(substr($where, 0, strlen($where)-5));
 		
-		$q  = "SELECT * FROM {$this->table_name} WHERE $where";
+		$q  .= " {$this->table_name} WHERE $where";
 		
 		/// start pagination
 		if($paginator!=null)
@@ -111,6 +138,9 @@ class Model {
 		/// end pagination
 		
 		foreach($values as $ix => $val){
+			if (!isset($this->schema[$vars[$ix]]))
+				throw new InvalidArgumentException("url has errors near '{$vars[$ix]}'");
+
 			$st->bindValue(":{$vars[$ix]}", $val, constant("PDO::PARAM_{$this->schema[$vars[$ix]]}"));
 		}
 
@@ -146,6 +176,9 @@ class Model {
 		$st = $this->conn->prepare($q);
 	 
 		foreach($vals as $ix => $val){
+			if (!isset($this->schema[$vars[$ix]]))
+				throw new InvalidArgumentException("url has errors near '{$vars[$ix]}'");
+
 			$st->bindValue(":{$vars[$ix]}", $val, constant("PDO::PARAM_{$this->schema[$vars[$ix]]}"));
 		}
 		
@@ -175,6 +208,9 @@ class Model {
 		$st = $this->conn->prepare($q);
 	
 		foreach($values as $ix => $val){
+			if (!isset($this->schema[$vars[$ix]]))
+				throw new InvalidArgumentException("url has errors near '{$vars[$ix]}'");
+
 			$st->bindValue(":{$vars[$ix]}", $val, constant("PDO::PARAM_{$this->schema[$vars[$ix]]}"));
 		}
 		$st->bindParam(':id', $this->{$this->id_name});

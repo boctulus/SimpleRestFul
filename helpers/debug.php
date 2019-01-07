@@ -1,6 +1,15 @@
 <?php
 //Namespace Debug;
 
+if (!function_exists('d'))
+{
+	function d($var, $exit = true){
+		var_dump($var);
+		if ($exit)
+			exit;
+	}
+}
+
 if (!function_exists('debug'))
 {
 	function debug($v,$msg=null,$exit=false) 

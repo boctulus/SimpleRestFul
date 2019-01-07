@@ -1,11 +1,18 @@
 # SimpleRestFul
 
-## Request exaplemes
+## Request examples
 
 ## GET <READ>
 
 GET /api/products
 GET /api/products/100
+GET /api/products?name=Vodka
+
+or..
+
+GET api/products?fields=id,name,cost
+GET /api/products/100?fields=id,name,cost
+GET /api/products?fields=id,cost&name=Vodka
 
 ## POST <CREATE>
 

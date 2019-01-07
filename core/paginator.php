@@ -53,11 +53,64 @@ class Paginator
         $this->query = $query;
     }
 
-    function getQuery():string {
+    /**
+     * Set the value of orders
+     *
+     * @return  self
+     */ 
+    public function setOrders($orders): Paginator
+    {
+        $this->orders = $orders;
+        return $this;
+    }
+
+    /**
+     * Set the value of offset
+     *
+     * @return  self
+     */ 
+    public function setOffset($offset): Paginator
+    {
+        $this->offset = $offset;
+        return $this;
+    }
+
+    /**
+     * Set the value of limit
+     *
+     * @return  self
+     */ 
+    public function setLimit($limit): Paginator
+    {
+        $this->limit = $limit;
+        return $this;
+    }
+
+    /**
+     * Set the value of properties
+     *
+     * @return  self
+     */ 
+    public function setProperties($properties): Paginator
+    {
+        $this->properties = $properties;
+        return $this;
+    }
+ 
+
+    /**
+     * Get the value of query
+     */ 
+    public function getQuery(): string
+    {
         return $this->query;
     }
 
-    function getBinding():array {
+    /**
+     * Get the value of binding
+     */ 
+    public function getBinding(): array
+    {
         return $this->binding;
     }
 }

@@ -52,7 +52,13 @@ try {
 		*/
 		case 'GET':
 			$id   = $_GET['id'] ?? NULL;
-		
+
+			if (array_key_exists("id", $_GET)) 
+				$_GET["id"] = (int) $_GET["id"];
+
+			$fields = isset($_GET['fields']) ? explode(',',$_GET['fields']) : NULL;
+			unset($_GET['fields']);
+
 			if (!$id){
 				$limit  = $_GET['limit'] ?? NULL;
 				$offset = $_GET['offset'] ?? 0;
@@ -77,17 +83,23 @@ try {
 				}else
 					$paginator = null;
 
-				if (!empty($_GET)){
-					$rows = $product->filter($_GET, $paginator);
-					SendData($rows,200); 
-				}else {
-					$rows = $product->fetchAll($paginator);
-					sendData($rows,200); 
-				}	
+				try {
+					if (!empty($_GET)){
+						$rows = $product->filter($fields, $_GET, $paginator);
+						SendData($rows,200); 
+					}else {
+						$rows = $product->fetchAll($fields, $paginator);
+						sendData($rows,200); 
+					}	
+				} catch (Exception $e) {
+					sendError('Error in fetch: '.$e->getMessage());
+				}		
+					
+
 			}else{ 
 				// one product by id
 				$product->id = $_GET['id'];
-				if ($product->fetchOne() === false)
+				if ($product->fetchOne($fields) === false)
 					sendError("Not found for id={$_GET['id']}",404);
 				else
 					sendData($product, 200);
