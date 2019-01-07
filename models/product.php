@@ -11,6 +11,7 @@ class Product extends Model
 {
 	protected $table_name = "products";
 	protected $id_name = 'id';
+	protected $fillable = ['name','description','size','cost'];
  
 	/*
 		Types are INT, STR and BOOL among others

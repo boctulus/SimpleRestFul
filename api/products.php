@@ -7,11 +7,6 @@ header('access-control-allow-Methods: GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS');
 header('access-control-allow-Origin: *');
 header('content-type: application/json; charset=UTF-8');
 
-/*
-	API Rest examples:
-	
-	https://jsonplaceholder.typicode.com/
-*/
 
 $config =  include '../config/config.php';
 
@@ -20,6 +15,7 @@ require_once ROOT_PATH.'api/helpers/http.php';;
 require_once ROOT_PATH.'libs/database.php';
 require_once ROOT_PATH.'models/product.php';
 include_once ROOT_PATH.'helpers/debug.php';
+require_once ROOT_PATH.'core/paginator.php';
 
 // logger(file_get_contents("php://input"));
 try {
@@ -33,6 +29,11 @@ try {
 		$conn = Database::getConnection($config);
 		$product = new Product($conn);
 	}	
+
+
+	if (array_key_exists("id", $_GET)) 
+		$_GET["id"] = (int) $_GET["id"];
+
 	
 	switch($_SERVER['REQUEST_METHOD'])
 	{
@@ -52,9 +53,6 @@ try {
 		*/
 		case 'GET':
 			$id   = $_GET['id'] ?? NULL;
-
-			if (array_key_exists("id", $_GET)) 
-				$_GET["id"] = (int) $_GET["id"];
 
 			$fields = isset($_GET['fields']) ? explode(',',$_GET['fields']) : NULL;
 			unset($_GET['fields']);

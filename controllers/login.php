@@ -8,7 +8,7 @@ function login(){
 	include "views/login.php";
 }
 
-// registration
-function sign_in(){
-	include "views/sign_in.php";
+function signin(){
+	include "views/signin.php";
 }
+

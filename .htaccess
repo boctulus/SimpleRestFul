@@ -12,7 +12,7 @@ RewriteRule ^api/auth/token/renew api/auth/sessions.php?a=renew [L]
 #
 # si generalizo el nombre de la api, entra en conflico con api/auth/login
 #
-RewriteRule ^api/products/([0-9]+.*)$ api/products.php?id=$1?$2 [L,QSA]
+RewriteRule ^api/products/([0-9]+)(.*)$ api/products.php?id=$1?$2 [L,QSA]
 RewriteRule ^api/products/([0-9]+)$ api/products.php?id=$1 [L]
 RewriteRule ^api/products?(.*)$ api/products.php?$1 [L,QSA]
 

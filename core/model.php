@@ -1,8 +1,6 @@
 <?php
 declare(strict_types=1);
 
-require_once 'paginator.php';
-
 class Model {
 
 	protected $table_name;
@@ -11,6 +9,7 @@ class Model {
 	protected $properties = [];
 	protected $missing_properties = [];
 	protected $schema;
+	protected $fillable = '*';
 
 
 	public function __construct($db){
@@ -139,7 +138,7 @@ class Model {
 		
 		foreach($values as $ix => $val){
 			if (!isset($this->schema[$vars[$ix]]))
-				throw new InvalidArgumentException("url has errors near '{$vars[$ix]}'");
+				throw new InvalidArgumentException("there is an error near '{$vars[$ix]}'");
 
 			$st->bindValue(":{$vars[$ix]}", $val, constant("PDO::PARAM_{$this->schema[$vars[$ix]]}"));
 		}
@@ -167,6 +166,13 @@ class Model {
 		$vars   = array_keys($data);
 		$vals = array_values($data);
 
+		if($this->fillable!='*' && is_array($this->fillable)){
+			foreach($vars as $var){
+				if (!in_array($var,$this->fillable))
+					throw new InvalidArgumentException("$var is no fillable");
+			}
+		}
+
 		$str_vars = implode(', ',$vars);
 
 		$symbols = array_map(function($v){ return ":$v";}, $vars);
@@ -177,7 +183,7 @@ class Model {
 	 
 		foreach($vals as $ix => $val){
 			if (!isset($this->schema[$vars[$ix]]))
-				throw new InvalidArgumentException("url has errors near '{$vars[$ix]}'");
+				throw new InvalidArgumentException("there is an error near '{$vars[$ix]}'");
 
 			$st->bindValue(":{$vars[$ix]}", $val, constant("PDO::PARAM_{$this->schema[$vars[$ix]]}"));
 		}
@@ -194,6 +200,13 @@ class Model {
 	{
 		$vars   = array_keys($data);
 		$values = array_values($data);
+
+		if($this->fillable!='*' && is_array($this->fillable)){
+			foreach($vars as $var){
+				if (!in_array($var,$this->fillable))
+					throw new InvalidArgumentException("$var is no fillable");
+			}
+		}
 		
 		$set = '';
 		foreach($vars as $ix => $var){
@@ -209,7 +222,7 @@ class Model {
 	
 		foreach($values as $ix => $val){
 			if (!isset($this->schema[$vars[$ix]]))
-				throw new InvalidArgumentException("url has errors near '{$vars[$ix]}'");
+				throw new InvalidArgumentException("there is an error near '{$vars[$ix]}'");
 
 			$st->bindValue(":{$vars[$ix]}", $val, constant("PDO::PARAM_{$this->schema[$vars[$ix]]}"));
 		}

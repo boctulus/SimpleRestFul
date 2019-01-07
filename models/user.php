@@ -7,7 +7,14 @@ class User extends Model
  {
 	protected $table_name = "users";
 	protected $id_name = 'id';
- 
+	protected $fillable = [
+							'username',
+							'password',
+							'firstname',
+							'lastname',
+							'email'
+	];
+
 	/*
 		Types are INT, STR and BOOL among others
 		see: https://secure.php.net/manual/en/pdo.constants.php 
@@ -15,7 +22,10 @@ class User extends Model
 	protected $schema = [
 		'id' => 'INT',
 		'username' => 'STR',
-		'password' => 'STR'
+		'password' => 'STR',
+		'firstname' => 'STR',
+		'lastname'=> 'STR',
+		'email' => 'STR'
 	];
 
     public function __construct($db){
