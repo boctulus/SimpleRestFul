@@ -12,8 +12,8 @@ class Model {
 	protected $fillable = '*';
 
 
-	public function __construct($db){
-		$this->conn = $db;
+	public function __construct(object $conn = null){
+		$this->conn = $conn;
 		$this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
 		if (empty($this->schema))
@@ -21,10 +21,6 @@ class Model {
 
 		$this->properties = array_keys($this->schema);
 	}
-
-	public function schema(){
-		return $this->schema;
-	}	
 
 	/** 
 	 * Get by id
@@ -269,5 +265,16 @@ class Model {
 	public function getProperties()
 	{
 		return $this->properties;
+	}
+
+	/**
+	 * Set the value of conn
+	 *
+	 * @return  self
+	 */ 
+	public function setConn($conn)
+	{
+		$this->conn = $conn;
+		return $this;
 	}
 }

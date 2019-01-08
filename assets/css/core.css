@@ -1,6 +1,6 @@
 	.th_blue { background-color: #4a89dc; color:eee; }
 	
-	/*
+/*
 	.modal-open .modal {
 		display: flex !important;
 		align-items: center;
@@ -13,3 +13,23 @@
 	  padding: 3px 20px !important;
 	  text-align: left !important;
 	}
+
+	/*
+	#loginModal {
+		margin-top: 200px;
+	}
+
+	#signinModal {
+		margin-top: 40px;
+	}
+	*/
+
+	.modal.show  {
+		display:flex!important;
+		flex-direction:column;
+		justify-content:center;
+		align-content:center;
+		align-items: flex-start;
+	}
+	
+	

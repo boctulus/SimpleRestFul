@@ -1,14 +1,20 @@
 <?php
 
-function index(){
-	login();
+require_once "my_controller.php";
+
+class LoginController extends My_Controller
+{
+	function index(){
+		$this->login();
+	}
+	
+	function login(){
+		$this->loadView('login.php');
+	}
+	
+	function signin(){
+		$this->loadView('signin.php');
+	}
 }
 
-function login(){
-	include "views/login.php";
-}
-
-function signin(){
-	include "views/signin.php";
-}
 

@@ -1,8 +1,5 @@
-<html>
-	<head> 
-		<meta name="viewport" content="width=device-width, initial-scale=1">
-		
-		<script>
+
+	<script>
 		function notLoggedGoHome(){
 			const expired = ((localStorage.getItem('exp')!=null) && ((localStorage.getItem('exp')*1000) - (new Date()).getTime())<0);
 			
@@ -10,24 +7,7 @@
 				window.location = '?c=login';
 		}
 		notLoggedGoHome();
-		</script>
-		
-		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-		<link href="assets/css/toastr.css" rel="stylesheet"/>
-		<link href="assets/css/core.css" rel="stylesheet"/>
-		
-		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>	
-		<script src="assets/js/toastr.min.js"></script><!-- flash notifications -->	
-		<script src="assets/js/bootbox.min.js"></script><!-- confirmation boxes -->
-		<script src="assets/js/login.js?v=1"></script>
-		<script src="assets/js/jqtable.js"></script>
-	</head>
-
-<body>	
-<div class="container-fluid">
-
-	<?php include "views/navbar.php" ?>
+	</script>
 
 	<h1 class="red-text text-center" style="font-size:2em">Products</h1>
 
@@ -37,7 +17,6 @@
 	<a href="#productModalAdd" class="btn btn-info btn-sm" data-toggle="modal" onClick="clearForm();"> 
 	  <span class="glyphicon glyphicon-plus"></span> Add 
 	</a>
-
 
 	<!-- Add Form Modal -->
 	<div class="modal fade" id="productModalAdd" tabindex="-1" role="dialog" aria-labelledby="productModalAddLabel" aria-hidden="true">
@@ -415,6 +394,3 @@
 	}
 	
 </script>
-
-</body>
-</html>
