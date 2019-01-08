@@ -1,14 +1,10 @@
 <?php
 	error_reporting(E_ALL);
 
-	require_once "config/config.php";
+	require_once "core/front_controller.php";
 	include "vendor/autoload.php";
-	include "core/front_controller.php";
 
-	$c = $_GET['c'] ?? 'products';
-	$a = $_GET['a'] ?? 'index';
-	
-	FrontController::resolve($c,$a,$_REQUEST);
+	FrontController::resolve();
 	
 	
 

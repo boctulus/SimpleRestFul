@@ -4,6 +4,8 @@ declare(strict_types=1);
 require_once 'constants.php';
 
 return [
+		'DEFAULT_CONTROLLER' => 'ProductsController',
+
 		// DB
 		'host' => 'localhost',
 		'db_name' => 'api_sb', 

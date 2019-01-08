@@ -10,12 +10,12 @@ class My_Controller extends Controller {
         $this->_title = str_replace('Controller','',get_class($this));
     }
 
-    function loadView(string $view_path, array $vars_to_be_passed = null, $layout = 'app_layout.php'){
+    function view(string $view_path, array $vars_to_be_passed = null, $layout = 'app_layout.php'){
         if(!isset($vars_to_be_passed['title'])){
             $vars_to_be_passed['title'] = $this->_title;
         }
 
-        parent::loadView($view_path, $vars_to_be_passed, $layout);
+        parent::view($view_path, $vars_to_be_passed, $layout);
    }
 
 }

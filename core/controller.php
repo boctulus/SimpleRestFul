@@ -5,7 +5,7 @@ class Controller
     function __construct() {
     }
 
-    function loadView(string $view_path, array $vars_to_be_passed  = null, $layout = 'app_layout.php'){
+    function view(string $view_path, array $vars_to_be_passed  = null, $layout = 'app_layout.php'){
 		ob_start();
 		require_once("views/{$view_path}");
 		$content = ob_get_contents();

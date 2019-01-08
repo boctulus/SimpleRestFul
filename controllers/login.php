@@ -9,11 +9,11 @@ class LoginController extends My_Controller
 	}
 	
 	function login(){
-		$this->loadView('login.php');
+		$this->view('login.php');
 	}
 	
 	function signin(){
-		$this->loadView('signin.php');
+		$this->view('signin.php');
 	}
 }
 

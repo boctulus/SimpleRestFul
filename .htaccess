@@ -1,6 +1,11 @@
 Options FollowSymLinks
 RewriteEngine On
 
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+# RewriteRule ^(.*)$ /index.php
+
+
 # API RESTFUL
 
 RewriteRule ^api/auth/login$ api/auth/sessions.php?a=login [L]
