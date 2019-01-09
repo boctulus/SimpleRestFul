@@ -4,7 +4,7 @@
 			const expired = ((localStorage.getItem('exp')!=null) && ((localStorage.getItem('exp')*1000) - (new Date()).getTime())<0);
 			
 			if ((localStorage.getItem('tokenJwt') == null) || expired)
-				window.location = '?c=login';
+				window.location = login_page;
 		}
 		notLoggedGoHome();
 	</script>
@@ -386,7 +386,7 @@
 			},
 			error: function(data){
 				if (data.statusText=='Unauthorized' ){
-					window.location = '?c=login';
+					window.location = login_page;
 				}
 				console.log('Error in GET all', data);
 			}

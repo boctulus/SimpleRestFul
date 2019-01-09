@@ -1,3 +1,6 @@
+	const base_url = getSiteRoot();
+	const login_page = base_url + 'login';  // '?c=login';
+
 	$(document).on('submit', '#sign_up_form', function(){
 		console.log('here!');
 
@@ -16,7 +19,7 @@
 					localStorage.setItem('tokenJwt',data.token);
 					localStorage.setItem('exp',data.exp);
 					localStorage.setItem('username',obj.username);
-					window.location = 'index.php';
+					window.location = base_url; 'index.php'
 				}else{		
 					$('#siginError').text('Error during signin');
 					console.log(data);
@@ -47,7 +50,7 @@
 					localStorage.setItem('tokenJwt',data.token);
 					localStorage.setItem('exp',data.exp);
 					localStorage.setItem('username',obj.username);
-					window.location = 'index.php';
+					window.location = base_url;
 				}else{		
 					$('#loginError').text('Error en usuario o password');
 					console.log(data);
@@ -64,7 +67,7 @@
 	
 	function logout(){
 		localStorage.removeItem('tokenJwt');
-		window.location.href = '?c=login';
+		window.location.href = login_page;
 	}
 
 	function renew(){
@@ -81,32 +84,15 @@
 					localStorage.setItem('exp',data.exp);
 				}else{
 					console.log('Error en la renovación del token');
-					window.location = '?c=login';
+					window.location = login_page ;
 				}
 			},
 			error: function(data){
 				console.log('Error en la renovación del token!!!!!!!!!!!!');
 				console.log(data);
-				window.location = '?c=login';
+				window.location = login_page;
 			}
 		});		
 	}
+
 	
-	// function to make form values to json format
-	// from codeofaninja.com
-	$.fn.serializeObject = function(){
-	
-		var o = {};
-		var a = this.serializeArray();
-		$.each(a, function() {
-			if (o[this.name] !== undefined) {
-				if (!o[this.name].push) {
-					o[this.name] = [o[this.name]];
-				}
-				o[this.name].push(this.value || '');
-			} else {
-				o[this.name] = this.value || '';
-			}
-		});
-		return o;
-	};

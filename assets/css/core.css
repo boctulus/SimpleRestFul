@@ -14,16 +14,6 @@
 	  text-align: left !important;
 	}
 
-	/*
-	#loginModal {
-		margin-top: 200px;
-	}
-
-	#signinModal {
-		margin-top: 40px;
-	}
-	*/
-
 	.modal.show  {
 		display:flex!important;
 		flex-direction:column;
@@ -32,4 +22,9 @@
 		align-items: flex-start;
 	}
 	
+
+	#signinModal {
+		margin-top: 40px;
+	}
+
 	

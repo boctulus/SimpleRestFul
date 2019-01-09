@@ -2,10 +2,10 @@
 
 require_once 'my_controller.php';
 
-class ProductsController extends My_Controller
+class ProductsController extends MyController
 {
 	function index(){
-		$this->view('products.php',['title'=>'Products']);
+		$this->view('products.php');
 	}
 }
 	

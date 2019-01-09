@@ -2,7 +2,7 @@
 
 require_once 'core/controller.php';
 
-class My_Controller extends Controller {
+class MyController extends Controller {
     protected $_title;
 
     public function __construct(){

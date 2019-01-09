@@ -1,6 +1,8 @@
 <?php
 
-class Controller
+require_once 'controller.interface.php';
+
+class Controller implements IController
 {
     function __construct() {
     }
