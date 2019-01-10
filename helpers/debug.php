@@ -1,18 +1,25 @@
 <?php
 //Namespace Debug;
 
-if (!function_exists('d'))
+if (!function_exists('dd'))
 {
-	function d($var, $exit = true){
-		var_dump($var);
-		if ($exit)
-			exit;
+	function dd($var, $prettify = false, $exit = true){
+		if ($prettify){
+			print '<pre>';
+			print_r($var);
+			print '</pre>';
+		}
+		else{
+			var_dump($var);
+			if ($exit)
+				exit;
+		}
 	}
 }
 
 if (!function_exists('debug'))
 {
-	function debug($v,$msg=null,$exit=false) 
+	function debug($v, $msg=null, $exit=false, $prettify = true) 
 	{			
 		if (gettype($v)=='boolean'){
 			echo ($v ? "TRUE" : "FALSE");
@@ -22,21 +29,22 @@ if (!function_exists('debug'))
 		{
 			if ($msg!="")
 				echo $msg."\n";
+
 			print_r($v);	
 		}else{	
 			if ($msg!="")
 				echo $msg."<br/>";
-			print '<pre>';
-			print_r($v);
-			print '</pre>';
+			
+			if ($prettify){
+				print '<pre>';
+				print_r($v);
+				print '</pre>';
+			}else
+				print_r($v);	
 		}
-	
-		print("\n");
-			
-		if ($exit)		
-			die("\nEND.");		
 		
-			
+		if ($exit)		
+			exit;				
 	}		
 }	
 

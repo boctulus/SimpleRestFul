@@ -1,6 +1,5 @@
 <?php
 declare(strict_types=1);
-//set_include_path(get_include_path() . PATH_SEPARATOR . __DIR__ . '/');
 
 require_once 'constants.php';
 
@@ -8,11 +7,12 @@ return [
 		'BASE_URL' => 'SimpleRestFul/',
 		'DEFAULT_CONTROLLER' => 'ProductsController',
 
-		// DB
-		'host' => 'localhost',
-		'db_name' => 'api_sb', 
-		'user' => 'root', 
-		'pass' => '', 
+		'database' => [
+			'host' => 'localhost',
+			'db_name' => 'api_sb', 
+			'user' => 'root', 
+			'pass' => ''
+		], 
 		
 		// JWT
 		'jwt_secret_key' =>'BHH#**@())0))@Jhr&@&#()_hrrK@911kk19))K)_!.S>!_)#I@#(',

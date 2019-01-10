@@ -5,6 +5,7 @@ require_once 'controller.interface.php';
 class Controller implements IController
 {
     function __construct() {
+        $this->config = include ROOT_PATH . 'config/config.php';
     }
 
     function view(string $view_path, array $vars_to_be_passed  = null, $layout = 'app_layout.php'){

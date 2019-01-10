@@ -3,11 +3,11 @@ declare(strict_types=1);
 
 include CORE_PATH. 'model.php';
 
-class User extends Model
+class UserModel extends Model
  {
-	protected $table_name = "users";
-	protected $id_name = 'id';
-	protected $fillable = [
+	static protected $table_name = "users";
+	static protected $id_name = 'id';
+	static protected $fillable = [
 							'username',
 							'password',
 							'firstname',
@@ -19,7 +19,7 @@ class User extends Model
 		Types are INT, STR and BOOL among others
 		see: https://secure.php.net/manual/en/pdo.constants.php 
 	*/
-	protected $schema = [
+	static protected $schema = [
 		'id' => 'INT',
 		'username' => 'STR',
 		'password' => 'STR',
@@ -28,13 +28,13 @@ class User extends Model
 		'email' => 'STR'
 	];
 
-    public function __construct($db){
+    public function __construct($db = NULL){
         parent::__construct($db);
     }
 	
 	function getUserIfExists()
 	{
-		$q  = "SELECT * FROM {$this->table_name} WHERE username=? AND password=?";
+		$q  = "SELECT * FROM ".static::$table_name." WHERE username=? AND password=?";
 		$st = $this->conn->prepare($q);
 		$st->execute([$this->username, sha1($this->password)]);
 	

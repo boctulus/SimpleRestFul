@@ -1,6 +1,6 @@
 <?php
 
-//require_once "my_controller.php";
+require_once "my_controller.php";
 
 class LoginController extends MyController
 {

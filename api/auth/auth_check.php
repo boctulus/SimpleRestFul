@@ -2,9 +2,7 @@
 declare(strict_types=1);
 
 require_once '../vendor/autoload.php';
-include_once 'helpers/http.php';
 // include_once '../helpers/debug.php';
-
 
 /* 
 	Authorization checkin
@@ -25,7 +23,6 @@ function check_auth() {
 		try{
 			// Checking for token invalidation or outdated token
 			$config =  include '../config/config.php';
-			$conn = Database::getConnection($config);
 			
 			$data = Firebase\JWT\JWT::decode($jwt, $config['jwt_secret_key'], [ $config['encryption'] ]);
 			

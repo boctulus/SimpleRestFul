@@ -24,7 +24,7 @@ if (!defined('HELPERS_PATH'))
 define('HELPERS_PATH', ROOT_PATH . DIRECTORY_SEPARATOR . 'helpers/');   
 
 if (!defined('API_PATH'))
-define('API_PATH', ROOT_PATH . DIRECTORY_SEPARATOR . 'api/'); 
+define('API_PATH', CONTROLLERS_PATH . DIRECTORY_SEPARATOR . 'api/'); 
 
 if (!defined('LIBS_PATH'))
 define('LIBS_PATH', ROOT_PATH . DIRECTORY_SEPARATOR . 'helpers/');   

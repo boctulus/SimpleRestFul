@@ -1,25 +1,28 @@
 <?php
 declare(strict_types=1);
 
+require_once CORE_PATH. 'paginator.php';
+
 class Model {
 
-	protected $table_name;
-	protected $id_name = 'id';
+	static protected $table_name;
+	static protected $id_name = 'id';
+	static protected $schema;
+	static protected $fillable = '*';
+	static protected $properties = [];
 	protected $conn;
-	protected $properties = [];
-	protected $missing_properties = [];
-	protected $schema;
-	protected $fillable = '*';
 
 
 	public function __construct(object $conn = null){
-		$this->conn = $conn;
-		$this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+		if($conn){
+			$this->conn = $conn;
+			$this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+		}
+		
+		if (empty(static::$schema))
+			throw new Exception ("Schema is empty!");
 
-		if (empty($this->schema))
-			throw Exception ("Schema is empty!");
-
-		$this->properties = array_keys($this->schema);
+		static::$properties = array_keys(static::$schema);
 	}
 
 	/** 
@@ -29,16 +32,16 @@ class Model {
 	{
 		if ($fields == null){
 			$q  = 'SELECT *';
-			$select_fields_array = $this->properties;
+			$select_fields_array = static::$properties;
 		} else {
-			$select_fields_array = array_intersect($fields, $this->properties);
+			$select_fields_array = array_intersect($fields, static::$properties);
 			$q  = "SELECT ".implode(", ", $select_fields_array);
 		}
 
-		$q  .= " FROM {$this->table_name} WHERE {$this->id_name} = :id";
+		$q  .= " FROM ".static::$table_name." WHERE ".static::$id_name." = :id";
 
 		$st = $this->conn->prepare($q);
-		$st->bindParam(":id", $this->{$this->id_name}, constant('PDO::PARAM_'.$this->schema[$this->id_name]));
+		$st->bindParam(":id", $this->{static::$id_name}, constant('PDO::PARAM_'.static::$schema[static::$id_name]));
 		$st->execute();
 		
 		$row = $st->fetch(PDO::FETCH_OBJ);
@@ -52,9 +55,9 @@ class Model {
 	
 	function exists()
 	{
-		$q  = "SELECT *FROM {$this->table_name} WHERE {$this->id_name}=:id";
+		$q  = "SELECT * FROM ".static::$table_name." WHERE ".static::$id_name."=:id";
 		$st = $this->conn->prepare( $q );
-		$st->bindParam(":id", $this->{$this->id_name}, PDO::PARAM_INT);
+		$st->bindParam(":id", $this->{static::$id_name}, PDO::PARAM_INT);
 		$st->execute();
 		
 		$row = $st->fetch(PDO::FETCH_ASSOC);
@@ -65,16 +68,30 @@ class Model {
 			return true;
 	}
 
-	function fetchAll(array $fields = null, Paginator $paginator = null)
+	function fetchAll(array $fields = null, array $order = NULL, int $limit = NULL, int $offset = 0)
 	{
+		if($limit>0 || $order!=NULL){
+			try {
+				$paginator = new Paginator();
+				$paginator->limit  = $limit;
+				$paginator->offset = $offset;
+				$paginator->orders = $order;
+				$paginator->properties = static::$properties;
+				$paginator->compile();
+			}catch (Exception $e){
+				sendError("Pagination error: {$e->getMessage()}");
+			}
+		}else
+			$paginator = null;	
+
 		if ($fields == null)
 			$q  = 'SELECT *';
 		else {
-			$select_fields_array = array_intersect($fields, $this->properties);
+			$select_fields_array = array_intersect($fields, static::$properties);
 			$q  = "SELECT ".implode(", ", $select_fields_array);
 		}
 
-		$q  .= ' FROM '.$this->table_name;
+		$q  .= ' FROM '.static::$table_name;
 
 		/// start pagination
 		if($paginator!=null)
@@ -96,16 +113,30 @@ class Model {
 			return false;	
 	}
 
-	function filter(array $fields = null, array $conditions, Paginator $paginator = null)
+	function filter(array $fields = null, array $conditions, array $order = null, int $limit = NULL, int $offset = 0)
 	{
+		if($limit>0 || $order!=NULL){
+			try {
+				$paginator = new Paginator();
+				$paginator->limit  = $limit;
+				$paginator->offset = $offset;
+				$paginator->orders = $order;
+				$paginator->properties = static::$properties;
+				$paginator->compile();
+			}catch (Exception $e){
+				sendError("Pagination error: {$e->getMessage()}");
+			}
+		}else
+			$paginator = null;	
+
 		if ($fields == null)
 			$q  = 'SELECT *';
 		else {
-			$select_fields_array = array_intersect($fields, $this->properties);
+			$select_fields_array = array_intersect($fields, static::$properties);
 			$q  = "SELECT ".implode(", ", $select_fields_array);
 		}
 
-		$q  .= ' FROM '.$this->table_name;
+		$q  .= ' FROM '.static::$table_name;
 
 		$vars   = array_keys($conditions);
 		$values = array_values($conditions);
@@ -116,7 +147,7 @@ class Model {
 		}
 		$where =trim(substr($where, 0, strlen($where)-5));
 		
-		$q  .= " {$this->table_name} WHERE $where";
+		$q  .= " ".static::$table_name." WHERE $where";
 		
 		/// start pagination
 		if($paginator!=null)
@@ -133,10 +164,11 @@ class Model {
 		/// end pagination
 		
 		foreach($values as $ix => $val){
-			if (!isset($this->schema[$vars[$ix]]))
+			if (!isset(static::$schema[$vars[$ix]]))
 				throw new InvalidArgumentException("there is an error near '{$vars[$ix]}'");
 
-			$st->bindValue(":{$vars[$ix]}", $val, constant("PDO::PARAM_{$this->schema[$vars[$ix]]}"));
+			$const = static::$schema[$vars[$ix]];
+			$st->bindValue(":{$vars[$ix]}", $val, constant("PDO::PARAM_{$const}"));
 		}
 
 		if ($st->execute())
@@ -147,9 +179,9 @@ class Model {
 
 	function delete()
 	{
-		$q = "DELETE FROM {$this->table_name} WHERE {$this->id_name} = ?";
+		$q = "DELETE FROM ".static::$table_name." WHERE ".static::$id_name." = ?";
 		$st = $this->conn->prepare($q);
-		$st->bindParam(1, $this->{$this->id_name});
+		$st->bindParam(1, $this->{static::$id_name});
 	 
 		if($st->execute())
 			return $st->rowCount();
@@ -162,9 +194,9 @@ class Model {
 		$vars   = array_keys($data);
 		$vals = array_values($data);
 
-		if($this->fillable!='*' && is_array($this->fillable)){
+		if(static::$fillable!='*' && is_array(static::$fillable)){
 			foreach($vars as $var){
-				if (!in_array($var,$this->fillable))
+				if (!in_array($var,static::$fillable))
 					throw new InvalidArgumentException("$var is no fillable");
 			}
 		}
@@ -174,19 +206,20 @@ class Model {
 		$symbols = array_map(function($v){ return ":$v";}, $vars);
 		$str_vals = implode(', ',$symbols);
 
-		$q = "INSERT INTO {$this->table_name} ($str_vars) VALUES ($str_vals)";
+		$q = "INSERT INTO ".static::$table_name." ($str_vars) VALUES ($str_vals)";
 		$st = $this->conn->prepare($q);
 	 
 		foreach($vals as $ix => $val){
-			if (!isset($this->schema[$vars[$ix]]))
-				throw new InvalidArgumentException("there is an error near '{$vars[$ix]}'");
+			//if (!isset(static::$schema[$vars[$ix]]))  # posible dupe
+			//	throw new InvalidArgumentException("there is an error near '{$vars[$ix]}'");
 
-			$st->bindValue(":{$vars[$ix]}", $val, constant("PDO::PARAM_{$this->schema[$vars[$ix]]}"));
+			$const = static::$schema[$vars[$ix]];
+			$st->bindValue(":{$vars[$ix]}", $val, constant("PDO::PARAM_{$const}"));
 		}
 		
 		$result = $st->execute();
 		if ($result){
-			return $this->{$this->id_name} = $this->conn->lastInsertId();
+			return $this->{static::$id_name} = $this->conn->lastInsertId();
 		}else
 			return false;
 	}
@@ -197,9 +230,9 @@ class Model {
 		$vars   = array_keys($data);
 		$values = array_values($data);
 
-		if($this->fillable!='*' && is_array($this->fillable)){
+		if(static::$fillable!='*' && is_array(static::$fillable)){
 			foreach($vars as $var){
-				if (!in_array($var,$this->fillable))
+				if (!in_array($var,static::$fillable))
 					throw new InvalidArgumentException("$var is no fillable");
 			}
 		}
@@ -210,19 +243,20 @@ class Model {
 		}
 		$set =trim(substr($set, 0, strlen($set)-2));
 
-		$q = "UPDATE {$this->table_name} 
+		$q = "UPDATE ".static::$table_name." 
 				SET $set
-				WHERE {$this->id_name} = :id";
+				WHERE ".static::$id_name."= :id";
 	 
 		$st = $this->conn->prepare($q);
 	
 		foreach($values as $ix => $val){
-			if (!isset($this->schema[$vars[$ix]]))
+			if (!isset(static::$schema[$vars[$ix]]))
 				throw new InvalidArgumentException("there is an error near '{$vars[$ix]}'");
 
-			$st->bindValue(":{$vars[$ix]}", $val, constant("PDO::PARAM_{$this->schema[$vars[$ix]]}"));
+			$const = static::$schema[$vars[$ix]];	
+			$st->bindValue(":{$vars[$ix]}", $val, constant("PDO::PARAM_{$const}"));
 		}
-		$st->bindParam(':id', $this->{$this->id_name});
+		$st->bindParam(':id', $this->{static::$id_name});
 	 
 		if($st->execute())
 			return $st->rowCount();
@@ -233,12 +267,8 @@ class Model {
 	/*
 		'''Reflection'''
 	*/
-
-	function getMissingProperties() {
-		return $this->missing_properties;
-	}
 	
-	function has_properties($props, array $excluded = []){
+	static function inSchema($props, array $excluded = []){
 		if (is_object($props))
 			$props = (array) $props;
 		
@@ -247,24 +277,43 @@ class Model {
 		if (empty($props))
 			throw new InvalidArgumentException("Properties not found!");
 		
-		$success = true;
-		foreach ($this->properties as $exp){
+		$missing_properties = [];
+
+		foreach (static::$properties as $exp){
 			if (!in_array($exp, $props) && !in_array($exp, $excluded)){
-				$this->missing_properties[] = $exp; 
-				$success = false;
+				return false; 
 			}	
 		}
 
-		return $success;
+		return true;
+	}
+
+	static function diffWithSchema($props, array $excluded = []){
+		if (is_object($props))
+			$props = (array) $props;
+		
+		$props = array_keys($props);
+		
+		if (empty($props))
+			throw new InvalidArgumentException("Properties not found!");
+		
+		$missing_properties = [];
+
+		foreach (static::$properties as $ix => $exp){
+			if (!in_array($exp, $props) && !in_array($exp, $excluded)){
+				$missing_properties[] = $exp; 
+			}	
+		}
+
+		return $missing_properties;
 	}
 	
-
 	/**
-	 * Get the value of properties
+	 * Get schema 
 	 */ 
-	public function getProperties()
+	static public function getSchema()
 	{
-		return $this->properties;
+		return static::$properties;
 	}
 
 	/**

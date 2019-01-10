@@ -8,7 +8,7 @@ header('access-control-allow-Origin: *');
 header('content-type: application/json; charset=UTF-8');
 
 include '../../config/constants.php';
-include_once '../helpers/http.php';
+include_once  HELPERS_PATH.'http.php';
 require_once '../../vendor/autoload.php';
 require_once '../../libs/database.php'; 
 require_once '../../models/user.php';
@@ -27,67 +27,65 @@ if (in_array($_GET['a'],$allowed)){
 	exit();
 
 
-	function signin()
-	{
-		if($_SERVER['REQUEST_METHOD']!='POST')
-			exit;
-			
-		try {
-			$input = file_get_contents("php://input");	
-			$data  = json_decode($input,true);
-			
-			if ($data == null)
-				sendError('Invalid JSON',400);
+function signin()
+{
+	if($_SERVER['REQUEST_METHOD']!='POST')
+		exit;
+		
+	try {
+		$input = file_get_contents("php://input");	
+		$data  = json_decode($input,true);
+		
+		if ($data == null)
+			sendError('Invalid JSON',400);
 
-			$config =  include '../../config/config.php';
+		$config =  include '../../config/config.php';
 
-			$conn = Database::getConnection($config);
-			$u = new User($conn);
+		$conn = Database::getConnection($config['database']);
+		$u = new UserModel($conn);
 
-			// debo usar mi clase FormValitador !!
-			if (!$u->has_properties($data, ['id'])){
-				sendError('Lack some properties in your request: '.implode(',',$u->getMissingProperties()));
-			}
-					
-			if ($data['password'] != $data['passwordconfirmation'])
-				sendError('Password confimation fails');
-			
-			$data['password'] = sha1($data['password']);
+		// debo usar mi clase FormValitador !!
+		if (!$u->has_properties($data, ['id'])){
+			sendError('Lack some properties in your request: '.implode(',',$u->getMissingProperties()));
+		}
+				
+		if ($data['password'] != $data['passwordconfirmation'])
+			sendError('Password confimation fails');
+		
+		$data['password'] = sha1($data['password']);
 
-			unset($data['passwordconfirmation']);
-			
-			if (empty($u->create($data)))
-				sendError("Error in user registration!");
-			
-			$time = time();
-			$payload = array(
-				'iat' => $time, 
-				'exp' => $time + 60 * $config['token_expiration_time'],
-				'id'  => $u->id,
-				'username' => $u->username,
-				'ip' => [
-					'REMOTE_ADDR' => $_SERVER['REMOTE_ADDR'] ?? '',
-					'HTTP_CLIENT_IP' => $_SERVER['HTTP_CLIENT_IP'] ?? '',
-					'HTTP_FORWARDED' => $_SERVER['HTTP_FORWARDED'] ?? '',
-					'HTTP_FORWARDED_FOR' => $_SERVER['HTTP_FORWARDED_FOR'] ?? '',
-					'HTTP_X_FORWARDED' => $_SERVER['HTTP_X_FORWARDED'] ?? '',
-					'HTTP_X_FORWARDED_FOR' => $_SERVER['HTTP_X_FORWARDED_FOR'] ?? ''
-				]
-			);
-			
-			$token = Firebase\JWT\JWT::encode($payload, $config['jwt_secret_key'],  $config['encryption']);
-			
-			echo json_encode(['token'=>$token, 'exp' => $payload['exp'] ]);
+		unset($data['passwordconfirmation']);
+		
+		if (empty($u->create($data)))
+			sendError("Error in user registration!");
+		
+		$time = time();
+		$payload = array(
+			'iat' => $time, 
+			'exp' => $time + 60 * $config['token_expiration_time'],
+			'id'  => $u->id,
+			'username' => $u->username,
+			'ip' => [
+				'REMOTE_ADDR' => $_SERVER['REMOTE_ADDR'] ?? '',
+				'HTTP_CLIENT_IP' => $_SERVER['HTTP_CLIENT_IP'] ?? '',
+				'HTTP_FORWARDED' => $_SERVER['HTTP_FORWARDED'] ?? '',
+				'HTTP_FORWARDED_FOR' => $_SERVER['HTTP_FORWARDED_FOR'] ?? '',
+				'HTTP_X_FORWARDED' => $_SERVER['HTTP_X_FORWARDED'] ?? '',
+				'HTTP_X_FORWARDED_FOR' => $_SERVER['HTTP_X_FORWARDED_FOR'] ?? ''
+			]
+		);
+		
+		$token = Firebase\JWT\JWT::encode($payload, $config['jwt_secret_key'],  $config['encryption']);
+		
+		echo json_encode(['token'=>$token, 'exp' => $payload['exp'] ]);
 
-		}catch(Exception $e){
-			SendError($e->getMessage());
-		}	
-			
-	}
+	}catch(Exception $e){
+		SendError($e->getMessage());
+	}	
+		
+}
 
 	
-	
-
 /*
 	Login for API Rest
 
@@ -125,9 +123,9 @@ function login()
 	
 	$config =  include '../../config/config.php';
 	
-	$conn = Database::getConnection($config);
+	$conn = Database::getConnection($config['database']);
 	
-	$u = new User($conn);
+	$u = new UserModel($conn);
 	$u->username = $username;
 	$u->password = $password;
 	
