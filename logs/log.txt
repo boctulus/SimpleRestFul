@@ -1,6 +1,0 @@
-    {
-        "name": "Vodka",
-        "description": "from RussiaaaaX",
-        "size": "1L",
-        "cost": 275
-    },

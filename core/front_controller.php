@@ -4,6 +4,7 @@
     require_once 'helpers/html.php';
     include 'helpers/debug.php';
     require_once 'request.php';
+    require_once 'response.php';
 
     
     class FrontController
@@ -14,15 +15,12 @@
         {
             $config = include 'config/config.php';
 
-            parse_str($_SERVER['QUERY_STRING'], $query_arr);
+            $req = Request::getInstance();
 
             $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
             if (strpos($path, $config['BASE_URL']) === 1) {
                 $path = substr($path, strlen($config['BASE_URL'])+1) ;
             }
-
-            Request::setQuery($query_arr);
-            Request::setRaw(file_get_contents("php://input"));
 
             $_params = explode('/', $path);
 
@@ -31,17 +29,15 @@
                 @list($controller) = array_slice($_params,1,1);
                 $params = array_slice($_params,2);
                 include CORE_PATH.'api_router.php';
+                Request::setParams($params); ///
                 ApiRouter::resolve($controller, strtolower($_SERVER['REQUEST_METHOD']), $params);
             }else{
                 @list($controller, $action) = array_slice($_params,0,2);
                 $params = array_slice($_params,2);
+                Request::setParams($params); ///
             }
 
-            //debug($path);
-            //debug([$controller, $action, $params]);
-            //exit;
-            
-            $default_controller_name = str_replace('Controller','',$config['DEFAULT_CONTROLLER']);
+            $default_controller_name = substr($config['DEFAULT_CONTROLLER'],0, strlen($config['DEFAULT_CONTROLLER'])-10);
             $class_file = !empty($controller) ? $controller : $default_controller_name;
             $method = !empty($action) ? $action : self::DEFAULT_ACTION;
 
@@ -50,8 +46,13 @@
             if (!method_exists($class_name, $method)) 
                 throw new Exception ("method '$method' does not exist in $class_name");
             
-            call_user_func_array(array(new $class_name(), $method), $params);
+           
+            // $arr = $req->toArray();  
+            // $data = call_user_func([new $class_name(), $method],$req);
             
+            $data = call_user_func_array([new $class_name(), $method], $params);  
+            $response = new Response();
+            $response->send($data);
         }
     }
 

@@ -35,7 +35,9 @@ class ProductsController extends Controller
             $conn = Database::getConnection($this->config['database']);
             $product = new ProductModel($conn);
         
-            $_get  = Request::getQuery();
+            $request = Request::getInstance();
+            $_get  = $request->getQuery();
+            //debug($request,'request ',true);
     
             $fields = shift($_get,'fields');
             $fields = $fields != NULL ? explode(',',$fields) : NULL;
@@ -76,7 +78,7 @@ class ProductsController extends Controller
             
     function post(){
         try {
-            $data = Request::getJson();
+            $data = Request::getBody();
 
             if (empty($data))
                 sendError('Invalid JSON',400);
@@ -107,7 +109,7 @@ class ProductsController extends Controller
             if ($id == null)
                 sendError("Lacks id in request",400);
 
-            $data = Request::getJson();
+            $data = Request::getBody();
 
             if (empty($data))
                 sendError('Invalid JSON',400);
@@ -147,7 +149,7 @@ class ProductsController extends Controller
     function delete($id = NULL){
         try {
             if($id == NULL)
-            sendError("Lacks id in request",400);
+                sendError("Lacks id in request",400);
 
             $conn = Database::getConnection($this->config['database']);
             $product = new ProductModel($conn);
@@ -170,7 +172,7 @@ class ProductsController extends Controller
             if ($id == null)
             sendError("Lacks id in request",400);
 
-            $data = Request::getJson();
+            $data = Request::getBody();
 
             if (empty($data))
                 sendError('Invalid JSON',400);

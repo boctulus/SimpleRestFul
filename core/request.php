@@ -1,44 +1,93 @@
 <?php
 
-class Request 
-{
-    static protected $query;
-    static protected $raw;
+include 'interfaces/arrayable.php';
 
-    static function setQuery($query){
-        self::$query = $query;
+class Request  implements Arrayable, ArrayAccess
+{
+    static protected $query_arr;
+    static protected $raw;
+    static protected $params;
+    static protected $instance = NULL;
+
+    protected function __construct() { }
+
+    static function getInstance(){
+        if(static::$instance == NULL){
+            parse_str($_SERVER['QUERY_STRING'], static::$query_arr);
+            static::$raw = file_get_contents("php://input");
+            static::$instance = new static();
+            return static::$instance;
+           // dd('Acabo de crear una nueva instancia');
+        }else{
+            //dd('Por retornar instancia existente...');
+            return static::$instance;
+        }
     }
 
-    static function getHeaders(){
+    static function setParams($params){
+        static::$params = $params;
+    }
+
+    function headers(){
         return apache_request_headers();
     }
 
-    // getter destructivo
-    static public function shift($key, $default_value = NULL)
+    public function getQuery($key = null)
     {
-        $out = self::$query[$key] ?? $default_value;
-        unset(self::$query[$key]);
+        if ($key == null)
+            return static::$query_arr;
+        else 
+             return static::$query_arr[$key];   
+    }
+
+    // getter destructivo sobre $query_arr
+    public function shift($key, $default_value = NULL)
+    {
+        $out = static::$query_arr[$key] ?? $default_value;
+        unset(static::$query_arr[$key]);
         return $out;
     }
 
-    static public function getQuery()
+    static function getParam($index){
+        return static::$params[$index];
+    } 
+
+    public function raw()
     {
-        return self::$query;
+        return static::$raw;
     }
 
-    static public function setRaw($raw)
+    static function getBody($assoc = true)
     {
-        self::$raw = $raw;
+        return json_decode(static::$raw, $assoc);
     }
 
-    static public function getRaw()
-    {
-        return self::$raw;
+    /*  ArrayAccess       */
+
+    public function offsetSet($offset, $value) {
+        if (is_null($offset)) {
+            static::$params[] = $value;
+        } else {
+            static::$params[$offset] = $value;
+        }
     }
 
-    static public function getJson($assoc = true)
-    {
-        return json_decode(self::$raw, $assoc);
+    public function offsetExists($offset) {
+        return isset(static::$params[$offset]);
+    }
+
+    public function offsetUnset($offset) {
+        unset(static::$params[$offset]);
+    }
+
+    public function offsetGet($offset) {
+        return isset(static::$params[$offset]) ? static::$params[$offset] : null;
+    }
+
+    /* Arrayable Interface */ 
+
+    public function toArray(){
+        return static::$params;
     }
 
 }
