@@ -179,7 +179,7 @@
 			type: "PUT",	/* PUT VERB */
 			url: endpoint + '/' + id.toString(),
 			data: encoded,
-			dataType: 'text json',
+			dataType: 'json',
 			headers: {"Authorization": 'Bearer ' + localStorage.getItem('tokenJwt')},
 			success: function(data){
 				//console.log(data);
@@ -203,7 +203,6 @@
 					  "showMethod": "fadeIn",
 					  "hideMethod": "fadeOut"
 					};
-				
 					
 					table.editRow([id,obj.name,obj.description, obj.size,obj.cost]);
 					toastr["success"]("Product edited!", "Success");
@@ -211,7 +210,7 @@
 					toastr["error"]("An error ocurred!", "Error");				
 			},
 			error: function(data){
-				console.log('Error', data);
+				console.log('!Error~', data);
 				toastr["error"]("An error ocurred!", "Error");
 			}
 		});

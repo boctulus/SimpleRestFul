@@ -1,65 +1,56 @@
 <?php
 
-/** 
- * Not in use !
- */
+
 class Response
 {
-    protected $body;
-    protected $headers = [];
-    protected $http_code = 200;
-    protected $http_code_msg = '';
+    static protected $headers = [];
+    static protected $http_code = NULL;
+    static protected $http_code_msg = '';
+    static protected $instance = NULL;
 
-    function __construct() {}
-    
-    /**
-     * Add headers
-     *
-     * @return  self
-     */ 
-    public function addHeaders($headers)
-    {
-        $this->headers = $headers;
-        return $this;
+
+    protected function __construct() { }
+
+    static function getInstance(){
+        if(static::$instance == NULL){
+            static::$instance = new static();
+        }
+        return static::$instance;
     }
 
-    /**
-     * Add header
-     *
-     * @return  self
-     */ 
-    public function addHeader($header)
+    public function addHeaders(array $headers)
     {
-        $this->headers[] = $header;
-        return $this;
+        static::$headers = $headers;
+        return static::getInstance();
+    }
+  
+    public function addHeader(string $header)
+    {
+        static::$headers[] = $header;
+        return static::getInstance();
     }
 
-    /**
-     * Set the value of http_code
-     *
-     * @return  self
-     */ 
-    public function code($http_code, $msg)
+    public function code(int $http_code, string $msg = NULL)
     {
-        $this->$http_code_msg = $msg;
-        $this->http_code = $http_code;
-        return $this;
+        static::$http_code_msg = $msg;
+        static::$http_code = $http_code;
+        return static::getInstance();
     }
 
-    public function send($data, $http_code = NULL){
-        $http_code = $http_code != NULL ? $http_code : $this->http_code_msg;
+    public function send($data, int $http_code = NULL){
+        $http_code = $http_code != NULL ? $http_code : static::$http_code;
         
         if ($http_code != NULL)
-            header(trim("HTTP/1.0 $this->http_code $this->http_code_msg"));
+            header(trim("HTTP/1.0 ".$http_code.' '.static::$http_code_msg));
         
-        if (is_array($data))
+        if (is_array($data) || is_object($data))
             $data = json_encode($data);
 
         echo $data; 
         exit();  	
     }
 
-    function sendError($msg_error, $http_code = null){
+    function error(string $msg_error, int $http_code = null){
         $this->send(['error' => $msg_error], $http_code);
     }
 }

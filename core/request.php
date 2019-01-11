@@ -16,19 +16,16 @@ class Request  implements Arrayable, ArrayAccess
             parse_str($_SERVER['QUERY_STRING'], static::$query_arr);
             static::$raw = file_get_contents("php://input");
             static::$instance = new static();
-            return static::$instance;
-           // dd('Acabo de crear una nueva instancia');
-        }else{
-            //dd('Por retornar instancia existente...');
-            return static::$instance;
         }
+        return static::$instance;
     }
 
-    static function setParams($params){
+    public function setParams($params){
         static::$params = $params;
+        return static::getInstance();
     }
 
-    function headers(){
+    public function headers(){
         return apache_request_headers();
     }
 
@@ -48,7 +45,7 @@ class Request  implements Arrayable, ArrayAccess
         return $out;
     }
 
-    static function getParam($index){
+    public function getParam($index){
         return static::$params[$index];
     } 
 
@@ -57,7 +54,7 @@ class Request  implements Arrayable, ArrayAccess
         return static::$raw;
     }
 
-    static function getBody($assoc = true)
+    function getBody($assoc = true)
     {
         return json_decode(static::$raw, $assoc);
     }

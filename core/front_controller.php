@@ -29,12 +29,12 @@
                 @list($controller) = array_slice($_params,1,1);
                 $params = array_slice($_params,2);
                 include CORE_PATH.'api_router.php';
-                Request::setParams($params); ///
+                $req->setParams($params); ///
                 ApiRouter::resolve($controller, strtolower($_SERVER['REQUEST_METHOD']), $params);
             }else{
                 @list($controller, $action) = array_slice($_params,0,2);
                 $params = array_slice($_params,2);
-                Request::setParams($params); ///
+                $req->setParams($params); ///
             }
 
             $default_controller_name = substr($config['DEFAULT_CONTROLLER'],0, strlen($config['DEFAULT_CONTROLLER'])-10);
@@ -51,8 +51,7 @@
             // $data = call_user_func([new $class_name(), $method],$req);
             
             $data = call_user_func_array([new $class_name(), $method], $params);  
-            $response = new Response();
-            $response->send($data);
+            Response::getInstance()->send($data);
         }
     }
 
