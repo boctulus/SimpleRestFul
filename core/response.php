@@ -50,6 +50,16 @@ class Response
         exit();  	
     }
 
+    public function json($data, int $http_code = NULL){
+        $http_code = $http_code != NULL ? $http_code : static::$http_code;
+        
+        if ($http_code != NULL)
+            header(trim("HTTP/1.0 ".$http_code.' '.static::$http_code_msg));
+       
+        echo json_encode($data); 
+        exit();  	
+    }
+
     function error(string $msg_error, int $http_code = null){
         $this->send(['error' => $msg_error], $http_code);
     }

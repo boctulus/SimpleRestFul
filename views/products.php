@@ -93,7 +93,7 @@
 		</div>
 		<div class="modal-footer">
 		  <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-		  <button type="button" class="btn btn-primary" onClick="sallet()">Save changes</button>
+		  <button type="button" class="btn btn-primary" onClick="do_edit()">Save changes</button>
 		</div>
 	  </div><!-- /.modal-content -->
 	</div><!-- /.modal-dialog -->
@@ -143,7 +143,7 @@
 	}
 	
 	/* Edit */
-	function sallet(){
+	function do_edit(){
 		notLoggedGoHome();
 		
 		let obj ={};
@@ -182,7 +182,7 @@
 			dataType: 'json',
 			headers: {"Authorization": 'Bearer ' + localStorage.getItem('tokenJwt')},
 			success: function(data){
-				//console.log(data);
+				console.log(data);
 				if (!data.error){
 					$('#productModalEdit').modal('hide');
 
@@ -330,7 +330,7 @@
 				$.ajax({
 						type: "DELETE",	/* DELETE VERB */
 						url: endpoint + '/' + id.toString(),
-						dataType: 'text json',
+						dataType: 'json',
 						headers: {"Authorization": 'Bearer ' + localStorage.getItem('tokenJwt')},
 						success: function(data){
 							$('#tr'+id.toString()).remove();
@@ -357,7 +357,7 @@
 		$.ajax({
 			type: "GET",
 			url: endpoint,
-			dataType: 'text json',
+			dataType: 'json',
 			headers: {"Authorization": 'Bearer ' + localStorage.getItem('tokenJwt')},
 			success: function(data){
 				

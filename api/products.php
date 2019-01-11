@@ -130,7 +130,7 @@ class ProductsController extends Controller
             try {
 
                 if($product->update($data)!==false)
-                    response()->send("OK");
+                    response()->json("OK");
                 else
                     response()->error("Error in UPDATE");
 
@@ -154,8 +154,7 @@ class ProductsController extends Controller
             $product->id = $id;
             
             if($product->delete()){
-                echo json_encode("OK");
-                //response()->send("OK");
+                response()->json("OK");
             }	
         else
             response()->error("Record not found",404);
@@ -183,7 +182,7 @@ class ProductsController extends Controller
 
             try {
                 if($product->update($data)!==false)
-                    response()->send("OK");
+                    response()->json("OK");
                 else
                     response()->error("Error in PATCH",404);	
             } catch (Exception $e) {

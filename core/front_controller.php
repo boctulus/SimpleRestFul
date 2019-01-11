@@ -52,6 +52,7 @@
             
             $data = call_user_func_array([new $class_name(), $method], $params);  
             Response::getInstance()->send($data);
+            exit;
         }
     }
 
