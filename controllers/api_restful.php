@@ -1,6 +1,6 @@
 <?php
 
-class ApiRestfulController
+abstract class ApiRestfulController
 {
     function __construct() {
         $this->config = include ROOT_PATH . 'config/config.php';
