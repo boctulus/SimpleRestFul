@@ -8,11 +8,11 @@ require_once '../vendor/autoload.php';
 	Authorization checkin
 */
 function check_auth() {
-	$headers = apache_request_headers();
+	$headers = request()->headers();
 	$auth = $headers['Authorization'] ?? $headers['authorization'] ?? null;
 	
 	if (empty($auth)){
-		sendError('Authorization not found',400);
+		response()->error('Authorization not found',400);
 	}
 		
 	list($jwt) = sscanf($auth, 'Bearer %s');
@@ -22,15 +22,15 @@ function check_auth() {
 	{
 		try{
 			// Checking for token invalidation or outdated token
-			$config =  include '../config/config.php';
+			$config =  include 'config/config.php';
 			
 			$data = Firebase\JWT\JWT::decode($jwt, $config['jwt_secret_key'], [ $config['encryption'] ]);
 			
 			if (empty($data))
-				sendError('Unauthorized',401);
+				response()->error('Unauthorized',401);
 			
 			if ($data->exp<time())
-				sendError('Token expired',401);
+				response()->error('Token expired',401);
 				
 		} catch (Exception $e) {
 			/*
@@ -39,10 +39,10 @@ function check_auth() {
 			 *
 			 * reach this point if token is empty or invalid
 			 */
-			sendError('Unauthorized',401);
+			response()->error('Unauthorized',401);
 		}	
 	}else{
-		 sendError('Authorization not found',400);
+		 response()->error('Authorization not found',400);
 	}
 }
 

@@ -14,7 +14,6 @@ require_once 'auth/auth_check.php';
 require_once 'libs/database.php';
 include_once 'helpers/debug.php';
 include_once 'helpers/arrays.php';
-require_once 'helpers/http.php';; 
 
 
 class ProductsController extends Controller

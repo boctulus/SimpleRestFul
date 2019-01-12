@@ -1,5 +1,5 @@
 	const base_url = getSiteRoot();
-	const login_page = base_url + 'login';  // '?c=login';
+	const login_page = base_url + 'login';  
 
 	$(document).on('submit', '#sign_up_form', function(){
 		console.log('here!');

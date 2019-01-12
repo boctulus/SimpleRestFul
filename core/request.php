@@ -1,8 +1,8 @@
 <?php
 
-include 'interfaces/arrayable.php';
+// require_once 'interfaces/arrayable.php'; 
 
-class Request  implements Arrayable, ArrayAccess
+class Request  implements ArrayAccess /* ,Arrayable */
 {
     static protected $query_arr;
     static protected $raw;

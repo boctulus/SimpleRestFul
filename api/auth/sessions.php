@@ -8,12 +8,15 @@ header('access-control-allow-Origin: *');
 header('content-type: application/json; charset=UTF-8');
 
 include '../../config/constants.php';
-include_once  HELPERS_PATH.'http.php';
 require_once '../../vendor/autoload.php';
 require_once '../../libs/database.php'; 
 require_once '../../models/user.php';
 include_once '../../helpers/debug.php';
-include_once '../../vendor/validator/data-validator/validator.php';
+
+include_once HELPERS_PATH . 'factory.php';
+require_once CORE_PATH . 'request.php';
+require_once CORE_PATH . 'response.php';
+
 
 
 /*
@@ -33,31 +36,30 @@ function signin()
 		exit;
 		
 	try {
-		$input = file_get_contents("php://input");	
-		$data  = json_decode($input,true);
+		$data  = request()->getBody();
 		
 		if ($data == null)
-			sendError('Invalid JSON',400);
+			response()->error('Invalid JSON',400);
 
 		$config =  include '../../config/config.php';
 
 		$conn = Database::getConnection($config['database']);
 		$u = new UserModel($conn);
 
-		// debo usar mi clase FormValitador !!
-		if (!$u->has_properties($data, ['id'])){
-			sendError('Lack some properties in your request: '.implode(',',$u->getMissingProperties()));
-		}
+		
+		$missing = $u::diffWithSchema($data, ['id']);
+		if (!empty($missing))
+			response()->error('Lack some properties in your request: '.implode(',',$missing));
 				
 		if ($data['password'] != $data['passwordconfirmation'])
-			sendError('Password confimation fails');
+			response()->error('Password confimation fails');
 		
 		$data['password'] = sha1($data['password']);
 
 		unset($data['passwordconfirmation']);
 		
 		if (empty($u->create($data)))
-			sendError("Error in user registration!");
+			response()->error("Error in user registration!");
 		
 		$time = time();
 		$payload = array(
@@ -77,10 +79,10 @@ function signin()
 		
 		$token = Firebase\JWT\JWT::encode($payload, $config['jwt_secret_key'],  $config['encryption']);
 		
-		echo json_encode(['token'=>$token, 'exp' => $payload['exp'] ]);
+		response()->send(['token'=>$token, 'exp' => $payload['exp'] ]);
 
 	}catch(Exception $e){
-		SendError($e->getMessage());
+		response()->error($e->getMessage());
 	}	
 		
 }
@@ -102,23 +104,22 @@ function login()
 		break;
 
 		case 'POST':
-			$input = file_get_contents("php://input");	
-			$data  = json_decode($input);
-			
+			$data  = request()->getBody(false);
+
 			if ($data == null)
-				sendError('Invalid JSON',400);
+				response()->error('Invalid JSON',400);
 			
 			$username = $data->username ?? null;
 			$password = $data->password ?? null;
 		break;
 
 		default:
-			sendError('Incorrect verb',405);
+			response()->error('Incorrect verb',405);
 		break;	
 	}	
 	
 	if (empty($username) || empty($password)){
-		sendError('Username and password are required',400);
+		response()->error('Username and password are required',400);
 	}
 	
 	$config =  include '../../config/config.php';
@@ -148,10 +149,10 @@ function login()
 	
 		$token = Firebase\JWT\JWT::encode($payload, $config['jwt_secret_key'],  $config['encryption']);
 		
-		echo json_encode(['token'=>$token, 'exp' => $payload['exp'] ]);
+		response()->send(['token'=>$token, 'exp' => $payload['exp']]);
 		
 	}else
-		echo json_encode(['error'=>"User or password are incorrect"]);
+		response()->error("User or password are incorrect");
 }
 
 
@@ -164,18 +165,18 @@ function renew()
 {
 	if ($_SERVER['REQUEST_METHOD']=='OPTIONS'){
 		// passs
-		sendData('OK',200);
+		response()->send('OK',200);
 	}elseif ($_SERVER['REQUEST_METHOD']!='POST')
-		sendError('Incorrect verb',405);
+		response()->error('Incorrect verb',405);
 	
 	$config =  include '../../config/config.php';
 	
-	$headers = apache_request_headers();
+	$headers = request()->headers();
 	$auth = $headers['Authorization'] ?? $headers['authorization'] ?? null;
 
 	try {
 		if (empty($auth)){
-			SendError('Authorization not found',400);
+			response()->error('Authorization not found',400);
 		}
 			
 		list($jwt) = sscanf($auth, 'Bearer %s');
@@ -204,19 +205,19 @@ function renew()
 				
 				$token = Firebase\JWT\JWT::encode($payload, $config['jwt_secret_key'],  $config['encryption']);
 				
-				echo json_encode(['token'=>$token, 'exp' => $payload['exp'] ]);
+				response()->send(['token'=>$token, 'exp' => $payload['exp'] ]);
 				
 			} catch (Exception $e) {
 				/*
 				 * the token was not able to be decoded.
 				 * this is likely because the signature was not able to be verified (tampered token)
 				 */
-				 SendError('Unauthorized',401);
+				 response()->error('Unauthorized',401);
 			}	
 		}else{
-			endError('Token not found',400);
+			response()->error('Token not found',400);
 		}
 	} catch (Exception $e) {
-		sendError($e->getMessage(), 400);
+		response()->error($e->getMessage(), 400);
 	}	
 }
