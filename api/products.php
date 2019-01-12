@@ -15,18 +15,16 @@ require_once 'libs/database.php';
 include_once 'helpers/debug.php';
 include_once 'helpers/arrays.php';
 include_once 'helpers/messages.php';
+include_once 'controllers/api_restful.php';
 
 
-class ProductsController extends Controller
+class ProductsController extends ApiRestfulController
 {
     protected $config;
     
     function __construct()
     {
         parent::__construct();
-
-        if ($this->config['enabled_auth'])
-            check_auth();	
     }
 
     // GET
@@ -45,12 +43,11 @@ class ProductsController extends Controller
                 // one product by id
                 $product->id = $id; 
                 if ($product->fetchOne($fields) === false)
-                    response()->error("Not found for id={$id}",404);
+                    response()->sendCode(404);
                 else
-                    response()->send($product, 200);
+                    response()->send($product);
             }else{    
-                // "list"
-
+                // "list
                 $limit  = (int) shift($_get,'limit');
                 $offset = (int) shift($_get,'offset',0);
                 $order  = shift($_get,'order');
@@ -58,59 +55,33 @@ class ProductsController extends Controller
                 try {
                     if (!empty($_get)){
                         $rows = $product->filter($fields, $_get, $order, $limit, $offset);
-                        response()->send($rows,200); 
+                        response()->code(empty($rows) ? 404 : 200)->send($rows); 
                     }else {
                         $rows = $product->fetchAll($fields, $order, $limit, $offset);
-                        response()->send($rows,200); 
+                        response()->code(empty($rows) ? 404 : 200)->send($rows); 
                     }	
                 } catch (Exception $e) {
-                    response()->error('Error in fetch: '.$e->getMessage());
+                    response()->sendError('Error in fetch: '.$e->getMessage());
                 }	
             }
 
         } catch (Exception $error) {
-            logger('Error ' . $error->getMessage());
-            response()->error($error->getMessage());
+            response()->sendError($error->getMessage());
         }
     } // end method
-    
-     // HEAD
-     function head(int $id = null){
-        try {
-            $conn = Database::getConnection($this->config['database']);
-            $product = new ProductModel($conn);
-        
-            $_get  = request()->getQuery();
-    
-            if ($id != null)
-            {
-                // check the existance of one product by id
-                $product->id = $id; 
-                if ($product->fetchOne($fields) === false)
-                    response()->sendCode(404);
-                else
-                   response()->sendCode(200);
 
-            }else{    
-                response()->sendCode(400);
-            }    
-        } catch (Exception $error) {
-            response()->sendCode(500);
-        }
-    } // end method
-            
     function post(){
         try {
             $data = request()->getBody();
 
             if (empty($data))
-                response()->error('Invalid JSON',400);
+                response()->sendError('Invalid JSON',400);
             
             $product = new ProductModel();
     
             $missing = $product::diffWithSchema($data, ['id']);
             if (!empty($missing))
-                response()->error('Lack some properties in your request: '.implode(',',$missing));
+                response()->sendError('Lack some properties in your request: '.implode(',',$missing));
         
             $conn = Database::getConnection($this->config['database']);
             $product->setConn($conn);
@@ -119,10 +90,10 @@ class ProductsController extends Controller
                 response()->send(['id' => $product->id], 201);
             }	
             else
-                response()->error("Error: creation of resource fails!");
+                response()->sendError("Error: creation of resource fails!");
     
         } catch (Exception $error) {
-            response()->error($error->getMessage());
+            response()->sendError($error->getMessage());
         }
     } // end method
     
@@ -130,41 +101,41 @@ class ProductsController extends Controller
     function put($id = null){
         try {
             if ($id == null)
-                response()->code(400)->error("Lacks id in request");
+                response()->code(400)->sendError("Lacks id in request");
 
             $data = request()->getBody();
 
             if (empty($data))
-                response()->error('Invalid JSON',400);
+                response()->sendError('Invalid JSON',400);
             
             $product = new ProductModel();
             $product->id = $id;
 
             $missing = $product::diffWithSchema($data, ['id']);
             if (!empty($missing))
-                response()->error('Lack some properties in your request: '.implode(',',$missing));
+                response()->sendError('Lack some properties in your request: '.implode(',',$missing));
             
             $conn = Database::getConnection($this->config['database']);
             $product->setConn($conn);
 
             $product->id = $id;
             if (!$product->exists()){
-                response()->code(404)->error("Register for id=$id does not exists");
+                response()->code(404)->sendError("Register for id=$id does not exists");
             }
             
             try {
 
                 if($product->update($data)!==false)
-                    response()->json("OK");
+                    response()->sendJson("OK");
                 else
-                    response()->error("Error in UPDATE");
+                    response()->sendError("Error in UPDATE");
 
             } catch (Exception $e) {
-                response()->error("Error during update for id=$id with message: {$e->getMessage()}");
+                response()->sendError("Error during update for id=$id with message: {$e->getMessage()}");
             }
 
         } catch (Exception $error) {
-            response()->error($error->getMessage());
+            response()->sendError($error->getMessage());
         }
     } // end method
     
@@ -172,20 +143,20 @@ class ProductsController extends Controller
     function delete($id = NULL){
         try {
             if($id == NULL)
-                response()->error("Lacks id in request",400);
+                response()->sendError("Lacks id in request",400);
 
             $conn = Database::getConnection($this->config['database']);
             $product = new ProductModel($conn);
             $product->id = $id;
 
             if($product->delete()){
-                response()->json("OK");
+                response()->sendJson("OK");
             }	
         else
-            response()->error("Record not found",404);
+            response()->sendError("Record not found",404);
 
         } catch (Exception $error) {  // extender la clase y loguear este tipo de errores (500)
-            response()->error($error->getMessage());
+            response()->sendError($error->getMessage());
         }
     } // end method
 
@@ -193,12 +164,12 @@ class ProductsController extends Controller
     function patch($id = NULL){ 
         try {
             if ($id == null)
-                response()->error("Lacks id in request",400);
+                response()->sendError("Lacks id in request",400);
 
             $data = request()->getBody();
 
             if (empty($data))
-                response()->error('Invalid JSON',400);
+                response()->sendError('Invalid JSON',400);
             
             $conn = Database::getConnection($this->config['database']);
 
@@ -207,14 +178,14 @@ class ProductsController extends Controller
 
             try {
                 if($product->update($data)!==false)
-                    response()->json("OK");
+                    response()->sendJson("OK");
                 else
-                    response()->error("Error in PATCH",404);	
+                    response()->sendError("Error in PATCH",404);	
             } catch (Exception $e) {
-                response()->error("Error during PATCH for id=$id with message: {$e->getMessage()}");
+                response()->sendError("Error during PATCH for id=$id with message: {$e->getMessage()}");
             }
         } catch (Exception $error) {
-            response()->error($error->getMessage());
+            response()->sendError($error->getMessage());
         }
     } // end method
                 

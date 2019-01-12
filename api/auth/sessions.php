@@ -39,7 +39,7 @@ function signin()
 		$data  = request()->getBody();
 		
 		if ($data == null)
-			response()->error('Invalid JSON',400);
+			response()>sendError('Invalid JSON',400);
 
 		$config =  include '../../config/config.php';
 
@@ -49,17 +49,17 @@ function signin()
 		
 		$missing = $u::diffWithSchema($data, ['id']);
 		if (!empty($missing))
-			response()->error('Lack some properties in your request: '.implode(',',$missing));
+			response()>sendError('Lack some properties in your request: '.implode(',',$missing));
 				
 		if ($data['password'] != $data['passwordconfirmation'])
-			response()->error('Password confimation fails');
+			response()>sendError('Password confimation fails');
 		
 		$data['password'] = sha1($data['password']);
 
 		unset($data['passwordconfirmation']);
 		
 		if (empty($u->create($data)))
-			response()->error("Error in user registration!");
+			response()>sendError("Error in user registration!");
 		
 		$time = time();
 		$payload = array(
@@ -82,7 +82,7 @@ function signin()
 		response()->send(['token'=>$token, 'exp' => $payload['exp'] ]);
 
 	}catch(Exception $e){
-		response()->error($e->getMessage());
+		response()>sendError($e->getMessage());
 	}	
 		
 }
@@ -107,19 +107,19 @@ function login()
 			$data  = request()->getBody(false);
 
 			if ($data == null)
-				response()->error('Invalid JSON',400);
+				response()>sendError('Invalid JSON',400);
 			
 			$username = $data->username ?? null;
 			$password = $data->password ?? null;
 		break;
 
 		default:
-			response()->error('Incorrect verb',405);
+			response()>sendError('Incorrect verb',405);
 		break;	
 	}	
 	
 	if (empty($username) || empty($password)){
-		response()->error('Username and password are required',400);
+		response()>sendError('Username and password are required',400);
 	}
 	
 	$config =  include '../../config/config.php';
@@ -152,7 +152,7 @@ function login()
 		response()->send(['token'=>$token, 'exp' => $payload['exp']]);
 		
 	}else
-		response()->error("User or password are incorrect");
+		response()>sendError("User or password are incorrect");
 }
 
 
@@ -167,7 +167,7 @@ function renew()
 		// passs
 		response()->send('OK',200);
 	}elseif ($_SERVER['REQUEST_METHOD']!='POST')
-		response()->error('Incorrect verb',405);
+		response()>sendError('Incorrect verb',405);
 	
 	$config =  include '../../config/config.php';
 	
@@ -176,7 +176,7 @@ function renew()
 
 	try {
 		if (empty($auth)){
-			response()->error('Authorization not found',400);
+			response()>sendError('Authorization not found',400);
 		}
 			
 		list($jwt) = sscanf($auth, 'Bearer %s');
@@ -212,12 +212,12 @@ function renew()
 				 * the token was not able to be decoded.
 				 * this is likely because the signature was not able to be verified (tampered token)
 				 */
-				 response()->error('Unauthorized',401);
+				 response()>sendError('Unauthorized',401);
 			}	
 		}else{
-			response()->error('Token not found',400);
+			response()>sendError('Token not found',400);
 		}
 	} catch (Exception $e) {
-		response()->error($e->getMessage(), 400);
+		response()>sendError($e->getMessage(), 400);
 	}	
 }
