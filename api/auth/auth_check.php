@@ -12,11 +12,10 @@ function check_auth() {
 	$auth = $headers['Authorization'] ?? $headers['authorization'] ?? null;
 	
 	if (empty($auth)){
-		response()->error('Authorization not found',400);
+		response()->sendError('Authorization not found',400);
 	}
 		
 	list($jwt) = sscanf($auth, 'Bearer %s');
-
 
 	if($jwt)
 	{
@@ -27,10 +26,10 @@ function check_auth() {
 			$data = Firebase\JWT\JWT::decode($jwt, $config['jwt_secret_key'], [ $config['encryption'] ]);
 			
 			if (empty($data))
-				response()->error('Unauthorized',401);
+				response()->sendError('Unauthorized',401);
 			
 			if ($data->exp<time())
-				response()->error('Token expired',401);
+				response()->sendError('Token expired',401);
 				
 		} catch (Exception $e) {
 			/*
@@ -39,10 +38,10 @@ function check_auth() {
 			 *
 			 * reach this point if token is empty or invalid
 			 */
-			response()->error('Unauthorized',401);
+			response()->sendError('Unauthorized',401);
 		}	
 	}else{
-		 response()->error('Authorization not found',400);
+		 response()->sendError('Authorization not found',400);
 	}
 }
 

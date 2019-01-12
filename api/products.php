@@ -17,6 +17,10 @@ include_once 'helpers/arrays.php';
 include_once 'helpers/messages.php';
 include_once 'controllers/api_restful.php';
 
+/* 
+    Meto cada metodo en un bloque try-catch o ... 
+    ... defino un error_handler ?
+*/
 
 class ProductsController extends ApiRestfulController
 {
@@ -29,163 +33,139 @@ class ProductsController extends ApiRestfulController
 
     // GET
     function get(int $id = null){
-        try {
-            $conn = Database::getConnection($this->config['database']);
-            $product = new ProductModel($conn);
-        
-            $_get  = request()->getQuery();
-        
-            $fields = shift($_get,'fields');
-            $fields = $fields != NULL ? explode(',',$fields) : NULL;
+        $conn = Database::getConnection($this->config['database']);
+        $product = new ProductModel($conn);
+    
+        $_get  = request()->getQuery();
+    
+        $fields = shift($_get,'fields');
+        $fields = $fields != NULL ? explode(',',$fields) : NULL;
 
-            if ($id != null)
-            {
-                // one product by id
-                $product->id = $id; 
-                if ($product->fetchOne($fields) === false)
-                    response()->sendCode(404);
-                else
-                    response()->send($product);
-            }else{    
-                // "list
-                $limit  = (int) shift($_get,'limit');
-                $offset = (int) shift($_get,'offset',0);
-                $order  = shift($_get,'order');
+        if ($id != null)
+        {
+            // one product by id
+            $product->id = $id; 
+            if ($product->fetchOne($fields) === false)
+                response()->sendCode(404);
+            else
+                response()->send($product);
+        }else{    
+            // "list
+            $limit  = (int) shift($_get,'limit');
+            $offset = (int) shift($_get,'offset',0);
+            $order  = shift($_get,'order');
 
-                try {
-                    if (!empty($_get)){
-                        $rows = $product->filter($fields, $_get, $order, $limit, $offset);
-                        response()->code(empty($rows) ? 404 : 200)->send($rows); 
-                    }else {
-                        $rows = $product->fetchAll($fields, $order, $limit, $offset);
-                        response()->code(empty($rows) ? 404 : 200)->send($rows); 
-                    }	
-                } catch (Exception $e) {
-                    response()->sendError('Error in fetch: '.$e->getMessage());
+            try {
+                if (!empty($_get)){
+                    $rows = $product->filter($fields, $_get, $order, $limit, $offset);
+                    response()->code(empty($rows) ? 404 : 200)->send($rows); 
+                }else {
+                    $rows = $product->fetchAll($fields, $order, $limit, $offset);
+                    response()->code(empty($rows) ? 404 : 200)->send($rows); 
                 }	
-            }
-
-        } catch (Exception $error) {
-            response()->sendError($error->getMessage());
+            } catch (Exception $e) {
+                response()->sendError('Error in fetch: '.$e->getMessage());
+            }	
         }
     } // end method
 
     function post(){
-        try {
-            $data = request()->getBody();
+        $data = request()->getBody();
 
-            if (empty($data))
-                response()->sendError('Invalid JSON',400);
-            
-            $product = new ProductModel();
-    
-            $missing = $product::diffWithSchema($data, ['id']);
-            if (!empty($missing))
-                response()->sendError('Lack some properties in your request: '.implode(',',$missing));
+        if (empty($data))
+            response()->sendError('Invalid JSON',400);
         
-            $conn = Database::getConnection($this->config['database']);
-            $product->setConn($conn);
+        $product = new ProductModel();
+
+        $missing = $product::diffWithSchema($data, ['id']);
+        if (!empty($missing))
+            response()->sendError('Lack some properties in your request: '.implode(',',$missing));
     
-            if ($product->create($data)!==false){
-                response()->send(['id' => $product->id], 201);
-            }	
-            else
-                response()->sendError("Error: creation of resource fails!");
-    
-        } catch (Exception $error) {
-            response()->sendError($error->getMessage());
-        }
+        $conn = Database::getConnection($this->config['database']);
+        $product->setConn($conn);
+
+        if ($product->create($data)!==false){
+            response()->send(['id' => $product->id], 201);
+        }	
+        else
+            response()->sendError("Error: creation of resource fails!");
     } // end method
     
         
     function put($id = null){
+        if ($id == null)
+            response()->code(400)->sendError("Lacks id in request");
+
+        $data = request()->getBody();
+
+        if (empty($data))
+            response()->sendError('Invalid JSON',400);
+        
+        $product = new ProductModel();
+        $product->id = $id;
+
+        $missing = $product::diffWithSchema($data, ['id']);
+        if (!empty($missing))
+            response()->sendError('Lack some properties in your request: '.implode(',',$missing));
+        
+        $conn = Database::getConnection($this->config['database']);
+        $product->setConn($conn);
+
+        $product->id = $id;
+        if (!$product->exists()){
+            response()->code(404)->sendError("Register for id=$id does not exists");
+        }
+        
         try {
-            if ($id == null)
-                response()->code(400)->sendError("Lacks id in request");
 
-            $data = request()->getBody();
+            if($product->update($data)!==false)
+                response()->sendJson("OK");
+            else
+                response()->sendError("Error in UPDATE");
 
-            if (empty($data))
-                response()->sendError('Invalid JSON',400);
-            
-            $product = new ProductModel();
-            $product->id = $id;
-
-            $missing = $product::diffWithSchema($data, ['id']);
-            if (!empty($missing))
-                response()->sendError('Lack some properties in your request: '.implode(',',$missing));
-            
-            $conn = Database::getConnection($this->config['database']);
-            $product->setConn($conn);
-
-            $product->id = $id;
-            if (!$product->exists()){
-                response()->code(404)->sendError("Register for id=$id does not exists");
-            }
-            
-            try {
-
-                if($product->update($data)!==false)
-                    response()->sendJson("OK");
-                else
-                    response()->sendError("Error in UPDATE");
-
-            } catch (Exception $e) {
-                response()->sendError("Error during update for id=$id with message: {$e->getMessage()}");
-            }
-
-        } catch (Exception $error) {
-            response()->sendError($error->getMessage());
+        } catch (Exception $e) {
+            response()->sendError("Error during update for id=$id with message: {$e->getMessage()}");
         }
     } // end method
     
         
     function delete($id = NULL){
-        try {
-            if($id == NULL)
-                response()->sendError("Lacks id in request",400);
+        if($id == NULL)
+            response()->sendError("Lacks id in request",400);
 
-            $conn = Database::getConnection($this->config['database']);
-            $product = new ProductModel($conn);
-            $product->id = $id;
+        $conn = Database::getConnection($this->config['database']);
+        $product = new ProductModel($conn);
+        $product->id = $id;
 
-            if($product->delete()){
-                response()->sendJson("OK");
-            }	
+        if($product->delete()){
+            response()->sendJson("OK");
+        }	
         else
             response()->sendError("Record not found",404);
-
-        } catch (Exception $error) {  // extender la clase y loguear este tipo de errores (500)
-            response()->sendError($error->getMessage());
-        }
     } // end method
 
     
     function patch($id = NULL){ 
+        if ($id == null)
+            response()->sendError("Lacks id in request",400);
+
+        $data = request()->getBody();
+
+        if (empty($data))
+            response()->sendError('Invalid JSON',400);
+        
+        $conn = Database::getConnection($this->config['database']);
+
+        $product = new ProductModel($conn);
+        $product->id = $id;
+
         try {
-            if ($id == null)
-                response()->sendError("Lacks id in request",400);
-
-            $data = request()->getBody();
-
-            if (empty($data))
-                response()->sendError('Invalid JSON',400);
-            
-            $conn = Database::getConnection($this->config['database']);
-
-            $product = new ProductModel($conn);
-            $product->id = $id;
-
-            try {
-                if($product->update($data)!==false)
-                    response()->sendJson("OK");
-                else
-                    response()->sendError("Error in PATCH",404);	
-            } catch (Exception $e) {
-                response()->sendError("Error during PATCH for id=$id with message: {$e->getMessage()}");
-            }
-        } catch (Exception $error) {
-            response()->sendError($error->getMessage());
+            if($product->update($data)!==false)
+                response()->sendJson("OK");
+            else
+                response()->sendError("Error in PATCH",404);	
+        } catch (Exception $e) {
+            response()->sendError("Error during PATCH for id=$id with message: {$e->getMessage()}");
         }
     } // end method
                 

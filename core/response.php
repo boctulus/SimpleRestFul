@@ -7,6 +7,7 @@ class Response
     static protected $http_code = NULL;
     static protected $http_code_msg = '';
     static protected $instance = NULL;
+    static protected $version = '1.1';
 
 
     protected function __construct() { }
@@ -52,7 +53,7 @@ class Response
           static::$http_code;
 
         if ($http_code != NULL)
-            header(trim("HTTP/1.1 ".$http_code.' '.static::$http_code_msg));
+            header(trim('HTTP/'.static::$version.' '.$http_code.' '.static::$http_code_msg));
         
         if (is_array($data) || is_object($data))
             $data = json_encode($data);
@@ -71,7 +72,7 @@ class Response
         $http_code = $http_code != NULL ? $http_code : static::$http_code;
         
         if ($http_code != NULL)
-            header(trim("HTTP/1.1 ".$http_code.' '.static::$http_code_msg));
+            header(trim('HTTP/'.static::$version.' '.$http_code.' '.static::$http_code_msg));
        
         echo json_encode($data); 
         exit;  	
@@ -86,7 +87,7 @@ class Response
                 $http_code = 500;
 
         if ($http_code != NULL)
-            header(trim("HTTP/1.1 ".$http_code.' '.static::$http_code_msg));
+            header(trim('HTTP/'.static::$version.' '.$http_code.' '.static::$http_code_msg));
 
         echo json_encode(['error' => $msg_error], $http_code);
         exit;
