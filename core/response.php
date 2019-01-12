@@ -47,9 +47,15 @@ class Response
             $data = json_encode($data);
 
         echo $data; 
-        exit();  	
+        exit;  	
     }
 
+    function sendCode(int $http_code){
+        http_response_code($http_code);
+        exit;
+    }
+
+    // send as JSON
     public function json($data, int $http_code = NULL){
         $http_code = $http_code != NULL ? $http_code : static::$http_code;
         
@@ -57,10 +63,12 @@ class Response
             header(trim("HTTP/1.0 ".$http_code.' '.static::$http_code_msg));
        
         echo json_encode($data); 
-        exit();  	
+        exit;  	
     }
 
-    function error(string $msg_error, int $http_code = null){
+    // send error
+    function error(string $msg_error, int $http_code = 500){
         $this->send(['error' => $msg_error], $http_code);
+        exit;
     }
 }

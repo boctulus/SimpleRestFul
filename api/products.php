@@ -14,6 +14,7 @@ require_once 'auth/auth_check.php';
 require_once 'libs/database.php';
 include_once 'helpers/debug.php';
 include_once 'helpers/arrays.php';
+include_once 'helpers/messages.php';
 
 
 class ProductsController extends Controller
@@ -68,10 +69,35 @@ class ProductsController extends Controller
             }
 
         } catch (Exception $error) {
+            logger('Error ' . $error->getMessage());
             response()->error($error->getMessage());
         }
     } // end method
-             
+    
+     // HEAD
+     function head(int $id = null){
+        try {
+            $conn = Database::getConnection($this->config['database']);
+            $product = new ProductModel($conn);
+        
+            $_get  = request()->getQuery();
+    
+            if ($id != null)
+            {
+                // check the existance of one product by id
+                $product->id = $id; 
+                if ($product->fetchOne($fields) === false)
+                    response()->sendCode(404);
+                else
+                   response()->sendCode(200);
+
+            }else{    
+                response()->sendCode(400);
+            }    
+        } catch (Exception $error) {
+            response()->sendCode(500);
+        }
+    } // end method
             
     function post(){
         try {
@@ -134,7 +160,7 @@ class ProductsController extends Controller
                     response()->error("Error in UPDATE");
 
             } catch (Exception $e) {
-                response()->error("Error during update for id=$id with message: {$e->getMessage()}",500);
+                response()->error("Error during update for id=$id with message: {$e->getMessage()}");
             }
 
         } catch (Exception $error) {
@@ -151,14 +177,14 @@ class ProductsController extends Controller
             $conn = Database::getConnection($this->config['database']);
             $product = new ProductModel($conn);
             $product->id = $id;
-            
+
             if($product->delete()){
                 response()->json("OK");
             }	
         else
             response()->error("Record not found",404);
 
-        } catch (Exception $error) {
+        } catch (Exception $error) {  // extender la clase y loguear este tipo de errores (500)
             response()->error($error->getMessage());
         }
     } // end method
@@ -185,7 +211,7 @@ class ProductsController extends Controller
                 else
                     response()->error("Error in PATCH",404);	
             } catch (Exception $e) {
-                response()->error("Error during PATCH for id=$id with message: {$e->getMessage()}",500);
+                response()->error("Error during PATCH for id=$id with message: {$e->getMessage()}");
             }
         } catch (Exception $error) {
             response()->error($error->getMessage());

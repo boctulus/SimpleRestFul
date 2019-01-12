@@ -5,8 +5,7 @@ class Database {
 
     private static $conn;
 
-    private function __construct() {
-    }
+    private function __construct() { }
 
     public static function getConnection($config) {
         $db_name = $config['db_name'];
@@ -15,11 +14,11 @@ class Database {
 		$pass    = $config['pass'] ?? '';
 		
 		try {
-			self::$conn = new PDO("mysql:host=" . $host . ";dbname=" . $db_name, $user, $pass);
+			$options = [ PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION ];
+			self::$conn = new PDO("mysql:host=" . $host . ";dbname=" . $db_name, $user, $pass, $options);
             self::$conn->exec("set names utf8");
-			self::$conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_WARNING);
 		} catch (PDOException $e) {
-			die($e->getMessage());
+			throw new PDOException($e->getMessage());
 		}	
 		
 		return self::$conn;

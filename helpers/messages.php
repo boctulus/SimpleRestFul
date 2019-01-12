@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 if (!defined('logged')){
-	function logger($data, $file='../logs/log.txt'){
+	function logger($data, $file= ROOT_PATH. '/logs/log.txt'){
 		if (is_array($data) || is_object($data))
 			$data = json_encode($data);
 		

@@ -7,6 +7,7 @@ class Request  implements ArrayAccess /* ,Arrayable */
     static protected $query_arr;
     static protected $raw;
     static protected $params;
+    static protected $headers;
     static protected $instance = NULL;
 
     protected function __construct() { }
@@ -15,6 +16,7 @@ class Request  implements ArrayAccess /* ,Arrayable */
         if(static::$instance == NULL){
             parse_str($_SERVER['QUERY_STRING'], static::$query_arr);
             static::$raw = file_get_contents("php://input");
+            static::$headers = apache_request_headers();
             static::$instance = new static();
         }
         return static::$instance;
@@ -26,7 +28,11 @@ class Request  implements ArrayAccess /* ,Arrayable */
     }
 
     public function headers(){
-        return apache_request_headers();
+        return static::$headers;
+    }
+
+    public function header($key){
+        return static::$headers[$key] ?? NULL;
     }
 
     public function getQuery($key = null)
@@ -57,6 +63,10 @@ class Request  implements ArrayAccess /* ,Arrayable */
     function getBody($assoc = true)
     {
         return json_decode(static::$raw, $assoc);
+    }
+
+    function getCode(){
+        return http_response_code();
     }
 
     /*  ArrayAccess       */

@@ -1,5 +1,6 @@
 <?php
 
+
 class ApiRouter
 {
     static function resolve($controller, $method, $params)
