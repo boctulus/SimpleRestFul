@@ -1,8 +1,8 @@
 <?php
 declare(strict_types=1);
 
-require_once '../vendor/autoload.php';
-// include_once '../helpers/debug.php';
+require_once VENDOR_PATH.'autoload.php';
+// include_once HELPERS_PATH.'debug.php';
 
 /* 
 	Authorization checkin
