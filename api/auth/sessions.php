@@ -10,7 +10,7 @@ header('content-type: application/json; charset=UTF-8');
 include '../../config/constants.php';
 require_once '../../vendor/autoload.php';
 require_once '../../libs/database.php'; 
-require_once '../../models/user.php';
+require_once '../../models/users.php';
 include_once '../../helpers/debug.php';
 
 include_once HELPERS_PATH . 'factory.php';
@@ -44,7 +44,7 @@ function signin()
 		$config =  include '../../config/config.php';
 
 		$conn = Database::getConnection($config['database']);
-		$u = new UserModel($conn);
+		$u = new UsersModel($conn);
 
 		
 		$missing = $u::diffWithSchema($data, ['id']);
@@ -126,7 +126,7 @@ function login()
 	
 	$conn = Database::getConnection($config['database']);
 	
-	$u = new UserModel($conn);
+	$u = new UsersModel($conn);
 	$u->username = $username;
 	$u->password = $password;
 	

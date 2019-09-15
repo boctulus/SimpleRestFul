@@ -1,16 +1,5 @@
 
 	<script>
-		function notLoggedGoHome(){
-			if (typeof login_page === 'undefined' || typeof localStorage === 'undefined'){
-				console.log('Error');
-				return;
-			}
-
-			const expired = ((localStorage.getItem('exp')!=null) && ((localStorage.getItem('exp')*1000) - (new Date()).getTime())<0);
-			
-			if ((localStorage.getItem('tokenJwt') == null) || expired)
-				window.location = login_page; 
-		}
 		notLoggedGoHome();
 	</script>
 
@@ -113,7 +102,7 @@
 	
 </div>		
 <script type="text/javascript">
-	const endpoint = 'api/products';
+	const endpoint = '/api/products';
 	const minutes_for_token_renew = 2 // 2
 
 	let $data = [];

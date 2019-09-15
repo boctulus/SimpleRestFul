@@ -25,6 +25,7 @@ include_once 'controllers/api_restful.php';
 class ProductsController extends ApiRestfulController
 {
     protected $config;
+    protected $_model;
     
     function __construct()
     {
@@ -34,7 +35,7 @@ class ProductsController extends ApiRestfulController
     // GET
     function get(int $id = null){
         $conn = Database::getConnection($this->config['database']);
-        $product = new ProductModel($conn);
+        $product = new $this->_model($conn);
     
         $_get  = request()->getQuery();
     
@@ -75,7 +76,7 @@ class ProductsController extends ApiRestfulController
         if (empty($data))
             response()->sendError('Invalid JSON',400);
         
-        $product = new ProductModel();
+        $product = new $this->_model();
 
         $missing = $product::diffWithSchema($data, ['id']);
         if (!empty($missing))
@@ -101,7 +102,7 @@ class ProductsController extends ApiRestfulController
         if (empty($data))
             response()->sendError('Invalid JSON',400);
         
-        $product = new ProductModel();
+        $product = new $this->_model();
         $product->id = $id;
 
         $missing = $product::diffWithSchema($data, ['id']);
@@ -134,7 +135,7 @@ class ProductsController extends ApiRestfulController
             response()->sendError("Lacks id in request",400);
 
         $conn = Database::getConnection($this->config['database']);
-        $product = new ProductModel($conn);
+        $product = new $this->_model($conn);
         $product->id = $id;
 
         if($product->delete()){
@@ -156,7 +157,7 @@ class ProductsController extends ApiRestfulController
         
         $conn = Database::getConnection($this->config['database']);
 
-        $product = new ProductModel($conn);
+        $product = new $this->_model($conn);
         $product->id = $id;
 
         try {

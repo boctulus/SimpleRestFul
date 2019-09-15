@@ -1,10 +1,22 @@
 	const base_url = getSiteRoot();
 	const login_page = base_url + 'login';  
 
-	console.log(base_url + 'login');
+	//console.log(base_url + 'login');
+
+	function notLoggedGoHome(){
+		if (typeof login_page === 'undefined' || typeof localStorage === 'undefined'){
+			console.log('Error');
+			return;
+		}
+
+		const expired = ((localStorage.getItem('exp')!=null) && ((localStorage.getItem('exp')*1000) - (new Date()).getTime())<0);
+		
+		if ((localStorage.getItem('tokenJwt') == null) || expired)
+			window.location = login_page; 
+	}
 
 	$(document).on('submit', '#sign_up_form', function(){
-		console.log('here!');
+		//console.log('here!');
 
 		// get form data
 		let sign_up_form=$(this);

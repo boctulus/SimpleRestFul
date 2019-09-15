@@ -7,7 +7,7 @@ include CORE_PATH. 'model.php';
 	Product extends Model to have access to reflection
 	Another way could be to use traits 
 */
-class ProductModel extends Model 
+class ProductsModel extends Model 
 {
 	static protected $table_name = "products";
 	static protected $id_name = 'id';

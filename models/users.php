@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 include CORE_PATH. 'model.php';
 
-class UserModel extends Model
+class UsersModel extends Model
  {
 	static protected $table_name = "users";
 	static protected $id_name = 'id';
