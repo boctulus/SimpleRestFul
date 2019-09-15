@@ -1,5 +1,7 @@
 	const base_url = getSiteRoot();
-	const login_page = base_url + 'login';  
+	///////const login_page = base_url + 'login';  
+
+	console.log(base_url + 'login');
 
 	$(document).on('submit', '#sign_up_form', function(){
 		console.log('here!');
@@ -19,7 +21,7 @@
 					localStorage.setItem('tokenJwt',data.token);
 					localStorage.setItem('exp',data.exp);
 					localStorage.setItem('username',obj.username);
-					window.location = base_url; 'index.php'
+					window.location = base_url; // ok?
 				}else{		
 					$('#siginError').text('Error during signin');
 					console.log(data);

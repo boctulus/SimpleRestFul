@@ -1,8 +1,10 @@
 <?php
 	require_once 'helpers/strings.php';
-	   
+
 	function my_autoload ($class_name)
 	{
+		//echo $class_name;
+		
 		if($pos = strpos($class_name, 'Controller')!==false){
 			$file_name = strtolower(substr($class_name, 0, strlen($class_name)- 10)). '.php';
 			$path = str_replace('/', DIRECTORY_SEPARATOR, CONTROLLERS_PATH . $file_name);

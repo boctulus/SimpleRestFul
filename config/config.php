@@ -4,14 +4,15 @@ declare(strict_types=1);
 require_once 'constants.php';
 
 return [
-		'BASE_URL' => 'SimpleRestFul/',
+		# public_html
+		'BASE_URL' => '/',   
 		'DEFAULT_CONTROLLER' => 'ProductsController',
 
 		'database' => [
 			'host' => 'localhost',
 			'db_name' => 'api_sb', 
 			'user' => 'root', 
-			'pass' => ''
+			'pass' => 'gogogo2k'
 		], 
 		
 		// JWT
