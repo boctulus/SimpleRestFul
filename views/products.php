@@ -1,10 +1,15 @@
 
 	<script>
 		function notLoggedGoHome(){
+			if (typeof login_page === 'undefined' || typeof localStorage === 'undefined'){
+				console.log('Error');
+				return;
+			}
+
 			const expired = ((localStorage.getItem('exp')!=null) && ((localStorage.getItem('exp')*1000) - (new Date()).getTime())<0);
 			
 			if ((localStorage.getItem('tokenJwt') == null) || expired)
-				window.location = login_page;  //  a veces llega vacio !
+				window.location = login_page; 
 		}
 		notLoggedGoHome();
 	</script>
