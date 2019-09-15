@@ -1,8 +1,10 @@
 <?php
 
+namespace Core;
+
 // require_once 'interfaces/arrayable.php'; 
 
-class Request  implements ArrayAccess /* ,Arrayable */
+class Request  implements \ArrayAccess /* ,Arrayable */
 {
     static protected $query_arr;
     static protected $raw;

@@ -27,7 +27,7 @@ if (!defined('API_PATH'))
     define('API_PATH', CONTROLLERS_PATH . DIRECTORY_SEPARATOR . 'api/'); 
 
 if (!defined('LIBS_PATH'))
-    define('LIBS_PATH', ROOT_PATH . DIRECTORY_SEPARATOR . 'helpers/');   
+    define('LIBS_PATH', ROOT_PATH . DIRECTORY_SEPARATOR . 'libs/');   
 
 if (!defined('VENDOR_PATH'))
     define('VENDOR_PATH', ROOT_PATH . DIRECTORY_SEPARATOR . 'vendor/'); 

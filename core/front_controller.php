@@ -1,5 +1,7 @@
 <?php
 
+    namespace Core;
+
     require_once 'controller.php';
     require_once 'helpers/html.php';
     include 'helpers/debug.php';

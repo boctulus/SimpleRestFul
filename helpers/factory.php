@@ -2,12 +2,12 @@
 
 if (! function_exists('response')) {
 	function response() {
-		return Response::getInstance();
+		return \Core\Response::getInstance();
 	}
 }
 
 if (! function_exists('request')) {
 	function request() {
-		return Request::getInstance();
+		return \Core\Request::getInstance();
 	}
 }

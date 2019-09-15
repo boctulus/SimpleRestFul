@@ -7,7 +7,7 @@
 	require_once 'autoload.php';
 	include_once "vendor/autoload.php";
 	
-	FrontController::resolve();
+	\Core\FrontController::resolve();
 	
 	
 

@@ -1,5 +1,6 @@
 <?php
 
+// usar Namespace !!!!!!!!!!!!!!!!!!!!!!!!!!
 require_once "my_controller.php";
 
 class DumbController extends MyController
