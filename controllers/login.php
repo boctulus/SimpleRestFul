@@ -1,8 +1,8 @@
 <?php
 
-require_once "my_controller.php";
+namespace Controllers;
 
-class LoginController extends MyController
+class LoginController extends \Controllers\MyController
 {
 	function index(){
 		$this->login();

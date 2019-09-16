@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+namespace Core;
+
 require_once CORE_PATH. 'paginator.php';
 
 class Model {
@@ -13,14 +15,14 @@ class Model {
 	protected $conn;
 
 
-	public function __construct(object $conn = null){
+	public function __construct(object $conn){
 		if($conn){
 			$this->conn = $conn;
-			$this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+			$this->conn->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 		}
 		
 		if (empty(static::$schema))
-			throw new Exception ("Schema is empty!");
+			throw new \Exception ("Schema is empty!");
 
 		static::$properties = array_keys(static::$schema);
 	}
@@ -44,7 +46,7 @@ class Model {
 		$st->bindParam(":id", $this->{static::$id_name}, constant('PDO::PARAM_'.static::$schema[static::$id_name]));
 		$st->execute();
 		
-		$row = $st->fetch(PDO::FETCH_OBJ);
+		$row = $st->fetch(\PDO::FETCH_OBJ);
 		if (!$row)
 			return false;
 	 
@@ -57,10 +59,10 @@ class Model {
 	{
 		$q  = "SELECT * FROM ".static::$table_name." WHERE ".static::$id_name."=:id";
 		$st = $this->conn->prepare( $q );
-		$st->bindParam(":id", $this->{static::$id_name}, PDO::PARAM_INT);
+		$st->bindParam(":id", $this->{static::$id_name}, \PDO::PARAM_INT);
 		$st->execute();
 		
-		$row = $st->fetch(PDO::FETCH_ASSOC);
+		$row = $st->fetch(\PDO::FETCH_ASSOC);
 
 		if (!$row)
 			return false;
@@ -78,7 +80,7 @@ class Model {
 				$paginator->orders = $order;
 				$paginator->properties = static::$properties;
 				$paginator->compile();
-			}catch (Exception $e){
+			}catch (\Exception $e){
 				sendError("Pagination error: {$e->getMessage()}");
 			}
 		}else
@@ -108,7 +110,7 @@ class Model {
 		/// end pagination
 
 		if ($st->execute())
-			return $st->fetchAll(PDO::FETCH_ASSOC);
+			return $st->fetchAll(\PDO::FETCH_ASSOC);
 		else
 			return false;	
 	}
@@ -123,7 +125,7 @@ class Model {
 				$paginator->orders = $order;
 				$paginator->properties = static::$properties;
 				$paginator->compile();
-			}catch (Exception $e){
+			}catch (\Exception $e){
 				sendError("Pagination error: {$e->getMessage()}");
 			}
 		}else
@@ -165,14 +167,14 @@ class Model {
 		
 		foreach($values as $ix => $val){
 			if (!isset(static::$schema[$vars[$ix]]))
-				throw new InvalidArgumentException("there is an error near '{$vars[$ix]}'");
+				throw new \InvalidArgumentException("there is an error near '{$vars[$ix]}'");
 
 			$const = static::$schema[$vars[$ix]];
 			$st->bindValue(":{$vars[$ix]}", $val, constant("PDO::PARAM_{$const}"));
 		}
 
 		if ($st->execute())
-			return $st->fetchAll(PDO::FETCH_ASSOC);
+			return $st->fetchAll(\PDO::FETCH_ASSOC);
 		else
 			return false;	
 	}
@@ -197,7 +199,7 @@ class Model {
 		if(static::$fillable!='*' && is_array(static::$fillable)){
 			foreach($vars as $var){
 				if (!in_array($var,static::$fillable))
-					throw new InvalidArgumentException("$var is no fillable");
+					throw new \InvalidArgumentException("$var is no fillable");
 			}
 		}
 
@@ -233,7 +235,7 @@ class Model {
 		if(static::$fillable!='*' && is_array(static::$fillable)){
 			foreach($vars as $var){
 				if (!in_array($var,static::$fillable))
-					throw new InvalidArgumentException("$var is no fillable");
+					throw new \InvalidArgumentException("$var is no fillable");
 			}
 		}
 		
@@ -251,7 +253,7 @@ class Model {
 	
 		foreach($values as $ix => $val){
 			if (!isset(static::$schema[$vars[$ix]]))
-				throw new InvalidArgumentException("there is an error near '{$vars[$ix]}'");
+				throw new \InvalidArgumentException("there is an error near '{$vars[$ix]}'");
 
 			$const = static::$schema[$vars[$ix]];	
 			$st->bindValue(":{$vars[$ix]}", $val, constant("PDO::PARAM_{$const}"));
@@ -275,7 +277,7 @@ class Model {
 		$props = array_keys($props);
 		
 		if (empty($props))
-			throw new InvalidArgumentException("Properties not found!");
+			throw new \InvalidArgumentException("Properties not found!");
 		
 		$missing_properties = [];
 
@@ -295,7 +297,7 @@ class Model {
 		$props = array_keys($props);
 		
 		if (empty($props))
-			throw new InvalidArgumentException("Properties not found!");
+			throw new \InvalidArgumentException("Properties not found!");
 		
 		$missing_properties = [];
 

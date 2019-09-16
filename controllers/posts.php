@@ -1,6 +1,6 @@
 <?php
 
-require_once "my_controller.php";
+namespace Controllers;
 
 class PostsController extends MyController
 {

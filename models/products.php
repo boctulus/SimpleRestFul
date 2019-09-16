@@ -1,13 +1,15 @@
 <?php
 declare(strict_types=1);
 
-include CORE_PATH. 'model.php';
+namespace Models;
+
+require CORE_PATH . 'model.php';
 
 /*
 	Product extends Model to have access to reflection
 	Another way could be to use traits 
 */
-class ProductsModel extends Model 
+class ProductsModel extends \Core\Model 
 {
 	static protected $table_name = "products";
 	static protected $id_name = 'id';

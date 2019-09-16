@@ -1,5 +1,7 @@
 <?php
 
+namespace Controllers;
+
 header('access-control-allow-Methods: GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS');
 header('access-control-allow-credentials: true');
 header('access-control-allow-headers: AccountKey,x-requested-with, Content-Type, origin, authorization, accept, client-security-token, host, date, cookie, cookie2'); 
@@ -49,7 +51,7 @@ abstract class ApiRestfulController
     }
 
     function get(int $id = null){
-        $conn = Database::getConnection($this->config['database']);
+        $conn = \Libs\Database::getConnection($this->config['database']);
         $product = new $this->_model($conn);
     
         $_get  = request()->getQuery();
@@ -79,7 +81,7 @@ abstract class ApiRestfulController
                     $rows = $product->fetchAll($fields, $order, $limit, $offset);
                     response()->code(empty($rows) ? 404 : 200)->send($rows); 
                 }	
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 response()->sendError('Error in fetch: '.$e->getMessage());
             }	
         }
@@ -97,7 +99,7 @@ abstract class ApiRestfulController
         if (!empty($missing))
             response()->sendError('Lack some properties in your request: '.implode(',',$missing));
     
-        $conn = Database::getConnection($this->config['database']);
+        $conn = \Libs\Database::getConnection($this->config['database']);
         $product->setConn($conn);
 
         if ($product->create($data)!==false){
@@ -124,7 +126,7 @@ abstract class ApiRestfulController
         if (!empty($missing))
             response()->sendError('Lack some properties in your request: '.implode(',',$missing));
         
-        $conn = Database::getConnection($this->config['database']);
+        $conn = \Libs\Database::getConnection($this->config['database']);
         $product->setConn($conn);
 
         $product->id = $id;
@@ -149,7 +151,7 @@ abstract class ApiRestfulController
         if($id == NULL)
             response()->sendError("Lacks id in request",400);
 
-        $conn = Database::getConnection($this->config['database']);
+        $conn = \Libs\Database::getConnection($this->config['database']);
         $product = new $this->_model($conn);
         $product->id = $id;
 
@@ -170,7 +172,7 @@ abstract class ApiRestfulController
         if (empty($data))
             response()->sendError('Invalid JSON',400);
         
-        $conn = Database::getConnection($this->config['database']);
+        $conn = \Libs\Database::getConnection($this->config['database']);
 
         $product = new $this->_model($conn);
         $product->id = $id;

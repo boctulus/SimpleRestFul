@@ -9,14 +9,13 @@ header('content-type: application/json; charset=UTF-8');
 
 include '../../config/constants.php';
 require_once '../../vendor/autoload.php';
-require_once '../../libs/database.php'; 
+require_once LIBS_PATH . 'database.php'; 
 require_once '../../models/users.php';
 include_once '../../helpers/debug.php';
 
 include_once HELPERS_PATH . 'factory.php';
 require_once CORE_PATH . 'request.php';
 require_once CORE_PATH . 'response.php';
-
 
 
 /*
@@ -43,8 +42,8 @@ function signin()
 
 		$config =  include '../../config/config.php';
 
-		$conn = Database::getConnection($config['database']);
-		$u = new UsersModel($conn);
+		$conn = \Core\Database::getConnection($config['database']);
+		$u = new \Models\UsersModel($conn);
 
 		
 		$missing = $u::diffWithSchema($data, ['id']);
@@ -81,7 +80,7 @@ function signin()
 		
 		response()->send(['token'=>$token, 'exp' => $payload['exp'] ]);
 
-	}catch(Exception $e){
+	}catch(\Exception $e){
 		response()->sendError($e->getMessage());
 	}	
 		
@@ -124,9 +123,9 @@ function login()
 	
 	$config =  include '../../config/config.php';
 	
-	$conn = Database::getConnection($config['database']);
+	$conn = \Libs\Database::getConnection($config['database']);
 	
-	$u = new UsersModel($conn);
+	$u = new \Models\UsersModel($conn);
 	$u->username = $username;
 	$u->password = $password;
 	
@@ -207,7 +206,7 @@ function renew()
 				
 				response()->send(['token'=>$token, 'exp' => $payload['exp'] ]);
 				
-			} catch (Exception $e) {
+			} catch (\Exception $e) {
 				/*
 				 * the token was not able to be decoded.
 				 * this is likely because the signature was not able to be verified (tampered token)
@@ -217,7 +216,7 @@ function renew()
 		}else{
 			response()->sendError('Token not found',400);
 		}
-	} catch (Exception $e) {
+	} catch (\Exception $e) {
 		response()->sendError($e->getMessage(), 400);
 	}	
 }

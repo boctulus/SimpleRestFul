@@ -1,8 +1,8 @@
 <?php
 
-require_once 'core/controller.php';
+namespace Controllers;
 
-class MyController extends Controller {
+class MyController extends \Core\Controller {
     protected $_title;
 
     public function __construct(){

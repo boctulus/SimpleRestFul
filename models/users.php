@@ -1,9 +1,11 @@
 <?php
 declare(strict_types=1);
 
-include CORE_PATH. 'model.php';
+namespace Models;
 
-class UsersModel extends Model
+require CORE_PATH . 'model.php';
+
+class UsersModel extends \Core\Model
  {
 	static protected $table_name = "users";
 	static protected $id_name = 'id';
@@ -38,7 +40,7 @@ class UsersModel extends Model
 		$st = $this->conn->prepare($q);
 		$st->execute([$this->username, sha1($this->password)]);
 	
-		$row = $st->fetch(PDO::FETCH_OBJ);
+		$row = $st->fetch(\PDO::FETCH_OBJ);
 		
 		if ($row){
 			$this->id = $row->id;

@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+namespace Libs;
+
 class Database {
 
     private static $conn;
@@ -14,11 +16,11 @@ class Database {
 		$pass    = $config['pass'] ?? '';
 		
 		try {
-			$options = [ PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION ];
-			self::$conn = new PDO("mysql:host=" . $host . ";dbname=" . $db_name, $user, $pass, $options);
+			$options = [ \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION ];
+			self::$conn = new \PDO("mysql:host=" . $host . ";dbname=" . $db_name, $user, $pass, $options);
             self::$conn->exec("set names utf8");
-		} catch (PDOException $e) {
-			throw new PDOException($e->getMessage());
+		} catch (\PDOException $e) {
+			throw new \PDOException($e->getMessage());
 		}	
 		
 		return self::$conn;
