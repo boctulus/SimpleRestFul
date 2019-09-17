@@ -9,14 +9,14 @@ header('access-control-allow-Origin: *');
 header('content-type: application/json; charset=UTF-8');
 
 require_once 'config/constants.php';
-require_once ROOT_PATH . 'core/auth/auth_check.php';
+require_once ROOT_PATH . 'core/auth/check.php';
 require_once LIBS_PATH . 'database.php';
 include_once HELPERS_PATH . 'debug.php';
 include_once HELPERS_PATH . 'arrays.php';
 include_once HELPERS_PATH . 'messages.php';
 
 
-abstract class ApiRestfulController
+abstract class ApiController
 {
     protected $config;
     protected $_model;
@@ -55,22 +55,22 @@ abstract class ApiRestfulController
     function get(int $id = null){
         $conn = \Libs\Database::getConnection($this->config['database']);
 
-        $model = '\\Models\\'.$this->_model;
-        $product = new $model($conn); 
+        $model    = '\\Models\\'.$this->_model;
+        $instance = new $model($conn); 
     
-        $_get  = request()->getQuery();
+        $_get   = request()->getQuery();
     
         $fields = shift($_get,'fields');
         $fields = $fields != NULL ? explode(',',$fields) : NULL;
 
         if ($id != null)
         {
-            // one product by id
-            $product->id = $id; 
-            if ($product->fetchOne($fields) === false)
+            // one instance by id
+            $instance->id = $id; 
+            if ($instance->fetchOne($fields) === false)
                 response()->sendCode(404);
             else
-                response()->send($product);
+                response()->send($instance);
         }else{    
             // "list
             $limit  = (int) shift($_get,'limit');
@@ -79,10 +79,10 @@ abstract class ApiRestfulController
 
             try {
                 if (!empty($_get)){
-                    $rows = $product->filter($fields, $_get, $order, $limit, $offset);
+                    $rows = $instance->filter($fields, $_get, $order, $limit, $offset);
                     response()->code(empty($rows) ? 404 : 200)->send($rows); 
                 }else {
-                    $rows = $product->fetchAll($fields, $order, $limit, $offset);
+                    $rows = $instance->fetchAll($fields, $order, $limit, $offset);
                     response()->code(empty($rows) ? 404 : 200)->send($rows); 
                 }	
             } catch (\Exception $e) {
@@ -97,18 +97,18 @@ abstract class ApiRestfulController
         if (empty($data))
             response()->sendError('Invalid JSON',400);
         
-        $model   = '\\Models\\'.$this->_model;
-        $product = new $model();
+        $model    = '\\Models\\'.$this->_model;
+        $instance = new $model();
 
-        $missing = $product::diffWithSchema($data, ['id']);
+        $missing = $instance::diffWithSchema($data, ['id']);
         if (!empty($missing))
             response()->sendError('Lack some properties in your request: '.implode(',',$missing));
     
         $conn = \Libs\Database::getConnection($this->config['database']);
-        $product->setConn($conn);
+        $instance->setConn($conn);
 
-        if ($product->create($data)!==false){
-            response()->send(['id' => $product->id], 201);
+        if ($instance->create($data)!==false){
+            response()->send(['id' => $instance->id], 201);
         }	
         else
             response()->sendError("Error: creation of resource fails!");
@@ -124,25 +124,25 @@ abstract class ApiRestfulController
         if (empty($data))
             response()->sendError('Invalid JSON',400);
         
-        $model   = '\\Models\\'.$this->_model;
-        $product = new $model();
-        $product->id = $id;
+        $model    = '\\Models\\'.$this->_model;
+        $instance = new $model();
+        $instance->id = $id;
 
-        $missing = $product::diffWithSchema($data, ['id']);
+        $missing = $instance::diffWithSchema($data, ['id']);
         if (!empty($missing))
             response()->sendError('Lack some properties in your request: '.implode(',',$missing));
         
         $conn = \Libs\Database::getConnection($this->config['database']);
-        $product->setConn($conn);
+        $instance->setConn($conn);
 
-        $product->id = $id;
-        if (!$product->exists()){
+        $instance->id = $id;
+        if (!$instance->exists()){
             response()->code(404)->sendError("Register for id=$id does not exists");
         }
         
         try {
 
-            if($product->update($data)!==false)
+            if($instance->update($data)!==false)
                 response()->sendJson("OK");
             else
                 response()->sendError("Error in UPDATE");
@@ -159,11 +159,11 @@ abstract class ApiRestfulController
 
         $conn = \Libs\Database::getConnection($this->config['database']);
         
-        $model   = '\\Models\\'.$this->_model;
-        $product = new $model($conn);
-        $product->id = $id;
+        $model    = '\\Models\\'.$this->_model;
+        $instance = new $model($conn);
+        $instance->id = $id;
 
-        if($product->delete()){
+        if($instance->delete()){
             response()->sendJson("OK");
         }	
         else
@@ -182,12 +182,12 @@ abstract class ApiRestfulController
         
         $conn = \Libs\Database::getConnection($this->config['database']);
 
-        $model   = '\\Models\\'.$this->_model;
-        $product = new $model($conn);
-        $product->id = $id;
+        $model    = '\\Models\\'.$this->_model;
+        $instance = new $model($conn);
+        $instance->id = $id;
 
         try {
-            if($product->update($data)!==false)
+            if($instance->update($data)!==false)
                 response()->sendJson("OK");
             else
                 response()->sendError("Error in PATCH",404);	

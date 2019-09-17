@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 require_once VENDOR_PATH.'autoload.php';
 
+
 /* 
 	Authorization checkin
 */
@@ -43,4 +44,3 @@ function check_auth() {
 		 response()->sendError('Authorization not found',400);
 	}
 }
-

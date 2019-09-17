@@ -8,7 +8,7 @@ header('access-control-allow-Origin: *');
 header('content-type: application/json; charset=UTF-8');
 
 include '../../config/constants.php';
-require_once '../../vendor/autoload.php';
+require_once VENDOR_PATH.'autoload.php';
 require_once LIBS_PATH . 'database.php'; 
 require_once MODELS_PATH . 'users.php';
 include_once HELPERS_PATH . 'debug.php';
@@ -151,7 +151,7 @@ function login()
 		response()->send(['token'=>$token, 'exp' => $payload['exp']]);
 		
 	}else
-		response()->sendError("User or password are incorrect");
+		response()->sendError("User or password are incorrect", 401);
 }
 
 

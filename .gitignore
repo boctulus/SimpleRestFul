@@ -1,0 +1,10 @@
+.idea
+vendor/
+composer.lock
+_bk_
+*.rar
+*.zip
+config/_en_server_/
+logs/
+user.txt
+

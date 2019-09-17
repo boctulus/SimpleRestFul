@@ -25,12 +25,11 @@ class FrontController
         }
 
         $_params = explode('/', $path);
-        //debug ($_params);
 
         if (empty($_params[0]))  
             array_shift($_params);
 
-        // parche
+        // patch
         if ($_params[0]=='api'){
             @list($controller) = array_slice($_params,1,1);
             $params = array_slice($_params,2);
@@ -42,8 +41,6 @@ class FrontController
             $params = array_slice($_params,2);
             $req->setParams($params); ///
         }
-
-        //echo "CONTROLLER: $controller";
 
         $default_controller_name = substr($config['DEFAULT_CONTROLLER'],0, strlen($config['DEFAULT_CONTROLLER'])-10);
         $class_file = !empty($controller) ? $controller : $default_controller_name;
