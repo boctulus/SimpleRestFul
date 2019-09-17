@@ -1,0 +1,10 @@
+# TODO
+
+- Implementar clase View 
+- Form de registro
+- Paginador
+- Controles más complejos como checkbox, radio, dropbox
+- Consultas más complejas para API Rest incluyendo operadores >, <, >=. <= y negador (!=)
+- Permisos y roles (ACL)
+- Meto cada metodo en un bloque try-catch o .... defino un error_handler ?
+

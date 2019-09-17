@@ -1,0 +1,4 @@
+
+Ejemplos de uso:
+
+http://simplerest.lan/dumb/sum/5/6

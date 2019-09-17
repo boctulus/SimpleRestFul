@@ -1,0 +1,3 @@
+# BUGS
+
+- Error en el usuario / password no debe resultar en Error 500 !!!!
