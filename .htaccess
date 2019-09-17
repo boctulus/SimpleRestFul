@@ -14,10 +14,10 @@
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
     # API Rest
-    RewriteRule ^api/auth/login$ core/auth/sessions.php?a=login [L]
-    RewriteRule ^api/auth/signin$ core/auth/sessions.php?a=signin [L]
-    RewriteRule ^api/auth/token/revoke core/auth/sessions.php?a=revoke [L]
-    RewriteRule ^api/auth/token/renew core/auth/sessions.php?a=renew [L]
+    RewriteRule ^auth/login$ core/auth/sessions.php?a=login [L]
+    RewriteRule ^auth/signin$ core/auth/sessions.php?a=signin [L]
+    RewriteRule ^auth/token/revoke core/auth/sessions.php?a=revoke [L]
+    RewriteRule ^auth/token/renew core/auth/sessions.php?a=renew [L]
 
     # Redirect Trailing Slashes If Not A Folder...
     RewriteCond %{REQUEST_FILENAME} !-d

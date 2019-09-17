@@ -71,4 +71,4 @@
 			<!-- /.container-fluid -->
 		  </nav>
 		</div>
-	</div>
+</div>	

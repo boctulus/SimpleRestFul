@@ -9,7 +9,7 @@ class LoginController extends \Controllers\MyController
 	}
 	
 	function login(){
-		$this->view('login.php');
+		$this->view('login.php', ['title'=>'Ingreso']);
 	}
 	
 	function signin(){

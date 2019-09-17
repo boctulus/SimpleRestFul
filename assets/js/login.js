@@ -24,7 +24,7 @@
 
 		$.ajax({
 			type : "POST",
-			url: "api/auth/signin",
+			url: "auth/signin",
 			data : JSON.stringify(form_obj),
 			dataType: 'json',
 			success : function(result) {
@@ -56,7 +56,7 @@
 
 		$.ajax({
 			type: "POST",
-			url: 'api/auth/login',
+			url: 'auth/login',
 			data: JSON.stringify(obj),
 			dataType: 'json',
 			success: function(data){
@@ -89,7 +89,7 @@
 	
 		$.ajax({
 			type: "POST",
-			url: 'api/auth/token/renew',
+			url: 'auth/token/renew',
 			dataType: 'json',
 			headers: {"Authorization": 'Bearer ' + localStorage.getItem('tokenJwt')}, 
 			success: function(data){
