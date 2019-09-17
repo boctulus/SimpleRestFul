@@ -8,7 +8,8 @@ class MyController extends \Core\Controller {
     public function __construct(){
         parent::__construct();
         $_ctrl = explode('\\',get_class($this));
-        $this->_title = str_replace('Controller','',$_ctrl[count($_ctrl)-1]);
+        $ctrl  = $_ctrl[count($_ctrl)-1];
+        $this->_title = substr($ctrl,0,strlen($ctrl)-10);
     }
 
     function view(string $view_path, array $vars_to_be_passed = null, $layout = 'app_layout.php'){
