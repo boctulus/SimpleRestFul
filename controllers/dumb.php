@@ -59,6 +59,7 @@ class DumbController extends MyController
 
         $conn    = \Libs\Database::getConnection($this->config['database']);
         $u = new \Models\UsersModel($conn);
+        $u->unhide(['password']);
         $u->id = 13;
         $u->fetch();
 

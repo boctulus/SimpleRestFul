@@ -31,7 +31,7 @@ class Model {
 		static::$properties = array_keys(static::$schema);
 	}
 
-	// remuevo los campos ocultos
+	// filter results 
 	private function _removehidden(&$fields)
 	{	
 		if (!empty(static::$hidden)){
@@ -42,6 +42,17 @@ class Model {
 			foreach (static::$hidden as $h){
 				$k = array_search($h, $fields);
 				unset($fields[$k]);
+			}
+		}
+	}
+
+	// remove from hidden list of fields
+	function unhide($unhidden_fields){
+		if (!empty(static::$hidden) && !empty($unhidden_fields)){
+			
+			foreach ($unhidden_fields as $uf){
+				$k = array_search($h, static::$hidden);
+				unset(static::$hidden[$k]);
 			}
 		}
 	}
