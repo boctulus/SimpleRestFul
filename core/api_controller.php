@@ -62,6 +62,13 @@ abstract class ApiController
     
         $fields = shift($_get,'fields');
         $fields = $fields != NULL ? explode(',',$fields) : NULL;
+        
+        ///
+        $exclude = shift($_get,'exclude');
+        $exclude = $exclude != NULL ? explode(',',$exclude) : NULL;
+
+        if ($exclude != null)
+            $instance->hide($exclude);
 
         if ($id != null)
         {

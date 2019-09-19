@@ -34,9 +34,6 @@ class Model {
 	// filter results 
 	private function _removehidden(&$fields)
 	{	
-		//debug($fields, 'campos a mostrar');
-		//debug(static::$properties, 'campos');
-
 		if (!empty(static::$hidden)){
 			if (empty($fields)) {
 				$fields = static::$properties;

@@ -8,15 +8,22 @@
     GET /api/products/83
     GET /api/products?name=Vodka
 
-or..
+
+# Detail fields to include
 
     GET /api/products?fields=id,name,cost
     GET /api/products/83?fields=id,name,cost
     GET /api/products?fields=id,cost&name=Vodka
 
+
+# Exclude fields
+
+    GET /api/users?exclude=firstname,lastname
+    
+
 ## POST <CREATE>
 
-POST /api/products
+    POST /api/products
 
 With a request body like:
 
@@ -29,13 +36,14 @@ With a request body like:
 
 ## DELETE
 
-DELETE /api/products/100
+    DELETE /api/products/100
 
 ## PUT  <UPDATE>
 
-PUT /api/products/84
+    PUT /api/products/84
 
-    With a request body like:
+With a request body like:
+
     {
         "name": "Vodka",
         "description": "from Bielorussia",
@@ -45,7 +53,7 @@ PUT /api/products/84
 
 ## PATCH <PARTIAL UPDATE>
 
-PUT /api/products/84
+    PUT /api/products/84
 
 With a request body like:
 
@@ -64,7 +72,4 @@ With a request body like:
 
     GET /api/products?limit=10
     GET /api/products?offset=40&limit=10
-
-## MORE EXAMPLES
-
     GET /api/products?limit=10&order[name]=ASC&order[cost]=DESC&size=2L
