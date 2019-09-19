@@ -9,17 +9,17 @@
     GET /api/products?name=Vodka
 
 
-# Detail fields to include
+### Detail fields to include
 
     GET /api/products?fields=id,name,cost
     GET /api/products/83?fields=id,name,cost
     GET /api/products?fields=id,cost&name=Vodka
 
 
-# Exclude fields
+### Exclude fields
 
     GET /api/users?exclude=firstname,lastname
-    
+
 
 ## POST <CREATE>
 
