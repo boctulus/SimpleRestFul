@@ -48,13 +48,18 @@ class Model {
 
 	// remove from hidden list of fields
 	function unhide($unhidden_fields){
-		if (!empty(static::$hidden) && !empty($unhidden_fields)){
-			
+		if (!empty(static::$hidden) && !empty($unhidden_fields)){			
 			foreach ($unhidden_fields as $uf){
-				$k = array_search($h, static::$hidden);
+				$k = array_search($uf, static::$hidden);
 				unset(static::$hidden[$k]);
 			}
 		}
+	}
+
+	// hide a field from fetch methods 
+	function hide(array $fields){
+		foreach ($fields as $f)
+			static::$hidden[] = $f;
 	}
 
 	/** 
