@@ -1,14 +1,13 @@
 # TODO
 
-?exclude=id,lastname
-
-
----
-Crear un alias de ?fields como ?include
-
+- SoftDelete
 
 - En config colocar $config['error_if_not_fillable']=false 
+- Simplificar la forma de crear la conexion a la DB como en Laravel Lummen:
+https://lumen.laravel.com/docs/6.x/database
 - Implementar mi data-validator
+- Generar Modelos con sus schemas a partir de la DB como con CRUDO usando un comando.
+- Auto-joins basado en convenciones (Doctrine hace lo mismo)
 - Probar en Windows
 - Investigar a la competencia en frameworks MVC y API Rest
 - Se puede dejar más limpio el .htaccess ?
@@ -19,6 +18,8 @@ Crear un alias de ?fields como ?include
 - Controles más complejos como checkbox, radio, combobox
 - Permisos y roles (ACL)
 - Routers como en Laravel (!)
+- Middlewares
+- Migrations
 - Sanitización a nivel de urls
 - Sanitización a nivel de base de datos
 - Documentar !!!! <-- comenzar

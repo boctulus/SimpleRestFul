@@ -60,7 +60,7 @@
 				}
 						
 				// headers
-				$data.unshift(["Id","Email","Nombre","Apellido","Password"]);
+				$data.unshift(["Id","Email","Nombre","Apellido"]);
 				
 				// row classes
 				//$data.rowClasses = ['info','','warning'];
