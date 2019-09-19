@@ -15,7 +15,7 @@
 
     # API Rest
     RewriteRule ^auth/login$ core/auth/sessions.php?a=login [L]
-    RewriteRule ^auth/signin$ core/auth/sessions.php?a=signin [L]
+    RewriteRule ^auth/signup$ core/auth/sessions.php?a=signup [L]
     RewriteRule ^auth/token/revoke core/auth/sessions.php?a=revoke [L]
     RewriteRule ^auth/token/renew core/auth/sessions.php?a=renew [L]
 

@@ -55,7 +55,7 @@ INSERT INTO `products` (`id`, `name`, `description`, `size`, `cost`) VALUES
 
 CREATE TABLE `users` (
   `id` int(11) NOT NULL,
-  `username` varchar(45) DEFAULT NULL,
+  `email` varchar(45) DEFAULT NULL,
   `password` varchar(45) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -63,7 +63,7 @@ CREATE TABLE `users` (
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `username`, `password`) VALUES
+INSERT INTO `users` (`id`, `email`, `password`) VALUES
 (1, 'boctulus', '561d352157d4dcafc9ca9ba37773711ee4d192fd'),
 (4, 'pbozzolo', '561d352157d4dcafc9ca9ba37773711ee4d192fd');
 

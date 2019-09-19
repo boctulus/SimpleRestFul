@@ -15,40 +15,51 @@
 			window.location = login_page; 
 	}
 
-	$(document).on('submit', '#sign_up_form', function(){
-		//console.log('here!');
+	function signup(){
+		//console.log('here');
 
-		// get form data
-		let sign_up_form=$(this);
-		let form_obj = sign_up_form.serializeObject();
+		var obj ={};
+
+		if ($('#password').val() != $('#password_confirmation').val()){
+			$('#signupError').text('Contraseñas no coinciden');
+			return;
+		}else $('#signupError').text('');
+
+		obj.email = $('#email').val();	
+		obj.password = $('#password').val();
+		obj.firstname = $('#firstname').val();	
+		obj.lastname = $('#lastname').val();
 
 		$.ajax({
 			type : "POST",
-			url: "auth/signin",
-			data : JSON.stringify(form_obj),
+			url: "/auth/signup",
+			data : JSON.stringify(obj),
 			dataType: 'json',
-			success : function(result) {
+			success : function(data) {
 				if (typeof data.token != 'undefined'){
 					console.log('Token recibido');
 					localStorage.setItem('tokenJwt',data.token);
 					localStorage.setItem('exp',data.exp);
-					localStorage.setItem('username',obj.username);
-					window.location = base_url; // ok?
+					localStorage.setItem('email',obj.email);
+					window.location = base_url; 
 				}else{		
-					$('#siginError').text('Error during signin');
+					$('#signupError').text('Error desconcido');
 					console.log(data);
 				}
 			},
-			error: function(data){
-				console.log('Error',data);
+			error: function(xhr, status, error){
+				console.log(JSON.parse(xhr.responseText));
+				$('#signupError').text(JSON.parse(xhr.responseText).error);
 			}
 		});
-	});
+
+		return false;
+	}
 	
 	function login(){
 		var obj ={};
 		
-		obj.username = $('#username').val();	
+		obj.email = $('#email').val();	
 		obj.password = $('#password').val();	
 		
 		// get form data
@@ -56,14 +67,14 @@
 
 		$.ajax({
 			type: "POST",
-			url: 'auth/login',
+			url: '/auth/login',
 			data: JSON.stringify(obj),
 			dataType: 'json',
 			success: function(data){
 				if (typeof data.token != 'undefined'){
 					localStorage.setItem('tokenJwt',data.token);
 					localStorage.setItem('exp',data.exp);
-					localStorage.setItem('username',obj.username);
+					localStorage.setItem('email',obj.email);
 					window.location = base_url;
 				}else{		
 					$('#loginError').text('Error en usuario o password');
@@ -72,6 +83,7 @@
 			},
 			error: function(data){
 				console.log('Error',data);
+				$('#loginError').text('Error en usuario o password');
 			}
 		});		
 
@@ -89,7 +101,7 @@
 	
 		$.ajax({
 			type: "POST",
-			url: 'auth/token/renew',
+			url: '/auth/token/renew',
 			dataType: 'json',
 			headers: {"Authorization": 'Bearer ' + localStorage.getItem('tokenJwt')}, 
 			success: function(data){

@@ -20,6 +20,7 @@ abstract class ApiController
 {
     protected $config;
     protected $_model;
+    protected $hidden = null;
 
     function __construct() 
     {

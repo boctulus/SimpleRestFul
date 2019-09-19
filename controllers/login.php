@@ -9,11 +9,11 @@ class LoginController extends \Controllers\MyController
 	}
 	
 	function login(){
-		$this->view('login.php', ['title'=>'Ingreso']);
+		$this->view('login.php', ['title'=>'Ingreso', 'hidenav'=> true]);
 	}
 	
-	function signin(){
-		$this->view('signin.php');
+	function signup(){
+		$this->view('signup.php', ['title'=>'Registro', 'hidenav'=> true]);
 	}
 }
 

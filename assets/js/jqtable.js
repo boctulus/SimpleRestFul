@@ -1,8 +1,9 @@
 
 class JqTable
 {
-	constructor(id) {
-		this.idTable = id;
+	constructor(id_div) {
+		this.idDiv = id_div;
+		this.idTable = 'tb_' + id_div;
 	}
 		
 	render(data) {	
@@ -46,7 +47,7 @@ class JqTable
 			btns.innerHTML = '<div style="display:inline;"> <button type="button" class="btn btn-md btn-success" onClick="editar('+data[i][0]+')"><span class="glyphicon glyphicon-pencil"></span></button> &nbsp; <button type="button" class="btn btn-default btn-md btn-danger" onClick="borrar('+data[i][0]+')"><span class="glyphicon glyphicon-trash"></span></button> </div>';
 		}
 	 
-		var dvTable = document.getElementById("dvTable");
+		var dvTable = document.getElementById(this.idDiv);
 		dvTable.innerHTML = "";
 		dvTable.appendChild(table);
 	}

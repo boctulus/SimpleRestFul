@@ -1,5 +1,6 @@
 # TODO
 
+- Implementar mi data-validator
 - Probar en Windows
 - Investigar a la competencia en frameworks MVC y API Rest
 - Se puede dejar más limpio el .htaccess ?

@@ -21,15 +21,16 @@ require_once CORE_PATH . 'response.php';
 /*
 	Mini-router
 */
-$allowed = ['signin', 'login', 'renew', 'revoke'];
+$allowed = ['signup', 'login', 'renew', 'revoke'];
 
 if (in_array($_GET['a'],$allowed)){
 	$_GET['a']();
-}else
+}else{
+	response()->sendError('Incorrect action');
 	exit();
-
-
-function signin()
+}
+	
+function signup()
 {
 	if($_SERVER['REQUEST_METHOD']!='POST')
 		exit;
@@ -42,21 +43,20 @@ function signin()
 
 		$config =  include '../../config/config.php';
 
-		$conn = \Core\Database::getConnection($config['database']);
+		$conn = \Libs\Database::getConnection($config['database']);	
 		$u = new \Models\UsersModel($conn);
 
-		
+		//	
+		if (count($u->filter(['id'],['email'=>$data['email']]))>0)
+			response()->sendError('Email already exists');
+				
+
 		$missing = $u::diffWithSchema($data, ['id']);
 		if (!empty($missing))
 			response()->sendError('Lack some properties in your request: '.implode(',',$missing));
-				
-		if ($data['password'] != $data['passwordconfirmation'])
-			response()->sendError('Password confimation fails');
-		
+
 		$data['password'] = sha1($data['password']);
 
-		unset($data['passwordconfirmation']);
-		
 		if (empty($u->create($data)))
 			response()->sendError("Error in user registration!");
 		
@@ -65,7 +65,7 @@ function signin()
 			'iat' => $time, 
 			'exp' => $time + 60 * $config['token_expiration_time'],
 			'id'  => $u->id,
-			'username' => $u->username,
+			'email' => $data['email'],
 			'ip' => [
 				'REMOTE_ADDR' => $_SERVER['REMOTE_ADDR'] ?? '',
 				'HTTP_CLIENT_IP' => $_SERVER['HTTP_CLIENT_IP'] ?? '',
@@ -90,7 +90,7 @@ function signin()
 /*
 	Login for API Rest
 
-	@param username
+	@param email
 	@param password
 */
 function login()
@@ -108,7 +108,7 @@ function login()
 			if ($data == null)
 				response()->sendError('Invalid JSON',400);
 			
-			$username = $data->username ?? null;
+			$email = $data->email ?? null;
 			$password = $data->password ?? null;
 		break;
 
@@ -117,8 +117,10 @@ function login()
 		break;	
 	}	
 	
-	if (empty($username) || empty($password)){
-		response()->sendError('Username and password are required',400);
+	if (empty($email)){
+		response()->sendError('email is required',400);
+	}else if (empty($password)){
+		response()->sendError('password is required',400);
 	}
 	
 	$config =  include '../../config/config.php';
@@ -126,16 +128,16 @@ function login()
 	$conn = \Libs\Database::getConnection($config['database']);
 	
 	$u = new \Models\UsersModel($conn);
-	$u->username = $username;
+	$u->email = $email;
 	$u->password = $password;
 	
-	if ($u->getUserIfExists()){
+	if ($u->checkUserAndPass()){
 		$time = time();
 		$payload = array(
 			'iat' => $time, 
 			'exp' => $time + 60 * $config['token_expiration_time'],
 			'id'  => $u->id,
-			'username' => $u->username,
+			'email' => $u->email,
 			'ip' => [
 				'REMOTE_ADDR' => $_SERVER['REMOTE_ADDR'] ?? '',
 				'HTTP_CLIENT_IP' => $_SERVER['HTTP_CLIENT_IP'] ?? '',
@@ -191,7 +193,7 @@ function renew()
 					'iat' => $time, 
 					'exp' => $time + 60*$config['extended_token_expiration_time'], 
 					'id' => $data->id,
-					'username' => $data->username,
+					'email' => $data->email,
 					'ip' => [
 						'REMOTE_ADDR' => $_SERVER['REMOTE_ADDR'] ?? '',
 						'HTTP_CLIENT_IP' => $_SERVER['HTTP_CLIENT_IP'] ?? '',

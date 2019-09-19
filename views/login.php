@@ -1,29 +1,39 @@
+	
+<!-- Login -->
 
-	<!-- Login -->	
-	<div id="loginModal" class="modal fade in show">
-		<div class="modal-dialog modal-login">
-			<div class="modal-content">
-				<div class="modal-header">			
-					<h2 class="modal-title">Login</h2>	
-					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+<div class="row vcenter">
+	<div class="col-xs-12 col-sm-12 col-md-6 col-md-push-3">
+		<h1 style="font-size: 2em; padding-bottom: 0.5em;">Ingreso</h1>
+
+		<form action="#" onsubmit="return false;">
+
+			<div class="form-group" >
+				<div class="input-group" style="margin-bottom:1em;">
+					<span class="input-group-addon">
+					<i class="glyphicon glyphicon-envelope"></i>
+					</span>
+					<input type="email" class="form-control" id="email" placeholder="email" required="required">
 				</div>
-				<div class="modal-body">
-					<form action="#" onsubmit="return false;">
-						<div class="form-group">
-							<input type="text" class="form-control" id="username" placeholder="Username" required="required">		
-						</div>
-						<div class="form-group">
-							<input type="password" class="form-control" id="password" placeholder="Password" required="required">	
-						</div>        
-						<div class="form-group">
-							<button type="submit" class="btn btn-primary btn-lg btn-block login-btn" onClick="login()">Login</button>
-						</div>
-					</form>
+
+				<div class="input-group" style="margin-bottom:1em;">
+					<span class="input-group-addon">
+					<i class="glyphicon glyphicon-lock"></i>
+					</span>
+					<input type="password" class="form-control" id="password" placeholder="Password" required="required">
 				</div>
-				<div class="modal-footer">
-					<span style="color:red" id="loginError"></span>
-				</div>
+				
+				<div style="color:red; text-align: center;" id="loginError"></div>
+			
 			</div>
+
+		</form>		
+
+		<div class="form-group">
+			<button type="submit" class="btn btn-primary btn-lg btn-block login-btn" onClick="login()">Login</button>
 		</div>
+
+		No registrado? <a href="/login/signup">regístrese</a>
 	</div>
+	
+</div>
 
