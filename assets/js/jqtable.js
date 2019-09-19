@@ -2,8 +2,8 @@
 class JqTable
 {
 	constructor(id_div) {
-		this.idDiv = id_div;
-		this.idTable = 'tb_' + id_div;
+		this.idDiv =    id_div;
+		this.idTable = 'inner_' + id_div;
 	}
 		
 	render(data) {	

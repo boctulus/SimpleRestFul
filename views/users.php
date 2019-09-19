@@ -5,7 +5,7 @@
 
 <h1 class="red-text text-center" style="font-size:2em">Users</h1>
 
-<div id="dvTable" class="table-responsive" style="margin-top:4em;">
+<div id="tb_users" class="table-responsive" style="margin-top:4em;">
 </div>
 
 
@@ -14,7 +14,7 @@
 	const minutes_for_token_renew = 2 // 2
 
 	let $data = [];
-	let table = new JqTable('users');
+	let table = new JqTable('tb_users');
 	
 	$(document).ready(()=>{
 		listar();

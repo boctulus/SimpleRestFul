@@ -72,9 +72,9 @@ class DumbController extends MyController
         $conn    = \Libs\Database::getConnection($this->config['database']);
 
         $u = new \Models\UsersModel($conn);
-        //$u->fill(['lastname']);
+        $u->unfill(['lastname']);
         $u->id = $id;
-        $ok = $u->update(['firstname'=>'Paul', 'lastname'=>'Buzzi']);
+        $ok = $u->update(['firstname'=>'Paulinoxxx', 'lastname'=>'Bozzoxx']);
         
         debug($ok);
     }

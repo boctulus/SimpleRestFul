@@ -61,9 +61,6 @@ abstract class ApiController
         $_get   = request()->getQuery();
     
         $fields = shift($_get,'fields');
-        ///
-        ///    debug($fields);
-        ///
         $fields = $fields != NULL ? explode(',',$fields) : NULL;
 
         if ($id != null)

@@ -5,7 +5,7 @@
 
 	<h1 class="red-text text-center" style="font-size:2em">Products</h1>
 
-	<div id="dvTable" class="table-responsive" style="margin-top:4em;">
+	<div id="tb_products" class="table-responsive" style="margin-top:4em;">
 	</div>
 
 	<a href="#productModalAdd" class="btn btn-info btn-sm" data-toggle="modal" onClick="clearForm();"> 
@@ -106,7 +106,7 @@
 	const minutes_for_token_renew = 2 // 2
 
 	let $data = [];
-	let table = new JqTable('products');
+	let table = new JqTable('tb_products');
 	
 	$(document).ready(()=>{
 		listar();

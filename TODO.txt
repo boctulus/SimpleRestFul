@@ -2,13 +2,12 @@
 
 ?exclude=id,lastname
 
-Utilizar hide() sobre el modelo
 
 ---
 Crear un alias de ?fields como ?include
 
 
-- En config colocar error_if_not_fillable=false  ***
+- En config colocar $config['error_if_not_fillable']=false 
 - Implementar mi data-validator
 - Probar en Windows
 - Investigar a la competencia en frameworks MVC y API Rest

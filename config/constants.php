@@ -4,6 +4,9 @@ declare(strict_types=1);
 if (!defined('ROOT_PATH'))
 	define('ROOT_PATH', dirname(__DIR__) . '/');
 
+if (!defined('CONFIG_PATH'))
+	define('CONFIG_PATH', ROOT_PATH . DIRECTORY_SEPARATOR . 'config/');
+
 if (!defined('CORE_PATH'))
     define('CORE_PATH', ROOT_PATH . DIRECTORY_SEPARATOR . 'core/');
     
