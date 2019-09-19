@@ -51,20 +51,48 @@ class DumbController extends MyController
         $conn    = \Libs\Database::getConnection($this->config['database']);
         $u = new \Models\UsersModel($conn);
     
-        debug($u->fetchAll());
+        debug($u->fetchAll(null, ['id'=>'DESC']));
     }
 
     function get_user($id){
         include LIBS_PATH . 'database.php';
-
         $conn    = \Libs\Database::getConnection($this->config['database']);
+
         $u = new \Models\UsersModel($conn);
         $u->unhide(['password']);
         $u->hide(['firstname','lastname']);
-        $u->id = 13;
+        $u->id = $id;
         $u->fetch();
 
         debug($u);
     }
  
+    function update_user($id) {
+        include LIBS_PATH . 'database.php';
+        $conn    = \Libs\Database::getConnection($this->config['database']);
+
+        $u = new \Models\UsersModel($conn);
+        //$u->fill(['lastname']);
+        $u->id = $id;
+        $ok = $u->update(['firstname'=>'Paul', 'lastname'=>'Buzzi']);
+        
+        debug($ok);
+    }
+
+    function create_user($email, $password, $firstname, $lastname)
+     {        
+        for ($i=0;$i<20;$i++)
+            $email = chr(rand(97,122)) . $email;
+        
+        include LIBS_PATH . 'database.php';
+        $conn    = \Libs\Database::getConnection($this->config['database']);
+        
+        $u = new \Models\UsersModel($conn);
+        //$u->fill(['lastname']);
+        //$u->unfill(['password']);
+        $id = $u->create(['email'=>$email, 'password'=>$password, 'firstname'=>$firstname, 'lastname'=>$lastname]);
+        
+        debug($id);
+    }
+
 }

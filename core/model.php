@@ -62,6 +62,23 @@ class Model {
 			static::$hidden[] = $f;
 	}
 
+	// makes a field fillable
+	function fill(array $fields){
+		foreach ($fields as $f)
+			static::$fillable[] = $f;
+	}
+
+	// remove from fillable list of fields
+	function unfill($fields){
+		if (!empty(static::$fillable) && !empty($fields)){			
+			foreach ($fields as $uf){
+				$k = array_search($uf, static::$fillable);
+				unset(static::$fillable[$k]);
+			}
+		}
+	}
+
+
 	/** 
 	 * Get by id
 	 * 
@@ -94,21 +111,6 @@ class Model {
 		}	
 	}
 	
-	function exists()
-	{
-		$q  = "SELECT * FROM ".static::$table_name." WHERE ".static::$id_name."=:id";
-		$st = $this->conn->prepare( $q );
-		$st->bindParam(":id", $this->{static::$id_name}, \PDO::PARAM_INT);
-		$st->execute();
-		
-		$row = $st->fetch(\PDO::FETCH_ASSOC);
-
-		if (!$row)
-			return false;
-		else
-			return true;
-	}
-
 	function fetchAll(array $fields = null, array $order = NULL, int $limit = NULL, int $offset = 0)
 	{
 		$this->_removehidden($fields);
@@ -222,16 +224,19 @@ class Model {
 			return false;	
 	}
 
-	function delete()
+	function exists()
 	{
-		$q = "DELETE FROM ".static::$table_name." WHERE ".static::$id_name." = ?";
-		$st = $this->conn->prepare($q);
-		$st->bindParam(1, $this->{static::$id_name});
-	 
-		if($st->execute())
-			return $st->rowCount();
+		$q  = "SELECT * FROM ".static::$table_name." WHERE ".static::$id_name."=:id";
+		$st = $this->conn->prepare( $q );
+		$st->bindParam(":id", $this->{static::$id_name}, \PDO::PARAM_INT);
+		$st->execute();
+		
+		$row = $st->fetch(\PDO::FETCH_ASSOC);
+
+		if (!$row)
+			return false;
 		else
-			return false;	
+			return true;
 	}
 
 	function create(array $data)
@@ -269,7 +274,7 @@ class Model {
 			return false;
 	}
 
-	// It really admits partial updates
+	// It admits partial updates
 	function update($data)
 	{
 		$vars   = array_keys($data);
@@ -306,6 +311,18 @@ class Model {
 		if($st->execute())
 			return $st->rowCount();
 		else 
+			return false;	
+	}
+
+	function delete()
+	{
+		$q = "DELETE FROM ".static::$table_name." WHERE ".static::$id_name." = ?";
+		$st = $this->conn->prepare($q);
+		$st->bindParam(1, $this->{static::$id_name});
+	 
+		if($st->execute())
+			return $st->rowCount();
+		else
 			return false;	
 	}
 
