@@ -1,5 +1,6 @@
 # TODO
 
+- En config colocar error_if_not_fillable=false
 - Implementar mi data-validator
 - Probar en Windows
 - Investigar a la competencia en frameworks MVC y API Rest
@@ -9,9 +10,10 @@
 - Form de registro (front)
 - Paginador (front)
 - Controles más complejos como checkbox, radio, combobox
-- Consultas más complejas para API Rest incluyendo operadores lt, gt, ge, le, ne (!=) y or 
 - Permisos y roles (ACL)
 - Routers como en Laravel (!)
 - Sanitización a nivel de urls
 - Sanitización a nivel de base de datos
 - Documentar !!!! <-- comenzar
+- Consultas más complejas para API Rest incluyendo operadores lt, gt, ge, le, ne (!=) y or 
+Sacar ideas de: https://dev.targetprocess.com/docs/custom-calculations

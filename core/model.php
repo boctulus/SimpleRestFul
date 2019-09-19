@@ -11,6 +11,7 @@ class Model {
 	static protected $id_name = 'id';
 	static protected $schema;
 	static protected $fillable = '*';
+	static protected $hidden;
 	static protected $properties = [];
 	protected $conn;
 
@@ -30,11 +31,30 @@ class Model {
 		static::$properties = array_keys(static::$schema);
 	}
 
+	// remuevo los campos ocultos
+	private function _removehidden(&$fields)
+	{	
+		if (!empty(static::$hidden)){
+			if (empty($fields)) {
+				$fields = static::$properties;
+			}
+
+			foreach (static::$hidden as $h){
+				$k = array_search($h, $fields);
+				unset($fields[$k]);
+			}
+		}
+	}
+
 	/** 
 	 * Get by id
+	 * 
+	 * No filter
 	 */
-	function fetchOne(array $fields = null)
+	function fetch(array $fields = null)
 	{
+		$this->_removehidden($fields);
+
 		if ($fields == null){
 			$q  = 'SELECT *';
 			$select_fields_array = static::$properties;
@@ -75,6 +95,8 @@ class Model {
 
 	function fetchAll(array $fields = null, array $order = NULL, int $limit = NULL, int $offset = 0)
 	{
+		$this->_removehidden($fields);
+
 		if($limit>0 || $order!=NULL){
 			try {
 				$paginator = new Paginator();
@@ -120,6 +142,8 @@ class Model {
 
 	function filter(array $fields = null, array $conditions, array $order = null, int $limit = NULL, int $offset = 0)
 	{
+		$this->_removehidden($fields);
+
 		if($limit>0 || $order!=NULL){
 			try {
 				$paginator = new Paginator();

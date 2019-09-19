@@ -44,5 +44,25 @@ class DumbController extends MyController
     
         debug($product->fetchAll());
     }
+
+    function get_users(){
+        include LIBS_PATH . 'database.php';
+
+        $conn    = \Libs\Database::getConnection($this->config['database']);
+        $u = new \Models\UsersModel($conn);
+    
+        debug($u->fetchAll());
+    }
+
+    function get_user($id){
+        include LIBS_PATH . 'database.php';
+
+        $conn    = \Libs\Database::getConnection($this->config['database']);
+        $u = new \Models\UsersModel($conn);
+        $u->id = 13;
+        $u->fetch();
+
+        debug($u);
+    }
  
 }

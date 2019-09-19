@@ -20,7 +20,6 @@ abstract class ApiController
 {
     protected $config;
     protected $_model;
-    protected $hidden = null;
 
     function __construct() 
     {
@@ -62,13 +61,16 @@ abstract class ApiController
         $_get   = request()->getQuery();
     
         $fields = shift($_get,'fields');
+        ///
+        ///    debug($fields);
+        ///
         $fields = $fields != NULL ? explode(',',$fields) : NULL;
 
         if ($id != null)
         {
             // one instance by id
             $instance->id = $id; 
-            if ($instance->fetchOne($fields) === false)
+            if ($instance->fetch($fields) === false)
                 response()->sendCode(404);
             else
                 response()->send($instance);

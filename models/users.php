@@ -16,6 +16,8 @@ class UsersModel extends \Core\Model
 							'lastname'
 	];
 
+	static protected $hidden = ['password'];
+
 	/*
 		Types are INT, STR and BOOL among others
 		see: https://secure.php.net/manual/en/pdo.constants.php 
@@ -34,6 +36,7 @@ class UsersModel extends \Core\Model
 	//static protected $unique = [
 	//	['email']
 	//];
+
 
     public function __construct($db = NULL){
         parent::__construct($db);

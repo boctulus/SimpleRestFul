@@ -5,8 +5,6 @@ include_once 'core/api_controller.php';
 
 class UsersController extends \Core\ApiController
 {     
-    private $hidden = ['password'];
-    
     function __construct()
     {
         parent::__construct();
