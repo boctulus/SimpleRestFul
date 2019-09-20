@@ -2,6 +2,8 @@
 
 namespace Core;
 
+require CORE_PATH . 'view.php';
+
 class Controller
 {
     function __construct() {
@@ -9,14 +11,7 @@ class Controller
     }
 
     function view(string $view_path, array $vars_to_be_passed  = null, $layout = 'app_layout.php'){
-		ob_start();
-		require_once("views/{$view_path}");
-		$content = ob_get_contents();
-		ob_end_clean();
-
-        extract($vars_to_be_passed);
-
-        include "views/layouts/{$layout}";
+        $view = new View($view_path, $vars_to_be_passed, $layout); 
     }
 
 }

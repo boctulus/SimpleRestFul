@@ -12,7 +12,6 @@ https://lumen.laravel.com/docs/6.x/database
 - Investigar a la competencia en frameworks MVC y API Rest
 - Se puede dejar más limpio el .htaccess ?
 - oAuth ?
-- Implementar clase View 
 - Form de registro (front)
 - Paginador (front)
 - Controles más complejos como checkbox, radio, combobox

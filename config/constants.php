@@ -14,7 +14,7 @@ if (!defined('MODELS_PATH'))
     define('MODELS_PATH', ROOT_PATH . DIRECTORY_SEPARATOR . 'models/');    
 
 if (!defined('VIEWS_PATH'))
-    define('VIEWS_PATH', ROOT_PATH . DIRECTORY_SEPARATOR . 'views/');  
+    define('VIEWS_PATH', ROOT_PATH .  'views/');  /////////
 
 if (!defined('CONTROLLERS_PATH'))
     define('CONTROLLERS_PATH', ROOT_PATH . DIRECTORY_SEPARATOR . 'controllers/');  
