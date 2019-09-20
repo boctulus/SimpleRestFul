@@ -22,7 +22,7 @@ class Response
     
     function redirect(string $url){
         if (!headers_sent($filename, $line)) {
-            header('Location: $url');
+            header("Location: $url");
             exit;
         }else
             throw new \Exception("Headers already sent in in $filename on line $line. Unable to redirect to $url");

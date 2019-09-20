@@ -2,12 +2,6 @@
 
 namespace Core;
 
-header('access-control-allow-Methods: GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS');
-header('access-control-allow-credentials: true');
-header('access-control-allow-headers: AccountKey,x-requested-with, Content-Type, origin, authorization, accept, client-security-token, host, date, cookie, cookie2'); 
-header('access-control-allow-Origin: *');
-header('content-type: application/json; charset=UTF-8');
-
 require_once 'config/constants.php';
 require_once ROOT_PATH . 'core/auth/check.php';
 require_once LIBS_PATH . 'database.php';
@@ -23,6 +17,8 @@ abstract class ApiController
 
     function __construct() 
     {
+        $this->headers();
+
         $this->config = include ROOT_PATH . 'config/config.php';
 
         if ($this->config['debug_mode'] == false)
@@ -34,6 +30,14 @@ abstract class ApiController
         if (preg_match('/([A-Z][a-z0-9_]+)Controller/', get_called_class(), $matchs)){
             $this->_model = $matchs[1] . 'Model';
         }    
+    }
+
+    protected function headers() {
+        header('access-control-allow-Methods: GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS');
+        header('access-control-allow-credentials: true');
+        header('access-control-allow-headers: AccountKey,x-requested-with, Content-Type, origin, authorization, accept, client-security-token, host, date, cookie, cookie2'); 
+        header('access-control-allow-Origin: *');
+        header('content-type: application/json; charset=UTF-8');
     }
 
     function exception_handler($e) {

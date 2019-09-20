@@ -2,6 +2,9 @@
 
 - SoftDelete
 
+- Versionado ej: http://simplerest.lan/api/v1/users
+- "Prety print" con ?prety=true, ejemplo de la salida:
+https://api.github.com/users/veesahni
 - En config colocar $config['error_if_not_fillable']=false 
 - Simplificar la forma de crear la conexion a la DB como en Laravel Lummen:
 https://lumen.laravel.com/docs/6.x/database
@@ -22,5 +25,21 @@ https://lumen.laravel.com/docs/6.x/database
 - Sanitización a nivel de urls, FILTER_SANITIZE_URL
 - Sanitización a nivel de base de datos
 - Documentar !!!! <-- comenzar
+- Upload de archivos con Content-type application/x-www-form-urlencoded ó multipart/form-data
+https://stackoverflow.com/a/4083908/980631
+Si se genera un error, detallar según:
+https://www.php.net/manual/en/features.file-upload.errors.php
+
+- Aceptar distintos "Accept" y "Content-type" y responder acordemente
+
 - Consultas más complejas para API Rest incluyendo operadores lt, gt, ge, le, ne (!=) y or 
 Sacar ideas de: https://dev.targetprocess.com/docs/custom-calculations
+
+- Leer atentamente
+https://www.vinaysahni.com/best-practices-for-a-pragmatic-restful-api
+
+* "additional details embedded"
+* Overriding the HTTP method
+* Rate limiting
+* Caching
+* Errors

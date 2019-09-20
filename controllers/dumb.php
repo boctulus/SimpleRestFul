@@ -51,7 +51,7 @@ class DumbController extends MyController
         $conn    = \Libs\Database::getConnection($this->config['database']);
         $u = new \Models\UsersModel($conn);
     
-        debug($u->fetchAll(null, ['id'=>'DESC']));
+        response()->send($u->fetchAll(null, ['id'=>'DESC']));
     }
 
     function get_user($id){
