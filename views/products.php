@@ -373,9 +373,10 @@
 				$data.unshift(["Id","Name","Description","Size","Cost"]);
 				
 				// row classes
-				//$data.rowClasses = ['info','','warning'];
+				$data.rowClasses = ['info','','warning'];
 				
 				table.render($data);
+				//table.hide_first_col();
 			},
 			error: function(data){
 				if (data.statusText=='Unauthorized' ){

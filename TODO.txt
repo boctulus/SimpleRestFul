@@ -19,7 +19,7 @@ https://lumen.laravel.com/docs/6.x/database
 - Routers como en Laravel (!)
 - Middlewares
 - Migrations
-- Sanitización a nivel de urls
+- Sanitización a nivel de urls, FILTER_SANITIZE_URL
 - Sanitización a nivel de base de datos
 - Documentar !!!! <-- comenzar
 - Consultas más complejas para API Rest incluyendo operadores lt, gt, ge, le, ne (!=) y or 

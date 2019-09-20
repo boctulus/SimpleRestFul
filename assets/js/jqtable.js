@@ -2,10 +2,15 @@
 class JqTable
 {
 	constructor(id_div) {
-		this.idDiv =    id_div;
-		this.idTable = 'inner_' + id_div;
+		this.idDiv   =  id_div;
+		this.idTable =  id_div + '_child';
 	}
-		
+	
+	hide_first_col(){
+		$('div#'+this.idDiv+' td:nth-child(1)').hide();
+		$('div#'+this.idDiv+' th:nth-child(1)').hide();  
+	}
+
 	render(data) {	
 		// Create a HTML Table element.
 		var table = document.createElement("TABLE");
