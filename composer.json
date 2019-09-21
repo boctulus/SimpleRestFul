@@ -1,5 +1,20 @@
 {
+    "name": "felipe/simplerest",
+    "description": "API Rest framework for PHP",
+    "type": "project",
+    "license": "GPL",
+    "authors": [
+        {
+            "name": "boctulus",
+            "email": "boctulus@gmail.com"
+        }
+    ],
     "require": {
-        "byjg/jwt-session": "^1.0"
+        "php": ">=7.2.0"
+    },
+    "minimum-stability": "dev",
+    "autoload": {
+        "psr-4": {
+            "ourcodeworld\\HelloComposer\\": "src/"
+        }
     }
-}

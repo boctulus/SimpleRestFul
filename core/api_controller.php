@@ -5,9 +5,7 @@ namespace Core;
 require_once 'config/constants.php';
 require_once ROOT_PATH . 'core/auth/check.php';
 require_once LIBS_PATH . 'database.php';
-include_once HELPERS_PATH . 'debug.php';
-include_once HELPERS_PATH . 'arrays.php';
-include_once HELPERS_PATH . 'messages.php';
+require_once LIBS_PATH . 'arrays.php';
 
 
 abstract class ApiController
@@ -41,7 +39,7 @@ abstract class ApiController
     }
 
     function exception_handler($e) {
-        response()->sendError($e->getMessage());
+        \Libs\Factory::response()->sendError($e->getMessage());
     }
 
     // discard conentent (body)
@@ -62,13 +60,13 @@ abstract class ApiController
         $model    = '\\Models\\'.$this->_model;
         $instance = new $model($conn); 
     
-        $_get   = request()->getQuery();
+        $_get   = \Libs\Factory::request()->getQuery();
     
-        $fields = shift($_get,'fields');
+        $fields = \Libs\Arrays::shift($_get,'fields');
         $fields = $fields != NULL ? explode(',',$fields) : NULL;
         
         ///
-        $exclude = shift($_get,'exclude');
+        $exclude = \Libs\Arrays::shift($_get,'exclude');
         $exclude = $exclude != NULL ? explode(',',$exclude) : NULL;
 
         if ($exclude != null)
@@ -79,61 +77,61 @@ abstract class ApiController
             // one instance by id
             $instance->id = $id; 
             if ($instance->fetch($fields) === false)
-                response()->sendCode(404);
+                \Libs\Factory::response()->sendCode(404);
             else
-                response()->send($instance);
+                \Libs\Factory::response()->send($instance);
         }else{    
             // "list
-            $limit  = (int) shift($_get,'limit');
-            $offset = (int) shift($_get,'offset',0);
-            $order  = shift($_get,'order');
+            $limit  = (int) \Libs\Arrays::shift($_get,'limit');
+            $offset = (int) \Libs\Arrays::shift($_get,'offset',0);
+            $order  = \Libs\Arrays::shift($_get,'order');
 
             try {
                 if (!empty($_get)){
                     $rows = $instance->filter($fields, $_get, $order, $limit, $offset);
-                    response()->code(empty($rows) ? 404 : 200)->send($rows); 
+                    \Libs\Factory::response()->code(empty($rows) ? 404 : 200)->send($rows); 
                 }else {
                     $rows = $instance->fetchAll($fields, $order, $limit, $offset);
-                    response()->code(empty($rows) ? 404 : 200)->send($rows); 
+                    \Libs\Factory::response()->code(empty($rows) ? 404 : 200)->send($rows); 
                 }	
             } catch (\Exception $e) {
-                response()->sendError('Error in fetch: '.$e->getMessage());
+                \Libs\Factory::response()->sendError('Error in fetch: '.$e->getMessage());
             }	
         }
     } // end method
 
     function post(){
-        $data = request()->getBody();
+        $data = \Libs\Factory::request()->getBody();
 
         if (empty($data))
-            response()->sendError('Invalid JSON',400);
+            \Libs\Factory::response()->sendError('Invalid JSON',400);
         
         $model    = '\\Models\\'.$this->_model;
         $instance = new $model();
 
         $missing = $instance::diffWithSchema($data, ['id']);
         if (!empty($missing))
-            response()->sendError('Lack some properties in your request: '.implode(',',$missing));
+            \Libs\Factory::response()->sendError('Lack some properties in your request: '.implode(',',$missing));
     
         $conn = \Libs\Database::getConnection($this->config['database']);
         $instance->setConn($conn);
 
         if ($instance->create($data)!==false){
-            response()->send(['id' => $instance->id], 201);
+            \Libs\Factory::response()->send(['id' => $instance->id], 201);
         }	
         else
-            response()->sendError("Error: creation of resource fails!");
+            \Libs\Factory::response()->sendError("Error: creation of resource fails!");
     } // end method
     
         
     function put($id = null){
         if ($id == null)
-            response()->code(400)->sendError("Lacks id in request");
+            \Libs\Factory::response()->code(400)->sendError("Lacks id in request");
 
-        $data = request()->getBody();
+        $data = \Libs\Factory::request()->getBody();
 
         if (empty($data))
-            response()->sendError('Invalid JSON',400);
+            \Libs\Factory::response()->sendError('Invalid JSON',400);
         
         $model    = '\\Models\\'.$this->_model;
         $instance = new $model();
@@ -141,32 +139,32 @@ abstract class ApiController
 
         $missing = $instance::diffWithSchema($data, ['id']);
         if (!empty($missing))
-            response()->sendError('Lack some properties in your request: '.implode(',',$missing));
+            \Libs\Factory::response()->sendError('Lack some properties in your request: '.implode(',',$missing));
         
         $conn = \Libs\Database::getConnection($this->config['database']);
         $instance->setConn($conn);
 
         $instance->id = $id;
         if (!$instance->exists()){
-            response()->code(404)->sendError("Register for id=$id does not exists");
+            \Libs\Factory::response()->code(404)->sendError("Register for id=$id does not exists");
         }
         
         try {
 
             if($instance->update($data)!==false)
-                response()->sendJson("OK");
+                \Libs\Factory::response()->sendJson("OK");
             else
-                response()->sendError("Error in UPDATE");
+                \Libs\Factory::response()->sendError("Error in UPDATE");
 
         } catch (\Exception $e) {
-            response()->sendError("Error during update for id=$id with message: {$e->getMessage()}");
+            \Libs\Factory::response()->sendError("Error during update for id=$id with message: {$e->getMessage()}");
         }
     } // end method
     
         
     function delete($id = NULL){
         if($id == NULL)
-            response()->sendError("Lacks id in request",400);
+            \Libs\Factory::response()->sendError("Lacks id in request",400);
 
         $conn = \Libs\Database::getConnection($this->config['database']);
         
@@ -175,21 +173,21 @@ abstract class ApiController
         $instance->id = $id;
 
         if($instance->delete()){
-            response()->sendJson("OK");
+            \Libs\Factory::response()->sendJson("OK");
         }	
         else
-            response()->sendError("Record not found",404);
+            \Libs\Factory::response()->sendError("Record not found",404);
     } // end method
 
     
     function patch($id = NULL){ 
         if ($id == null)
-            response()->sendError("Lacks id in request",400);
+            \Libs\Factory::response()->sendError("Lacks id in request",400);
 
-        $data = request()->getBody();
+        $data = \Libs\Factory::request()->getBody();
 
         if (empty($data))
-            response()->sendError('Invalid JSON',400);
+            \Libs\Factory::response()->sendError('Invalid JSON',400);
         
         $conn = \Libs\Database::getConnection($this->config['database']);
 
@@ -199,11 +197,11 @@ abstract class ApiController
 
         try {
             if($instance->update($data)!==false)
-                response()->sendJson("OK");
+                \Libs\Factory::response()->sendJson("OK");
             else
-                response()->sendError("Error in PATCH",404);	
+                \Libs\Factory::response()->sendError("Error in PATCH",404);	
         } catch (\Exception $e) {
-            response()->sendError("Error during PATCH for id=$id with message: {$e->getMessage()}");
+            \Libs\Factory::response()->sendError("Error during PATCH for id=$id with message: {$e->getMessage()}");
         }
     } // end method
                 

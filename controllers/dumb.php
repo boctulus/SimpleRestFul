@@ -2,6 +2,8 @@
 
 namespace Controllers;
 
+use \Libs;
+
 class DumbController extends MyController
 {
     function sum($a, $b){
@@ -42,7 +44,7 @@ class DumbController extends MyController
         $conn    = \Libs\Database::getConnection($this->config['database']);
         $product = new \Models\ProductsModel($conn);
     
-        debug($product->fetchAll());
+        \Libs\Debug::debug($product->fetchAll());
     }
 
     function get_users(){
@@ -51,7 +53,7 @@ class DumbController extends MyController
         $conn    = \Libs\Database::getConnection($this->config['database']);
         $u = new \Models\UsersModel($conn);
     
-        response()->send($u->fetchAll(null, ['id'=>'DESC']));
+        \Libs\Factory::response()->send($u->fetchAll(null, ['id'=>'DESC']));
     }
 
     function get_user($id){
@@ -64,7 +66,7 @@ class DumbController extends MyController
         $u->id = $id;
         $u->fetch();
 
-        debug($u);
+        \Libs\Debug::debug($u);
     }
  
     function update_user($id) {
@@ -76,7 +78,7 @@ class DumbController extends MyController
         $u->id = $id;
         $ok = $u->update(['firstname'=>'Paulinoxxx', 'lastname'=>'Bozzoxx']);
         
-        debug($ok);
+        \Libs\Debug::debug($ok);
     }
 
     function create_user($email, $password, $firstname, $lastname)
@@ -92,7 +94,7 @@ class DumbController extends MyController
         //$u->unfill(['password']);
         $id = $u->create(['email'=>$email, 'password'=>$password, 'firstname'=>$firstname, 'lastname'=>$lastname]);
         
-        debug($id);
+        \Libs\Debug::debug($id);
     }
 
 }

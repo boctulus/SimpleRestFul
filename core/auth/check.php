@@ -8,11 +8,11 @@ require_once VENDOR_PATH.'autoload.php';
 	Authorization checkin
 */
 function check_auth() {
-	$headers = request()->headers();
+	$headers = \Libs\Factory::request()->headers();
 	$auth = $headers['Authorization'] ?? $headers['authorization'] ?? null;
 	
 	if (empty($auth)){
-		response()->sendError('Authorization not found',400);
+		\Libs\Factory::response()->sendError('Authorization not found',400);
 	}
 		
 	list($jwt) = sscanf($auth, 'Bearer %s');
@@ -26,10 +26,10 @@ function check_auth() {
 			$data = Firebase\JWT\JWT::decode($jwt, $config['jwt_secret_key'], [ $config['encryption'] ]);
 			
 			if (empty($data))
-				response()->sendError('Unauthorized',401);
+				\Libs\Factory::response()->sendError('Unauthorized',401);
 			
 			if ($data->exp<time())
-				response()->sendError('Token expired',401);
+				\Libs\Factory::response()->sendError('Token expired',401);
 				
 		} catch (Exception $e) {
 			/*
@@ -38,9 +38,9 @@ function check_auth() {
 			 *
 			 * reach this point if token is empty or invalid
 			 */
-			response()->sendError('Unauthorized',401);
+			\Libs\Factory::response()->sendError('Unauthorized',401);
 		}	
 	}else{
-		 response()->sendError('Authorization not found',400);
+		\Libs\Factory::response()->sendError('Authorization not found',400);
 	}
 }

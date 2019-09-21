@@ -7,22 +7,22 @@
     <title><?= $title ?></title>
 
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-    <link href="<?= assets('css/toastr.css') ?>" rel="stylesheet"/>
-    <link href="<?= assets('css/core.css"') ?>" rel="stylesheet"/>
+    <link href="<?= \Libs\Url::assets('css/toastr.css') ?>" rel="stylesheet"/>
+    <link href="<?= \Libs\Url::assets('css/core.css"') ?>" rel="stylesheet"/>
     
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>	
-    <script src="<?= assets('js/toastr.min.js') ?>"></script> <!-- flash notifications -->	
-    <script src="<?= assets('js/bootbox.min.js') ?>"></script><!-- confirmation boxes -->
-    <script src="<?= assets('js/helpers.js') ?>"></script>
-    <script src="<?= assets('js/login.js') ?>"></script>
-    <script src="<?= assets('js/jqtable.js') ?>"></script>
+    <script src="<?= \Libs\Url::assets('js/toastr.min.js') ?>"></script> <!-- flash notifications -->	
+    <script src="<?= \Libs\Url::assets('js/bootbox.min.js') ?>"></script><!-- confirmation boxes -->
+    <script src="<?= \Libs\Url::assets('js/helpers.js') ?>"></script>
+    <script src="<?= \Libs\Url::assets('js/login.js') ?>"></script>
+    <script src="<?= \Libs\Url::assets('js/jqtable.js') ?>"></script>
 
 </head>
 <body>
     <?php 
         if (!isset($hidenav) || !$hidenav)
-            section('navbar.php') 
+            \Libs\Url::section('navbar.php') 
     ?>
     
     <div class="container">

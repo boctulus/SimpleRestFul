@@ -3,8 +3,7 @@
 namespace Core;
 
 require_once 'controller.php';
-require_once 'helpers/html.php';
-include 'helpers/debug.php';
+require_once 'libs/url.php';
 require_once 'request.php';
 require_once 'response.php';
 
