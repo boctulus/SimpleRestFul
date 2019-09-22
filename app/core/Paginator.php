@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace SimpleRest\core;
+namespace simplerest\core;
 
 class Paginator
 {

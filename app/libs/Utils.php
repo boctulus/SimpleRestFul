@@ -1,6 +1,6 @@
 <?php 
 
-namespace SimpleRest\libs;
+namespace simplerest\libs;
 
 class Utils {
 	static function logger($data, $file= ROOT_PATH. '/logs/log.txt'){

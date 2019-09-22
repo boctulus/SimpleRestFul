@@ -1,13 +1,13 @@
 <?php 
 
-namespace SimpleRest\libs;
+namespace simplerest\libs;
 
 class Factory {
 	static function response() {
-		return \Core\Response::getInstance();
+		return \core\Response::getInstance();
 	}
 
 	static function request() {
-		return \Core\Request::getInstance();
+		return \core\Request::getInstance();
 	}
 }

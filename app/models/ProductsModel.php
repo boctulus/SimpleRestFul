@@ -1,13 +1,15 @@
 <?php
 declare(strict_types=1);
 
-namespace SimpleRest\models;
+namespace simplerest\models;
+
+use simplerest\core\Model;
 
 /*
 	Product extends Model to have access to reflection
 	Another way could be to use traits 
 */
-class ProductsModel extends \Core\Model 
+class ProductsModel extends Model 
 {
 	static protected $table_name = "products";
 	static protected $id_name = 'id';

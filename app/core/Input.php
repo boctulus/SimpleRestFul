@@ -1,6 +1,6 @@
 <?php
 
-namespace SimpleRest\core;
+namespace simplerest\core;
 
 class Input
 {

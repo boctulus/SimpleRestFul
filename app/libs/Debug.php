@@ -1,6 +1,6 @@
 <?php
 
-namespace SimpleRest\libs;
+namespace simplerest\libs;
 
 class Debug
 {

@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace SimpleRest\libs;
+namespace simplerest\libs;
 
 class Database {
 

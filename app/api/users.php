@@ -1,9 +1,8 @@
 <?php
-declare(strict_types=1);
 
-include_once 'core/api_controller.php';
+use simplerest\core\ApiController; 
 
-class UsersController extends \Core\ApiController
+class UsersController extends ApiController
 {     
     function __construct()
     {

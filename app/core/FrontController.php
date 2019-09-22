@@ -1,6 +1,6 @@
 <?php
 
-namespace SimpleRest\core;
+namespace simplerest\core;
 
 class FrontController
 {
@@ -39,7 +39,7 @@ class FrontController
         $method = !empty($action) ? $action : self::DEFAULT_ACTION;
 
         $class_name = ucfirst($class_file);
-        $class_name = "SimpleRest\\controllers\\${class_name}Controller";
+        $class_name = "simplerest\\controllers\\${class_name}Controller";
 
         if (!class_exists($class_name))
             throw new \Exception ("Controller class '''$class_name''' not loaded ***");  

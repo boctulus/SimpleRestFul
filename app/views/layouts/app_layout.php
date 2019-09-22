@@ -7,22 +7,22 @@
     <title><?= $title ?></title>
 
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-    <link href="<?= \SimpleRest\libs\Url::assets('css/toastr.css') ?>" rel="stylesheet"/>
-    <link href="<?= \SimpleRest\libs\Url::assets('css/core.css"') ?>" rel="stylesheet"/>
+    <link href="<?= \simplerest\libs\Url::assets('css/toastr.css') ?>" rel="stylesheet"/>
+    <link href="<?= \simplerest\libs\Url::assets('css/core.css"') ?>" rel="stylesheet"/>
     
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>	
-    <script src="<?= \SimpleRest\libs\Url::assets('js/toastr.min.js') ?>"></script> <!-- flash notifications -->	
-    <script src="<?= \SimpleRest\libs\Url::assets('js/bootbox.min.js') ?>"></script><!-- confirmation boxes -->
-    <script src="<?= \SimpleRest\libs\Url::assets('js/helpers.js') ?>"></script>
-    <script src="<?= \SimpleRest\libs\Url::assets('js/login.js') ?>"></script>
-    <script src="<?= \SimpleRest\libs\Url::assets('js/jqtable.js') ?>"></script>
+    <script src="<?= \simplerest\libs\Url::assets('js/toastr.min.js') ?>"></script> <!-- flash notifications -->	
+    <script src="<?= \simplerest\libs\Url::assets('js/bootbox.min.js') ?>"></script><!-- confirmation boxes -->
+    <script src="<?= \simplerest\libs\Url::assets('js/helpers.js') ?>"></script>
+    <script src="<?= \simplerest\libs\Url::assets('js/login.js') ?>"></script>
+    <script src="<?= \simplerest\libs\Url::assets('js/jqtable.js') ?>"></script>
 
 </head>
 <body>
     <?php 
         if (!isset($hidenav) || !$hidenav)
-            \SimpleRest\libs\Url::section('navbar.php') 
+            \simplerest\libs\Url::section('navbar.php') 
     ?>
     
     <div class="container">

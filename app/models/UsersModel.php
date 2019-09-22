@@ -1,10 +1,11 @@
 <?php
 declare(strict_types=1);
 
-namespace SimpleRest\models;
+namespace simplerest\models;
 
+use simplerest\core\Model;
 
-class UsersModel extends \Core\Model
+class UsersModel extends Model
  {
 	static protected $table_name = "users";
 	static protected $id_name = 'id';

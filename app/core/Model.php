@@ -1,9 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace SimpleRest\core;
-
-require_once CORE_PATH. 'paginator.php';
+namespace simplerest\core;
 
 class Model {
 

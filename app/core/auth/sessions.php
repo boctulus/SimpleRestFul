@@ -7,15 +7,6 @@ header('access-control-allow-Methods: GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS');
 header('access-control-allow-Origin: *');
 header('content-type: application/json; charset=UTF-8');
 
-include '../../config/constants.php';
-require_once VENDOR_PATH.'autoload.php';
-require_once LIBS_PATH . 'database.php'; 
-require_once MODELS_PATH . 'users.php';
-
-include_once LIBS_PATH . 'factory.php';
-require_once CORE_PATH . 'request.php';
-require_once CORE_PATH . 'response.php';
-
 
 /*
 	Mini-router
@@ -25,7 +16,7 @@ $allowed = ['signup', 'login', 'renew', 'revoke'];
 if (in_array($_GET['a'],$allowed)){
 	$_GET['a']();
 }else{
-	\SimpleRest\libs\Factory::response()->sendError('Incorrect action');
+	\simplerest\libs\Factory::response()->sendError('Incorrect action');
 	exit();
 }
 	
@@ -35,29 +26,29 @@ function signup()
 		exit;
 		
 	try {
-		$data  = \SimpleRest\libs\Factory::request()->getBody();
+		$data  = \simplerest\libs\Factory::request()->getBody();
 		
 		if ($data == null)
-			\SimpleRest\libs\Factory::response()->sendError('Invalid JSON',400);
+			\simplerest\libs\Factory::response()->sendError('Invalid JSON',400);
 
 		$config =  include '../../config/config.php';
 
-		$conn = \SimpleRest\libs\Database::getConnection($config['database']);	
-		$u = new \Models\UsersModel($conn);
+		$conn = \simplerest\libs\Database::getConnection($config['database']);	
+		$u = new UsersModel($conn);
 
 		//	
 		if (count($u->filter(['id'],['email'=>$data['email']]))>0)
-			\SimpleRest\libs\Factory::response()->sendError('Email already exists');
+			\simplerest\libs\Factory::response()->sendError('Email already exists');
 				
 
 		$missing = $u::diffWithSchema($data, ['id']);
 		if (!empty($missing))
-			\SimpleRest\libs\Factory::response()->sendError('Lack some properties in your request: '.implode(',',$missing));
+			\simplerest\libs\Factory::response()->sendError('Lack some properties in your request: '.implode(',',$missing));
 
 		$data['password'] = sha1($data['password']);
 
 		if (empty($u->create($data)))
-			\SimpleRest\libs\Factory::response()->sendError("Error in user registration!");
+			\simplerest\libs\Factory::response()->sendError("Error in user registration!");
 		
 		$time = time();
 		$payload = array(
@@ -77,10 +68,10 @@ function signup()
 		
 		$token = Firebase\JWT\JWT::encode($payload, $config['jwt_secret_key'],  $config['encryption']);
 		
-		\SimpleRest\libs\Factory::response()->send(['token'=>$token, 'exp' => $payload['exp'] ]);
+		\simplerest\libs\Factory::response()->send(['token'=>$token, 'exp' => $payload['exp'] ]);
 
 	}catch(\Exception $e){
-		\SimpleRest\libs\Factory::response()->sendError($e->getMessage());
+		\simplerest\libs\Factory::response()->sendError($e->getMessage());
 	}	
 		
 }
@@ -102,31 +93,31 @@ function login()
 		break;
 
 		case 'POST':
-			$data  = \SimpleRest\libs\Factory::request()->getBody(false);
+			$data  = \simplerest\libs\Factory::request()->getBody(false);
 
 			if ($data == null)
-				\SimpleRest\libs\Factory::response()->sendError('Invalid JSON',400);
+				\simplerest\libs\Factory::response()->sendError('Invalid JSON',400);
 			
 			$email = $data->email ?? null;
 			$password = $data->password ?? null;
 		break;
 
 		default:
-			\SimpleRest\libs\Factory::response()->sendError('Incorrect verb',405);
+			\simplerest\libs\Factory::response()->sendError('Incorrect verb',405);
 		break;	
 	}	
 	
 	if (empty($email)){
-		\SimpleRest\libs\Factory::response()->sendError('email is required',400);
+		\simplerest\libs\Factory::response()->sendError('email is required',400);
 	}else if (empty($password)){
-		\SimpleRest\libs\Factory::response()->sendError('password is required',400);
+		\simplerest\libs\Factory::response()->sendError('password is required',400);
 	}
 	
 	$config =  include '../../config/config.php';
 	
-	$conn = \SimpleRest\libs\Database::getConnection($config['database']);
+	$conn = \simplerest\libs\Database::getConnection($config['database']);
 	
-	$u = new \Models\UsersModel($conn);
+	$u = new UsersModel($conn);
 	$u->email = $email;
 	$u->password = $password;
 	
@@ -149,10 +140,10 @@ function login()
 	
 		$token = Firebase\JWT\JWT::encode($payload, $config['jwt_secret_key'],  $config['encryption']);
 		
-		\SimpleRest\libs\Factory::response()->send(['token'=>$token, 'exp' => $payload['exp']]);
+		\simplerest\libs\Factory::response()->send(['token'=>$token, 'exp' => $payload['exp']]);
 		
 	}else
-		\SimpleRest\libs\Factory::response()->sendError("User or password are incorrect", 401);
+		\simplerest\libs\Factory::response()->sendError("User or password are incorrect", 401);
 }
 
 
@@ -165,18 +156,18 @@ function renew()
 {
 	if ($_SERVER['REQUEST_METHOD']=='OPTIONS'){
 		// passs
-		\SimpleRest\libs\Factory::response()->send('OK',200);
+		\simplerest\libs\Factory::response()->send('OK',200);
 	}elseif ($_SERVER['REQUEST_METHOD']!='POST')
-		\SimpleRest\libs\Factory::response()->sendError('Incorrect verb',405);
+		\simplerest\libs\Factory::response()->sendError('Incorrect verb',405);
 	
 	$config =  include '../../config/config.php';
 	
-	$headers = \SimpleRest\libs\Factory::request()->headers();
+	$headers = \simplerest\libs\Factory::request()->headers();
 	$auth = $headers['Authorization'] ?? $headers['authorization'] ?? null;
 
 	try {
 		if (empty($auth)){
-			\SimpleRest\libs\Factory::response()->sendError('Authorization not found',400);
+			\simplerest\libs\Factory::response()->sendError('Authorization not found',400);
 		}
 			
 		list($jwt) = sscanf($auth, 'Bearer %s');
@@ -205,19 +196,19 @@ function renew()
 				
 				$token = Firebase\JWT\JWT::encode($payload, $config['jwt_secret_key'],  $config['encryption']);
 				
-				\SimpleRest\libs\Factory::response()->send(['token'=>$token, 'exp' => $payload['exp'] ]);
+				\simplerest\libs\Factory::response()->send(['token'=>$token, 'exp' => $payload['exp'] ]);
 				
 			} catch (\Exception $e) {
 				/*
 				 * the token was not able to be decoded.
 				 * this is likely because the signature was not able to be verified (tampered token)
 				 */
-				\SimpleRest\libs\Factory::response()->sendError('Unauthorized',401);
+				\simplerest\libs\Factory::response()->sendError('Unauthorized',401);
 			}	
 		}else{
-			\SimpleRest\libs\Factory::response()->sendError('Token not found',400);
+			\simplerest\libs\Factory::response()->sendError('Token not found',400);
 		}
 	} catch (\Exception $e) {
-		\SimpleRest\libs\Factory::response()->sendError($e->getMessage(), 400);
+		\simplerest\libs\Factory::response()->sendError($e->getMessage(), 400);
 	}	
 }

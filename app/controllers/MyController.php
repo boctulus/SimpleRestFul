@@ -1,8 +1,8 @@
 <?php
 
-namespace SimpleRest\controllers;
+namespace simplerest\controllers;
 
-use SimpleRest\core\Controller;
+use simplerest\core\Controller;
 
 class MyController extends Controller {
     protected $_title;

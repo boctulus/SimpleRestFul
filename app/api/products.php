@@ -1,9 +1,8 @@
 <?php
-declare(strict_types=1);
 
-include_once 'core/api_controller.php';
+use simplerest\core\ApiController; 
 
-class ProductsController extends \Core\ApiController
+class ProductsController extends ApiController
 {    
     function __construct()
     {

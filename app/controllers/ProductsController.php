@@ -1,6 +1,6 @@
 <?php
 
-namespace SimpleRest\controllers;
+namespace simplerest\controllers;
 
 class ProductsController extends MyController
 {
