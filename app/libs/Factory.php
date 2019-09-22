@@ -2,12 +2,15 @@
 
 namespace simplerest\libs;
 
+use simplerest\core\Response;
+use simplerest\core\Request;
+
 class Factory {
 	static function response() {
-		return \core\Response::getInstance();
+		return Response::getInstance();
 	}
 
 	static function request() {
-		return \core\Request::getInstance();
+		return Request::getInstance();
 	}
 }
