@@ -10,12 +10,12 @@ class Url {
             $protocol = 'http://';
         }
     
-        $config = include 'config/config.php';
+        $config = include INCLUDE_PATH . 'config.php';
         return $protocol.$_SERVER['HTTP_HOST'].'/'.$config['BASE_URL'].'assets/'.$resource;
     }
     
     static function section($view){
-        include "views/$view";
+        include VIEWS_PATH . $view;
     }
 }
 

@@ -2,6 +2,8 @@
 
 namespace SimpleRest\controllers;
 
+use SimpleRest\Core\Request;
+
 class DumbController extends MyController
 {
     function sum($a, $b){
@@ -10,13 +12,13 @@ class DumbController extends MyController
     }
 
     function mul(){
-        $req = \Core\Request::getInstance();
+        $req = Request::getInstance();
         $res = (int) $req[0] * (int) $req[1];
         return "$req[0] + $req[1] = " . $res;
     }
 
     function div(){
-        $res = (int) @\Core\Request::getParam(0) / (int) @\Core\Request::getParam(1);
+        $res = (int) @Request::getParam(0) / (int) @Request::getParam(1);
         //
         // hacer un return en vez de un "echo" me habilita a manipular
         // la "respuesta", conviertiendola a JSON por ejemplo 
@@ -37,8 +39,6 @@ class DumbController extends MyController
     */
 
     function get_products(){
-        include LIBS_PATH . 'database.php';
-
         $conn    = \SimpleRest\libs\Database::getConnection($this->config['database']);
         $product = new \Models\ProductsModel($conn);
     
@@ -46,8 +46,6 @@ class DumbController extends MyController
     }
 
     function get_users(){
-        include LIBS_PATH . 'database.php';
-
         $conn    = \SimpleRest\libs\Database::getConnection($this->config['database']);
         $u = new \Models\UsersModel($conn);
     
@@ -55,7 +53,6 @@ class DumbController extends MyController
     }
 
     function get_user($id){
-        include LIBS_PATH . 'database.php';
         $conn    = \SimpleRest\libs\Database::getConnection($this->config['database']);
 
         $u = new \Models\UsersModel($conn);
@@ -68,7 +65,6 @@ class DumbController extends MyController
     }
  
     function update_user($id) {
-        include LIBS_PATH . 'database.php';
         $conn    = \SimpleRest\libs\Database::getConnection($this->config['database']);
 
         $u = new \Models\UsersModel($conn);
