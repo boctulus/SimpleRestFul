@@ -73,9 +73,9 @@ class DumbController extends MyController
         $conn    = Database::getConnection($this->config['database']);
 
         $u = new UsersModel($conn);
-        $u->unfill(['lastname']);
+        //$u->unfill(['lastname']);
         $u->id = $id;
-        $ok = $u->update(['firstname'=>'Paulinoxxx', 'lastname'=>'Bozzoxx']);
+        $ok = $u->update(['firstname'=>'Paulinoxxx', 'lastname'=>'Bozzoxx000555']);
         
         Debug::debug($ok);
     }
@@ -85,11 +85,10 @@ class DumbController extends MyController
         for ($i=0;$i<20;$i++)
             $email = chr(rand(97,122)) . $email;
         
-        include LIBS_PATH . 'database.php';
         $conn    = Database::getConnection($this->config['database']);
         
         $u = new UsersModel($conn);
-        //$u->fill(['lastname']);
+        //$u->fill(['email']);
         //$u->unfill(['password']);
         $id = $u->create(['email'=>$email, 'password'=>$password, 'firstname'=>$firstname, 'lastname'=>$lastname]);
         

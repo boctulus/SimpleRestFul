@@ -2,7 +2,7 @@
 
 namespace simplerest\controllers;
 
-class LoginController extends \Controllers\MyController
+class LoginController extends MyController
 {
 	function index(){
 		$this->login();

@@ -2,6 +2,8 @@
 
 namespace simplerest\core;
 
+use simplerest\controllers\AuthController;
+
 abstract class ApiController
 {
     protected $config;
@@ -11,13 +13,15 @@ abstract class ApiController
     {
         $this->headers();
 
-        $this->config = include ROOT_PATH . 'config/config.php';
+        $this->config = include CONFIG_PATH . 'config.php';
 
         if ($this->config['debug_mode'] == false)
             set_exception_handler([$this, 'exception_handler']);
 
-        if ($this->config['enabled_auth'])
-            check_auth();	
+        if ($this->config['enabled_auth']){
+            $auth = new AuthController();
+            $auth->check_auth();	
+        }    
 
         if (preg_match('/([A-Z][a-z0-9_]+)Controller/', get_called_class(), $matchs)){
             $this->_model = $matchs[1] . 'Model';
@@ -51,7 +55,7 @@ abstract class ApiController
     function get(int $id = null){
         $conn = \simplerest\libs\Database::getConnection($this->config['database']);
 
-        $model    = '\\Models\\'.$this->_model;
+        $model    = 'simplerest\\models\\'.$this->_model;
         $instance = new $model($conn); 
     
         $_get   = \simplerest\libs\Factory::request()->getQuery();
@@ -127,7 +131,7 @@ abstract class ApiController
         if (empty($data))
             \simplerest\libs\Factory::response()->sendError('Invalid JSON',400);
         
-        $model    = '\\Models\\'.$this->_model;
+        $model    = 'simplerest\\models\\'.$this->_model;
         $instance = new $model();
         $instance->id = $id;
 
@@ -162,7 +166,7 @@ abstract class ApiController
 
         $conn = \simplerest\libs\Database::getConnection($this->config['database']);
         
-        $model    = '\\Models\\'.$this->_model;
+        $model    = 'simplerest\\models\\'.$this->_model;
         $instance = new $model($conn);
         $instance->id = $id;
 
@@ -185,7 +189,7 @@ abstract class ApiController
         
         $conn = \simplerest\libs\Database::getConnection($this->config['database']);
 
-        $model    = '\\Models\\'.$this->_model;
+        $model    = 'simplerest\\models\\'.$this->_model;
         $instance = new $model($conn);
         $instance->id = $id;
 

@@ -33,7 +33,7 @@ if (!defined('CONTROLLERS_PATH'))
     define('CONTROLLERS_PATH', APP_PATH . 'controllers' . DIRECTORY_SEPARATOR);    
 
 if (!defined('API_PATH'))
-    define('API_PATH', CONTROLLERS_PATH . 'api' . DIRECTORY_SEPARATOR); 
+    define('API_PATH', APP_PATH  . 'api' . DIRECTORY_SEPARATOR); 
 
 if (!defined('LIBS_PATH'))
     define('LIBS_PATH', APP_PATH . 'libs' . DIRECTORY_SEPARATOR);   

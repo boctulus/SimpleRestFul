@@ -9,7 +9,7 @@ class Paginator
     public $offset = 0;
     public $limit = null;
     public $properties = [];
-    private $query = null;
+    private $query = '';
     private $binding = [];
 
     /** 

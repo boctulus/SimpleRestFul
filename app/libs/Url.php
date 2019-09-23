@@ -10,7 +10,7 @@ class Url {
             $protocol = 'http://';
         }
     
-        $config = include INCLUDE_PATH . 'config.php';
+        $config = include CONFIG_PATH . 'config.php';
         return $protocol.$_SERVER['HTTP_HOST'].'/'.$config['BASE_URL'].'assets/'.$resource;
     }
     

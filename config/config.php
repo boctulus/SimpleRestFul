@@ -10,7 +10,7 @@ return [
 		'database' => [
 			'host' => 'localhost',
 			'db_name' => 'api_sb', 
-			'user' => 'root', 
+			'user' => 'boctulus', 
 			'pass' => 'gogogo2k'
 		], 
 

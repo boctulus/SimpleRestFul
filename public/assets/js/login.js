@@ -101,7 +101,7 @@
 	
 		$.ajax({
 			type: "POST",
-			url: '/auth/token/renew',
+			url: '/auth/token_renew',
 			dataType: 'json',
 			headers: {"Authorization": 'Bearer ' + localStorage.getItem('tokenJwt')}, 
 			success: function(data){
@@ -110,7 +110,7 @@
 					localStorage.setItem('exp',data.exp);
 				}else{
 					console.log('Error en la renovación del token');
-					window.location = login_page ;
+					window.location = login_page;
 				}
 			},
 			error: function(data){

@@ -8,7 +8,7 @@ class Model {
 	static protected $table_name;
 	static protected $id_name = 'id';
 	static protected $schema;
-	static protected $fillable = '*';
+	static protected $fillable = [];
 	static protected $hidden;
 	static protected $properties = [];
 	protected $conn;
@@ -243,7 +243,7 @@ class Model {
 		$vars   = array_keys($data);
 		$vals = array_values($data);
 
-		if(static::$fillable!='*' && is_array(static::$fillable)){
+		if(!empty(static::$fillable) && is_array(static::$fillable)){
 			foreach($vars as $var){
 				if (!in_array($var,static::$fillable))
 					throw new \InvalidArgumentException("$var is no fillable");
@@ -279,7 +279,7 @@ class Model {
 		$vars   = array_keys($data);
 		$values = array_values($data);
 
-		if(static::$fillable!='*' && is_array(static::$fillable)){
+		if(!empty(static::$fillable) && is_array(static::$fillable)){
 			foreach($vars as $var){
 				if (!in_array($var,static::$fillable))
 					throw new \InvalidArgumentException("$var is no fillable");
