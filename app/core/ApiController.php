@@ -3,6 +3,9 @@
 namespace simplerest\core;
 
 use simplerest\controllers\AuthController;
+use simplerest\libs\Factory;
+use simplerest\libs\Arrays;
+use simplerest\libs\Database;
 
 abstract class ApiController
 {
@@ -37,7 +40,7 @@ abstract class ApiController
     }
 
     function exception_handler($e) {
-        \simplerest\libs\Factory::response()->sendError($e->getMessage());
+        Factory::response()->sendError($e->getMessage());
     }
 
     // discard conentent (body)
@@ -53,18 +56,18 @@ abstract class ApiController
     }
 
     function get(int $id = null){
-        $conn = \simplerest\libs\Database::getConnection($this->config['database']);
+        $conn = Database::getConnection($this->config['database']);
 
         $model    = 'simplerest\\models\\'.$this->_model;
         $instance = new $model($conn); 
     
-        $_get   = \simplerest\libs\Factory::request()->getQuery();
+        $_get   = Factory::request()->getQuery();
     
-        $fields = \simplerest\libs\Arrays::shift($_get,'fields');
+        $fields = Arrays::shift($_get,'fields');
         $fields = $fields != NULL ? explode(',',$fields) : NULL;
         
         ///
-        $exclude = \simplerest\libs\Arrays::shift($_get,'exclude');
+        $exclude = Arrays::shift($_get,'exclude');
         $exclude = $exclude != NULL ? explode(',',$exclude) : NULL;
 
         if ($exclude != null)
@@ -75,61 +78,61 @@ abstract class ApiController
             // one instance by id
             $instance->id = $id; 
             if ($instance->fetch($fields) === false)
-                \simplerest\libs\Factory::response()->sendCode(404);
+                Factory::response()->sendCode(404);
             else
-                \simplerest\libs\Factory::response()->send($instance);
+                Factory::response()->send($instance);
         }else{    
             // "list
-            $limit  = (int) \simplerest\libs\Arrays::shift($_get,'limit');
-            $offset = (int) \simplerest\libs\Arrays::shift($_get,'offset',0);
-            $order  = \simplerest\libs\Arrays::shift($_get,'order');
+            $limit  = (int) Arrays::shift($_get,'limit');
+            $offset = (int) Arrays::shift($_get,'offset',0);
+            $order  = Arrays::shift($_get,'order');
 
             try {
                 if (!empty($_get)){
                     $rows = $instance->filter($fields, $_get, $order, $limit, $offset);
-                    \simplerest\libs\Factory::response()->code(empty($rows) ? 404 : 200)->send($rows); 
+                    Factory::response()->code(empty($rows) ? 404 : 200)->send($rows); 
                 }else {
                     $rows = $instance->fetchAll($fields, $order, $limit, $offset);
-                    \simplerest\libs\Factory::response()->code(empty($rows) ? 404 : 200)->send($rows); 
+                    Factory::response()->code(empty($rows) ? 404 : 200)->send($rows); 
                 }	
             } catch (\Exception $e) {
-                \simplerest\libs\Factory::response()->sendError('Error in fetch: '.$e->getMessage());
+                Factory::response()->sendError('Error in fetch: '.$e->getMessage());
             }	
         }
     } // end method
 
     function post(){
-        $data = \simplerest\libs\Factory::request()->getBody();
+        $data = Factory::request()->getBody();
 
         if (empty($data))
-            \simplerest\libs\Factory::response()->sendError('Invalid JSON',400);
+            Factory::response()->sendError('Invalid JSON',400);
         
-        $model    = '\\Models\\'.$this->_model;
+        $model    = '\\simplerest\\models\\'.$this->_model;
         $instance = new $model();
 
         $missing = $instance::diffWithSchema($data, ['id']);
         if (!empty($missing))
-            \simplerest\libs\Factory::response()->sendError('Lack some properties in your request: '.implode(',',$missing));
+            Factory::response()->sendError('Lack some properties in your request: '.implode(',',$missing));
     
-        $conn = \simplerest\libs\Database::getConnection($this->config['database']);
+        $conn = Database::getConnection($this->config['database']);
         $instance->setConn($conn);
 
         if ($instance->create($data)!==false){
-            \simplerest\libs\Factory::response()->send(['id' => $instance->id], 201);
+            Factory::response()->send(['id' => $instance->id], 201);
         }	
         else
-            \simplerest\libs\Factory::response()->sendError("Error: creation of resource fails!");
+            Factory::response()->sendError("Error: creation of resource fails!");
     } // end method
     
         
     function put($id = null){
         if ($id == null)
-            \simplerest\libs\Factory::response()->code(400)->sendError("Lacks id in request");
+            Factory::response()->code(400)->sendError("Lacks id in request");
 
-        $data = \simplerest\libs\Factory::request()->getBody();
+        $data = Factory::request()->getBody();
 
         if (empty($data))
-            \simplerest\libs\Factory::response()->sendError('Invalid JSON',400);
+            Factory::response()->sendError('Invalid JSON',400);
         
         $model    = 'simplerest\\models\\'.$this->_model;
         $instance = new $model();
@@ -137,57 +140,57 @@ abstract class ApiController
 
         $missing = $instance::diffWithSchema($data, ['id']);
         if (!empty($missing))
-            \simplerest\libs\Factory::response()->sendError('Lack some properties in your request: '.implode(',',$missing));
+            Factory::response()->sendError('Lack some properties in your request: '.implode(',',$missing));
         
-        $conn = \simplerest\libs\Database::getConnection($this->config['database']);
+        $conn = Database::getConnection($this->config['database']);
         $instance->setConn($conn);
 
         $instance->id = $id;
         if (!$instance->exists()){
-            \simplerest\libs\Factory::response()->code(404)->sendError("Register for id=$id does not exists");
+            Factory::response()->code(404)->sendError("Register for id=$id does not exists");
         }
         
         try {
 
             if($instance->update($data)!==false)
-                \simplerest\libs\Factory::response()->sendJson("OK");
+                Factory::response()->sendJson("OK");
             else
-                \simplerest\libs\Factory::response()->sendError("Error in UPDATE");
+                Factory::response()->sendError("Error in UPDATE");
 
         } catch (\Exception $e) {
-            \simplerest\libs\Factory::response()->sendError("Error during update for id=$id with message: {$e->getMessage()}");
+            Factory::response()->sendError("Error during update for id=$id with message: {$e->getMessage()}");
         }
     } // end method
     
         
     function delete($id = NULL){
         if($id == NULL)
-            \simplerest\libs\Factory::response()->sendError("Lacks id in request",400);
+            Factory::response()->sendError("Lacks id in request",400);
 
-        $conn = \simplerest\libs\Database::getConnection($this->config['database']);
+        $conn = Database::getConnection($this->config['database']);
         
         $model    = 'simplerest\\models\\'.$this->_model;
         $instance = new $model($conn);
         $instance->id = $id;
 
         if($instance->delete()){
-            \simplerest\libs\Factory::response()->sendJson("OK");
+            Factory::response()->sendJson("OK");
         }	
         else
-            \simplerest\libs\Factory::response()->sendError("Record not found",404);
+            Factory::response()->sendError("Record not found",404);
     } // end method
 
     
     function patch($id = NULL){ 
         if ($id == null)
-            \simplerest\libs\Factory::response()->sendError("Lacks id in request",400);
+            Factory::response()->sendError("Lacks id in request",400);
 
-        $data = \simplerest\libs\Factory::request()->getBody();
+        $data = Factory::request()->getBody();
 
         if (empty($data))
-            \simplerest\libs\Factory::response()->sendError('Invalid JSON',400);
+            Factory::response()->sendError('Invalid JSON',400);
         
-        $conn = \simplerest\libs\Database::getConnection($this->config['database']);
+        $conn = Database::getConnection($this->config['database']);
 
         $model    = 'simplerest\\models\\'.$this->_model;
         $instance = new $model($conn);
@@ -195,11 +198,11 @@ abstract class ApiController
 
         try {
             if($instance->update($data)!==false)
-                \simplerest\libs\Factory::response()->sendJson("OK");
+                Factory::response()->sendJson("OK");
             else
-                \simplerest\libs\Factory::response()->sendError("Error in PATCH",404);	
+                Factory::response()->sendError("Error in PATCH",404);	
         } catch (\Exception $e) {
-            \simplerest\libs\Factory::response()->sendError("Error during PATCH for id=$id with message: {$e->getMessage()}");
+            Factory::response()->sendError("Error during PATCH for id=$id with message: {$e->getMessage()}");
         }
     } // end method
                 
