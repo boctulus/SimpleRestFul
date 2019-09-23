@@ -1,8 +1,10 @@
 <?php
 
+namespace simplerest\api;
+
 use simplerest\core\ApiController; 
 
-class ProductsController extends ApiController
+class Products extends ApiController
 {    
     function __construct()
     {

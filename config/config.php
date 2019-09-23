@@ -3,7 +3,6 @@
 require_once 'constants.php';
 
 return [
-		# public_html
 		'BASE_URL' => '/',   
 		'DEFAULT_CONTROLLER' => 'ProductsController',
 

@@ -26,7 +26,7 @@ abstract class ApiController
             $auth->check_auth();	
         }    
 
-        if (preg_match('/([A-Z][a-z0-9_]+)Controller/', get_called_class(), $matchs)){
+        if (preg_match('/([A-Z][a-z0-9_]+)/', get_called_class(), $matchs)){
             $this->_model = $matchs[1] . 'Model';
         }    
     }

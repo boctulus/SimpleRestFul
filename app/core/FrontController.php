@@ -26,30 +26,31 @@ class FrontController
         if ($_params[0]=='api'){
             @list($controller) = array_slice($_params,1,1);
             $params = array_slice($_params,2);
-            $req->setParams($params); ///
-            ApiRouter::resolve($controller, strtolower($_SERVER['REQUEST_METHOD']), $params);
+            $req->setParams($params); ///        
+            $namespace = 'simplerest\\api\\';
+            
+            $class_name = $namespace . ucfirst($controller);
+            $method = strtolower($_SERVER['REQUEST_METHOD']);
         }else{
             @list($controller, $action) = array_slice($_params,0,2);
             $params = array_slice($_params,2);
             $req->setParams($params); ///
+            $namespace = 'simplerest\\controllers\\';
+
+            $default_controller_name = substr($config['DEFAULT_CONTROLLER'],0, strlen($config['DEFAULT_CONTROLLER'])-10);
+            $class_file = !empty($controller) ? $controller : $default_controller_name;
+            $method = !empty($action) ? $action : self::DEFAULT_ACTION;
+    
+            $class_name = ucfirst($class_file);
+            $class_name = "${namespace}${class_name}Controller";
         }
-
-        $default_controller_name = substr($config['DEFAULT_CONTROLLER'],0, strlen($config['DEFAULT_CONTROLLER'])-10);
-        $class_file = !empty($controller) ? $controller : $default_controller_name;
-        $method = !empty($action) ? $action : self::DEFAULT_ACTION;
-
-        $class_name = ucfirst($class_file);
-        $class_name = "simplerest\\controllers\\${class_name}Controller";
-
+       
         if (!class_exists($class_name))
             throw new \Exception ("Controller class '''$class_name''' not loaded ***");  
 
         if (!method_exists($class_name, $method))
-            throw new \Exception ("method '$method' does not exist in $class_name ***");   
-    
-        // $arr = $req->toArray();  
-        // $data = call_user_func([new $class_name(), $method],$req);
-        
+            throw new \Exception ("Method '$method' does not exist in $class_name ***");   
+            
         $data = call_user_func_array([new $class_name(), $method], $params);
         Response::getInstance()->send($data);
         exit;
