@@ -2,7 +2,6 @@
 
 namespace simplerest\core;
 
-use simplerest\controllers\AuthController;
 use simplerest\libs\Factory;
 use simplerest\libs\Arrays;
 use simplerest\libs\Database;
@@ -11,32 +10,45 @@ abstract class ApiController
 {
     protected $config;
     protected $_model;
+    protected $auth_payload = null;
+    protected $default_headers = [
+        'access-control-allow-Methods' => 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+        'access-control-allow-credentials' => 'true',
+        'access-control-allow-headers' => 'AccountKey,x-requested-with, Content-Type, origin, authorization, accept, client-security-token, host, date, cookie, cookie2',
+        'content-type' => 'application/json; charset=UTF-8',
+    ];
 
-    function __construct() 
+    function __construct(array $headers = []) 
     {
-        $this->headers();
-
+        $this->setheaders($headers);
         $this->config = include CONFIG_PATH . 'config.php';
 
         if ($this->config['debug_mode'] == false)
             set_exception_handler([$this, 'exception_handler']);
 
         if ($this->config['enabled_auth']){
-            $auth = new AuthController();
-            $auth->check_auth();	
+            $this->auth_payload = Factory::check_auth();
         }    
 
+        /* 
+            La expresión cambiaría a '/([A-Z][a-z0-9_]+)Controller/'
+            en caso de que los nombres de controladores en /api terminaran en Controller
+        */  
         if (preg_match('/([A-Z][a-z0-9_]+)/', get_called_class(), $matchs)){
             $this->_model = $matchs[1] . 'Model';
         }    
     }
 
-    protected function headers() {
-        header('access-control-allow-Methods: GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS');
-        header('access-control-allow-credentials: true');
-        header('access-control-allow-headers: AccountKey,x-requested-with, Content-Type, origin, authorization, accept, client-security-token, host, date, cookie, cookie2'); 
-        header('access-control-allow-Origin: *');
-        header('content-type: application/json; charset=UTF-8');
+    // mover a Response
+    private function setheaders(array $headers = []) {
+        $headers = array_merge($this->default_headers, $headers);     
+
+        foreach ($headers as $k => $val){
+            if (empty($val))
+                continue;
+            
+            header("${k}:$val");
+        }
     }
 
     function exception_handler($e) {
@@ -99,7 +111,7 @@ abstract class ApiController
                 Factory::response()->sendError('Error in fetch: '.$e->getMessage());
             }	
         }
-    } // end method
+    } // 
 
     function post(){
         $data = Factory::request()->getBody();
@@ -109,8 +121,8 @@ abstract class ApiController
         
         $model    = '\\simplerest\\models\\'.$this->_model;
         $instance = new $model();
-
         $missing = $instance::diffWithSchema($data, ['id']);
+
         if (!empty($missing))
             Factory::response()->sendError('Lack some properties in your request: '.implode(',',$missing));
     
@@ -122,7 +134,7 @@ abstract class ApiController
         }	
         else
             Factory::response()->sendError("Error: creation of resource fails!");
-    } // end method
+    } // 
     
         
     function put($id = null){
@@ -137,30 +149,29 @@ abstract class ApiController
         $model    = 'simplerest\\models\\'.$this->_model;
         $instance = new $model();
         $instance->id = $id;
-
         $missing = $instance::diffWithSchema($data, ['id']);
+
         if (!empty($missing))
             Factory::response()->sendError('Lack some properties in your request: '.implode(',',$missing));
         
         $conn = Database::getConnection($this->config['database']);
         $instance->setConn($conn);
-
         $instance->id = $id;
+
         if (!$instance->exists()){
             Factory::response()->code(404)->sendError("Register for id=$id does not exists");
         }
         
         try {
-
             if($instance->update($data)!==false)
                 Factory::response()->sendJson("OK");
             else
                 Factory::response()->sendError("Error in UPDATE");
-
         } catch (\Exception $e) {
             Factory::response()->sendError("Error during update for id=$id with message: {$e->getMessage()}");
         }
-    } // end method
+
+    } // 
     
         
     function delete($id = NULL){
@@ -178,8 +189,7 @@ abstract class ApiController
         }	
         else
             Factory::response()->sendError("Record not found",404);
-    } // end method
-
+    } // 
     
     function patch($id = NULL){ 
         if ($id == null)
@@ -191,7 +201,6 @@ abstract class ApiController
             Factory::response()->sendError('Invalid JSON',400);
         
         $conn = Database::getConnection($this->config['database']);
-
         $model    = 'simplerest\\models\\'.$this->_model;
         $instance = new $model($conn);
         $instance->id = $id;
@@ -204,7 +213,7 @@ abstract class ApiController
         } catch (\Exception $e) {
             Factory::response()->sendError("Error during PATCH for id=$id with message: {$e->getMessage()}");
         }
-    } // end method
+    } //
                 
     
-}    
+}  

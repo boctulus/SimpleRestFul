@@ -8,9 +8,15 @@ use simplerest\models\UsersModel;
 use simplerest\models\ProductsModel;
 use simplerest\libs\Factory;
 use simplerest\libs\Debug;
+use simplerest\core\Controller;
 
-class DumbController extends MyController
+class DumbController extends Controller
 {
+    function __construct()
+    {
+        parent::__construct();
+    }
+
     function sum($a, $b){
         $res = (int) $a + (int) $b;
         return  "$a + $b = " . $res;

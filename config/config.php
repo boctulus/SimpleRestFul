@@ -14,6 +14,10 @@ return [
 		], 
 
 		'debug_mode' => true,
+
+		'API' => [
+			'version'=> '1'
+		],	
 		
 		// JWT
 		'jwt_secret_key' =>'BHH#**@())0))@Jhr&@&#()_hrrK@911kk19))K)_!.S>!_)#I@#(',

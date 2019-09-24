@@ -6,8 +6,11 @@
 
     GET /api/products
     GET /api/products/83
-    GET /api/products?name=Vodka
 
+### Search    
+
+    GET /api/products?name=Vodka
+    GET /api/products?name=Vodka&size=1L
 
 ### List of fields to include
 

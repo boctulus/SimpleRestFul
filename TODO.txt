@@ -13,7 +13,6 @@ https://lumen.laravel.com/docs/6.x/database
 - Auto-joins basado en convenciones (Doctrine hace lo mismo)
 - Probar en Windows
 - Investigar a la competencia en frameworks MVC y API Rest
-- Se puede dejar más limpio el .htaccess ?
 - oAuth ?
 - Form de registro (front)
 - Paginador (front)
@@ -32,6 +31,7 @@ https://www.php.net/manual/en/features.file-upload.errors.php
 
 - Aceptar distintos "Accept" y "Content-type" y responder acordemente
 
+- Operador LIKE como ?name[like]=*Vodka* o... ?name[like]=Vodka* o ?name[like]=*Vodka
 - Consultas más complejas para API Rest incluyendo operadores lt, gt, ge, le, ne (!=) y or 
 Sacar ideas de: https://dev.targetprocess.com/docs/custom-calculations
 

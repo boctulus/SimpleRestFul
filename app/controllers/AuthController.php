@@ -15,7 +15,8 @@ class AuthController extends Controller
 {
 
     function __construct()
-    {
+    { 
+        // No estoy enviando los headers ya en ApiController ?
         header('access-control-allow-credentials: true');
         header('access-control-allow-headers: AccountKey,x-requested-with, Content-Type, origin, authorization, accept, client-security-token, host, date, cookie, cookie2'); 
         header('access-control-allow-Methods: GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS'); 
@@ -213,7 +214,9 @@ class AuthController extends Controller
     }
 
     /* 
-	Authorization checkin
+    Authorization checkin
+    
+    @return mixed object | null
     */
     function check_auth() {
         $headers = Factory::request()->headers();
@@ -237,7 +240,9 @@ class AuthController extends Controller
                 
                 if ($data->exp<time())
                     Factory::response()->sendError('Token expired',401);
-                    
+                
+                return ($data);
+
             } catch (Exception $e) {
                 /*
                 * the token was not able to be decoded.

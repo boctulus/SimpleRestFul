@@ -22,7 +22,7 @@
 <body>
     <?php 
         if (!isset($hidenav) || !$hidenav)
-            \simplerest\libs\Url::section('navbar.php') 
+            \simplerest\libs\Url::section('navbar.php'); 
     ?>
     
     <div class="container">

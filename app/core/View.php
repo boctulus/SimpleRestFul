@@ -2,6 +2,8 @@
 
 namespace simplerest\core;
 
+use \simplerest\libs\Url;
+
 class View
 {
     function __construct(string $view_path, array $vars_to_be_passed  = null, $layout = 'app_layout.php')
@@ -14,6 +16,6 @@ class View
         if (!empty($vars_to_be_passed))
             extract($vars_to_be_passed);
 
-        include VIEWS_PATH . "layouts/{$layout}";
+        include VIEWS_PATH . "layouts/{$layout}"; 
     }
 }
