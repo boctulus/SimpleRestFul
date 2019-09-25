@@ -76,14 +76,14 @@
 					localStorage.setItem('exp',data.exp);
 					localStorage.setItem('email',obj.email);
 					window.location = base_url;
-				}else{		
-					$('#loginError').text('Error en usuario o password');
-					console.log(data);
+				}else{	
+					console.log('Error',data.responseJSON.error);	
+					$('#loginError').text(data.responseJSON.error);
 				}
 			},
 			error: function(data){
-				console.log('Error',data);
-				$('#loginError').text('Error en usuario o password');
+				console.log('Error',data.responseJSON.error);
+				$('#loginError').text('Error en usuario o password!');
 			}
 		});		
 

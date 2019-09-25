@@ -1,6 +1,6 @@
 <?php
 
-namespace simplerest\interfaces\core;
+namespace simplerest\core\interfaces;
 
 interface Arrayable {
 

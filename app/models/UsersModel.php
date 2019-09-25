@@ -52,9 +52,9 @@ class UsersModel extends Model
 		$row = $st->fetch(\PDO::FETCH_OBJ);
 		
 		if ($row){
-			$this->id = $row->id;
-			$this->email = $row->email;
-			$this->password = $row->password;
+			foreach ($row as $k => $field){
+				$this->{$k} = $row->$k;
+			}
 			return true;
 		}
 		

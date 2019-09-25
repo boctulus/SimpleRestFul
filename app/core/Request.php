@@ -2,7 +2,9 @@
 
 namespace simplerest\core; 
 
-class Request  implements \ArrayAccess /* ,Arrayable */
+use simplerest\core\interfaces\Arrayable;
+
+class Request  implements \ArrayAccess, Arrayable
 {
     static protected $query_arr;
     static protected $raw;

@@ -3,6 +3,7 @@
 namespace simplerest\controllers;
 
 use simplerest\core\Controller;
+use simplerest\core\interfaces\IAuth;
 use simplerest\libs\Factory;
 use simplerest\libs\Database;
 use simplerest\models\UsersModel;
@@ -11,8 +12,10 @@ use simplerest\libs\Debug;
 /*
     Debería ser un Singletón
 */
-class AuthController extends Controller
+class AuthController extends Controller implements IAuth
 {
+    protected $must_have = [];
+    protected $must_not  = [];
 
     function __construct()
     { 
@@ -26,6 +29,16 @@ class AuthController extends Controller
         parent::__construct();
     }
        
+    function addmust_have(array $conditions, $http_code, $msg) {
+        $this->must_have[] = [ $conditions , $http_code, $msg ];
+    }
+
+    /*
+    function addmust_not (array $conditions, $http_code, $msg) {
+        $this->must_not[]  = [ $conditions , $http_code, $msg ];
+    }
+    */
+
     /*
         Login for API Rest
 
@@ -69,6 +82,7 @@ class AuthController extends Controller
         $u->password = $password;
         
         if ($u->checkUserAndPass()){
+         
             $time = time();
             $payload = array(
                 'iat' => $time, 
@@ -240,6 +254,26 @@ class AuthController extends Controller
                 
                 if ($data->exp<time())
                     Factory::response()->sendError('Token expired',401);
+
+                if (count($this->must_have)>0){
+                    $conn    = Database::getConnection($this->config['database']);
+
+                    $u = new UsersModel($conn);
+                    $u->id = $data->id;
+                    $u->fetch();
+
+                    foreach ($this->must_have as $must){
+                        $conditions = $must[0];
+                        $code = $must[1];
+                        $msg  = $must[2];
+        
+                        foreach ($conditions as $k => $val){
+                            if ($u->$k != $val){
+                                Factory::response()->sendError($msg, $code);
+                            }
+                        }
+                    }    
+                }
                 
                 return ($data);
 

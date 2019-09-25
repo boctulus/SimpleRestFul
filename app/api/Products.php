@@ -16,9 +16,17 @@ class Products extends ApiController
             'access-control-allow-Origin' => '*'
         ];
 
-        parent::__construct($headers);
-        
         // Si el usuario no está habilitado, expulsarlo
+        $auth = new \simplerest\controllers\AuthController();
+        $auth->addmust_have([ 'enabled' => 1 ], 403, 'Usuario no habilitado');
+
+        parent::__construct($headers, $auth);
+        
+        /*
+        // Otra forma de conseguir lo mismo:
+
+        parent::__construct($headers, $auth);
+
         $conn    = Database::getConnection($this->config['database']);
         
         $u = new UsersModel($conn);
@@ -26,8 +34,11 @@ class Products extends ApiController
         $u->fetch(['enabled']); 
 
         if ($u->enabled == 0)
-            Factory::response()->sendError('Usuario deshabilidado', 401);
+            Factory::response()->sendError('Usuario no habilitado', 403);
+        */
     }
+
+
 
         
 } // end class

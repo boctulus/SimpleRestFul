@@ -189,7 +189,7 @@ class Model {
 
 		$where = '';
 		foreach($vars as $ix => $var){
-			$where .= "$var = :$var AND ";
+			$where .= "$var = :$var AND "; 
 		}
 		$where =trim(substr($where, 0, strlen($where)-5));
 		

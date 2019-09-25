@@ -2,6 +2,7 @@
 
 namespace simplerest\core;
 
+use simplerest\core\interfaces\IAuth;
 use simplerest\libs\Factory;
 use simplerest\libs\Arrays;
 use simplerest\libs\Database;
@@ -18,7 +19,7 @@ abstract class ApiController
         'content-type' => 'application/json; charset=UTF-8',
     ];
 
-    function __construct(array $headers = []) 
+    function __construct(array $headers = [], IAuth $auth_object = null) 
     {
         $this->setheaders($headers);
         $this->config = include CONFIG_PATH . 'config.php';
@@ -27,7 +28,11 @@ abstract class ApiController
             set_exception_handler([$this, 'exception_handler']);
 
         if ($this->config['enabled_auth']){
-            $this->auth_payload = Factory::check_auth();
+
+            if ($auth_object == null)
+                $auth_object = new \simplerest\controllers\AuthController();
+
+            $this->auth_payload = $auth_object->check_auth();
         }    
 
         /* 
