@@ -382,7 +382,10 @@
 				if (data.statusText=='Unauthorized' ){
 					window.location = login_page;
 				}
-				toastr["error"](data.responseJSON.error, "Error");
+
+				if (typeof data.responseJSON != 'undefined' && typeof data.responseJSON.error != 'undefined')
+					toastr["error"](data.responseJSON.error, "Error");
+
 				console.log('Error in GET all', data);
 			}
 		});		

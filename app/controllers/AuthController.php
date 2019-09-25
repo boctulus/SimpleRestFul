@@ -33,11 +33,9 @@ class AuthController extends Controller implements IAuth
         $this->must_have[] = [ $conditions , $http_code, $msg ];
     }
 
-    /*
     function addmust_not (array $conditions, $http_code, $msg) {
         $this->must_not[]  = [ $conditions , $http_code, $msg ];
     }
-    */
 
     /*
         Login for API Rest
@@ -269,6 +267,18 @@ class AuthController extends Controller implements IAuth
         
                         foreach ($conditions as $k => $val){
                             if ($u->$k != $val){
+                                Factory::response()->sendError($msg, $code);
+                            }
+                        }
+                    }    
+
+                    foreach ($this->must_not as $not){
+                        $conditions = $not[0];
+                        $code = $not[1];
+                        $msg  = $not[2];
+        
+                        foreach ($conditions as $k => $val){
+                            if ($u->$k == $val){
                                 Factory::response()->sendError($msg, $code);
                             }
                         }
