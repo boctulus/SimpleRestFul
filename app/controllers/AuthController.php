@@ -253,7 +253,7 @@ class AuthController extends Controller implements IAuth
                 if ($data->exp<time())
                     Factory::response()->sendError('Token expired',401);
 
-                if (count($this->must_have)>0){
+                if (count($this->must_have)>0 || count($this->must_not)>0) {
                     $conn    = Database::getConnection($this->config['database']);
 
                     $u = new UsersModel($conn);
