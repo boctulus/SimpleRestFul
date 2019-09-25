@@ -26,14 +26,32 @@
 			
 			</div>
 
+			<div class="form-group">
+				<button type="submit" class="btn btn-primary btn-lg btn-block login-btn" onClick="login()">Login</button>
+			</div>
+
+			<div class="form-group" style="margin-top:1em;">
+				<input type="checkbox" value="rememberme" id="rememberme"/> Recuérdame
+			</div>
+			
+			<div style="text-align: right;">
+			No registrado? <a href="/login/signup">regístrese</a>
+			</div>
+
 		</form>		
-
-		<div class="form-group">
-			<button type="submit" class="btn btn-primary btn-lg btn-block login-btn" onClick="login()">Login</button>
-		</div>
-
-		No registrado? <a href="/login/signup">regístrese</a>
+		
 	</div>
-	
 </div>
 
+
+<script>
+	var checkbox = document.getElementById('rememberme');
+
+	if (localStorage.getItem('rememberme') == "true")
+		checkbox.checked = true
+
+	checkbox.addEventListener("change", ()=>{
+		localStorage.setItem('rememberme',checkbox.checked);
+	});	
+
+</script>
