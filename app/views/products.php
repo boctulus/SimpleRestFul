@@ -103,7 +103,9 @@
 </div>		
 <script type="text/javascript">
 	const endpoint = '/api/products';
-	const secs_for_token_renew = 300;  // tomar de 'expires_in' 
+
+	if (localStorage.getItem('expires_in') == null)
+		localStorage.setItem('expires_in', 59);  
 
 	let $data = [];
 	let table = new JqTable('tb_products');
@@ -119,11 +121,11 @@
 				notLoggedGoHome();
 			
 			// diff is less than ___
-			if ( ((localStorage.getItem('exp')*1000) - (new Date()).getTime()) < 1000 * secs_for_token_renew * 0.97){
+			if ( ((localStorage.getItem('exp')*1000) - (new Date()).getTime()) < 1000 * localStorage.getItem('expires_in') * 0.97){
 				renew();
 			}
 			
-		}, secs_for_token_renew * 1000 * 0.97); 
+		}, localStorage.getItem('expires_in') * 1000 * 0.97); 
 	});
 	
 	

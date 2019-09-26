@@ -40,10 +40,11 @@
 					console.log('Token recibido');
 					localStorage.setItem('access_token',data.access_token);
 					localStorage.setItem('refresh_token',data.refresh_token);
+					localStorage.setItem('expires_in',data.expires_in);
 					localStorage.setItem('exp', parseInt((new Date).getTime() / 1000) + data.expires_in);
 					localStorage.setItem('id',data.id);
 					console.log('Tokens obtenidos',data);
-					//window.location = base_url; 
+					window.location = base_url; 
 				}else{		
 					$('#signupError').text('Error desconcido');
 					console.log(data);
@@ -76,6 +77,7 @@
 				if (typeof data.access_token != 'undefined' && typeof data.refresh_token != 'undefined'){
 					localStorage.setItem('access_token',data.access_token);
 					localStorage.setItem('refresh_token',data.refresh_token);
+					localStorage.setItem('expires_in',data.expires_in);
 					localStorage.setItem('exp', parseInt((new Date).getTime() / 1000) + data.expires_in);
 					localStorage.setItem('id',data.id);
 					console.log('Tokens obtenidos');
@@ -97,6 +99,7 @@
 	
 	function logout(){
 		localStorage.removeItem('access_token');
+		localStorage.removeItem('refresh_token');
 		window.location.href = login_page;
 	}
 
@@ -112,10 +115,11 @@
 			success: function(data){
 				if (typeof data.access_token != 'undefined'){
 					localStorage.setItem('access_token',data.access_token);
+					localStorage.setItem('expires_in',data.expires_in);
 					localStorage.setItem('exp', parseInt((new Date).getTime() / 1000) + data.expires_in);
 				}else{
 					console.log('Error en la renovación del token');
-					///////window.location = login_page;
+					////////window.location = login_page;
 				}
 			},
 			error: function(data){

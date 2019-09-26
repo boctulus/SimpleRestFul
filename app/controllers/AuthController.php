@@ -47,13 +47,13 @@ class AuthController extends Controller implements IAuth
         $key = hex2bin($this->config['refresh_secret_key']);    
         
         $refresh='';
-        for ($i=0;$i<10;$i++){
-            //$refresh .= chr(rand(32,47));
-            //$refresh .= chr(rand(58,64));
+        for ($i=0;$i<6;$i++){
+            $refresh .= chr(rand(32,47));
+            $refresh .= chr(rand(58,64));
             $refresh .= chr(rand(65,90));
-            //$refresh .= chr(rand(91,96));
-            //$refresh .= chr(rand(97,122));	
-            //$refresh .= chr(rand(123,126));
+            $refresh .= chr(rand(91,96));
+            $refresh .= chr(rand(97,122));	
+            $refresh .= chr(rand(123,126));
         }	
     
         $encrypted = SaferCrypto::encrypt($refresh, $key, true);
@@ -125,8 +125,7 @@ class AuthController extends Controller implements IAuth
                 ]
             );
         
-            $token = \Firebase\JWT\JWT::encode($payload, $this->config['jwt_secret_key'],  $this->config['encryption']);
-            
+            $token = \Firebase\JWT\JWT::encode($payload, $this->config['jwt_secret_key'],  $this->config['encryption']);            
            
             if (empty($u->refresh_token)){
                 list($refresh, $encrypted) = $this->pass_gen();
