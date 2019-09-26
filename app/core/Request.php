@@ -67,6 +67,10 @@ class Request  implements \ArrayAccess, Arrayable
         return json_decode(static::$raw, $assoc);
     }
 
+    function getBodyParam($key){
+        return $this->getBody()[$key];
+    }
+
     function getCode(){
         return http_response_code();
     }

@@ -43,3 +43,21 @@ https://www.vinaysahni.com/best-practices-for-a-pragmatic-restful-api
 * Rate limiting
 * Caching
 * Errors
+
+- Securitizar almacenamiento de tokens -- en cookies?
+
+https://stormpath.com/blog/where-to-store-your-jwts-cookies-vs-html5-web-storage
+https://medium.com/@jcbaey/authentication-in-spa-reactjs-and-vuejs-the-right-way-e4a9ac5cd9a3
+https://dev.to/rdegges/please-stop-using-local-storage-1i04
+
+- error y error description, ej: 
+
+HTTP/1.1 401 Unauthorized
+WWW-Authenticate: Bearer error="invalid_token"
+  error_description="The access token expired"
+Content-type: application/json
+ 
+{
+  "error": "invalid_token",
+  "error_description": "The access token expired"
+}

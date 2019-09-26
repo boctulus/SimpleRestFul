@@ -108,6 +108,8 @@ class Model {
 		foreach ($select_fields_array as $prop){
 			$this->{$prop} = $row->{$prop};
 		}	
+
+		return true;
 	}
 	
 	function fetchAll(array $fields = null, array $order = NULL, int $limit = NULL, int $offset = 0)
@@ -238,6 +240,9 @@ class Model {
 			return true;
 	}
 
+	/*
+		@return mixed false | integer 
+	*/
 	function create(array $data)
 	{
 		$vars   = array_keys($data);

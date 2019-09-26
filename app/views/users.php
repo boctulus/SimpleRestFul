@@ -43,7 +43,7 @@
 			type: "GET",
 			url: endpoint,
 			dataType: 'json',
-			headers: {"Authorization": 'Bearer ' + localStorage.getItem('tokenJwt')},
+			headers: {"Authorization": 'Bearer ' + localStorage.getItem('access_token')},
 			success: function(data){
 				
 				// unhide				

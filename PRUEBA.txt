@@ -1,0 +1,58 @@
+{
+    "email": "aie@b.c",
+    "password": "xxx",
+    "firstname": "Sr K",
+    "lastname": "NS/NC"
+}
++---- SINGUP -->
+{
+    "id": "72",
+    "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1Njk1MDk0MjMsImV4cCI6MTU2OTUwOTcyMywiaWQiOiI3MiIsImlwIjp7IlJFTU9URV9BRERSIjoiMTI3LjAuMC4xIiwiSFRUUF9DTElFTlRfSVAiOiIiLCJIVFRQX0ZPUldBUkRFRCI6IiIsIkhUVFBfRk9SV0FSREVEX0ZPUiI6IiIsIkhUVFBfWF9GT1JXQVJERUQiOiIiLCJIVFRQX1hfRk9SV0FSREVEX0ZPUiI6IiJ9fQ.-4knFkXVVjGtTZQOEM9Iga0cfI4934VpBCxgSqDzwsU",
+    "token_type": "bearer",
+    "refresh_token": "ROHBJGYMDZ",
+    "expires_in": 300
+}
+
+
+{
+    "email": "aie@b.c",
+    "password":  "xxx"
+}
++--- LOGIN   -->
+{
+    "id": "72",
+    "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1Njk1MDk0OTQsImV4cCI6MTU2OTUwOTc5NCwiaWQiOiI3MiIsImlwIjp7IlJFTU9URV9BRERSIjoiMTI3LjAuMC4xIiwiSFRUUF9DTElFTlRfSVAiOiIiLCJIVFRQX0ZPUldBUkRFRCI6IiIsIkhUVFBfRk9SV0FSREVEX0ZPUiI6IiIsIkhUVFBfWF9GT1JXQVJERUQiOiIiLCJIVFRQX1hfRk9SV0FSREVEX0ZPUiI6IiJ9fQ.UwwKcfo90XHcodi6rOTyymFhtWbPNpa7R30Vo1fsaAE",
+    "token_type": "bearer",
+    "refresh_token": "ROHBJGYMDZ",
+    "expires_in": 300
+}
+
+
+{
+    "id": "72"
+}
+HEADERS
+Authorization: Basic ROHBJGYMDZ
++--- REFRESH -->
+{
+    "id": "72",
+    "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1Njk1MDk5NjUsImV4cCI6MTU2OTUxMDI2NSwiaWQiOiI3MiIsImlwIjp7IlJFTU9URV9BRERSIjoiMTI3LjAuMC4xIiwiSFRUUF9DTElFTlRfSVAiOiIiLCJIVFRQX0ZPUldBUkRFRCI6IiIsIkhUVFBfRk9SV0FSREVEX0ZPUiI6IiIsIkhUVFBfWF9GT1JXQVJERUQiOiIiLCJIVFRQX1hfRk9SV0FSREVEX0ZPUiI6IiJ9fQ.C3uT8x7UgdNtUph_TnZ5c_wJU7TbZ1Tx_Y8Oqd9oe-c",
+    "token_type": "bearer",
+    "expires_in": 300
+}
+
+
+------- Destruyo el 'refresh token' en la DB -------
+
+{
+    "email": "aie@b.c",
+    "password":  "xxx"
+}
++--- LOGIN   -->
+{
+    "id": "72",
+    "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE1Njk1MTA0NzIsImV4cCI6MTU2OTUxMDc3MiwiaWQiOiI3MiIsImlwIjp7IlJFTU9URV9BRERSIjoiMTI3LjAuMC4xIiwiSFRUUF9DTElFTlRfSVAiOiIiLCJIVFRQX0ZPUldBUkRFRCI6IiIsIkhUVFBfRk9SV0FSREVEX0ZPUiI6IiIsIkhUVFBfWF9GT1JXQVJERUQiOiIiLCJIVFRQX1hfRk9SV0FSREVEX0ZPUiI6IiJ9fQ.SorcOiGwKE49SadwcGaeQ0afiN6mI17c5Nd-GHUdcNA",
+    "token_type": "bearer",
+    "refresh_token": "OQFJXELJDA",   <--- otro refresh token !
+    "expires_in": 300
+}

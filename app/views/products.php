@@ -1,6 +1,6 @@
 
 	<script>
-		notLoggedGoHome();
+		// notLoggedGoHome();
 	</script>
 
 	<h1 class="red-text text-center" style="font-size:2em">Products</h1>
@@ -103,7 +103,7 @@
 </div>		
 <script type="text/javascript">
 	const endpoint = '/api/products';
-	const minutes_for_token_renew = 2 // 2
+	const secs_for_token_renew = 300;  // tomar de 'expires_in' 
 
 	let $data = [];
 	let table = new JqTable('tb_products');
@@ -118,12 +118,12 @@
 			else
 				notLoggedGoHome();
 			
-			// diff is less than 2 minute
-			if ( ((localStorage.getItem('exp')*1000) - (new Date()).getTime()) < 60000 * minutes_for_token_renew){
+			// diff is less than ___
+			if ( ((localStorage.getItem('exp')*1000) - (new Date()).getTime()) < 1000 * secs_for_token_renew * 0.97){
 				renew();
 			}
 			
-		}, 60 * 1000); /* 60 sec */
+		}, secs_for_token_renew * 1000 * 0.97); 
 	});
 	
 	
@@ -174,7 +174,7 @@
 			url: endpoint + '/' + id.toString(),
 			data: encoded,
 			dataType: 'json',
-			headers: {"Authorization": 'Bearer ' + localStorage.getItem('tokenJwt')},
+			headers: {"Authorization": 'Bearer ' + localStorage.getItem('access_token')},
 			success: function(data){
 				console.log(data);
 				if (!data.error){
@@ -219,7 +219,7 @@
 			type: "GET",	// lectura previa //
 			url: endpoint+'/'+id.toString(),
 			dataType: 'json',
-			headers: {"Authorization": 'Bearer ' + localStorage.getItem('tokenJwt')},
+			headers: {"Authorization": 'Bearer ' + localStorage.getItem('access_token')},
 			success: function(data){
 				// console.log('data for id= '+id.toString(),data);
 				$('#eid').val(data.id);
@@ -275,7 +275,7 @@
 			url: endpoint,
 			data: encoded,
 			dataType: 'json',
-			headers: {"Authorization": 'Bearer ' + localStorage.getItem('tokenJwt')},
+			headers: {"Authorization": 'Bearer ' + localStorage.getItem('access_token')},
 			success: function(data){
 				//console.log(data);
 				if (!data.error){
@@ -325,7 +325,7 @@
 						type: "DELETE",	/* DELETE VERB */
 						url: endpoint + '/' + id.toString(),
 						dataType: 'json',
-						headers: {"Authorization": 'Bearer ' + localStorage.getItem('tokenJwt')},
+						headers: {"Authorization": 'Bearer ' + localStorage.getItem('access_token')},
 						success: function(data){
 							$('#tr'+id.toString()).remove();
 							if(data.error)
@@ -352,7 +352,7 @@
 			type: "GET",
 			url: endpoint,
 			dataType: 'json',
-			headers: {"Authorization": 'Bearer ' + localStorage.getItem('tokenJwt')},
+			headers: {"Authorization": 'Bearer ' + localStorage.getItem('access_token')},
 			success: function(data){
 				
 				// unhide				

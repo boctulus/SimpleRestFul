@@ -11,7 +11,7 @@
 
 		const expired = ((localStorage.getItem('exp')!=null) && ((localStorage.getItem('exp')*1000) - (new Date()).getTime())<0);
 		
-		if ((localStorage.getItem('tokenJwt') == null) || expired)
+		if ((localStorage.getItem('access_token') == null) || expired)
 			window.location = login_page; 
 	}
 
@@ -36,12 +36,14 @@
 			data : JSON.stringify(obj),
 			dataType: 'json',
 			success : function(data) {
-				if (typeof data.token != 'undefined'){
+				if (typeof data.access_token != 'undefined'){
 					console.log('Token recibido');
-					localStorage.setItem('tokenJwt',data.token);
-					localStorage.setItem('exp',data.exp);
-					localStorage.setItem('email',obj.email);
-					window.location = base_url; 
+					localStorage.setItem('access_token',data.access_token);
+					localStorage.setItem('refresh_token',data.refresh_token);
+					localStorage.setItem('exp', parseInt((new Date).getTime() / 1000) + data.expires_in);
+					localStorage.setItem('id',data.id);
+					console.log('Tokens obtenidos',data);
+					//window.location = base_url; 
 				}else{		
 					$('#signupError').text('Error desconcido');
 					console.log(data);
@@ -71,18 +73,20 @@
 			data: JSON.stringify(obj),
 			dataType: 'json',
 			success: function(data){
-				if (typeof data.token != 'undefined'){
-					localStorage.setItem('tokenJwt',data.token);
-					localStorage.setItem('exp',data.exp);
-					localStorage.setItem('email',obj.email);
+				if (typeof data.access_token != 'undefined' && typeof data.refresh_token != 'undefined'){
+					localStorage.setItem('access_token',data.access_token);
+					localStorage.setItem('refresh_token',data.refresh_token);
+					localStorage.setItem('exp', parseInt((new Date).getTime() / 1000) + data.expires_in);
+					localStorage.setItem('id',data.id);
+					console.log('Tokens obtenidos');
 					window.location = base_url;
 				}else{	
-					console.log('Error',data.responseJSON.error);	
+					console.log('Error (success)',data);	
 					$('#loginError').text(data.responseJSON.error);
 				}
 			},
 			error: function(data){
-				console.log('Error',data.responseJSON.error);
+				console.log('Error (error)',data);
 				$('#loginError').text('Error en usuario o password!');
 			}
 		});		
@@ -92,7 +96,7 @@
 	
 	
 	function logout(){
-		localStorage.removeItem('tokenJwt');
+		localStorage.removeItem('access_token');
 		window.location.href = login_page;
 	}
 
@@ -102,21 +106,22 @@
 		$.ajax({
 			type: "POST",
 			url: '/auth/token_renew',
+			data : JSON.stringify({id: localStorage.getItem('id')}),
 			dataType: 'json',
-			headers: {"Authorization": 'Bearer ' + localStorage.getItem('tokenJwt')}, 
+			headers: {"Authorization": 'Basic ' + localStorage.getItem('refresh_token')}, 
 			success: function(data){
-				if (typeof data.token != 'undefined'){
-					localStorage.setItem('tokenJwt',data.token);
-					localStorage.setItem('exp',data.exp);
+				if (typeof data.access_token != 'undefined'){
+					localStorage.setItem('access_token',data.access_token);
+					localStorage.setItem('exp', parseInt((new Date).getTime() / 1000) + data.expires_in);
 				}else{
 					console.log('Error en la renovación del token');
-					window.location = login_page;
+					///////window.location = login_page;
 				}
 			},
 			error: function(data){
 				console.log('Error en la renovación del token!!!!!!!!!!!!');
 				console.log(data);
-				window.location = login_page;
+				/////////window.location = login_page;
 			}
 		});		
 	}

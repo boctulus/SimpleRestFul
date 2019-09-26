@@ -13,7 +13,8 @@ class UsersModel extends Model
 							'email',
 							'password',
 							'firstname',
-							'lastname'
+							'lastname',
+							'refresh_token'
 	];
 
 	static protected $hidden = ['password'];
@@ -28,6 +29,7 @@ class UsersModel extends Model
 		'password' => 'STR',
 		'firstname' => 'STR',
 		'lastname'=> 'STR',
+		'refresh_token' => 'STR',
 		'enabled' => 'INT',
 		'quota' => 'INT'
 	];

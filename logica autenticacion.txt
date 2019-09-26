@@ -22,6 +22,18 @@ Lógica mejorada:
 - Envio el access token y espero los datos
 
 
+=> Diferencias:
+
+# Login
+
+- Se envia un token adicional de tipo refresh
+- Se almacena en localstorage el refresh token
+
+# Refresh
+
+- Se envia el refresh token en vez del access token
+
+
 Logica antigua:
 
 - Sino tengo un token en mi localstorage, muestro un login
