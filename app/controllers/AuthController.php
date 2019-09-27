@@ -310,7 +310,10 @@ class AuthController extends Controller implements IAuth
             
         list($jwt) = sscanf($auth, 'Bearer %s');
 
-        if($jwt)
+        //var_dump($auth);
+        //var_dump($jwt);
+
+        if($jwt != null)
         {
             try{
                 // Checking for token invalidation or outdated token
@@ -369,7 +372,7 @@ class AuthController extends Controller implements IAuth
                 Factory::response()->sendError($e->getMessage(),401);
             }	
         }else{
-            Factory::response()->sendError('Authorization not found',400);
+            Factory::response()->sendError('Authorization jwt token not found',400);
         }
     }
 

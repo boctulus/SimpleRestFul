@@ -4,15 +4,21 @@
 	//console.log(base_url + 'login');
 
 	function notLoggedGoHome(){
+		console.log('notLoggedGoHome');
+
 		if (typeof login_page === 'undefined' || typeof localStorage === 'undefined'){
 			console.log('Error');
 			return;
 		}
-
+	
 		const expired = ((localStorage.getItem('exp')!=null) && ((localStorage.getItem('exp')*1000) - (new Date()).getTime())<0);
 		
-		if ((localStorage.getItem('access_token') == null) || expired)
-			window.location = login_page; 
+		if ((localStorage.getItem('access_token') == null) || expired){
+			if (localStorage.getItem('refresh_token')){
+				renew();	
+			}else 
+				window.location = login_page;
+		}		 
 	}
 
 	function signup(){

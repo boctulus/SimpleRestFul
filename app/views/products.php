@@ -1,6 +1,6 @@
 
 	<script>
-		// notLoggedGoHome();
+		notLoggedGoHome();
 	</script>
 
 	<h1 class="red-text text-center" style="font-size:2em">Products</h1>
@@ -381,14 +381,14 @@
 				//table.hide_first_col();
 			},
 			error: function(data){
-				if (data.statusText=='Unauthorized' ){
-					window.location = login_page;
+				if (data.status == 401){
+					notLoggedGoHome() /////////
 				}
 
 				if (typeof data.responseJSON != 'undefined' && typeof data.responseJSON.error != 'undefined')
 					toastr["error"](data.responseJSON.error, "Error");
 
-				console.log('Error in GET all', data);
+				console.log('Error in GET all', data, data.status);
 			}
 		});		
 	}
