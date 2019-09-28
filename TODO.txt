@@ -1,7 +1,8 @@
 # TODO
 
-- SoftDelete
 
+- SoftDelete
+- Reemplazar sha1() por password_hash / password_verify 
 - Versionado ej: http://simplerest.lan/api/v1/users
 - "Prety print" con ?prety=true, ejemplo de la salida:
 https://api.github.com/users/veesahni

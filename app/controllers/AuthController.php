@@ -8,6 +8,7 @@ use simplerest\core\interfaces\IAuth;
 use simplerest\libs\Factory;
 use simplerest\libs\Database;
 use simplerest\models\UsersModel;
+use simplerest\models\SessionsModel;
 use simplerest\libs\Debug;
 use simplerest\libs\crypto\SaferCrypto;
 
@@ -47,11 +48,11 @@ class AuthController extends Controller implements IAuth
         $key = hex2bin($this->config['refresh_secret_key']);    
         
         $refresh='';
-        for ($i=0;$i<6;$i++){
-            $refresh .= chr(rand(32,47));
+        for ($i=0;$i<10;$i++){
+            //$refresh .= chr(rand(32,47));
             $refresh .= chr(rand(58,64));
             $refresh .= chr(rand(65,90));
-            $refresh .= chr(rand(91,96));
+            //$refresh .= chr(rand(91,96));
             $refresh .= chr(rand(97,122));	
             $refresh .= chr(rand(123,126));
         }	
@@ -65,6 +66,17 @@ class AuthController extends Controller implements IAuth
         $key = hex2bin($this->config['refresh_secret_key']); 
         return SaferCrypto::decrypt($encrypted, $key, true);
     }
+
+    protected function session_encrypt($sid){
+        $key = hex2bin($this->config['session_secret_key']); 
+        return SaferCrypto::encrypt($sid, $key, true);
+    }
+
+    protected function session_decrypt($encrypted){
+        $key = hex2bin($this->config['session_secret_key']); 
+        return SaferCrypto::decrypt($encrypted, $key, true);
+    }
+
 
     /*
         Login for API Rest
@@ -89,6 +101,7 @@ class AuthController extends Controller implements IAuth
                 
                 $email = $data->email ?? null;
                 $password = $data->password ?? null;
+                $sid = $data->sid ?? null; 
             break;
 
             default:
@@ -109,12 +122,23 @@ class AuthController extends Controller implements IAuth
         $u->password = $password;
         
         if ($u->checkUserAndPass()){
-         
+
+            list($refresh, $encrypted) = $this->pass_gen();
+
+            $session = new SessionsModel($conn);
+            $sid = $session->create([ 'refresh_token' => $encrypted, 'login_date' => time(), 'user_id' => $u->id ]);
+                
+            if (!$sid)
+                Factory::response()->sendError("Authentication fails", 401); 
+
+            $sid_enc = $this->session_encrypt($sid);                  
+
             $time = time();
             $payload = array(
+                'alg' => $this->config['encryption'],
+                'typ' => 'JWT',
                 'iat' => $time, 
                 'exp' => $time + $this->config['token_expiration_time'],
-                'id'  => $u->id,
                 'ip' => [
                     'REMOTE_ADDR' => $_SERVER['REMOTE_ADDR'] ?? '',
                     'HTTP_CLIENT_IP' => $_SERVER['HTTP_CLIENT_IP'] ?? '',
@@ -122,20 +146,13 @@ class AuthController extends Controller implements IAuth
                     'HTTP_FORWARDED_FOR' => $_SERVER['HTTP_FORWARDED_FOR'] ?? '',
                     'HTTP_X_FORWARDED' => $_SERVER['HTTP_X_FORWARDED'] ?? '',
                     'HTTP_X_FORWARDED_FOR' => $_SERVER['HTTP_X_FORWARDED_FOR'] ?? ''
-                ]
+                ],
+                'sid' => $sid_enc
             );
-        
-            $token = \Firebase\JWT\JWT::encode($payload, $this->config['jwt_secret_key'],  $this->config['encryption']);            
-           
-            if (empty($u->refresh_token)){
-                list($refresh, $encrypted) = $this->pass_gen();
-                $u->update(['refresh_token' => $encrypted]);                         
-            } else {
-                $refresh = $this->pass_dec($u->refresh_token);
-            }           
 
+            $token = \Firebase\JWT\JWT::encode($payload, $this->config['jwt_secret_key'],  $this->config['encryption']);        
             Factory::response()->send([ 
-                                        'id' => $u->id,
+                                        'sid' => $sid_enc,
                                         'access_token'=> $token,
                                         'token_type' => 'bearer', 
                                         'refresh_token' => $refresh,
@@ -149,7 +166,7 @@ class AuthController extends Controller implements IAuth
 
 
     /*
-        Token refresh
+        Access Token renewal
         
         Only by POST*
     */	
@@ -161,10 +178,9 @@ class AuthController extends Controller implements IAuth
         }elseif ($_SERVER['REQUEST_METHOD']!='POST')
             Factory::response()->sendError('Incorrect verb',405);
 
-
         $request = Factory::request();
 
-        $id = $request->getBodyParam('id');
+        $sid_enc = $request->getBodyParam('sid');
         $headers = $request->headers();
         $auth = $headers['Authorization'] ?? $headers['authorization'] ?? null;
 
@@ -172,8 +188,8 @@ class AuthController extends Controller implements IAuth
             Factory::response()->sendError('Authorization not found',400);
         }
 
-        if (empty($id)){
-            Factory::response()->sendError('id is needed !',400);
+        if (empty($sid_enc)){
+            Factory::response()->sendError('sid is needed !',400);
         }
 
         try {                                      
@@ -183,27 +199,28 @@ class AuthController extends Controller implements IAuth
             if(empty($refresh))
                 Factory::response()->sendError('Token not found',400);
             
-            // Checking for refresh token            
-            $conn = Database::getConnection($this->config['database']);
+            $sid = $this->session_decrypt($sid_enc);
+           
+            $conn = Database::getConnection($this->config['database']);            
+            $s = new SessionsModel($conn);
+            $rows = $s->filter(null, ['id' => $sid]);
 
-            $u = new UsersModel($conn);
-            $u->id = $id;
-            $ok = $u->fetch(['refresh_token']); // encrypted
+            //var_dump($rows);
 
-            if (!$ok)
-                Factory::response()->sendError('User not found',400);
+            if(empty($rows))
+                throw new Exception("Session not found");
+                    
+            //var_dump($this->pass_dec($rows[0]['refresh_token']), $refresh);
 
-            if (empty($u->refresh_token))
-                Factory::response()->sendError('Refresh token is empty',400);
-
-            if($this->pass_dec($u->refresh_token) != $refresh) 
+            if($this->pass_dec($rows[0]['refresh_token']) != $refresh) 
                 Factory::response()->sendError('Refresh token is invalid',400);
-                
+
             $time = time();
             $payload = array(
+                'alg' => $this->config['encryption'],
+                'typ' => 'JWT',
                 'iat' => $time, 
                 'exp' => $time + $this->config['token_expiration_time'],
-                'id'  => $u->id,
                 'ip' => [
                     'REMOTE_ADDR' => $_SERVER['REMOTE_ADDR'] ?? '',
                     'HTTP_CLIENT_IP' => $_SERVER['HTTP_CLIENT_IP'] ?? '',
@@ -211,14 +228,14 @@ class AuthController extends Controller implements IAuth
                     'HTTP_FORWARDED_FOR' => $_SERVER['HTTP_FORWARDED_FOR'] ?? '',
                     'HTTP_X_FORWARDED' => $_SERVER['HTTP_X_FORWARDED'] ?? '',
                     'HTTP_X_FORWARDED_FOR' => $_SERVER['HTTP_X_FORWARDED_FOR'] ?? ''
-                ]
+                ],
+                'sid' => $sid_enc
             );
         
             $token = \Firebase\JWT\JWT::encode($payload, $this->config['jwt_secret_key'],  $this->config['encryption']);
             
             ///////////
             Factory::response()->send([ 
-                                        'id' => $id,
                                         'access_token'=> $token,
                                         'token_type' => 'bearer', 
                                         'expires_in' => $this->config['token_expiration_time'] 
@@ -228,6 +245,13 @@ class AuthController extends Controller implements IAuth
         } catch (\Exception $e) {
             Factory::response()->sendError($e->getMessage(), 400);
         }	
+    }
+
+    /*
+        'refresh token' destructor 
+    */
+    function logout(){
+
     }
 
     function signup()
@@ -249,24 +273,32 @@ class AuthController extends Controller implements IAuth
                 Factory::response()->sendError('Email already exists');
                     
 
-            $missing = $u::diffWithSchema($data, ['id','enabled','quota','refresh_token']);
+            $missing = $u::diffWithSchema($data, ['id','enabled','quota']);
             if (!empty($missing))
                 Factory::response()->sendError('Lack some properties in your request: '.implode(',',$missing));
 
             $data['password'] = sha1($data['password']);
 
             list($refresh, $encrypted) = $this->pass_gen();
-            $data['refresh_token'] = $encrypted;
 
-            $id = $u->create($data);
-            if (empty($id))
+            $uid = $u->create($data);
+            if (empty($uid))
                 Factory::response()->sendError("Error in user registration!");
             
+            //
+            // Insertar en sessions y devolver "id de session" en vez de "id de user"
+            //
+
+            $session = new SessionsModel($conn);
+            $sid = $session->create([ 'refresh_token' => $encrypted, 'login_date' => time(), 'user_id' => $uid ]);
+            $sid_enc = $this->session_encrypt($sid);
+
             $time = time();
             $payload = array(
+                'alg' => $this->config['encryption'],
+                'typ' => 'JWT',
                 'iat' => $time, 
                 'exp' => $time + $this->config['token_expiration_time'],
-                'id'  => $id,
                 'ip' => [
                     'REMOTE_ADDR' => $_SERVER['REMOTE_ADDR'] ?? '',
                     'HTTP_CLIENT_IP' => $_SERVER['HTTP_CLIENT_IP'] ?? '',
@@ -274,14 +306,15 @@ class AuthController extends Controller implements IAuth
                     'HTTP_FORWARDED_FOR' => $_SERVER['HTTP_FORWARDED_FOR'] ?? '',
                     'HTTP_X_FORWARDED' => $_SERVER['HTTP_X_FORWARDED'] ?? '',
                     'HTTP_X_FORWARDED_FOR' => $_SERVER['HTTP_X_FORWARDED_FOR'] ?? ''
-                ]
+                ],
+                'sid' => $sid_enc
             );
 
             $token = \Firebase\JWT\JWT::encode($payload, $this->config['jwt_secret_key'],  $this->config['encryption']);
                  
             //////////////
             Factory::response()->send([ 
-                                        'id' => $id,
+                                        'sid' => $sid_enc,
                                         'access_token'=> $token,
                                         'token_type' => 'bearer', 
                                         'refresh_token' => $refresh,
@@ -301,7 +334,10 @@ class AuthController extends Controller implements IAuth
     @return mixed object | null
     */
     function check_auth() {
-        $headers = Factory::request()->headers();
+
+        $req     = Factory::request();
+        
+        $headers = $req->headers();
         $auth = $headers['Authorization'] ?? $headers['authorization'] ?? null;
         
         if (empty($auth)){
@@ -310,9 +346,6 @@ class AuthController extends Controller implements IAuth
             
         list($jwt) = sscanf($auth, 'Bearer %s');
 
-        //var_dump($auth);
-        //var_dump($jwt);
-
         if($jwt != null)
         {
             try{
@@ -320,19 +353,29 @@ class AuthController extends Controller implements IAuth
                 
                 $data = \Firebase\JWT\JWT::decode($jwt, $this->config['jwt_secret_key'], [ $this->config['encryption'] ]);
                 
-                //var_dump($data);
-
                 if (empty($data))
                     Factory::response()->sendError('Unauthorized!',401);                     
 
-                if ($data->exp<time())
-                    Factory::response()->sendError('Token expired',401);
+                if (empty($data->sid)){
+                    Factory::response()->sendError('sid is needed !!!',400);
+                }
 
-                if (count($this->must_have)>0 || count($this->must_not)>0) {
-                    $conn    = Database::getConnection($this->config['database']);
+                if ($data->exp < time())
+                    Factory::response()->sendError('Token expired',401);
+                    
+                if (count($this->must_have) > 0 || count($this->must_not) > 0) {
+                    $conn = Database::getConnection($this->config['database']);
+
+                    // Hacer con INNER JOIN
+                    $s = new SessionsModel($conn);            
+
+                    $rows = $s->filter(null, ['id' => $this->session_decrypt($data->sid)]);
+
+                    if(empty($rows))
+                        throw new Exception("Session not found");
 
                     $u = new UsersModel($conn);
-                    $u->id = $data->id;
+                    $u->id = $rows[0]['user_id'];
                     $u->fetch();
 
                     foreach ($this->must_have as $must){

@@ -159,6 +159,9 @@ class Model {
 			return false;	
 	}
 
+	/*
+		@return array | false
+	*/
 	function filter(array $fields = null, array $conditions, array $order = null, int $limit = NULL, int $offset = 0)
 	{
 		$this->_removehidden($fields);

@@ -13,8 +13,7 @@ class UsersModel extends Model
 							'email',
 							'password',
 							'firstname',
-							'lastname',
-							'refresh_token'
+							'lastname'
 	];
 
 	static protected $hidden = ['password'];
@@ -29,7 +28,6 @@ class UsersModel extends Model
 		'password' => 'STR',
 		'firstname' => 'STR',
 		'lastname'=> 'STR',
-		'refresh_token' => 'STR',
 		'enabled' => 'INT',
 		'quota' => 'INT'
 	];
@@ -46,6 +44,9 @@ class UsersModel extends Model
         parent::__construct($db);
     }
 	
+	/*
+		Usar password_hash / password_verify en su lugar
+	*/
 	function checkUserAndPass()
 	{
 		$q  = "SELECT * FROM ".static::$table_name." WHERE email=? AND password=?";

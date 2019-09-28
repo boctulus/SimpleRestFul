@@ -3,9 +3,8 @@
 
 	//console.log(base_url + 'login');
 
-	function notLoggedGoHome(){
-		console.log('notLoggedGoHome');
-
+	function notLoggedGoHome()
+	{
 		if (typeof login_page === 'undefined' || typeof localStorage === 'undefined'){
 			console.log('Error');
 			return;
@@ -48,7 +47,7 @@
 					localStorage.setItem('refresh_token',data.refresh_token);
 					localStorage.setItem('expires_in',data.expires_in);
 					localStorage.setItem('exp', parseInt((new Date).getTime() / 1000) + data.expires_in);
-					localStorage.setItem('id',data.id);
+					localStorage.setItem('sid',data.sid);
 					console.log('Tokens obtenidos',data);
 					window.location = base_url; 
 				}else{		
@@ -85,7 +84,7 @@
 					localStorage.setItem('refresh_token',data.refresh_token);
 					localStorage.setItem('expires_in',data.expires_in);
 					localStorage.setItem('exp', parseInt((new Date).getTime() / 1000) + data.expires_in);
-					localStorage.setItem('id',data.id);
+					localStorage.setItem('sid',data.sid);
 					console.log('Tokens obtenidos');
 					window.location = base_url;
 				}else{	
@@ -106,6 +105,10 @@
 	function logout(){
 		localStorage.removeItem('access_token');
 		localStorage.removeItem('refresh_token');
+
+		// hacer una llamada Ajax a una acción en AuthController
+		// que limpie el 'refresh token' en la base de datos!
+
 		window.location.href = login_page;
 	}
 
@@ -115,7 +118,7 @@
 		$.ajax({
 			type: "POST",
 			url: '/auth/token_renew',
-			data : JSON.stringify({id: localStorage.getItem('id')}),
+			data : JSON.stringify({sid: localStorage.getItem('sid')}),
 			dataType: 'json',
 			headers: {"Authorization": 'Basic ' + localStorage.getItem('refresh_token')}, 
 			success: function(data){
