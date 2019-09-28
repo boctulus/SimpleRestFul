@@ -1,6 +1,37 @@
 # TODO
 
 
+- Ofrecer la forma de filtrado compatible con JSON:API
+
+GET /employees?filter[state]=internal&filter[title]=senior
+GET /employees?filter[id]=1,2
+
+equivalente a...
+
+GET /employees?state=internal&title=senior
+GET /employees?id=1,2
+
+- En vez de devolver solo un mensaje de error y un status, ofrecer tambien un código de error
+
+// 400 Bad Request
+{
+  "errors": [
+    {
+      "status": 400,
+      "detail": "Invalid state. Valid values are 'internal' or 'external'",
+      "code": 352,
+      "links": {
+        "about": "http://www.domain.com/rest/errorcode/352"
+      }
+    }
+  ]
+}
+
+Más 
+https://jsonapi.org/format/#error-objects
+https://phauer.com/2015/restful-api-design-best-practices/
+
+
 - SoftDelete
 - Reemplazar sha1() por password_hash / password_verify 
 - Versionado ej: http://simplerest.lan/api/v1/users
@@ -36,9 +67,6 @@ https://www.php.net/manual/en/features.file-upload.errors.php
 - Consultas más complejas para API Rest incluyendo operadores lt, gt, ge, le, ne (!=) y or 
 Sacar ideas de: https://dev.targetprocess.com/docs/custom-calculations
 
-- Leer atentamente
-https://www.vinaysahni.com/best-practices-for-a-pragmatic-restful-api
-
 * "additional details embedded"
 * Overriding the HTTP method
 * Rate limiting
@@ -62,3 +90,9 @@ Content-type: application/json
   "error": "invalid_token",
   "error_description": "The access token expired"
 }
+
+
+
+- Leer atentamente
+https://www.vinaysahni.com/best-practices-for-a-pragmatic-restful-api
+https://phauer.com/2015/restful-api-design-best-practices/

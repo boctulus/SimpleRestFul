@@ -2,6 +2,8 @@
 
 namespace simplerest\core;
 
+use simplerest\libs\Database;
+
 class Controller
 {
     function __construct() {
@@ -10,6 +12,10 @@ class Controller
 
     function view(string $view_path, array $vars_to_be_passed  = null, $layout = 'app_layout.php'){
         $view = new View($view_path, $vars_to_be_passed, $layout); 
+    }
+
+    protected function getConnection() {
+        return Database::getConnection($this->config['database']);
     }
 
 }

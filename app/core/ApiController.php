@@ -12,6 +12,8 @@ abstract class ApiController
     protected $config;
     protected $_model;
     protected $auth_payload = null;
+    protected $allowed   = ['get', 'post', 'put', 'patch', 'delete'];
+    protected $unallowed = null;
     protected $default_headers = [
         'access-control-allow-Methods' => 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
         'access-control-allow-credentials' => 'true',

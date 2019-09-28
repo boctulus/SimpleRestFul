@@ -6,7 +6,6 @@ use Exception;
 use simplerest\core\Controller;
 use simplerest\core\interfaces\IAuth;
 use simplerest\libs\Factory;
-use simplerest\libs\Database;
 use simplerest\models\UsersModel;
 use simplerest\models\SessionsModel;
 use simplerest\libs\Debug;
@@ -77,6 +76,26 @@ class AuthController extends Controller implements IAuth
         return SaferCrypto::decrypt($encrypted, $key, true);
     }
 
+    protected function gen_jwt($encoded_sid){
+        $time = time();
+        $payload = [
+            'alg' => $this->config['encryption'],
+            'typ' => 'JWT',
+            'iat' => $time, 
+            'exp' => $time + $this->config['token_expiration_time'],
+            'ip' => [
+                'REMOTE_ADDR' => $_SERVER['REMOTE_ADDR'] ?? '',
+                'HTTP_CLIENT_IP' => $_SERVER['HTTP_CLIENT_IP'] ?? '',
+                'HTTP_FORWARDED' => $_SERVER['HTTP_FORWARDED'] ?? '',
+                'HTTP_FORWARDED_FOR' => $_SERVER['HTTP_FORWARDED_FOR'] ?? '',
+                'HTTP_X_FORWARDED' => $_SERVER['HTTP_X_FORWARDED'] ?? '',
+                'HTTP_X_FORWARDED_FOR' => $_SERVER['HTTP_X_FORWARDED_FOR'] ?? ''
+            ],
+            'sid' => $encoded_sid
+        ];
+        
+        return \Firebase\JWT\JWT::encode($payload, $this->config['jwt_secret_key'],  $this->config['encryption']);
+    }
 
     /*
         Login for API Rest
@@ -115,7 +134,7 @@ class AuthController extends Controller implements IAuth
             Factory::response()->sendError('password is required',400);
         }
               
-        $conn = Database::getConnection($this->config['database']);
+        $conn = $this->getConnection();
         
         $u = new UsersModel($conn);
         $u->email = $email;
@@ -132,28 +151,11 @@ class AuthController extends Controller implements IAuth
                 Factory::response()->sendError("Authentication fails", 401); 
 
             $sid_enc = $this->session_encrypt($sid);                  
+            $jwt = $this->gen_jwt($sid_enc);
 
-            $time = time();
-            $payload = array(
-                'alg' => $this->config['encryption'],
-                'typ' => 'JWT',
-                'iat' => $time, 
-                'exp' => $time + $this->config['token_expiration_time'],
-                'ip' => [
-                    'REMOTE_ADDR' => $_SERVER['REMOTE_ADDR'] ?? '',
-                    'HTTP_CLIENT_IP' => $_SERVER['HTTP_CLIENT_IP'] ?? '',
-                    'HTTP_FORWARDED' => $_SERVER['HTTP_FORWARDED'] ?? '',
-                    'HTTP_FORWARDED_FOR' => $_SERVER['HTTP_FORWARDED_FOR'] ?? '',
-                    'HTTP_X_FORWARDED' => $_SERVER['HTTP_X_FORWARDED'] ?? '',
-                    'HTTP_X_FORWARDED_FOR' => $_SERVER['HTTP_X_FORWARDED_FOR'] ?? ''
-                ],
-                'sid' => $sid_enc
-            );
-
-            $token = \Firebase\JWT\JWT::encode($payload, $this->config['jwt_secret_key'],  $this->config['encryption']);        
             Factory::response()->send([ 
                                         'sid' => $sid_enc,
-                                        'access_token'=> $token,
+                                        'access_token'=> $jwt,
                                         'token_type' => 'bearer', 
                                         'refresh_token' => $refresh,
                                         'expires_in' => $this->config['token_expiration_time'] 
@@ -201,7 +203,7 @@ class AuthController extends Controller implements IAuth
             
             $sid = $this->session_decrypt($sid_enc);
            
-            $conn = Database::getConnection($this->config['database']);            
+            $conn = $this->getConnection();            
             $s = new SessionsModel($conn);
             $rows = $s->filter(null, ['id' => $sid]);
 
@@ -211,28 +213,11 @@ class AuthController extends Controller implements IAuth
             if($this->pass_dec($rows[0]['refresh_token']) != $refresh) 
                 Factory::response()->sendError('Refresh token is invalid',400);
 
-            $time = time();
-            $payload = array(
-                'alg' => $this->config['encryption'],
-                'typ' => 'JWT',
-                'iat' => $time, 
-                'exp' => $time + $this->config['token_expiration_time'],
-                'ip' => [
-                    'REMOTE_ADDR' => $_SERVER['REMOTE_ADDR'] ?? '',
-                    'HTTP_CLIENT_IP' => $_SERVER['HTTP_CLIENT_IP'] ?? '',
-                    'HTTP_FORWARDED' => $_SERVER['HTTP_FORWARDED'] ?? '',
-                    'HTTP_FORWARDED_FOR' => $_SERVER['HTTP_FORWARDED_FOR'] ?? '',
-                    'HTTP_X_FORWARDED' => $_SERVER['HTTP_X_FORWARDED'] ?? '',
-                    'HTTP_X_FORWARDED_FOR' => $_SERVER['HTTP_X_FORWARDED_FOR'] ?? ''
-                ],
-                'sid' => $sid_enc
-            );
-        
-            $token = \Firebase\JWT\JWT::encode($payload, $this->config['jwt_secret_key'],  $this->config['encryption']);
+            $jwt = $this->gen_jwt($sid_enc);
             
             ///////////
             Factory::response()->send([ 
-                                        'access_token'=> $token,
+                                        'access_token'=> $jwt,
                                         'token_type' => 'bearer', 
                                         'expires_in' => $this->config['token_expiration_time'] 
                                         // 'scope' => 'read write'
@@ -262,7 +247,7 @@ class AuthController extends Controller implements IAuth
 
         $sid = $this->session_decrypt($sid_enc);
            
-        $conn = Database::getConnection($this->config['database']);            
+        $conn = $this->getConnection();            
         $s = new SessionsModel($conn);
         $s->id = $sid;
         $ok = $s->delete();
@@ -284,7 +269,7 @@ class AuthController extends Controller implements IAuth
             if ($data == null)
                 Factory::response()->sendError('Invalid JSON',400);
 
-            $conn = Database::getConnection($this->config['database']);	
+            $conn = $this->getConnection();	
             $u = new UsersModel($conn);
 
             //	
@@ -304,37 +289,16 @@ class AuthController extends Controller implements IAuth
             if (empty($uid))
                 Factory::response()->sendError("Error in user registration!");
             
-            //
-            // Insertar en sessions y devolver "id de session" en vez de "id de user"
-            //
-
             $session = new SessionsModel($conn);
             $sid = $session->create([ 'refresh_token' => $encrypted, 'login_date' => time(), 'user_id' => $uid ]);
             $sid_enc = $this->session_encrypt($sid);
 
-            $time = time();
-            $payload = array(
-                'alg' => $this->config['encryption'],
-                'typ' => 'JWT',
-                'iat' => $time, 
-                'exp' => $time + $this->config['token_expiration_time'],
-                'ip' => [
-                    'REMOTE_ADDR' => $_SERVER['REMOTE_ADDR'] ?? '',
-                    'HTTP_CLIENT_IP' => $_SERVER['HTTP_CLIENT_IP'] ?? '',
-                    'HTTP_FORWARDED' => $_SERVER['HTTP_FORWARDED'] ?? '',
-                    'HTTP_FORWARDED_FOR' => $_SERVER['HTTP_FORWARDED_FOR'] ?? '',
-                    'HTTP_X_FORWARDED' => $_SERVER['HTTP_X_FORWARDED'] ?? '',
-                    'HTTP_X_FORWARDED_FOR' => $_SERVER['HTTP_X_FORWARDED_FOR'] ?? ''
-                ],
-                'sid' => $sid_enc
-            );
+            $jwt = $this->gen_jwt($sid_enc);
 
-            $token = \Firebase\JWT\JWT::encode($payload, $this->config['jwt_secret_key'],  $this->config['encryption']);
-                 
             //////////////
             Factory::response()->send([ 
                                         'sid' => $sid_enc,
-                                        'access_token'=> $token,
+                                        'access_token'=> $jwt,
                                         'token_type' => 'bearer', 
                                         'refresh_token' => $refresh,
                                         'expires_in' => $this->config['token_expiration_time'] 
@@ -354,8 +318,7 @@ class AuthController extends Controller implements IAuth
     */
     function check_auth() {
 
-        $req     = Factory::request();
-        
+        $req = Factory::request();        
         $headers = $req->headers();
         $auth = $headers['Authorization'] ?? $headers['authorization'] ?? null;
         
@@ -370,25 +333,25 @@ class AuthController extends Controller implements IAuth
             try{
                 // Checking for token invalidation or outdated token
                 
-                $data = \Firebase\JWT\JWT::decode($jwt, $this->config['jwt_secret_key'], [ $this->config['encryption'] ]);
+                $payload = \Firebase\JWT\JWT::decode($jwt, $this->config['jwt_secret_key'], [ $this->config['encryption'] ]);
                 
-                if (empty($data))
+                if (empty($payload))
                     Factory::response()->sendError('Unauthorized!',401);                     
 
-                if (empty($data->sid)){
+                if (empty($payload->sid)){
                     Factory::response()->sendError('sid is needed',400);
                 }
 
-                if ($data->exp < time())
+                if ($payload->exp < time())
                     Factory::response()->sendError('Token expired',401);
                     
                 if (count($this->must_have) > 0 || count($this->must_not) > 0) {
-                    $conn = Database::getConnection($this->config['database']);
+                    $conn = $this->getConnection();
 
                     // Hacer con INNER JOIN
                     $s = new SessionsModel($conn);            
 
-                    $rows = $s->filter(null, ['id' => $this->session_decrypt($data->sid)]);
+                    $rows = $s->filter(null, ['id' => $this->session_decrypt($payload->sid)]);
 
                     if(empty($rows))
                         Factory::response()->sendError('Session not found', 400);
@@ -422,7 +385,7 @@ class AuthController extends Controller implements IAuth
                     }    
                 }
                 
-                return ($data);
+                return ($payload);
 
             } catch (Exception $e) {
                 /*
@@ -437,7 +400,4 @@ class AuthController extends Controller implements IAuth
             Factory::response()->sendError('Authorization jwt token not found',400);
         }
     }
-
-
-
 }

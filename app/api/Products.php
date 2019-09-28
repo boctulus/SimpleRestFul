@@ -16,30 +16,19 @@ class Products extends ApiController
             'access-control-allow-Origin' => '*'
         ];
 
+        $allowed = [ 
+                    'admin'   => ['get', 'post', 'put', 'patch', 'delete', 'head'],
+                    'regular' => ['get', 'post', 'put', 'patch', 'head'],
+                    'default' => ['get']
+        ];
+
         // Si el usuario no está habilitado, expulsarlo
         $auth = new \simplerest\controllers\AuthController();
         $auth->addmust_have([ 'enabled' => 1 ], 403, 'Usuario no habilitado');
         $auth->addmust_not([ 'quota' => 0 ], 403, 'Quota exceded');
 
         parent::__construct($headers, $auth);
-        
-        /*
-        // Otra forma de conseguir lo mismo:
-
-        parent::__construct($headers, $auth);
-
-        $conn    = Database::getConnection($this->config['database']);
-        
-        $u = new UsersModel($conn);
-        $u->id = $this->auth_payload->id;
-        $u->fetch(['enabled']); 
-
-        if ($u->enabled == 0)
-            Factory::response()->sendError('Usuario no habilitado', 403);
-        */
     }
-
-
 
         
 } // end class
