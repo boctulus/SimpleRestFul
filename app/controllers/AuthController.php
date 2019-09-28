@@ -205,12 +205,8 @@ class AuthController extends Controller implements IAuth
             $s = new SessionsModel($conn);
             $rows = $s->filter(null, ['id' => $sid]);
 
-            //var_dump($rows);
-
             if(empty($rows))
-                throw new Exception("Session not found");
-                    
-            //var_dump($this->pass_dec($rows[0]['refresh_token']), $refresh);
+                Factory::response()->sendError('Session not found', 400);
 
             if($this->pass_dec($rows[0]['refresh_token']) != $refresh) 
                 Factory::response()->sendError('Refresh token is invalid',400);
@@ -250,8 +246,31 @@ class AuthController extends Controller implements IAuth
     /*
         'refresh token' destructor 
     */
-    function logout(){
+    function logout()
+    {  
+        if ($_SERVER['REQUEST_METHOD']=='OPTIONS'){
+            // passs
+            Factory::response()->send('OK',200);
+        }elseif ($_SERVER['REQUEST_METHOD']!='POST')
+            Factory::response()->sendError('Incorrect verb',405);
 
+        $sid_enc = Factory::request()->getBodyParam('sid');    
+
+        if (empty($sid_enc)){
+            Factory::response()->sendError('sid is needed !',400);
+        }
+
+        $sid = $this->session_decrypt($sid_enc);
+           
+        $conn = Database::getConnection($this->config['database']);            
+        $s = new SessionsModel($conn);
+        $s->id = $sid;
+        $ok = $s->delete();
+
+        if ($ok)
+            Factory::response()->send('OK - session was deleted',200);
+        else
+            Factory::response()->sendCode(500);    
     }
 
     function signup()
@@ -357,7 +376,7 @@ class AuthController extends Controller implements IAuth
                     Factory::response()->sendError('Unauthorized!',401);                     
 
                 if (empty($data->sid)){
-                    Factory::response()->sendError('sid is needed !!!',400);
+                    Factory::response()->sendError('sid is needed',400);
                 }
 
                 if ($data->exp < time())
@@ -372,7 +391,7 @@ class AuthController extends Controller implements IAuth
                     $rows = $s->filter(null, ['id' => $this->session_decrypt($data->sid)]);
 
                     if(empty($rows))
-                        throw new Exception("Session not found");
+                        Factory::response()->sendError('Session not found', 400);
 
                     $u = new UsersModel($conn);
                     $u->id = $rows[0]['user_id'];

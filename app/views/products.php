@@ -203,7 +203,7 @@
 					table.editRow([id,obj.name,obj.description, obj.size,obj.cost]);
 					toastr["success"]("Product edited!", "Success");
 				}else
-					toastr["error"]("An error ocurred!", "Error");				
+					toastr["error"]("An error ocurred", "Error");				
 			},
 			error: function(data){
 				console.log('!Error~', data);
@@ -306,7 +306,7 @@
 					table.addRow([obj.id,obj.name,obj.description, obj.size,obj.cost]);
 					toastr["success"]("Product added!", "Success");
 				}else{
-					toastr["error"]("An error ocurred!", "Error");	
+					toastr["error"]("An error ocurred", "Error");	
 					console.log(data.error);
 				}		
 			},
