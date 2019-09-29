@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Sep 28, 2019 at 06:20 PM
+-- Generation Time: Sep 29, 2019 at 08:53 AM
 -- Server version: 5.7.27-0ubuntu0.18.04.1
 -- PHP Version: 7.2.19-0ubuntu0.18.04.2
 
@@ -49,7 +49,28 @@ INSERT INTO `products` (`id`, `name`, `description`, `size`, `cost`) VALUES
 (105, 'Agua mineral', 'De Córdoba', '1L', 53),
 (106, 'Vodka', 'Rusia', '1L', 290),
 (108, 'Vodka', 'Bangladesh', '2 1/4 L', 70),
-(109, 'Agua mineral', 'De Córdoba', '1L', 530);
+(109, 'Agua mineral', 'De Córdoba', '1L', 530),
+(110, 'AAA', 'aaaa aaaa bbb', '1L', 100);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `roles`
+--
+
+CREATE TABLE `roles` (
+  `id` int(11) NOT NULL,
+  `name` varchar(30) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Dumping data for table `roles`
+--
+
+INSERT INTO `roles` (`id`, `name`) VALUES
+(100, 'admin'),
+(1, 'default'),
+(2, 'regular');
 
 -- --------------------------------------------------------
 
@@ -69,7 +90,8 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `refresh_token`, `login_date`, `user_id`) VALUES
-(81, 'u382SQb69awEA+1uGFWGg+qsri1yRKoEmNFz0kPZHADRnkM12taLGfEZi76OIHyKZLTZWIr0G4bY0pD/T/eSWPUsRowPz9Ix0L1vTur/GRH0GSPDOsRC4g==', 1569674239, 4);
+(81, 'u382SQb69awEA+1uGFWGg+qsri1yRKoEmNFz0kPZHADRnkM12taLGfEZi76OIHyKZLTZWIr0G4bY0pD/T/eSWPUsRowPz9Ix0L1vTur/GRH0GSPDOsRC4g==', 1569674239, 4),
+(90, 'b2sdacViLB12goWVhkDhSr6w5W/A3T6umQPx5VNeo2ZUxrNRCG+B8BjnpMCvGpCFqT9woZpK7rgW+rL4HQCVdigNHFfIAkL5ENHH3PapJuipB2Sfb20asA==', 1569708559, 4);
 
 -- --------------------------------------------------------
 
@@ -153,6 +175,29 @@ INSERT INTO `users` (`id`, `email`, `firstname`, `lastname`, `password`, `enable
 (84, 'pablo@', 'PPP', 'AAA', 'b60d121b438a380c343d5ec3c2037564b82ffef3', 1, 2),
 (85, 'feli@teamo', 'Felipe', 'Bozzolo', '40bd001563085fc35165329ea1ff5c5ecbdbbeef', 1, 10000);
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `user_role`
+--
+
+CREATE TABLE `user_role` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `role_id` int(11) NOT NULL,
+  `creation_date` int(11) NOT NULL,
+  `modification_date` int(11) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Dumping data for table `user_role`
+--
+
+INSERT INTO `user_role` (`id`, `user_id`, `role_id`, `creation_date`, `modification_date`) VALUES
+(1, 5, 2, 1569757474, NULL),
+(2, 1, 100, 1569757474, NULL),
+(3, 4, 100, 1569757474, NULL);
+
 --
 -- Indexes for dumped tables
 --
@@ -162,6 +207,13 @@ INSERT INTO `users` (`id`, `email`, `firstname`, `lastname`, `password`, `enable
 --
 ALTER TABLE `products`
   ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `roles`
+--
+ALTER TABLE `roles`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `name` (`name`);
 
 --
 -- Indexes for table `sessions`
@@ -178,6 +230,15 @@ ALTER TABLE `users`
   ADD UNIQUE KEY `email` (`email`);
 
 --
+-- Indexes for table `user_role`
+--
+ALTER TABLE `user_role`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `user_id_2` (`user_id`,`role_id`),
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `role_id` (`role_id`);
+
+--
 -- AUTO_INCREMENT for dumped tables
 --
 
@@ -185,19 +246,31 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `products`
 --
 ALTER TABLE `products`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=110;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=111;
+
+--
+-- AUTO_INCREMENT for table `roles`
+--
+ALTER TABLE `roles`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=101;
 
 --
 -- AUTO_INCREMENT for table `sessions`
 --
 ALTER TABLE `sessions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=89;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=91;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=86;
+
+--
+-- AUTO_INCREMENT for table `user_role`
+--
+ALTER TABLE `user_role`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- Constraints for dumped tables
@@ -208,6 +281,13 @@ ALTER TABLE `users`
 --
 ALTER TABLE `sessions`
   ADD CONSTRAINT `sessions_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
+
+--
+-- Constraints for table `user_role`
+--
+ALTER TABLE `user_role`
+  ADD CONSTRAINT `user_role_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
+  ADD CONSTRAINT `user_role_ibfk_2` FOREIGN KEY (`role_id`) REFERENCES `roles` (`id`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

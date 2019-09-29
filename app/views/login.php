@@ -8,6 +8,19 @@
 		<form action="#" onsubmit="return false;">
 
 			<div class="form-group" >
+
+				<div class="input-group" style="margin-bottom:1em;">
+					<span class="input-group-addon">
+					<i class="glyphicon glyphicon-user"></i>
+					</span>
+					<select class="form-control" id="role">
+						<!-- hardcoded      -->
+						<option value="1" selected>Default</option>
+						<option value="2">Regular</option>
+						<option value="100">Admin</option>
+					</select>
+				</div>
+
 				<div class="input-group" style="margin-bottom:1em;">
 					<span class="input-group-addon">
 					<i class="glyphicon glyphicon-envelope"></i>

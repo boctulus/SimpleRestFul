@@ -65,5 +65,21 @@ class UsersModel extends Model
 		return false;
 	}
 	
+	function fetchWithRole(){
+		$q  = "SELECT u.*, r.name as role_name FROM " . static::$table_name. ' as u INNER JOIN user_role as ur ON ur.user_id=u.id INNER JOIN roles AS r ON ur.role_id=r.id' . ' WHERE u.'.static::$id_name . '=?';
+		$st = $this->conn->prepare($q);
+		$st->execute([$this->id]);
+	
+		$row = $st->fetch(\PDO::FETCH_OBJ);
+		
+		if ($row){
+			foreach ($row as $k => $field){
+				$this->{$k} = $row->$k;
+			}
+			return true;
+		}
+		
+		return false;
+	}
 	
 }

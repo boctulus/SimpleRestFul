@@ -68,7 +68,8 @@
 		var obj ={};
 		
 		obj.email = $('#email').val();	
-		obj.password = $('#password').val();	
+		obj.password = $('#password').val();
+		obj.role = $('#role').val();	
 		
 		// get form data
 		//obj = this.serializeObject();

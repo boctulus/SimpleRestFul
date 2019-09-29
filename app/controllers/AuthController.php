@@ -18,6 +18,7 @@ class AuthController extends Controller implements IAuth
 {
     protected $must_have = [];
     protected $must_not  = [];
+    protected $user_role = 'default';
 
     function __construct()
     { 
@@ -36,8 +37,12 @@ class AuthController extends Controller implements IAuth
         $this->must_have[] = [ $conditions , $http_code, $msg ];
     }
 
-    function addmust_not (array $conditions, $http_code, $msg) {
+    function addmust_not(array $conditions, $http_code, $msg) {
         $this->must_not[]  = [ $conditions , $http_code, $msg ];
+    }
+    
+    function get_role(){ 
+        return $this->user_role;
     }
 
     /*
@@ -120,7 +125,6 @@ class AuthController extends Controller implements IAuth
                 
                 $email = $data->email ?? null;
                 $password = $data->password ?? null;
-                $sid = $data->sid ?? null; 
             break;
 
             default:
@@ -345,21 +349,24 @@ class AuthController extends Controller implements IAuth
                 if ($payload->exp < time())
                     Factory::response()->sendError('Token expired',401);
                     
+
+                $conn = $this->getConnection();
+
+                $s = new SessionsModel($conn);
+                $rows = $s->filter(null, ['id' => $this->session_decrypt($payload->sid)]);
+
+                if(empty($rows))
+                    Factory::response()->sendError('Session not found', 400);
+
+                $u = new UsersModel($conn);
+                $u->id = $rows[0]['user_id'];
+                $u->fetchWithRole();
+
+                $this->user_role = $u->role_name;
+
+
                 if (count($this->must_have) > 0 || count($this->must_not) > 0) {
-                    $conn = $this->getConnection();
-
-                    // Hacer con INNER JOIN
-                    $s = new SessionsModel($conn);            
-
-                    $rows = $s->filter(null, ['id' => $this->session_decrypt($payload->sid)]);
-
-                    if(empty($rows))
-                        Factory::response()->sendError('Session not found', 400);
-
-                    $u = new UsersModel($conn);
-                    $u->id = $rows[0]['user_id'];
-                    $u->fetch();
-
+          
                     foreach ($this->must_have as $must){
                         $conditions = $must[0];
                         $code = $must[1];

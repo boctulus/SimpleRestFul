@@ -15,17 +15,20 @@ class Products extends ApiController
         $headers = [
             'access-control-allow-Origin' => '*'
         ];
-
-        $allowed = [ 
-                    'admin'   => ['get', 'post', 'put', 'patch', 'delete', 'head'],
-                    'regular' => ['get', 'post', 'put', 'patch', 'head'],
-                    'default' => ['get']
-        ];
-
+   
         // Si el usuario no está habilitado, expulsarlo
         $auth = new \simplerest\controllers\AuthController();
         $auth->addmust_have([ 'enabled' => 1 ], 403, 'Usuario no habilitado');
         $auth->addmust_not([ 'quota' => 0 ], 403, 'Quota exceded');
+ 
+        // ALC
+        /*
+        $auth->setallowed([ 
+            'admin'   => ['get', 'post', 'put', 'patch', 'delete', 'head'],
+            'regular' => ['get', 'post', 'put', 'patch', 'head'],
+            'default' => ['get', 'head']
+        ]);
+        */
 
         parent::__construct($headers, $auth);
     }

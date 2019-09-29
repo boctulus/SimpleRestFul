@@ -9,6 +9,7 @@ use simplerest\models\ProductsModel;
 use simplerest\libs\Factory;
 use simplerest\libs\Debug;
 use simplerest\core\Controller;
+use simplerest\models\UserRoleModel;
 
 class DumbController extends Controller
 {
@@ -100,5 +101,28 @@ class DumbController extends Controller
         
         Debug::debug($id);
     }
+
+    function create_userrole($user_id, $role_id = 1){
+        $conn = $this->getConnection();
+
+        $ur = new UserRoleModel($conn);
+        $id = $ur->create([ 'user_id' => $user_id, 'role_id' => $role_id, 'creation_date'=> time() ]);
+        echo $id;
+    }
+
+    // testing
+    function get_role($id){
+        $conn    = Database::getConnection($this->config['database']);
+
+        $u = new UsersModel($conn);
+        $u->unhide(['password']);
+        $u->hide(['firstname','lastname']);
+        $u->id = $id;
+        $u->fetchWithRole();
+
+        \simplerest\libs\Debug::debug($u);
+    }
+ 
+
 
 }
