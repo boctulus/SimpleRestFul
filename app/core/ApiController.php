@@ -11,7 +11,7 @@ abstract class ApiController extends Controller
 {
     // ALC        
     protected $allowed = [ 
-        'guest'   => NULL,                                               
+        'guest'   => [ ],                                               
         'basic'   => ['get'],                                       
         'regular' => ['get', 'post', 'put', 'patch'],           
         'admin'   => ['get', 'post', 'put', 'patch', 'delete'],

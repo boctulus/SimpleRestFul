@@ -97,3 +97,4 @@ Content-type: application/json
 https://www.vinaysahni.com/best-practices-for-a-pragmatic-restful-api
 https://phauer.com/2015/restful-api-design-best-practices/
 https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md
+https://www.paradigmadigital.com/dev/oauth-2-0-equilibrio-y-usabilidad-en-la-securizacion-de-apis/

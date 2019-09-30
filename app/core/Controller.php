@@ -13,10 +13,6 @@ abstract class Controller
         $this->config = include CONFIG_PATH . 'config.php';
     }
 
-    function getCallable(){
-        return $this->callable;
-    }
-
     function view(string $view_path, array $vars_to_be_passed  = null, $layout = 'app_layout.php'){
         $view = new View($view_path, $vars_to_be_passed, $layout); 
     }
@@ -25,4 +21,7 @@ abstract class Controller
         return Database::getConnection($this->config['database']);
     }
 
+    function getCallable(){
+        return $this->callable;
+    }
 }

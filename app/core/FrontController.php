@@ -53,13 +53,13 @@ class FrontController
                    
         $controller_obj = new $class_name();
 
-        // Solucionar problema del rol vacio ....
-
-        if (!empty($controller_obj->getCallable()) && !in_array($method, $controller_obj->getCallable())){
-            //var_dump($controller_obj->getCallable());
-            Response::getInstance()->send("Not authorized", 403);
+        // Only for API Rest
+        if ($_params[0]=='api'){
+            if (!in_array($method, $controller_obj->getCallable())){
+                Response::getInstance()->send("Not authorized for $controller:$method", 403);
+            }
         }
-
+            
         $data = call_user_func_array([$controller_obj, $method], $params);
         Response::getInstance()->send($data);
         exit;
