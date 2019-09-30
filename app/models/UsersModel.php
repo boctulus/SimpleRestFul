@@ -65,20 +65,24 @@ class UsersModel extends Model
 		return false;
 	}
 	
-	function fetchWithRole(){
-		$q  = "SELECT u.*, r.name as role_name FROM " . static::$table_name. ' as u INNER JOIN user_role as ur ON ur.user_id=u.id INNER JOIN roles AS r ON ur.role_id=r.id' . ' WHERE u.'.static::$id_name . '=?';
+	/*
+		@return mixed false | array of all available roles for the user
+	*/
+	function fetchRoles(){
+		$q  = "SELECT ur.role_id as role FROM " . static::$table_name. ' as u INNER JOIN user_role as ur ON ur.user_id=u.id INNER JOIN roles AS r ON ur.role_id=r.id' . ' WHERE u.'.static::$id_name . '=?';
 		$st = $this->conn->prepare($q);
 		$st->execute([$this->id]);
 	
-		$row = $st->fetch(\PDO::FETCH_OBJ);
-		
-		if ($row){
-			foreach ($row as $k => $field){
-				$this->{$k} = $row->$k;
+		$rows = $st->fetchAll(\PDO::FETCH_ASSOC);
+
+		if (!empty($rows)){
+			$roles = [];
+			foreach ($rows as $row){
+				$roles[] = $row['role'];	
 			}
-			return true;
+			return $roles;
 		}
-		
+	
 		return false;
 	}
 	

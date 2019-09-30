@@ -49,9 +49,18 @@ class FrontController
             throw new \Exception ("Controller class '''$class_name''' not loaded ***");  
 
         if (!method_exists($class_name, $method))
-            throw new \Exception ("Method '$method' does not exist in $class_name ***");   
-            
-        $data = call_user_func_array([new $class_name(), $method], $params);
+            throw new \Exception ("Method '$method' does not exist in $class_name ***"); 
+                   
+        $controller_obj = new $class_name();
+
+        // Solucionar problema del rol vacio ....
+
+        if (!empty($controller_obj->getCallable()) && !in_array($method, $controller_obj->getCallable())){
+            //var_dump($controller_obj->getCallable());
+            Response::getInstance()->send("Not authorized", 403);
+        }
+
+        $data = call_user_func_array([$controller_obj, $method], $params);
         Response::getInstance()->send($data);
         exit;
     }

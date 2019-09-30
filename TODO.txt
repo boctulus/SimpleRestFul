@@ -96,3 +96,4 @@ Content-type: application/json
 - Leer atentamente
 https://www.vinaysahni.com/best-practices-for-a-pragmatic-restful-api
 https://phauer.com/2015/restful-api-design-best-practices/
+https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md

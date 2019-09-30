@@ -13,7 +13,7 @@ class SessionsModel extends Model
 {
 	static protected $table_name = "sessions";
 	static protected $id_name = 'id';
-	static protected $fillable = [ 'refresh_token', 'login_date', 'user_id' ];
+	static protected $fillable = [ 'refresh_token', 'login_date', 'user_id', 'role' ];
  
 	/*
 		Types are INT, STR and BOOL among others
@@ -23,13 +23,13 @@ class SessionsModel extends Model
 		'id' => 'INT',
 		'refresh_token' => 'STR',
 		'login_date' => 'INT',
-		'user_id' => 'INT'
+		'user_id' => 'INT',
+		'role' => 'INT'
 	];
 
     public function __construct($db = NULL){
 		parent::__construct($db);
 	}
-
 }
 
 

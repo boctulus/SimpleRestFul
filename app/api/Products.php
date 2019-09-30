@@ -8,7 +8,7 @@ use simplerest\libs\Database;
 use simplerest\models\UsersModel;
 
 class Products extends ApiController
-{    
+{ 
     function __construct()
     {
         // CORS
@@ -19,17 +19,8 @@ class Products extends ApiController
         // Si el usuario no está habilitado, expulsarlo
         $auth = new \simplerest\controllers\AuthController();
         $auth->addmust_have([ 'enabled' => 1 ], 403, 'Usuario no habilitado');
-        $auth->addmust_not([ 'quota' => 0 ], 403, 'Quota exceded');
- 
-        // ALC
-        /*
-        $auth->setallowed([ 
-            'admin'   => ['get', 'post', 'put', 'patch', 'delete', 'head'],
-            'regular' => ['get', 'post', 'put', 'patch', 'head'],
-            'default' => ['get', 'head']
-        ]);
-        */
-
+        $auth->addmust_not([ 'quota' => 0 ], 403, 'Quota exceded');      
+        
         parent::__construct($headers, $auth);
     }
 

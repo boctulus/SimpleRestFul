@@ -15,8 +15,9 @@
 					</span>
 					<select class="form-control" id="role">
 						<!-- hardcoded      -->
-						<option value="1" selected>Default</option>
-						<option value="2">Regular</option>
+						<option value="1" selected>Guest</option>
+						<option value="2">Basic</option>
+						<option value="3">Regular</option>
 						<option value="100">Admin</option>
 					</select>
 				</div>

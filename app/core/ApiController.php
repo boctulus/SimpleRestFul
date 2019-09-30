@@ -7,8 +7,19 @@ use simplerest\libs\Factory;
 use simplerest\libs\Arrays;
 use simplerest\libs\Database;
 
-abstract class ApiController
+abstract class ApiController extends Controller
 {
+    // ALC        
+    protected $allowed = [ 
+        'guest'   => NULL,                                               
+        'basic'   => ['get'],                                       
+        'regular' => ['get', 'post', 'put', 'patch'],           
+        'admin'   => ['get', 'post', 'put', 'patch', 'delete'],
+    ];
+
+    protected $admin_role = 'admin';
+
+    protected $callable = [];
     protected $config;
     protected $_model;
     protected $auth_payload = null;
@@ -33,8 +44,7 @@ abstract class ApiController
                 $auth_object = new \simplerest\controllers\AuthController();
 
             $this->auth_payload = $auth_object->check_auth();
-
-            //var_dump($auth_object->get_role());
+            $this->callable = $this->allowed[$auth_object->get_role()];
         }    
 
         /* 
@@ -72,6 +82,7 @@ abstract class ApiController
     }
 
     function options(){
+
     }
 
     function get(int $id = null){

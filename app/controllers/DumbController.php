@@ -110,19 +110,5 @@ class DumbController extends Controller
         echo $id;
     }
 
-    // testing
-    function get_role($id){
-        $conn    = Database::getConnection($this->config['database']);
-
-        $u = new UsersModel($conn);
-        $u->unhide(['password']);
-        $u->hide(['firstname','lastname']);
-        $u->id = $id;
-        $u->fetchWithRole();
-
-        \simplerest\libs\Debug::debug($u);
-    }
- 
-
 
 }

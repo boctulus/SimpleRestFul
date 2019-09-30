@@ -17,7 +17,7 @@ return [
 		
 		// JWT
 		'jwt_secret_key' =>'BHH#**@())0))@Jhr&@&#()_hrrK@911kk19))K)_!.S>!_)#I@#(',
-		'token_expiration_time' => 60,
+		'token_expiration_time' => 600,
 		'encryption' => 'HS256',
 		'enabled_auth' => true,
 

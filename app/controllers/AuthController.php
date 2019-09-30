@@ -8,6 +8,7 @@ use simplerest\core\interfaces\IAuth;
 use simplerest\libs\Factory;
 use simplerest\models\UsersModel;
 use simplerest\models\SessionsModel;
+use simplerest\models\RolesModel;
 use simplerest\libs\Debug;
 use simplerest\libs\crypto\SaferCrypto;
 
@@ -18,7 +19,7 @@ class AuthController extends Controller implements IAuth
 {
     protected $must_have = [];
     protected $must_not  = [];
-    protected $user_role = 'default';
+    protected $user_role = null;
 
     function __construct()
     { 
@@ -125,6 +126,7 @@ class AuthController extends Controller implements IAuth
                 
                 $email = $data->email ?? null;
                 $password = $data->password ?? null;
+                $role = $data->role ?? null;
             break;
 
             default:
@@ -148,11 +150,20 @@ class AuthController extends Controller implements IAuth
 
             list($refresh, $encrypted) = $this->pass_gen();
 
+            $available_roles = $u->fetchRoles();  
+            
+            if (!in_array($role, $available_roles))
+                Factory::response()->sendCode(403);
+
             $session = new SessionsModel($conn);
-            $sid = $session->create([ 'refresh_token' => $encrypted, 'login_date' => time(), 'user_id' => $u->id ]);
-                
+            $sid = $session->create([   'refresh_token' => $encrypted, 
+                                        'login_date' => time(), 
+                                        'user_id' => $u->id,
+                                        'role' => $role 
+                                    ]);
+                                            
             if (!$sid)
-                Factory::response()->sendError("Authentication fails", 401); 
+                Factory::response()->sendError("Authentication fails", 500); 
 
             $sid_enc = $this->session_encrypt($sid);                  
             $jwt = $this->gen_jwt($sid_enc);
@@ -354,19 +365,23 @@ class AuthController extends Controller implements IAuth
 
                 $s = new SessionsModel($conn);
                 $rows = $s->filter(null, ['id' => $this->session_decrypt($payload->sid)]);
+                $uid = $rows[0]['user_id'];
 
                 if(empty($rows))
                     Factory::response()->sendError('Session not found', 400);
 
-                $u = new UsersModel($conn);
-                $u->id = $rows[0]['user_id'];
-                $u->fetchWithRole();
+                $r = new RolesModel($conn);
+                $r->id = $rows[0]['role'];
+                $r->fetch();
 
-                $this->user_role = $u->role_name;
+                $this->user_role = $r->name;   
 
+                if (count($this->must_have) > 0 || count($this->must_not) > 0) 
+                {   
+                    $u = new UsersModel($conn);
+                    $u->id = $uid;
+                    $u->fetch();
 
-                if (count($this->must_have) > 0 || count($this->must_not) > 0) {
-          
                     foreach ($this->must_have as $must){
                         $conditions = $must[0];
                         $code = $must[1];
