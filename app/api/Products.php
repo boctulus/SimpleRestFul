@@ -3,9 +3,6 @@
 namespace simplerest\api;
 
 use simplerest\core\ApiController;
-use simplerest\libs\Factory;
-use simplerest\libs\Database;
-use simplerest\models\UsersModel;
 
 class Products extends ApiController
 { 

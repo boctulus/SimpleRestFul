@@ -338,7 +338,7 @@ class AuthController extends Controller implements IAuth
         $auth = $headers['Authorization'] ?? $headers['authorization'] ?? null;
         
         if (empty($auth)){
-            Factory::response()->sendError('Authorization not found',400);
+            Factory::response()->sendError('Authorization not found !',400);
         }
             
         list($jwt) = sscanf($auth, 'Bearer %s');

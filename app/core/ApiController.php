@@ -38,8 +38,7 @@ abstract class ApiController extends Controller
         if ($this->config['debug_mode'] == false)
             set_exception_handler([$this, 'exception_handler']);
 
-        if ($this->config['enabled_auth']){
-
+        if ($this->config['enabled_auth']){        
             if ($auth_object == null)
                 $auth_object = new \simplerest\controllers\AuthController();
 
