@@ -50,7 +50,7 @@ class AuthController extends Controller implements IAuth
         Refresh token generator
     */
     protected function pass_gen(){
-        $key = hex2bin($this->config['refresh_secret_key']);    
+        $key = hex2bin($this->config['refresh_token']['secret_key']);    
         
         $refresh='';
         for ($i=0;$i<10;$i++){
@@ -68,27 +68,27 @@ class AuthController extends Controller implements IAuth
     }
 
     protected function pass_dec($encrypted){
-        $key = hex2bin($this->config['refresh_secret_key']); 
+        $key = hex2bin($this->config['refresh_token']['secret_key']); 
         return SaferCrypto::decrypt($encrypted, $key, true);
     }
 
     protected function session_encrypt($sid){
-        $key = hex2bin($this->config['session_secret_key']); 
+        $key = hex2bin($this->config['session']['secret_key']); 
         return SaferCrypto::encrypt($sid, $key, true);
     }
 
     protected function session_decrypt($encrypted){
-        $key = hex2bin($this->config['session_secret_key']); 
+        $key = hex2bin($this->config['session']['secret_key']); 
         return SaferCrypto::decrypt($encrypted, $key, true);
     }
 
     protected function gen_jwt($encoded_sid){
         $time = time();
         $payload = [
-            'alg' => $this->config['encryption'],
+            'alg' => $this->config['access_token']['encryption'],
             'typ' => 'JWT',
             'iat' => $time, 
-            'exp' => $time + $this->config['token_expiration_time'],
+            'exp' => $time + $this->config['access_token']['expiration_time'],
             'ip' => [
                 'REMOTE_ADDR' => $_SERVER['REMOTE_ADDR'] ?? '',
                 'HTTP_CLIENT_IP' => $_SERVER['HTTP_CLIENT_IP'] ?? '',
@@ -100,7 +100,7 @@ class AuthController extends Controller implements IAuth
             'sid' => $encoded_sid
         ];
         
-        return \Firebase\JWT\JWT::encode($payload, $this->config['jwt_secret_key'],  $this->config['encryption']);
+        return \Firebase\JWT\JWT::encode($payload, $this->config['access_token']['secret_key'],  $this->config['access_token']['encryption']);
     }
 
     /*
@@ -173,7 +173,7 @@ class AuthController extends Controller implements IAuth
                                         'access_token'=> $jwt,
                                         'token_type' => 'bearer', 
                                         'refresh_token' => $refresh,
-                                        'expires_in' => $this->config['token_expiration_time'] 
+                                        'expires_in' => $this->config['access_token']['expiration_time'] 
                                         // 'scope' => 'read write'
                                       ]);
             
@@ -234,7 +234,7 @@ class AuthController extends Controller implements IAuth
             Factory::response()->send([ 
                                         'access_token'=> $jwt,
                                         'token_type' => 'bearer', 
-                                        'expires_in' => $this->config['token_expiration_time'] 
+                                        'expires_in' => $this->config['access_token']['expiration_time'] 
                                         // 'scope' => 'read write'
             ]);
             
@@ -316,7 +316,7 @@ class AuthController extends Controller implements IAuth
                                         'access_token'=> $jwt,
                                         'token_type' => 'bearer', 
                                         'refresh_token' => $refresh,
-                                        'expires_in' => $this->config['token_expiration_time'] 
+                                        'expires_in' => $this->config['access_token']['expiration_time'] 
                                         // 'scope' => 'read write'
                                      ]);
 
@@ -348,7 +348,7 @@ class AuthController extends Controller implements IAuth
             try{
                 // Checking for token invalidation or outdated token
                 
-                $payload = \Firebase\JWT\JWT::decode($jwt, $this->config['jwt_secret_key'], [ $this->config['encryption'] ]);
+                $payload = \Firebase\JWT\JWT::decode($jwt, $this->config['access_token']['secret_key'], [ $this->config['access_token']['encryption'] ]);
                 
                 if (empty($payload))
                     Factory::response()->sendError('Unauthorized!',401);                     
