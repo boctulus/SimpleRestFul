@@ -1,6 +1,6 @@
 
 	<script>
-		notLoggedGoHome();
+		checkpoint();
 	</script>
 
 	<h1 class="red-text text-center" style="font-size:2em">Products</h1>
@@ -118,7 +118,7 @@
 			if (localStorage.getItem('exp')==null)
 				return;
 			else
-				notLoggedGoHome();
+				checkpoint();
 			
 			// diff is less than ___
 			if ( ((localStorage.getItem('exp')*1000) - (new Date()).getTime()) < 1000 * localStorage.getItem('expires_in') * 0.97){
@@ -130,7 +130,7 @@
 	
 	
 	function clearForm(){
-		notLoggedGoHome();
+		checkpoint();
 		
 		$('#name').val("");	
 		$('#description').val("");	
@@ -140,7 +140,7 @@
 	
 	/* Edit */
 	function do_edit(){
-		notLoggedGoHome();
+		checkpoint();
 		
 		let obj ={};
 		let id   = $('#eid').val();
@@ -215,7 +215,7 @@
 	/* just previous reading to save updated data */
 	function editar(id)
 	{
-		notLoggedGoHome();
+		checkpoint();
 		
 		$.ajax({
 			type: "GET",	// lectura previa //
@@ -244,7 +244,7 @@
 	/* Create */
 	function crear()
 	{
-		notLoggedGoHome();
+		checkpoint();
 		
 		let obj ={};
 		obj.name = $('#name').val();	
@@ -319,7 +319,7 @@
 	
 	/* Delete */
 	function borrar(id){
-		notLoggedGoHome();
+		checkpoint();
 		
 		bootbox.confirm("Are you sure you want to delete?", function(result) {
 			if (result)	
@@ -348,7 +348,7 @@
 	
 	/* Read */
 	function listar(){
-		notLoggedGoHome();
+		checkpoint();
 		
 		$.ajax({
 			type: "GET",
@@ -382,7 +382,7 @@
 			},
 			error: function(data){
 				if (data.status == 401){
-					notLoggedGoHome() /////////
+					checkpoint() /////////
 				}
 
 				if (typeof data.responseJSON != 'undefined' && typeof data.responseJSON.error != 'undefined')

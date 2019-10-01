@@ -13,8 +13,8 @@ abstract class ApiController extends Controller
     protected $scope = [
         'guest' => [ ],
         'basic' => ['read'],
-        'regular' => ['read', 'create', 'update'],
-        'admin' => ['read', 'create', 'update', 'delete']
+        'regular' => ['read', 'write'],
+        'admin' => ['read', 'write']
     ];
 
     protected $callable = [];
@@ -40,7 +40,7 @@ abstract class ApiController extends Controller
                 $auth_object = new \simplerest\controllers\AuthController();
 
             $operations = [ 
-                'read' => ['get','head'],
+                'read' => ['get','head','options'],
                 'create' => ['post'],
                 'update' => ['put', 'patch'],
                 'delete' => ['delete'],
@@ -63,10 +63,6 @@ abstract class ApiController extends Controller
             $this->setheaders($headers);            
         }    
 
-        /* 
-            La expresión cambiaría a '/([A-Z][a-z0-9_]+)Controller/'
-            en caso de que los nombres de controladores en /api terminaran en Controller
-        */  
         if (preg_match('/([A-Z][a-z0-9_]+)/', get_called_class(), $matchs)){
             $this->_model = $matchs[1] . 'Model';
         }    
@@ -98,7 +94,6 @@ abstract class ApiController extends Controller
     }
 
     function options(){
-
     }
 
     function get(int $id = null){

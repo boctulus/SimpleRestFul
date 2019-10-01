@@ -1,6 +1,6 @@
 
 <script>
-	notLoggedGoHome();
+	checkpoint();
 </script>
 
 <h1 class="red-text text-center" style="font-size:2em">Users</h1>
@@ -24,7 +24,7 @@
 			if (localStorage.getItem('exp')==null)
 				return;
 			else
-				notLoggedGoHome();
+				checkpoint();
 			
 			// diff is less than 2 minute
 			if ( ((localStorage.getItem('exp')*1000) - (new Date()).getTime()) < 60000 * minutes_for_token_renew){
@@ -37,7 +37,7 @@
 	
 	/* Read */
 	function listar(){
-		notLoggedGoHome();
+		checkpoint();
 		
 		$.ajax({
 			type: "GET",

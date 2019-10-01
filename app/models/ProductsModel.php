@@ -1,6 +1,4 @@
 <?php
-declare(strict_types=1);
-
 namespace simplerest\models;
 
 use simplerest\core\Model;
@@ -13,7 +11,7 @@ class ProductsModel extends Model
 {
 	static protected $table_name = "products";
 	static protected $id_name = 'id';
-	static protected $fillable = ['name','description','size','cost'];
+	static protected $fillable = ['name','description','size','cost','created_by'];
  
 	/*
 		Types are INT, STR and BOOL among others
@@ -24,7 +22,8 @@ class ProductsModel extends Model
 		'name' => 'STR',
 		'description' => 'STR',
 		'size' => 'STR',
-		'cost' => 'INT'
+		'cost' => 'INT',
+		'created_by' => 'INT'  // 
 	];
 
     public function __construct($db = NULL){

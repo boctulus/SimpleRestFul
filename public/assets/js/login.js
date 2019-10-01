@@ -3,7 +3,7 @@
 
 	//console.log(base_url + 'login');
 
-	function notLoggedGoHome()
+	function checkpoint()
 	{
 		if (typeof login_page === 'undefined' || typeof localStorage === 'undefined'){
 			console.log('Error');
@@ -86,6 +86,7 @@
 					localStorage.setItem('expires_in',data.expires_in);
 					localStorage.setItem('exp', parseInt((new Date).getTime() / 1000) + data.expires_in);
 					localStorage.setItem('sid',data.sid);
+					localStorage.setItem('role', obj.role);
 					console.log('Tokens obtenidos');
 					window.location = base_url;
 				}else{	

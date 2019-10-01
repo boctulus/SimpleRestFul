@@ -1,5 +1,8 @@
 # TODO
 
+- Al generar los modelos..... modificar la tabla correspondiente agregando el campo created_by 
+
+ALTER TABLE `products` ADD `created_by` INT NOT NULL AFTER `cost`, ADD INDEX (`created_by`);
 
 - Ofrecer la forma de filtrado compatible con JSON:API
 
@@ -31,6 +34,22 @@ Más
 https://jsonapi.org/format/#error-objects
 https://phauer.com/2015/restful-api-design-best-practices/
 
+
+- Soportar formatos JSON, XML,  YAML, CSV ...
+
+HTTP/1.1 200 OK
+Content-Type: application/xml
+Content-Length: ...
+
+<?xml version="1.0"?>
+<account>
+    <account_number>12345</account_number>
+    <balance currency="usd">100.00</balance>
+    <link rel="deposit" href="/accounts/12345/deposit" />
+    <link rel="withdraw" href="/accounts/12345/withdraw" /> 
+    <link rel="transfer" href="/accounts/12345/transfer" />
+    <link rel="close" href="/accounts/12345/close" />
+</account>
 
 - SoftDelete
 - Reemplazar sha1() por password_hash / password_verify 
@@ -91,10 +110,14 @@ Content-type: application/json
   "error_description": "The access token expired"
 }
 
+- Custom Actions (Nested Resources)
 
 
 - Leer atentamente
 https://www.vinaysahni.com/best-practices-for-a-pragmatic-restful-api
 https://phauer.com/2015/restful-api-design-best-practices/
-https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md
 https://www.paradigmadigital.com/dev/oauth-2-0-equilibrio-y-usabilidad-en-la-securizacion-de-apis/
+https://medium.com/crowdbotics/how-to-write-an-api-in-3-lines-of-code-with-django-rest-framework-59b0971edfa4
+https://idratherbewriting.com/learnapidoc/pubapis_openapi_tutorial_overview.html
+https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md
+https://hackernoon.com/designing-rest-api-with-open-api-specification-oas-v2-0-v3-0-using-swagger-11dd4ef8cea6
