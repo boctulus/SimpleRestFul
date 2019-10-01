@@ -21,6 +21,8 @@ abstract class ApiController extends Controller
     protected $config;
     protected $_model;
     protected $auth_payload = null;
+    protected $uid;
+    protected $is_admin;
     protected $default_headers = [
         'access-control-allow-Methods' => 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
         'access-control-allow-credentials' => 'true',
@@ -40,7 +42,7 @@ abstract class ApiController extends Controller
                 $auth_object = new \simplerest\controllers\AuthController();
 
             $operations = [ 
-                'read' => ['get','head','options'],
+                'read' => ['get'],
                 'create' => ['post'],
                 'update' => ['put', 'patch'],
                 'delete' => ['delete'],
@@ -48,14 +50,18 @@ abstract class ApiController extends Controller
             ];           
 
             $this->auth_payload = $auth_object->check_auth();
+            $this->uid = $this->auth_payload->uid;
 
             // roles and scope
+            $this->is_admin = $this->auth_payload->is_admin;
             $cruds = $this->scope[$auth_object->get_role()];
 
             foreach ($operations as $op => $verbs) {
                 if (in_array($op, $cruds))
-                    $this->callable = array_merge($this->callable,$verbs);
+                    $this->callable = array_merge($this->callable, $verbs);
             }
+
+            $this->callable = array_merge($this->callable,['head','options']);
     
             // headers
             $verbos = array_merge($this->callable, ['options']);            
@@ -150,13 +156,15 @@ abstract class ApiController extends Controller
         
         $model    = '\\simplerest\\models\\'.$this->_model;
         $instance = new $model();
-        $missing = $instance::diffWithSchema($data, ['id']);
+        $missing = $instance::diffWithSchema($data, ['id', 'created_by']);
 
         if (!empty($missing))
-            Factory::response()->sendError('Lack some properties in your request: '.implode(',',$missing));
+            Factory::response()->sendError('Lack some properties in your request: '.implode(',',$missing), 400);
     
         $conn = Database::getConnection($this->config['database']);
         $instance->setConn($conn);
+
+        $data['created_by'] = $this->uid; //
 
         if ($instance->create($data)!==false){
             Factory::response()->send(['id' => $instance->id], 201);
@@ -178,17 +186,22 @@ abstract class ApiController extends Controller
         $model    = 'simplerest\\models\\'.$this->_model;
         $instance = new $model();
         $instance->id = $id;
-        $missing = $instance::diffWithSchema($data, ['id']);
+        $missing = $instance::diffWithSchema($data, ['id', 'created_by']);
 
         if (!empty($missing))
-            Factory::response()->sendError('Lack some properties in your request: '.implode(',',$missing));
+            Factory::response()->sendError('Lack some properties in your request: '.implode(',',$missing), 400);
         
         $conn = Database::getConnection($this->config['database']);
         $instance->setConn($conn);
         $instance->id = $id;
 
-        if (!$instance->exists()){
+        $rows = $instance->filter(null, ['id' => $id]);
+        if (count($rows) == 0){
             Factory::response()->code(404)->sendError("Register for id=$id does not exists");
+        }
+
+        if (!$this->is_admin && $rows[0]['created_by'] != $this->uid){
+            Factory::response()->sendCode(403);
         }
         
         try {
@@ -213,6 +226,16 @@ abstract class ApiController extends Controller
         $instance = new $model($conn);
         $instance->id = $id;
 
+        $rows = $instance->filter(null, ['id' => $id]);
+        
+        if (count($rows) == 0){
+            Factory::response()->code(404)->sendError("Register for id=$id does not exists");
+        }
+
+        if (!$this->is_admin && $rows[0]['created_by'] != $this->uid){
+            Factory::response()->sendCode(403);
+        }
+
         if($instance->delete()){
             Factory::response()->sendJson("OK");
         }	
@@ -220,7 +243,8 @@ abstract class ApiController extends Controller
             Factory::response()->sendError("Record not found",404);
     } // 
     
-    function patch($id = NULL){ 
+    function patch($id = NULL)
+    { 
         if ($id == null)
             Factory::response()->sendError("Lacks id in request",400);
 
@@ -233,6 +257,16 @@ abstract class ApiController extends Controller
         $model    = 'simplerest\\models\\'.$this->_model;
         $instance = new $model($conn);
         $instance->id = $id;
+
+        $rows = $instance->filter(null, ['id' => $id]);
+        
+        if (count($rows) == 0){
+            Factory::response()->code(404)->sendError("Register for id=$id does not exists");
+        }
+
+        if (!$this->is_admin && $rows[0]['created_by'] != $this->uid){
+            Factory::response()->sendCode(403);
+        }
 
         try {
             if($instance->update($data)!==false)

@@ -1,5 +1,9 @@
 # TODO
 
+- Capturar excepciones como:
+
+Uncaught InvalidArgumentException: id is no fillable in /home/www/simplerest/app/core/Model.php: 257
+
 - Al generar los modelos..... modificar la tabla correspondiente agregando el campo created_by 
 
 ALTER TABLE `products` ADD `created_by` INT NOT NULL AFTER `cost`, ADD INDEX (`created_by`);

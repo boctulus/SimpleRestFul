@@ -20,6 +20,7 @@ class AuthController extends Controller implements IAuth
     protected $must_have = [];
     protected $must_not  = [];
     protected $user_role = null;
+    protected $is_admin;
 
     function __construct()
     { 
@@ -45,6 +46,7 @@ class AuthController extends Controller implements IAuth
         return $this->user_role;
     }
 
+
     /*
         Refresh token generator
     */
@@ -53,10 +55,8 @@ class AuthController extends Controller implements IAuth
         
         $refresh='';
         for ($i=0;$i<10;$i++){
-            //$refresh .= chr(rand(32,47));
             $refresh .= chr(rand(58,64));
             $refresh .= chr(rand(65,90));
-            //$refresh .= chr(rand(91,96));
             $refresh .= chr(rand(97,122));	
             $refresh .= chr(rand(123,126));
         }	
@@ -81,7 +81,7 @@ class AuthController extends Controller implements IAuth
         return SaferCrypto::decrypt($encrypted, $key, true);
     }
 
-    protected function gen_jwt($encoded_sid){
+    protected function gen_jwt($encoded_sid, $uid){
         $time = time();
         $payload = [
             'alg' => $this->config['access_token']['encryption'],
@@ -96,7 +96,8 @@ class AuthController extends Controller implements IAuth
                 'HTTP_X_FORWARDED' => $_SERVER['HTTP_X_FORWARDED'] ?? '',
                 'HTTP_X_FORWARDED_FOR' => $_SERVER['HTTP_X_FORWARDED_FOR'] ?? ''
             ],
-            'sid' => $encoded_sid
+            'sid' => $encoded_sid,
+            'uid' => $uid
         ];
         
         return \Firebase\JWT\JWT::encode($payload, $this->config['access_token']['secret_key'],  $this->config['access_token']['encryption']);
@@ -165,7 +166,7 @@ class AuthController extends Controller implements IAuth
                 Factory::response()->sendError("Authentication fails", 500); 
 
             $sid_enc = $this->session_encrypt($sid);                  
-            $jwt = $this->gen_jwt($sid_enc);
+            $jwt = $this->gen_jwt($sid_enc, $u->id);
 
             Factory::response()->send([ 
                                         'sid' => $sid_enc,
@@ -227,7 +228,7 @@ class AuthController extends Controller implements IAuth
             if($this->pass_dec($rows[0]['refresh_token']) != $refresh) 
                 Factory::response()->sendError('Refresh token is invalid',400);
 
-            $jwt = $this->gen_jwt($sid_enc);
+            $jwt = $this->gen_jwt($sid_enc, $s->user_id);
             
             ///////////
             Factory::response()->send([ 
@@ -293,7 +294,7 @@ class AuthController extends Controller implements IAuth
 
             $missing = $u::diffWithSchema($data, ['id','enabled','quota']);
             if (!empty($missing))
-                Factory::response()->sendError('Lack some properties in your request: '.implode(',',$missing));
+                Factory::response()->sendError('Lack some properties in your request: '.implode(',',$missing), 400);
 
             $data['password'] = sha1($data['password']);
 
@@ -307,7 +308,7 @@ class AuthController extends Controller implements IAuth
             $sid = $session->create([ 'refresh_token' => $encrypted, 'login_date' => time(), 'user_id' => $uid ]);
             $sid_enc = $this->session_encrypt($sid);
 
-            $jwt = $this->gen_jwt($sid_enc);
+            $jwt = $this->gen_jwt($sid_enc, $uid);
 
             //////////////
             Factory::response()->send([ 
@@ -372,7 +373,9 @@ class AuthController extends Controller implements IAuth
                 $r->id = $rows[0]['role'];
                 $r->fetch();
 
-                $this->user_role = $r->name;   
+                $this->user_role = $r->name;
+                $payload->is_admin = $r->is_admin;  
+
 
                 if (count($this->must_have) > 0 || count($this->must_not) > 0) 
                 {   

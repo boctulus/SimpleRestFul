@@ -8,7 +8,7 @@ class RolesModel extends Model
  {
 	static protected $table_name = "roles";
 	static protected $id_name = 'id';
-	static protected $fillable = [ 'name'];
+	static protected $fillable = ['name'];
 	static protected $hidden = [ ];
 
 	/*
@@ -17,7 +17,8 @@ class RolesModel extends Model
 	*/
 	static protected $schema = [
 		'id' => 'INT',
-		'name' => 'STR'
+		'name' => 'STR',
+		'is_admin' => 'INT'
 	];
 
 

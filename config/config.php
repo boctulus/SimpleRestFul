@@ -19,7 +19,7 @@ return [
 
 	'access_token' => [
 		'secret_key' =>'BHH#**@())0))@Jhr&@&#()_hrrK@911kk19))K)_!.S>!_)#I@#(',
-		'expiration_time' => 60,
+		'expiration_time' => 6000,
 		'encryption' => 'HS256'			
 	],
 
