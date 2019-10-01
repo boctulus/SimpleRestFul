@@ -46,7 +46,7 @@ class FrontController
         }
        
         if (!class_exists($class_name))
-            throw new \Exception ("Controller class '''$class_name''' not loaded ***");  
+            throw new \Exception ("Controller class '$class_name' not loaded");  
 
         if (!method_exists($class_name, $method))
             throw new \Exception ("Method '$method' does not exist in $class_name ***"); 

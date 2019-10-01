@@ -9,15 +9,13 @@ use simplerest\libs\Database;
 
 abstract class ApiController extends Controller
 {
-    // ALC        
-    protected $allowed = [ 
-        'guest'   => [ ],                                               
-        'basic'   => ['get'],                                       
-        'regular' => ['get', 'post', 'put', 'patch'],           
-        'admin'   => ['get', 'post', 'put', 'patch', 'delete'],
+    // ALC   
+    protected $scope = [
+        'guest' => [ ],
+        'basic' => ['read'],
+        'regular' => ['read', 'create', 'update'],
+        'admin' => ['read', 'create', 'update', 'delete']
     ];
-
-    protected $admin_role = 'admin';
 
     protected $callable = [];
     protected $config;
@@ -31,8 +29,7 @@ abstract class ApiController extends Controller
     ];
 
     function __construct(array $headers = [], IAuth $auth_object = null) 
-    {
-        $this->setheaders($headers);
+    {        
         $this->config = include CONFIG_PATH . 'config.php';
 
         if ($this->config['debug_mode'] == false)
@@ -42,8 +39,28 @@ abstract class ApiController extends Controller
             if ($auth_object == null)
                 $auth_object = new \simplerest\controllers\AuthController();
 
+            $operations = [ 
+                'read' => ['get','head'],
+                'create' => ['post'],
+                'update' => ['put', 'patch'],
+                'delete' => ['delete'],
+                'write'  => ['post', 'put', 'patch', 'delete']
+            ];           
+
             $this->auth_payload = $auth_object->check_auth();
-            $this->callable = $this->allowed[$auth_object->get_role()];
+
+            // roles and scope
+            $cruds = $this->scope[$auth_object->get_role()];
+
+            foreach ($operations as $op => $verbs) {
+                if (in_array($op, $cruds))
+                    $this->callable = array_merge($this->callable,$verbs);
+            }
+    
+            // headers
+            $verbos = array_merge($this->callable, ['options']);            
+            $headers = array_merge($headers, ['access-control-allow-Methods' => implode(',',array_map( function ($e){ return strtoupper($e); },$verbos)) ]);
+            $this->setheaders($headers);            
         }    
 
         /* 

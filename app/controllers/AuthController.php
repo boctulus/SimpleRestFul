@@ -23,7 +23,6 @@ class AuthController extends Controller implements IAuth
 
     function __construct()
     { 
-        // No estoy enviando los headers ya en ApiController ?
         header('access-control-allow-credentials: true');
         header('access-control-allow-headers: AccountKey,x-requested-with, Content-Type, origin, authorization, accept, client-security-token, host, date, cookie, cookie2'); 
         header('access-control-allow-Methods: GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS'); 
@@ -365,8 +364,7 @@ class AuthController extends Controller implements IAuth
 
                 $s = new SessionsModel($conn);
                 $rows = $s->filter(null, ['id' => $this->session_decrypt($payload->sid)]);
-                $uid = $rows[0]['user_id'];
-
+    
                 if(empty($rows))
                     Factory::response()->sendError('Session not found', 400);
 
@@ -379,7 +377,7 @@ class AuthController extends Controller implements IAuth
                 if (count($this->must_have) > 0 || count($this->must_not) > 0) 
                 {   
                     $u = new UsersModel($conn);
-                    $u->id = $uid;
+                    $u->id = $rows[0]['user_id'];
                     $u->fetch();
 
                     foreach ($this->must_have as $must){
