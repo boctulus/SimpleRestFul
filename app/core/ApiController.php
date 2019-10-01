@@ -54,7 +54,7 @@ abstract class ApiController extends Controller
 
             // roles and scope
             $this->is_admin = $this->auth_payload->is_admin;
-            $cruds = $this->scope[$auth_object->get_role()];
+            $cruds = $this->scope[$this->auth_payload->user_role];
 
             foreach ($operations as $op => $verbs) {
                 if (in_array($op, $cruds))

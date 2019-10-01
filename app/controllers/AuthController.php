@@ -19,8 +19,6 @@ class AuthController extends Controller implements IAuth
 {
     protected $must_have = [];
     protected $must_not  = [];
-    protected $user_role = null;
-    protected $is_admin;
 
     function __construct()
     { 
@@ -40,10 +38,6 @@ class AuthController extends Controller implements IAuth
 
     function addmust_not(array $conditions, $http_code, $msg) {
         $this->must_not[]  = [ $conditions , $http_code, $msg ];
-    }
-    
-    function get_role(){ 
-        return $this->user_role;
     }
 
 
@@ -228,7 +222,7 @@ class AuthController extends Controller implements IAuth
             if($this->pass_dec($rows[0]['refresh_token']) != $refresh) 
                 Factory::response()->sendError('Refresh token is invalid',400);
 
-            $jwt = $this->gen_jwt($sid_enc, $s->user_id);
+            $jwt = $this->gen_jwt($sid_enc, $rows[0]['user_id']);
             
             ///////////
             Factory::response()->send([ 
@@ -373,8 +367,8 @@ class AuthController extends Controller implements IAuth
                 $r->id = $rows[0]['role'];
                 $r->fetch();
 
-                $this->user_role = $r->name;
-                $payload->is_admin = $r->is_admin;  
+                $payload->user_role = $r->name;
+                $payload->is_admin  = $r->is_admin;  
 
 
                 if (count($this->must_have) > 0 || count($this->must_not) > 0) 
