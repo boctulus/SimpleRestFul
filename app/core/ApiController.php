@@ -124,17 +124,26 @@ abstract class ApiController extends Controller
 
         if ($id != null)
         {
-            // one instance by id
-            $instance->id = $id; 
-            if ($instance->fetch($fields) === false)
+            $_get = ['id' => $id];
+
+            // Permissions
+            if (!$this->is_admin)
+                $_get['belongs_to'] = $this->uid;
+
+            $rows = $instance->filter($fields, $_get); 
+            if (empty($rows))
                 Factory::response()->sendCode(404);
             else
-                Factory::response()->send($instance);
+                Factory::response()->send($rows[0]);
         }else{    
             // "list
             $limit  = (int) Arrays::shift($_get,'limit');
             $offset = (int) Arrays::shift($_get,'offset',0);
             $order  = Arrays::shift($_get,'order');
+
+            // Permissions
+            if (!$this->is_admin)
+                $_get['belongs_to'] = $this->uid;
 
             try {
                 if (!empty($_get)){
