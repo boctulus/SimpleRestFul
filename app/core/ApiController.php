@@ -6,6 +6,8 @@ use simplerest\core\interfaces\IAuth;
 use simplerest\libs\Factory;
 use simplerest\libs\Arrays;
 use simplerest\libs\Database;
+use simplerest\models\GroupPermissionsModel;
+use simplerest\models\OtherPermissionsModel;
 
 abstract class ApiController extends Controller
 {
