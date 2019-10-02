@@ -156,7 +156,7 @@ abstract class ApiController extends Controller
         
         $model    = '\\simplerest\\models\\'.$this->_model;
         $instance = new $model();
-        $missing = $instance::diffWithSchema($data, ['id', 'created_by']);
+        $missing = $instance::diffWithSchema($data, ['id', 'belongs_to']);
 
         if (!empty($missing))
             Factory::response()->sendError('Lack some properties in your request: '.implode(',',$missing), 400);
@@ -164,7 +164,7 @@ abstract class ApiController extends Controller
         $conn = Database::getConnection($this->config['database']);
         $instance->setConn($conn);
 
-        $data['created_by'] = $this->uid; //
+        $data['belongs_to'] = $this->uid; //
 
         if ($instance->create($data)!==false){
             Factory::response()->send(['id' => $instance->id], 201);
@@ -186,7 +186,7 @@ abstract class ApiController extends Controller
         $model    = 'simplerest\\models\\'.$this->_model;
         $instance = new $model();
         $instance->id = $id;
-        $missing = $instance::diffWithSchema($data, ['id', 'created_by']);
+        $missing = $instance::diffWithSchema($data, ['id', 'belongs_to']);
 
         if (!empty($missing))
             Factory::response()->sendError('Lack some properties in your request: '.implode(',',$missing), 400);
@@ -200,7 +200,7 @@ abstract class ApiController extends Controller
             Factory::response()->code(404)->sendError("Register for id=$id does not exists");
         }
 
-        if (!$this->is_admin && $rows[0]['created_by'] != $this->uid){
+        if (!$this->is_admin && $rows[0]['belongs_to'] != $this->uid){
             Factory::response()->sendCode(403);
         }
         
@@ -232,7 +232,7 @@ abstract class ApiController extends Controller
             Factory::response()->code(404)->sendError("Register for id=$id does not exists");
         }
 
-        if (!$this->is_admin && $rows[0]['created_by'] != $this->uid){
+        if (!$this->is_admin && $rows[0]['belongs_to'] != $this->uid){
             Factory::response()->sendCode(403);
         }
 
@@ -264,7 +264,7 @@ abstract class ApiController extends Controller
             Factory::response()->code(404)->sendError("Register for id=$id does not exists");
         }
 
-        if (!$this->is_admin && $rows[0]['created_by'] != $this->uid){
+        if (!$this->is_admin && $rows[0]['belongs_to'] != $this->uid){
             Factory::response()->sendCode(403);
         }
 

@@ -34,14 +34,14 @@ CREATE TABLE `products` (
   `description` varchar(240) NOT NULL,
   `size` varchar(30) NOT NULL,
   `cost` int(11) NOT NULL,
-  `created_by` int(11) NOT NULL
+  `belongs_to` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Dumping data for table `products`
 --
 
-INSERT INTO `products` (`id`, `name`, `description`, `size`, `cost`, `created_by`) VALUES
+INSERT INTO `products` (`id`, `name`, `description`, `size`, `cost`, `belongs_to`) VALUES
 (98, 'Vodka', 'Rusia', '1L', 550, 0),
 (100, 'Vodka', 'Bangladesh', '2 1/4 L', 225, 0),
 (103, 'Juice', 'Delicious juice', '1L', 75, 0),
@@ -260,7 +260,7 @@ INSERT INTO `user_role` (`id`, `user_id`, `role_id`, `creation_date`, `modificat
 --
 ALTER TABLE `products`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `created_by` (`created_by`);
+  ADD KEY `belongs_to` (`belongs_to`);
 
 --
 -- Indexes for table `roles`

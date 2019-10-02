@@ -121,11 +121,11 @@
 				checkpoint();
 			
 			// diff is less than ___
-			if ( ((localStorage.getItem('exp')*1000) - (new Date()).getTime()) < 1000 * localStorage.getItem('expires_in') * 0.97){
+			if ( ((localStorage.getItem('exp')*1000) - (new Date()).getTime()) < 1000 * localStorage.getItem('expires_in') - 3000){
 				renew();
 			}
 			
-		}, localStorage.getItem('expires_in') * 1000 * 0.97); 
+		}, localStorage.getItem('expires_in') * 1000 - 500); 
 	});
 	
 	

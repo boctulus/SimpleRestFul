@@ -11,7 +11,7 @@ class ProductsModel extends Model
 {
 	static protected $table_name = "products";
 	static protected $id_name = 'id';
-	static protected $fillable = ['name','description','size','cost','created_by'];
+	static protected $fillable = ['name','description','size','cost','belongs_to'];
  
 	/*
 		Types are INT, STR and BOOL among others
@@ -23,7 +23,7 @@ class ProductsModel extends Model
 		'description' => 'STR',
 		'size' => 'STR',
 		'cost' => 'INT',
-		'created_by' => 'INT'  // 
+		'belongs_to' => 'INT'  // 
 	];
 
     public function __construct($db = NULL){

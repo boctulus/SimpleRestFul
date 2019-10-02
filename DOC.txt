@@ -1,4 +1,9 @@
+DOCUMENTACION 
+-------------
 
-Ejemplos de uso:
 
-http://simplerest.lan/dumb/sum/5/6
+# ACL
+
+La implementación del ACL es parecido al de Linux, habiendo permisos a nivel de rol, para un "grupo" de usuarios y para "otros".
+
+El framework maneja varias tablas para implementar el ACL, entre ellas `group_permissions` se encarga de mantener los permisos de lectura y escritura concedidos por el usuario (owner del recurso) a cierto grupo de usuarios. El campo "register" hace referencia al id de registro en la tabla del endpoint correspondiente (productos, ticketes, etc) y en caso de ser NULL se toma como comodín afectando a todos los registros de esa tabla para ese owner.

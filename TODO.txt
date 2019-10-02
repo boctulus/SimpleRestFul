@@ -4,9 +4,9 @@
 
 Uncaught InvalidArgumentException: id is no fillable in /home/www/simplerest/app/core/Model.php: 257
 
-- Al generar los modelos..... modificar la tabla correspondiente agregando el campo created_by 
+- Al generar los modelos..... modificar la tabla correspondiente agregando el campo belongs_to 
 
-ALTER TABLE `products` ADD `created_by` INT NOT NULL AFTER `cost`, ADD INDEX (`created_by`);
+ALTER TABLE `products` ADD `belongs_to` INT NOT NULL AFTER `cost`, ADD INDEX (`belongs_to`);
 
 - Ofrecer la forma de filtrado compatible con JSON:API
 

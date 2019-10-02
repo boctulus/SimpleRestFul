@@ -144,7 +144,7 @@ class AuthController extends Controller implements IAuth
 
             list($refresh, $encrypted) = $this->pass_gen();
 
-            $available_roles = $u->fetchRoles();  
+            $available_roles = $u->fetchRoles();
             
             if (!in_array($role, $available_roles))
                 Factory::response()->sendCode(403);

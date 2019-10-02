@@ -96,7 +96,7 @@
 			},
 			error: function(data){
 				console.log('Error (error)',data);
-				$('#loginError').text('Error en usuario o password!');
+				$('#loginError').text('Error en usuario o password!!');
 			}
 		});		
 
