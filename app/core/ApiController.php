@@ -113,7 +113,7 @@ abstract class ApiController extends Controller
         $model    = 'simplerest\\models\\'.$this->_model;
         $instance = new $model($conn); 
         
-        $_get   = Factory::request()->getQuery();
+        $_get  = Arrays::nonassoc(Factory::request()->getQuery());
     
         $fields = Arrays::shift($_get,'fields');
         $fields = $fields != NULL ? explode(',',$fields) : NULL;
@@ -127,7 +127,10 @@ abstract class ApiController extends Controller
 
        ////////////////////////////////////////
        $g = new GroupPermissionsModel($conn);
-       $seek = ['resource_table' => $this->model_table, 'member' => $this->uid];
+       $seek = [
+            ['resource_table', $this->model_table], 
+            ['member', $this->uid]
+       ];
        $rows = $g->filter(null, $seek);
 
        $owners = [];
@@ -139,11 +142,13 @@ abstract class ApiController extends Controller
 
         if ($id != null)
         {
-            $_get = ['id' => $id];
+            $_get = [
+                ['id', $id]
+            ];
 
             // User permissions
             if (!$this->is_admin)
-                $_get['belongs_to'] = $this->uid;
+                $_get[] = ['belongs_to', $this->uid];
 
             $rows = $instance->filter($fields, $_get); 
             if (empty($rows))
@@ -158,8 +163,8 @@ abstract class ApiController extends Controller
 
             // User permissions
             if (!$this->is_admin)
-                $_get['belongs_to'] = $this->uid;
-
+                $_get[] = ['belongs_to', $this->uid];
+ 
             //var_dump($_get);
 
             try {
@@ -223,7 +228,7 @@ abstract class ApiController extends Controller
         $instance->setConn($conn);
         $instance->id = $id;
 
-        $rows = $instance->filter(null, ['id' => $id]);
+        $rows = $instance->filter(null, ['id', $id]);
         if (count($rows) == 0){
             Factory::response()->code(404)->sendError("Register for id=$id does not exists");
         }
@@ -254,7 +259,7 @@ abstract class ApiController extends Controller
         $instance = new $model($conn);
         $instance->id = $id;
 
-        $rows = $instance->filter(null, ['id' => $id]);
+        $rows = $instance->filter(null, ['id', $id]);
         
         if (count($rows) == 0){
             Factory::response()->code(404)->sendError("Register for id=$id does not exists");
@@ -286,7 +291,7 @@ abstract class ApiController extends Controller
         $instance = new $model($conn);
         $instance->id = $id;
 
-        $rows = $instance->filter(null, ['id' => $id]);
+        $rows = $instance->filter(null, ['id', $id]);
         
         if (count($rows) == 0){
             Factory::response()->code(404)->sendError("Register for id=$id does not exists");

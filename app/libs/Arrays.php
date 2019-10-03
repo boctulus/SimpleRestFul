@@ -10,5 +10,17 @@ class Arrays
         unset($arr[$key]);
         return $out;
     }
+
+    /*
+        Associative to non associative array
+    */
+    static function nonassoc($arr){
+        $out = [];
+        foreach ($arr as $key => $val) {
+            $out[] = [$key, $val];
+        }
+        return $out;
+    }
+    
 }
 

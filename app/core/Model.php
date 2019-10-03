@@ -192,12 +192,35 @@ class Model {
 
 		$q  .= ' FROM '.$this->table_name;
 
-		$vars   = array_keys($conditions);
-		$values = array_values($conditions);
-
 		$_where = [];
+
+		$vars   = [];
+		$values = [];
+		$ops    = [];
+		if (count($conditions)>0){
+			if(is_array($conditions[0])){
+				foreach ($conditions as $cond) {
+					if(is_array($cond[1])){
+						if($this->schema[$cond[0]] == 'STR')	
+							$cond[1] = array_map(function($e){ return "'$e'";}, $cond[1]);   // corregir
+						
+						$in_val = implode(', ', $cond[1]);
+						$_where[] = "$cond[0] IN ($in_val) ";
+					}else{
+						$vars[]   = $cond[0];
+						$values[] = $cond[1];
+						$ops[]    = $cond[2] ?? '=';
+					}	
+				}
+			}else{
+				$vars[]   = $conditions[0];
+				$values[] = $conditions[1];
+				$ops[]    = $conditions[2] ?? '='; 
+			}	
+		}
+
 		foreach($vars as $ix => $var){
-			$_where[] = "$var = :$var";
+			$_where[] = "$var $ops[$ix] :$var";
 		}
 		$where = implode(" $conjunction ", $_where);
 		

@@ -57,6 +57,24 @@ class DumbController extends Controller
         Debug::debug($product->fetchAll());
     }
 
+    function filter_products(){
+        $conn    = Database::getConnection($this->config['database']);
+        $product = new ProductsModel($conn);
+    
+        Debug::debug($product->filter(null, [ 
+            ['name', ['CocaCola', 'PesiLoca']],  // IN 
+            ['cost', 600, '>'],
+            ['cost', [100,200]]
+        ], 'OR'));    
+        
+        // implicit 'AND'
+        Debug::debug($product->filter(null, [ 
+            ['cost', 200, '<'],
+            ['name', 'CocaCola'] 
+        ]));
+        
+    }
+
     function get_users(){
         $conn    = Database::getConnection($this->config['database']);
         $u = new UsersModel($conn);
@@ -75,6 +93,7 @@ class DumbController extends Controller
 
         \simplerest\libs\Debug::debug($u);
     }
+
  
     function update_user($id) {
         $conn    = Database::getConnection($this->config['database']);

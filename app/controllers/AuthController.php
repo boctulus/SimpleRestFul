@@ -214,7 +214,7 @@ class AuthController extends Controller implements IAuth
            
             $conn = $this->getConnection();            
             $s = new SessionsModel($conn);
-            $rows = $s->filter(null, ['id' => $sid]);
+            $rows = $s->filter(null, ['id', $sid]);
 
             if(empty($rows))
                 Factory::response()->sendError('Session not found', 400);
@@ -282,7 +282,7 @@ class AuthController extends Controller implements IAuth
             $u = new UsersModel($conn);
 
             //	
-            if (count($u->filter(['id'],['email'=>$data['email']]))>0)
+            if (count($u->filter(['id'],['email', $data['email']]))>0)
                 Factory::response()->sendError('Email already exists');
                     
 
@@ -358,7 +358,7 @@ class AuthController extends Controller implements IAuth
                 $conn = $this->getConnection();
 
                 $s = new SessionsModel($conn);
-                $rows = $s->filter(null, ['id' => $this->session_decrypt($payload->sid)]);
+                $rows = $s->filter(null, ['id', $this->session_decrypt($payload->sid)]);
     
                 if(empty($rows))
                     Factory::response()->sendError('Session not found', 400);
