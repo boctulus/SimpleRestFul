@@ -286,7 +286,7 @@ class AuthController extends Controller implements IAuth
                 Factory::response()->sendError('Email already exists');
                     
 
-            $missing = $u::diffWithSchema($data, ['id','enabled','quota']);
+            $missing = $u->diffWithSchema($data, ['id','enabled','quota']);
             if (!empty($missing))
                 Factory::response()->sendError('Lack some properties in your request: '.implode(',',$missing), 400);
 

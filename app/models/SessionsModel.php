@@ -11,15 +11,15 @@ use simplerest\core\Model;
 */
 class SessionsModel extends Model 
 {
-	static protected $table_name = "sessions";
-	static protected $id_name = 'id';
-	static protected $fillable = [ 'refresh_token', 'login_date', 'user_id', 'role' ];
+	protected $table_name = "sessions";
+	protected $id_name = 'id';
+	protected $fillable = [ 'refresh_token', 'login_date', 'user_id', 'role' ];
  
 	/*
 		Types are INT, STR and BOOL among others
 		see: https://secure.php.net/manual/en/pdo.constants.php 
 	*/
-	static protected $schema = [
+	protected $schema = [
 		'id' => 'INT',
 		'refresh_token' => 'STR',
 		'login_date' => 'INT',

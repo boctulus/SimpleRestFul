@@ -8,6 +8,7 @@ use simplerest\libs\Arrays;
 use simplerest\libs\Database;
 use simplerest\models\GroupPermissionsModel;
 use simplerest\models\OtherPermissionsModel;
+use simplerest\models\RolesModel;
 
 abstract class ApiController extends Controller
 {
@@ -22,6 +23,7 @@ abstract class ApiController extends Controller
     protected $callable = [];
     protected $config;
     protected $_model;
+    protected $model_table;
     protected $auth_payload = null;
     protected $uid;
     protected $is_admin;
@@ -73,6 +75,7 @@ abstract class ApiController extends Controller
 
         if (preg_match('/([A-Z][a-z0-9_]+)/', get_called_class(), $matchs)){
             $this->_model = $matchs[1] . 'Model';
+            $this->model_table = strtolower($matchs[1]);
         }    
     }
 
@@ -109,7 +112,7 @@ abstract class ApiController extends Controller
 
         $model    = 'simplerest\\models\\'.$this->_model;
         $instance = new $model($conn); 
-    
+        
         $_get   = Factory::request()->getQuery();
     
         $fields = Arrays::shift($_get,'fields');
@@ -122,11 +125,23 @@ abstract class ApiController extends Controller
         if ($exclude != null)
             $instance->hide($exclude);
 
+       ////////////////////////////////////////
+       $g = new GroupPermissionsModel($conn);
+       $seek = ['resource_table' => $this->model_table, 'member' => $this->uid];
+       $rows = $g->filter(null, $seek);
+
+       $owners = [];
+       foreach ($rows as $row){
+           $owners[] = $row['owner'];
+       }
+       //var_dump($owners);
+       ////////////////////////////////////////  
+
         if ($id != null)
         {
             $_get = ['id' => $id];
 
-            // Permissions
+            // User permissions
             if (!$this->is_admin)
                 $_get['belongs_to'] = $this->uid;
 
@@ -141,20 +156,22 @@ abstract class ApiController extends Controller
             $offset = (int) Arrays::shift($_get,'offset',0);
             $order  = Arrays::shift($_get,'order');
 
-            // Permissions
+            // User permissions
             if (!$this->is_admin)
                 $_get['belongs_to'] = $this->uid;
 
+            //var_dump($_get);
+
             try {
                 if (!empty($_get)){
-                    $rows = $instance->filter($fields, $_get, $order, $limit, $offset);
+                    $rows = $instance->filter($fields, $_get, null, $order, $limit, $offset);
                     Factory::response()->code(empty($rows) ? 404 : 200)->send($rows); 
                 }else {
                     $rows = $instance->fetchAll($fields, $order, $limit, $offset);
                     Factory::response()->code(empty($rows) ? 404 : 200)->send($rows); 
                 }	
             } catch (\Exception $e) {
-                Factory::response()->sendError('Error in fetch: '.$e->getMessage());
+                Factory::response()->sendError($e->getMessage());
             }	
         }
     } // 
@@ -167,7 +184,7 @@ abstract class ApiController extends Controller
         
         $model    = '\\simplerest\\models\\'.$this->_model;
         $instance = new $model();
-        $missing = $instance::diffWithSchema($data, ['id', 'belongs_to']);
+        $missing = $instance->diffWithSchema($data, ['id', 'belongs_to']);
 
         if (!empty($missing))
             Factory::response()->sendError('Lack some properties in your request: '.implode(',',$missing), 400);
@@ -197,7 +214,7 @@ abstract class ApiController extends Controller
         $model    = 'simplerest\\models\\'.$this->_model;
         $instance = new $model();
         $instance->id = $id;
-        $missing = $instance::diffWithSchema($data, ['id', 'belongs_to']);
+        $missing = $instance->diffWithSchema($data, ['id', 'belongs_to']);
 
         if (!empty($missing))
             Factory::response()->sendError('Lack some properties in your request: '.implode(',',$missing), 400);

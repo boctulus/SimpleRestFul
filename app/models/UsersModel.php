@@ -7,29 +7,31 @@ use simplerest\core\Model;
 
 class UsersModel extends Model
  {
-	static protected $table_name = "users";
-	static protected $id_name = 'id';
-	static protected $fillable = [
+	protected $table_name = "users";
+	protected $id_name = 'id';
+	protected $fillable = [
 							'email',
 							'password',
 							'firstname',
-							'lastname'
+							'lastname',
+							'belongs_to'
 	];
 
-	static protected $hidden = ['password'];
+	protected $hidden = ['password'];
 
 	/*
 		Types are INT, STR and BOOL among others
 		see: https://secure.php.net/manual/en/pdo.constants.php 
 	*/
-	static protected $schema = [
+	protected $schema = [
 		'id' => 'INT',
 		'email' => 'STR',
 		'password' => 'STR',
 		'firstname' => 'STR',
 		'lastname'=> 'STR',
 		'enabled' => 'INT',
-		'quota' => 'INT'
+		'quota' => 'INT',
+		'belongs_to' => 'INT'
 	];
 
 	/*
@@ -49,7 +51,7 @@ class UsersModel extends Model
 	*/
 	function checkUserAndPass()
 	{
-		$q  = "SELECT * FROM ".static::$table_name." WHERE email=? AND password=?";
+		$q  = "SELECT * FROM ".$this->table_name." WHERE email=? AND password=?";
 		$st = $this->conn->prepare($q);
 		$st->execute([$this->email, sha1($this->password)]);
 	
@@ -69,7 +71,7 @@ class UsersModel extends Model
 		@return mixed false | array of all available roles for the user
 	*/
 	function fetchRoles(){
-		$q  = "SELECT ur.role_id as role FROM " . static::$table_name. ' as u INNER JOIN user_role as ur ON ur.user_id=u.id INNER JOIN roles AS r ON ur.role_id=r.id' . ' WHERE u.'.static::$id_name . '=?';
+		$q  = "SELECT ur.role_id as role FROM " . $this->table_name. ' as u INNER JOIN user_role as ur ON ur.user_id=u.id INNER JOIN roles AS r ON ur.role_id=r.id' . ' WHERE u.'.$this->id_name . '=?';
 		$st = $this->conn->prepare($q);
 		$st->execute([$this->id]);
 	

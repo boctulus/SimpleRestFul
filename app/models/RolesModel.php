@@ -6,16 +6,16 @@ use simplerest\core\Model;
 
 class RolesModel extends Model
  {
-	static protected $table_name = "roles";
-	static protected $id_name = 'id';
-	static protected $fillable = ['name'];
-	static protected $hidden = [ ];
+	protected $table_name = "roles";
+	protected $id_name = 'id';
+	protected $fillable = ['name'];
+	protected $hidden = [ ];
 
 	/*
 		Types are INT, STR and BOOL among others
 		see: https://secure.php.net/manual/en/pdo.constants.php 
 	*/
-	static protected $schema = [
+	protected $schema = [
 		'id' => 'INT',
 		'name' => 'STR',
 		'is_admin' => 'INT'
