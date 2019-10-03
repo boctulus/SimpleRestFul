@@ -125,20 +125,24 @@ abstract class ApiController extends Controller
         if ($exclude != null)
             $instance->hide($exclude);
 
-       ////////////////////////////////////////
-       $g = new GroupPermissionsModel($conn);
-       $seek = [
+        ////////////////////////////////////////
+        $g = new GroupPermissionsModel($conn);
+        $seek = [
             ['resource_table', $this->model_table], 
             ['member', $this->uid]
-       ];
-       $rows = $g->filter(null, $seek);
+        ];
+        $rows = $g->filter(null, $seek);
 
-       $owners = [];
-       foreach ($rows as $row){
-           $owners[] = $row['owner'];
-       }
-       //var_dump($owners);
-       ////////////////////////////////////////  
+        $owners = [];
+        foreach ($rows as $row){
+            if  ($row['g_read'])
+                $owners[] = $row['owner'];
+        }
+
+        $owners = array_merge($owners, [$this->uid]);
+
+        //var_dump($owners);
+        ////////////////////////////////////////  
 
         if ($id != null)
         {
@@ -148,7 +152,7 @@ abstract class ApiController extends Controller
 
             // User permissions
             if (!$this->is_admin)
-                $_get[] = ['belongs_to', $this->uid];
+                $_get[] = ['belongs_to', $owners];
 
             $rows = $instance->filter($fields, $_get); 
             if (empty($rows))
@@ -163,7 +167,7 @@ abstract class ApiController extends Controller
 
             // User permissions
             if (!$this->is_admin)
-                $_get[] = ['belongs_to', $this->uid];
+                $_get[] = ['belongs_to', $owners];
  
             //var_dump($_get);
 

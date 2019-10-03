@@ -202,7 +202,7 @@ class Model {
 				foreach ($conditions as $cond) {
 					if(is_array($cond[1])){
 						if($this->schema[$cond[0]] == 'STR')	
-							$cond[1] = array_map(function($e){ return "'$e'";}, $cond[1]);   // corregir
+							$cond[1] = array_map(function($e){ return "'$e'";}, $cond[1]);   
 						
 						$in_val = implode(', ', $cond[1]);
 						$_where[] = "$cond[0] IN ($in_val) ";
