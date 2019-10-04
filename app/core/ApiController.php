@@ -140,7 +140,6 @@ abstract class ApiController extends Controller
         }
 
         $owners = array_merge($owners, [$this->uid]);
-
         //var_dump($owners);
         ////////////////////////////////////////  
 
