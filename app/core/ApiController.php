@@ -9,6 +9,7 @@ use simplerest\libs\Database;
 use simplerest\models\GroupPermissionsModel;
 use simplerest\models\OtherPermissionsModel;
 use simplerest\models\RolesModel;
+use simplerest\models\FolderModel;
 
 abstract class ApiController extends Controller
 {
@@ -113,8 +114,8 @@ abstract class ApiController extends Controller
         $model    = 'simplerest\\models\\'.$this->_model;
         $instance = new $model($conn); 
         
-        $_get  = Arrays::nonassoc(Factory::request()->getQuery());
-    
+        $_get  = Factory::request()->getQuery();
+  
         $fields = Arrays::shift($_get,'fields');
         $fields = $fields != NULL ? explode(',',$fields) : NULL;
         
@@ -124,34 +125,48 @@ abstract class ApiController extends Controller
 
         if ($exclude != null)
             $instance->hide($exclude);
-
+         
         ////////////////////////////////////////
-        $g = new GroupPermissionsModel($conn);
-        $seek = [
-            ['resource_table', $this->model_table], 
-            ['member', $this->uid]
-        ];
-        $rows = $g->filter(null, $seek);
+        $folder = Arrays::shift($_get,'folder');
 
-        $owners = [];
-        foreach ($rows as $row){
-            if  ($row['g_read'])
-                $owners[] = $row['owner'];
-        }
+        if (!empty($folder)){
+            $g = new GroupPermissionsModel($conn);
+            $seek = [
+                ['folder_id', $folder], 
+                ['member', $this->uid]
+            ];
+            $rows = $g->filter(null, $seek);
 
-        $owners = array_merge($owners, [$this->uid]);
-        //var_dump($owners);
+            if (empty($rows))
+                Factory::response()->sendError('Folder not found', 404);  
+
+            $gr = $rows[0]['r'];
+            $gw = $rows[0]['w'];
+
+            if (!$gr)
+                Factory::response()->sendError('You have not permission for the folder', 403);
+
+            $f = new FolderModel($conn);
+            $f->id = $folder;    
+            $f->fetch(['field', 'value']);
+        }        
         ////////////////////////////////////////  
+
+        //var_dump($_get);
 
         if ($id != null)
         {
             $_get = [
                 ['id', $id]
-            ];
-
-            // User permissions
-            if (!$this->is_admin)
-                $_get[] = ['belongs_to', $owners];
+            ];    
+               
+            if (empty($folder)){               
+                // User permissions
+                if (!$this->is_admin)
+                    $_get[] = ['belongs_to', $this->uid];
+            }else{
+                $_get[] = [$f->field, $f->value];
+            }
 
             $rows = $instance->filter($fields, $_get); 
             if (empty($rows))
@@ -164,19 +179,24 @@ abstract class ApiController extends Controller
             $offset = (int) Arrays::shift($_get,'offset',0);
             $order  = Arrays::shift($_get,'order');
 
-            // User permissions
-            if (!$this->is_admin)
-                $_get[] = ['belongs_to', $owners];
- 
-            //var_dump($_get);
-
+            // Importante:
+            $_get = Arrays::nonassoc($_get);     
+                
+            if (empty($folder)){             
+                // User permissions
+                if (!$this->is_admin)
+                    $_get[] = ['belongs_to', $this->uid];        
+            }else{
+                $_get[] = [$f->field, $f->value];
+            }
+                    
             try {
                 if (!empty($_get)){
                     $rows = $instance->filter($fields, $_get, null, $order, $limit, $offset);
-                    Factory::response()->code(empty($rows) ? 404 : 200)->send($rows); 
+                    Factory::response()->code(200)->send($rows); 
                 }else {
                     $rows = $instance->fetchAll($fields, $order, $limit, $offset);
-                    Factory::response()->code(empty($rows) ? 404 : 200)->send($rows); 
+                    Factory::response()->code(200)->send($rows); 
                 }	
             } catch (\Exception $e) {
                 Factory::response()->sendError($e->getMessage());
@@ -254,7 +274,7 @@ abstract class ApiController extends Controller
         
     function delete($id = NULL){
         if($id == NULL)
-            Factory::response()->sendError("Lacks id in request",400);
+            Factory::response()->sendError("Lacks id in request",405);
 
         $conn = Database::getConnection($this->config['database']);
         

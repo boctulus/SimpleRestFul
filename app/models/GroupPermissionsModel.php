@@ -7,7 +7,7 @@ class GroupPermissionsModel extends Model
 {
 	protected $table_name = "group_permissions";
 	protected $id_name = 'id';
-	protected $fillable = ['resource_table', 'register', 'owner', 'member', 'g_read', 'g_write'];
+	protected $fillable = ['folder_id', 'member', 'r', 'w'];
   
 	/*
 		Types are INT, STR and BOOL among others
@@ -15,12 +15,10 @@ class GroupPermissionsModel extends Model
 	*/
 	protected $schema = [
 		'id' => 'INT',
-		'resource_table' => 'STR',
-		'register' => 'INT',
-		'owner' => 'INT',
+		'folder_id' => 'INT',
 		'member' => 'INT',
-		'g_read' => 'INT',
-		'g_write' => 'INT'		
+		'r' => 'INT',
+		'w' => 'INT'		
 	];
 
     public function __construct($db = NULL){

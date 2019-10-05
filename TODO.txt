@@ -1,5 +1,6 @@
 # TODO
 
+- Soportar filtrado por valores NULL
 - Capturar excepciones como:
 
 Uncaught InvalidArgumentException: id is no fillable in /home/www/simplerest/app/core/Model.php: 257
@@ -72,10 +73,9 @@ https://lumen.laravel.com/docs/6.x/database
 - Form de registro (front)
 - Paginador (front)
 - Controles más complejos como checkbox, radio, combobox
-- Permisos y roles (ACL)
 - Routers como en Laravel (!)
 - Middlewares
-- Migrations
+- Migrations, seeders,...
 - Sanitización a nivel de urls, FILTER_SANITIZE_URL
 - Sanitización a nivel de base de datos
 - Documentar !!!! <-- comenzar

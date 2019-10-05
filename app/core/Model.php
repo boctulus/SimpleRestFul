@@ -1,13 +1,14 @@
 <?php
-declare(strict_types=1);
-
 namespace simplerest\core;
+
+use simplerest\libs\Debug;
 
 class Model {
 
 	protected $table_name;
 	protected $id_name = 'id';
 	protected $schema;
+	protected $nullable = [];
 	protected $fillable = [];
 	protected $hidden;
 	protected $properties = [];
@@ -201,6 +202,7 @@ class Model {
 			if(is_array($conditions[0])){
 				foreach ($conditions as $cond) {
 					if(is_array($cond[1])){
+
 						if($this->schema[$cond[0]] == 'STR')	
 							$cond[1] = array_map(function($e){ return "'$e'";}, $cond[1]);   
 						
@@ -209,13 +211,21 @@ class Model {
 					}else{
 						$vars[]   = $cond[0];
 						$values[] = $cond[1];
-						$ops[]    = $cond[2] ?? '=';
+
+						if ($cond[1] === NULL && (empty($cond[2]) || $cond[2]=='='))
+							$ops[] = 'IS';
+						else	
+							$ops[] = $cond[2] ?? '=';
 					}	
 				}
 			}else{
 				$vars[]   = $conditions[0];
 				$values[] = $conditions[1];
-				$ops[]    = $conditions[2] ?? '='; 
+		
+				if ($conditions[1] === NULL && (empty($conditions[2]) || $conditions[2]=='='))
+					$ops[] = 'IS';
+				else	
+					$ops[] = $conditions[2] ?? '='; 
 			}	
 		}
 
@@ -242,10 +252,16 @@ class Model {
 		
 		foreach($values as $ix => $val){
 			if (!isset($this->schema[$vars[$ix]]))
-				throw new \InvalidArgumentException("there is an error near '{$vars[$ix]}'");
+				throw new \InvalidArgumentException("There is an error near '{$vars[$ix]}'");
 
 			$const = $this->schema[$vars[$ix]];
-			$st->bindValue(":{$vars[$ix]}", $val, constant("PDO::PARAM_{$const}"));
+
+			if ($val === NULL)
+				$type = \PDO::PARAM_NULL;
+			else
+				$type = constant("PDO::PARAM_{$const}");
+
+			$st->bindValue(":{$vars[$ix]}", $val, $type);
 		}
 
 		if ($st->execute())
@@ -394,6 +410,7 @@ class Model {
 		
 		$missing_properties = [];
 
+		$excluded = array_merge($this->nullable, $excluded);
 		foreach ($this->properties as $ix => $exp){
 			if (!in_array($exp, $props) && !in_array($exp, $excluded)){
 				$missing_properties[] = $exp; 

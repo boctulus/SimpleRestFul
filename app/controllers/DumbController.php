@@ -75,6 +75,13 @@ class DumbController extends Controller
         
     }
 
+    function get_nulls(){
+        $conn    = Database::getConnection($this->config['database']);
+        $product = new ProductsModel($conn);
+    
+        Debug::debug($product->filter(null, ['workspace', NULL]));   
+    }
+
     function get_users(){
         $conn    = Database::getConnection($this->config['database']);
         $u = new UsersModel($conn);

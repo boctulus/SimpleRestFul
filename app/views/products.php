@@ -147,7 +147,8 @@
 		obj.name = $('#ename').val();	
 		obj.description = $('#edescription').val();	
 		obj.cost = $('#ecost').val();
-		obj.size = $('#esize').val();		
+		obj.size = $('#esize').val();	
+		//obj.workspace = '';		
 					
 		//console.log(obj);	
 					
@@ -250,7 +251,8 @@
 		obj.name = $('#name').val();	
 		obj.description = $('#description').val();	
 		obj.cost = $('#cost').val();
-		obj.size = $('#size').val();		
+		obj.size = $('#size').val();
+		//obj.workspace = '';		
 				
 		let encoded = JSON.stringify(obj);
 		

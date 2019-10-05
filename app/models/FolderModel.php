@@ -3,21 +3,22 @@ namespace simplerest\models;
 
 use simplerest\core\Model;
 
-class OtherPermissionsModel extends Model 
+class FolderModel extends Model 
 {
-	protected $table_name = "other_permissions";
+	protected $table_name = "folder";
 	protected $id_name = 'id';
-	protected $fillable = ['folder_id', 'r', 'w'];
- 
+	protected $fillable = ['resource_table', 'field', 'value', 'owner'];
+  
 	/*
 		Types are INT, STR and BOOL among others
 		see: https://secure.php.net/manual/en/pdo.constants.php 
 	*/
 	protected $schema = [
 		'id' => 'INT',
-		'folder_id' => 'INT',
-		'r' => 'INT',
-		'w' => 'INT'			
+		'resource_table' => 'STR',
+		'field' => 'STR',
+		'value' => 'STR',
+		'owner' => 'INT'	
 	];
 
     public function __construct($db = NULL){

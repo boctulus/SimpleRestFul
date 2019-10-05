@@ -34,14 +34,6 @@ class UsersModel extends Model
 		'belongs_to' => 'INT'
 	];
 
-	/*
-		Unique constraints
-	*/
-	//static protected $unique = [
-	//	['email']
-	//];
-
-
     public function __construct($db = NULL){
         parent::__construct($db);
     }
