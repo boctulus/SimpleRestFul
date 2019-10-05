@@ -115,7 +115,13 @@ abstract class ApiController extends Controller
         $instance = new $model($conn); 
         
         $_get  = Factory::request()->getQuery();
-  
+
+        foreach ($_get as $key => $val){
+            if ($val == 'NULL' || $val == 'null'){
+                $_get[$key] = NULL;
+            }                
+        }
+
         $fields = Arrays::shift($_get,'fields');
         $fields = $fields != NULL ? explode(',',$fields) : NULL;
         
