@@ -9,7 +9,7 @@ use simplerest\libs\Database;
 use simplerest\models\GroupPermissionsModel;
 use simplerest\models\OtherPermissionsModel;
 use simplerest\models\RolesModel;
-use simplerest\models\FolderModel;
+use simplerest\models\FoldersModel;
 
 abstract class ApiController extends Controller
 {
@@ -74,7 +74,7 @@ abstract class ApiController extends Controller
             $this->setheaders($headers);            
         }    
 
-        if (preg_match('/([A-Z][a-z0-9_]+)/', get_called_class(), $matchs)){
+        if (preg_match('/([A-Z][a-z0-9_]+[A-Z]*[a-z0-9_]*[A-Z]*[a-z0-9_]*[A-Z]*[a-z0-9_]*)/', get_called_class(), $matchs)){
             $this->_model = $matchs[1] . 'Model';
             $this->model_table = strtolower($matchs[1]);
         }    
@@ -136,7 +136,7 @@ abstract class ApiController extends Controller
         $folder = Arrays::shift($_get,'folder');
 
         if (!empty($folder)){
-            $f = new FolderModel($conn);
+            $f = new FoldersModel($conn);
             $f->id = $folder;    
             $ok = $f->fetch(['field', 'value']);
 
@@ -226,16 +226,52 @@ abstract class ApiController extends Controller
         if (!empty($missing))
             Factory::response()->sendError('Lack some properties in your request: '.implode(',',$missing), 400);
     
-        $conn = Database::getConnection($this->config['database']);
-        $instance->setConn($conn);
+        $folder = $data['folder'] ?? null;
 
-        $data['belongs_to'] = $this->uid; //
+        try {
+            $conn = Database::getConnection($this->config['database']);
+            $instance->setConn($conn);
 
-        if ($instance->create($data)!==false){
-            Factory::response()->send(['id' => $instance->id], 201);
+            $data['belongs_to'] = $this->uid; //
+        
+            if (!empty($folder)){
+                $f = new FoldersModel($conn);
+                $f->id = $folder;    
+                $ok = $f->fetch();
+    
+                if (!$ok)
+                    Factory::response()->sendError('Folder $folder not found', 404);  
+    
+                $g = new GroupPermissionsModel($conn);
+                $seek = [
+                    ['folder_id', $folder], 
+                    ['member', $this->uid]
+                ];
+                $rows = $g->filter(null, $seek);
+    
+                if (empty($rows))
+                    Factory::response()->sendError("You have not permission for the folder $folder", 403);  
+                $gr = $rows[0]['r'];
+                $gw = $rows[0]['w'];
+    
+                if (!$gw)
+                    Factory::response()->sendError("You have not permission for the folder $folder", 403);
+           
+                unset($data['folder']);    
+                $data[$f->field] = $f->value;
+                $data['belongs_to'] = $f->belongs_to;
+            }        
+
+            if ($instance->create($data)!==false){
+                Factory::response()->send(['id' => $instance->id], 201);
+            }	
+            else
+                Factory::response()->sendError("Error: creation of resource fails!");
+
+        } catch (\Exception $e) {
+            Factory::response()->sendError($e->getMessage());
         }	
-        else
-            Factory::response()->sendError("Error: creation of resource fails!");
+
     } // 
     
         
@@ -255,21 +291,53 @@ abstract class ApiController extends Controller
 
         if (!empty($missing))
             Factory::response()->sendError('Lack some properties in your request: '.implode(',',$missing), 400);
-        
-        $conn = Database::getConnection($this->config['database']);
-        $instance->setConn($conn);
-        $instance->id = $id;
 
-        $rows = $instance->filter(null, ['id', $id]);
-        if (count($rows) == 0){
-            Factory::response()->code(404)->sendError("Register for id=$id does not exists");
-        }
+        $folder = $data['folder'] ?? null;    
 
-        if (!$this->is_admin && $rows[0]['belongs_to'] != $this->uid){
-            Factory::response()->sendCode(403);
-        }
-        
         try {
+            $conn = Database::getConnection($this->config['database']);
+            $instance->setConn($conn);
+            $instance->id = $id;
+
+            $rows = $instance->filter(null, ['id', $id]);
+
+            if (count($rows) == 0){
+                Factory::response()->code(404)->sendError("Register for id=$id does not exists");
+            }
+
+            if (!empty($folder)){
+                $f = new FoldersModel($conn);
+                $f->id = $folder;    
+                $ok = $f->fetch();
+    
+                if (!$ok)
+                    Factory::response()->sendError('Folder $folder not found', 404);  
+    
+                $g = new GroupPermissionsModel($conn);
+                $seek = [
+                    ['folder_id', $folder], 
+                    ['member', $this->uid]
+                ];
+                $rows = $g->filter(null, $seek);
+    
+                if (empty($rows))
+                    Factory::response()->sendError("You have not permission for the folder $folder", 403);  
+                $gr = $rows[0]['r'];
+                $gw = $rows[0]['w'];
+    
+                if (!$gw)
+                    Factory::response()->sendError("You have not permission for the folder $folder", 403);
+           
+                unset($data['folder']);    
+                $data[$f->field] = $f->value;
+                $data['belongs_to'] = $f->belongs_to;
+
+            }else {
+                if (!$this->is_admin && $rows[0]['belongs_to'] != $this->uid){
+                    Factory::response()->sendCode(403);
+                }
+            }        
+    
             if($instance->update($data)!==false)
                 Factory::response()->sendJson("OK");
             else
@@ -278,34 +346,6 @@ abstract class ApiController extends Controller
             Factory::response()->sendError("Error during update for id=$id with message: {$e->getMessage()}");
         }
 
-    } // 
-    
-        
-    function delete($id = NULL){
-        if($id == NULL)
-            Factory::response()->sendError("Lacks id in request",405);
-
-        $conn = Database::getConnection($this->config['database']);
-        
-        $model    = 'simplerest\\models\\'.$this->_model;
-        $instance = new $model($conn);
-        $instance->id = $id;
-
-        $rows = $instance->filter(null, ['id', $id]);
-        
-        if (count($rows) == 0){
-            Factory::response()->code(404)->sendError("Register for id=$id does not exists");
-        }
-
-        if (!$this->is_admin && $rows[0]['belongs_to'] != $this->uid){
-            Factory::response()->sendCode(403);
-        }
-
-        if($instance->delete()){
-            Factory::response()->sendJson("OK");
-        }	
-        else
-            Factory::response()->sendError("Record not found",404);
     } // 
     
     function patch($id = NULL)
@@ -318,30 +358,128 @@ abstract class ApiController extends Controller
         if (empty($data))
             Factory::response()->sendError('Invalid JSON',400);
         
-        $conn = Database::getConnection($this->config['database']);
-        $model    = 'simplerest\\models\\'.$this->_model;
-        $instance = new $model($conn);
-        $instance->id = $id;
-
-        $rows = $instance->filter(null, ['id', $id]);
-        
-        if (count($rows) == 0){
-            Factory::response()->code(404)->sendError("Register for id=$id does not exists");
-        }
-
-        if (!$this->is_admin && $rows[0]['belongs_to'] != $this->uid){
-            Factory::response()->sendCode(403);
-        }
+        $folder = $data['folder'] ?? null; 
 
         try {
+            $conn = Database::getConnection($this->config['database']);
+            $model    = 'simplerest\\models\\'.$this->_model;
+
+            $instance = new $model($conn);
+            $instance->id = $id;
+
+            $rows = $instance->filter(null, ['id', $id]);
+            
+            if (count($rows) == 0){
+                Factory::response()->code(404)->sendError("Register for id=$id does not exists");
+            }
+
+            if (!empty($folder)){
+                $f = new FoldersModel($conn);
+                $f->id = $folder;    
+                $ok = $f->fetch();
+    
+                if (!$ok)
+                    Factory::response()->sendError('Folder $folder not found', 404);  
+    
+                $g = new GroupPermissionsModel($conn);
+                $seek = [
+                    ['folder_id', $folder], 
+                    ['member', $this->uid]
+                ];
+                $rows = $g->filter(null, $seek);
+    
+                if (empty($rows))
+                    Factory::response()->sendError("You have not permission for the folder $folder", 403);  
+                $gr = $rows[0]['r'];
+                $gw = $rows[0]['w'];
+    
+                if (!$gw)
+                    Factory::response()->sendError("You have not permission for the folder $folder", 403);
+           
+                unset($data['folder']);    
+                $data[$f->field] = $f->value;
+                $data['belongs_to'] = $f->belongs_to;
+
+            }else {
+                if (!$this->is_admin && $rows[0]['belongs_to'] != $this->uid){
+                    Factory::response()->sendCode(403);
+                }
+            }        
+     
             if($instance->update($data)!==false)
                 Factory::response()->sendJson("OK");
             else
                 Factory::response()->sendError("Error in PATCH",404);	
+
         } catch (\Exception $e) {
             Factory::response()->sendError("Error during PATCH for id=$id with message: {$e->getMessage()}");
         }
     } //
-                
+        
+    function delete($id = NULL){
+        if($id == NULL)
+            Factory::response()->sendError("Lacks id in request",405);
+
+        $data = Factory::request()->getBody();        
+        $folder = $data['folder'] ?? null;
+
+        try {    
+            $conn = Database::getConnection($this->config['database']);
+        
+            $model    = 'simplerest\\models\\'.$this->_model;
+            $instance = new $model($conn);
+            $instance->id = $id;
+
+            $rows = $instance->filter(null, ['id', $id]);
+            
+            if (count($rows) == 0){
+                Factory::response()->code(404)->sendError("Register for id=$id does not exists");
+            }
+
+            if (!empty($folder)){
+                $f = new FoldersModel($conn);
+                $f->id = $folder;    
+                $ok = $f->fetch();
+    
+                if (!$ok)
+                    Factory::response()->sendError('Folder $folder not found', 404);  
+    
+                $g = new GroupPermissionsModel($conn);
+                $seek = [
+                    ['folder_id', $folder], 
+                    ['member', $this->uid]
+                ];
+                $rows = $g->filter(null, $seek);
+    
+                if (empty($rows))
+                    Factory::response()->sendError("You have not permission for the folder $folder", 403);  
+                $gr = $rows[0]['r'];
+                $gw = $rows[0]['w'];
+    
+                if (!$gw)
+                    Factory::response()->sendError("You have not permission for the folder $folder", 403);
+           
+                unset($data['folder']);    
+                $data[$f->field] = $f->value;
+                $data['belongs_to'] = $f->belongs_to;
+
+            }else {
+                if (!$this->is_admin && $rows[0]['belongs_to'] != $this->uid){
+                    Factory::response()->sendCode(403);
+                }
+            }   
+
+            if($instance->delete()){
+                Factory::response()->sendJson("OK");
+            }	
+            else
+                Factory::response()->sendError("Record not found",404);
+
+        } catch (\Exception $e) {
+            Factory::response()->sendError("Error during PATCH for id=$id with message: {$e->getMessage()}");
+        }
+
+    } // 
+       
     
 }  

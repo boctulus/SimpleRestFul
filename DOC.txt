@@ -37,4 +37,46 @@ Sin embargo también puede restringir a un folder en particular:
 
 Los permisos para los folders se conceden creando entradas en la tabla group_permissions y es importante notar que debe darse explícitamente permiso al owner (así como a los otros usuarios) para que éste ver registros dentro de ese folder.
 
+Obviamente cada usuario puede listar, editar o borrar sus folders usando el endpoint /api/folders
 
+Igualmente cada usuario puede hacer CRUD sobre los permisos de "grupo" y para "otros" a través de sus respectivos endpoints /api/GroupPermissions y /api/OtherPermissions respectivamente de modo de permitir a otros miembros acceso de lectura y/o escritura de sus registros.
+
+Para crear un registro en un folder del que se ha concedido permiso de escritura se incluye como campo el id del "folder". Ej:
+
+	POST /api/products
+
+	{
+	    "name": "Vodka venezolanooooooooo",
+	    "description": "de Vzla",
+	    "size": "1L",
+	    "cost": "15",
+	    "folder": "1"
+	}
+
+En caso de no tener acceso al folder recibiremos un mensaje de error como:
+
+	{
+	    "error": "You have not permission for the folder 2"
+	}
+
+Igualmente para modificar un registro de otro usuario que nos ha compartido su folder especificamos el id del folder:
+
+	PUT /api/products/136
+
+	{
+	    "name": "Vodka venezolanoxxxx",
+	    "description": "de Vzla",
+	    "size": "1L",
+	    "cost": "15",
+	    "folder": "1"
+	}
+
+Mismo para borrar un registro perteneciente a un folder:
+
+	DELETE /api/products/136
+
+	{
+    	"folder": "1"
+	}
+
+	

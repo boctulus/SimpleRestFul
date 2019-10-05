@@ -1,5 +1,19 @@
 # TODO
 
+- Eliminar belongs_to de los requests para evitar se puedan cambiarle el owner a un registro:
+
+PUT http://simplerest.lan/api/products/133
+
+{
+    "name": "Vodka venezolano",
+    "description": "de Vzla",
+    "size": "1L",
+    "cost": "15",
+    "belongs_to": "90"   <------------- problema
+}
+
+Actualmente la seguridad impide que puedan modificarse registros que no nos pertenecen pero nada impide que se los asignemos ("donemos") a terceros.
+
 - Soportar filtrado por valores NULL
 - Capturar excepciones como:
 

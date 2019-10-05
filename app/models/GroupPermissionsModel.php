@@ -7,7 +7,7 @@ class GroupPermissionsModel extends Model
 {
 	protected $table_name = "group_permissions";
 	protected $id_name = 'id';
-	protected $fillable = ['folder_id', 'member', 'r', 'w'];
+	protected $fillable = ['folder_id', 'belongs_to', 'member', 'r', 'w'];
   
 	/*
 		Types are INT, STR and BOOL among others
@@ -16,6 +16,7 @@ class GroupPermissionsModel extends Model
 	protected $schema = [
 		'id' => 'INT',
 		'folder_id' => 'INT',
+		'belongs_to' => 'INT',
 		'member' => 'INT',
 		'r' => 'INT',
 		'w' => 'INT'		

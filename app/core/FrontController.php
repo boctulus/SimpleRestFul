@@ -26,15 +26,15 @@ class FrontController
         if ($_params[0]=='api'){
             @list($controller) = array_slice($_params,1,1);
             $params = array_slice($_params,2);
-            $req->setParams($params); ///        
+            $req->setParams($params);     
             $namespace = 'simplerest\\api\\';
             
-            $class_name = $namespace . ucfirst($controller);
+            $class_name = $namespace . ucfirst($controller); //
             $method = strtolower($_SERVER['REQUEST_METHOD']);
         }else{
             @list($controller, $action) = array_slice($_params,0,2);
             $params = array_slice($_params,2);
-            $req->setParams($params); ///
+            $req->setParams($params);
             $namespace = 'simplerest\\controllers\\';
 
             $default_controller_name = substr($config['DEFAULT_CONTROLLER'],0, strlen($config['DEFAULT_CONTROLLER'])-10);

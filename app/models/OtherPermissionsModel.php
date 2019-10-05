@@ -7,7 +7,7 @@ class OtherPermissionsModel extends Model
 {
 	protected $table_name = "other_permissions";
 	protected $id_name = 'id';
-	protected $fillable = ['folder_id', 'r', 'w'];
+	protected $fillable = ['folder_id', 'belongs_to', 'r', 'w'];
  
 	/*
 		Types are INT, STR and BOOL among others
@@ -16,6 +16,7 @@ class OtherPermissionsModel extends Model
 	protected $schema = [
 		'id' => 'INT',
 		'folder_id' => 'INT',
+		'belongs_to' => 'INT',
 		'r' => 'INT',
 		'w' => 'INT'			
 	];

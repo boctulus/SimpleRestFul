@@ -3,11 +3,11 @@ namespace simplerest\models;
 
 use simplerest\core\Model;
 
-class FolderModel extends Model 
+class FoldersModel extends Model 
 {
-	protected $table_name = "folder";
+	protected $table_name = "folders";
 	protected $id_name = 'id';
-	protected $fillable = ['resource_table', 'field', 'value', 'owner'];
+	protected $fillable = ['resource_table', 'field', 'value', 'belongs_to'];
   
 	/*
 		Types are INT, STR and BOOL among others
@@ -18,7 +18,7 @@ class FolderModel extends Model
 		'resource_table' => 'STR',
 		'field' => 'STR',
 		'value' => 'STR',
-		'owner' => 'INT'	
+		'belongs_to' => 'INT'	
 	];
 
     public function __construct($db = NULL){
