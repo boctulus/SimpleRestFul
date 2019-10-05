@@ -9,9 +9,9 @@ La implementación del ACL es parecido al de Linux, habiendo permisos a nivel de
 El framework maneja varias tablas para implementar el ACL, entre ellas `group_permissions` se encarga de mantener los permisos de lectura y escritura concedidos por el usuario (owner del recurso) a cierto grupo de usuarios. El campo "register" hace referencia al id de registro en la tabla del endpoint correspondiente (productos, ticketes, etc) y en caso de ser NULL se toma como comodín afectando a todos los registros de esa tabla para ese owner.
 
 
-# folders
+# Folders
 
-Sobre cada recurso se pueden crear espacios separados llamados "folders" a los cuales se les pueden establecer permisos para que otros usuarios los visualicen.
+Sobre cada recurso se pueden crear espacios virtuales separados llamados "folders" a los cuales se les pueden establecer permisos para que otros usuarios los visualicen. Estos folders no tienen nada que ver con el sistema de archivos.
 
 Para acceder a un folder se especifica el id del folder y otros usuarios pueden entonces listar o visualizar recursos que se le hayan compartido.
 
@@ -24,4 +24,17 @@ Por supuesto pueden aplicarse otros filtros:
 Y puede visualizarse un registro en particular (ej: 124) para el que no tendríamos permiso si especificamos el folder:
 
 	GET /api/products/124?folder=1		
+
+Un usuario con rol de administrador en principio obtendrá todos los registros para un endpoint incluidos los que pertenecen a folders privados de otros usuarios:
+
+	GET /api/products
+
+<-- obtiene todos los registros indiscriminadamente
+
+Sin embargo también puede restringir a un folder en particular:
+
+	GET /api/products?folder=57
+
+Los permisos para los folders se conceden creando entradas en la tabla group_permissions y es importante notar que debe darse explícitamente permiso al owner (así como a los otros usuarios) para que éste ver registros dentro de ese folder.
+
 

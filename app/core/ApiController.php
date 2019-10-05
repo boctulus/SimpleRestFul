@@ -136,6 +136,13 @@ abstract class ApiController extends Controller
         $folder = Arrays::shift($_get,'folder');
 
         if (!empty($folder)){
+            $f = new FolderModel($conn);
+            $f->id = $folder;    
+            $ok = $f->fetch(['field', 'value']);
+
+            if (!$ok)
+                Factory::response()->sendError('Folder not found', 404);  
+
             $g = new GroupPermissionsModel($conn);
             $seek = [
                 ['folder_id', $folder], 
@@ -144,17 +151,13 @@ abstract class ApiController extends Controller
             $rows = $g->filter(null, $seek);
 
             if (empty($rows))
-                Factory::response()->sendError('Folder not found', 404);  
+                Factory::response()->sendError("You have not permission for the folder $folder", 403);  
 
             $gr = $rows[0]['r'];
             $gw = $rows[0]['w'];
 
             if (!$gr)
-                Factory::response()->sendError('You have not permission for the folder', 403);
-
-            $f = new FolderModel($conn);
-            $f->id = $folder;    
-            $f->fetch(['field', 'value']);
+                Factory::response()->sendError("You have not permission for the folder $folder", 403);
         }        
         ////////////////////////////////////////  
 

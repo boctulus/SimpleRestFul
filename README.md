@@ -24,6 +24,11 @@
     GET /api/users?exclude=firstname,lastname
 
 
+### Select null values
+
+    GET /api/products?description=NULL
+
+
 ## POST <CREATE>
 
     POST /api/products

@@ -82,7 +82,7 @@ class Model {
 	/** 
 	 * Get by id
 	 * 
-	 * No filter
+	 * @return bool success
 	 */
 	function fetch(array $fields = null)
 	{
