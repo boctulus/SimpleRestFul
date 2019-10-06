@@ -2,6 +2,8 @@
 
 namespace simplerest\core;
 
+use InvalidArgumentException;
+use simplerest\api\OtherPermissions;
 use simplerest\core\interfaces\IAuth;
 use simplerest\libs\Factory;
 use simplerest\libs\Arrays;
@@ -108,6 +110,42 @@ abstract class ApiController extends Controller
     function options(){
     }
 
+    /*
+        @param integer folder_id
+        @param object connection
+        @param string r | w
+    */
+    protected function get_perm($folder, $conn, $interest)
+    {
+        if ($interest != 'r' && $interest != 'w')
+            throw new \InvalidArgumentException("Permissions are 'r' or 'w' but not '$interest'");
+
+        $o = new OtherPermissionsModel($conn);
+        $rows = $o->filter(null, ['folder_id', $folder]);
+
+        $r = $rows[0]['r'] ?? null;
+        $w = $rows[0]['w'] ?? null;
+
+        if (($interest == 'r' && $r) || ($interest == 'w' && $w)) {
+            return true;
+        }
+        
+        $g = new GroupPermissionsModel($conn);
+        $rows = $g->filter(null, [
+                                    ['folder_id', $folder], 
+                                    ['member', $this->uid]
+        ]);
+
+        $r = $rows[0]['r'] ?? null;
+        $w = $rows[0]['w'] ?? null;
+
+        if (($interest == 'r' && $r) || ($interest == 'w' && $w)) {
+            return true;
+        }
+
+        return false;
+    }
+
     function get(int $id = null){
         $conn = Database::getConnection($this->config['database']);
 
@@ -124,8 +162,7 @@ abstract class ApiController extends Controller
 
         $fields = Arrays::shift($_get,'fields');
         $fields = $fields != NULL ? explode(',',$fields) : NULL;
-        
-        ///
+
         $exclude = Arrays::shift($_get,'exclude');
         $exclude = $exclude != NULL ? explode(',',$exclude) : NULL;
 
@@ -135,30 +172,18 @@ abstract class ApiController extends Controller
         ////////////////////////////////////////
         $folder = Arrays::shift($_get,'folder');
 
-        if (!empty($folder)){
+        if ($folder !== null)
+        {
             $f = new FoldersModel($conn);
             $f->id = $folder;    
-            $ok = $f->fetch(['field', 'value']);
-
+            $ok = $f->fetch();
+    
             if (!$ok)
-                Factory::response()->sendError('Folder not found', 404);  
-
-            $g = new GroupPermissionsModel($conn);
-            $seek = [
-                ['folder_id', $folder], 
-                ['member', $this->uid]
-            ];
-            $rows = $g->filter(null, $seek);
-
-            if (empty($rows))
-                Factory::response()->sendError("You have not permission for the folder $folder", 403);  
-
-            $gr = $rows[0]['r'];
-            $gw = $rows[0]['w'];
-
-            if (!$gr)
+                Factory::response()->sendError('Folder not found', 404); 
+    
+            if (!$this->get_perm($folder, $conn, 'r'))
                 Factory::response()->sendError("You have not permission for the folder $folder", 403);
-        }        
+        }    
         ////////////////////////////////////////  
 
         //var_dump($_get);
@@ -234,33 +259,22 @@ abstract class ApiController extends Controller
 
             $data['belongs_to'] = $this->uid; //
         
-            if (!empty($folder)){
+            if ($folder !== null)
+            {
                 $f = new FoldersModel($conn);
                 $f->id = $folder;    
                 $ok = $f->fetch();
-    
+        
                 if (!$ok)
-                    Factory::response()->sendError('Folder $folder not found', 404);  
-    
-                $g = new GroupPermissionsModel($conn);
-                $seek = [
-                    ['folder_id', $folder], 
-                    ['member', $this->uid]
-                ];
-                $rows = $g->filter(null, $seek);
-    
-                if (empty($rows))
-                    Factory::response()->sendError("You have not permission for the folder $folder", 403);  
-                $gr = $rows[0]['r'];
-                $gw = $rows[0]['w'];
-    
-                if (!$gw)
+                    Factory::response()->sendError('Folder not found', 404); 
+        
+                if (!$this->get_perm($folder, $conn, 'w'))
                     Factory::response()->sendError("You have not permission for the folder $folder", 403);
-           
+
                 unset($data['folder']);    
                 $data[$f->field] = $f->value;
-                $data['belongs_to'] = $f->belongs_to;
-            }        
+                $data['belongs_to'] = $f->belongs_to;    
+            }    
 
             if ($instance->create($data)!==false){
                 Factory::response()->send(['id' => $instance->id], 201);
@@ -305,34 +319,23 @@ abstract class ApiController extends Controller
                 Factory::response()->code(404)->sendError("Register for id=$id does not exists");
             }
 
-            if (!empty($folder)){
+            if ($folder !== null)
+            {
                 $f = new FoldersModel($conn);
                 $f->id = $folder;    
                 $ok = $f->fetch();
-    
+        
                 if (!$ok)
-                    Factory::response()->sendError('Folder $folder not found', 404);  
-    
-                $g = new GroupPermissionsModel($conn);
-                $seek = [
-                    ['folder_id', $folder], 
-                    ['member', $this->uid]
-                ];
-                $rows = $g->filter(null, $seek);
-    
-                if (empty($rows))
-                    Factory::response()->sendError("You have not permission for the folder $folder", 403);  
-                $gr = $rows[0]['r'];
-                $gw = $rows[0]['w'];
-    
-                if (!$gw)
+                    Factory::response()->sendError('Folder not found', 404); 
+        
+                if (!$this->get_perm($folder, $conn, 'w'))
                     Factory::response()->sendError("You have not permission for the folder $folder", 403);
-           
+
                 unset($data['folder']);    
                 $data[$f->field] = $f->value;
-                $data['belongs_to'] = $f->belongs_to;
+                $data['belongs_to'] = $f->belongs_to;    
 
-            }else {
+            }else{
                 if (!$this->is_admin && $rows[0]['belongs_to'] != $this->uid){
                     Factory::response()->sendCode(403);
                 }
@@ -373,32 +376,21 @@ abstract class ApiController extends Controller
                 Factory::response()->code(404)->sendError("Register for id=$id does not exists");
             }
 
-            if (!empty($folder)){
+            if ($folder !== null)
+            {
                 $f = new FoldersModel($conn);
                 $f->id = $folder;    
                 $ok = $f->fetch();
-    
+        
                 if (!$ok)
-                    Factory::response()->sendError('Folder $folder not found', 404);  
-    
-                $g = new GroupPermissionsModel($conn);
-                $seek = [
-                    ['folder_id', $folder], 
-                    ['member', $this->uid]
-                ];
-                $rows = $g->filter(null, $seek);
-    
-                if (empty($rows))
-                    Factory::response()->sendError("You have not permission for the folder $folder", 403);  
-                $gr = $rows[0]['r'];
-                $gw = $rows[0]['w'];
-    
-                if (!$gw)
+                    Factory::response()->sendError('Folder not found', 404); 
+        
+                if (!$this->get_perm($folder, $conn, 'w'))
                     Factory::response()->sendError("You have not permission for the folder $folder", 403);
-           
+
                 unset($data['folder']);    
                 $data[$f->field] = $f->value;
-                $data['belongs_to'] = $f->belongs_to;
+                $data['belongs_to'] = $f->belongs_to;    
 
             }else {
                 if (!$this->is_admin && $rows[0]['belongs_to'] != $this->uid){
@@ -436,32 +428,21 @@ abstract class ApiController extends Controller
                 Factory::response()->code(404)->sendError("Register for id=$id does not exists");
             }
 
-            if (!empty($folder)){
+            if ($folder !== null)
+            {
                 $f = new FoldersModel($conn);
                 $f->id = $folder;    
                 $ok = $f->fetch();
-    
+        
                 if (!$ok)
-                    Factory::response()->sendError('Folder $folder not found', 404);  
-    
-                $g = new GroupPermissionsModel($conn);
-                $seek = [
-                    ['folder_id', $folder], 
-                    ['member', $this->uid]
-                ];
-                $rows = $g->filter(null, $seek);
-    
-                if (empty($rows))
-                    Factory::response()->sendError("You have not permission for the folder $folder", 403);  
-                $gr = $rows[0]['r'];
-                $gw = $rows[0]['w'];
-    
-                if (!$gw)
+                    Factory::response()->sendError('Folder not found', 404); 
+        
+                if (!$this->get_perm($folder, $conn, 'w'))
                     Factory::response()->sendError("You have not permission for the folder $folder", 403);
-           
+
                 unset($data['folder']);    
                 $data[$f->field] = $f->value;
-                $data['belongs_to'] = $f->belongs_to;
+                $data['belongs_to'] = $f->belongs_to;    
 
             }else {
                 if (!$this->is_admin && $rows[0]['belongs_to'] != $this->uid){
