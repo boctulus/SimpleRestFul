@@ -82,7 +82,15 @@ abstract class ApiController extends Controller
         }    
     }
 
-    // mover a Response
+    
+    /**
+     * setheaders
+     * mover a Response *
+     *
+     * @param  mixed $headers
+     *
+     * @return void
+     */
     private function setheaders(array $headers = []) {
         $headers = array_merge($this->default_headers, $headers);     
 
@@ -94,12 +102,27 @@ abstract class ApiController extends Controller
         }
     }
 
+    /**
+     * exception_handler
+     *
+     * @param  mixed $e
+     *
+     * @return void
+     */
     function exception_handler($e) {
         Factory::response()->sendError($e->getMessage());
     }
 
-    // discard conentent (body)
-    function head($id = null) {
+    
+    /**
+     * head
+     * discard conentent (body)
+     * 
+     * @param  mixed $id
+     *
+     * @return void
+     */
+    function head(int $id = null) {
         if (method_exists($this,'get')){
             ob_start();
             $this->get($id);
@@ -107,15 +130,26 @@ abstract class ApiController extends Controller
         }
     }
 
+    /**
+     * options
+     *
+     * @return void
+     */
     function options(){
     }
 
-    /*
-        @param integer folder_id
-        @param object connection
-        @param string r | w
-    */
-    protected function get_perm($folder, $conn, $interest)
+ 
+    /**
+     * get_perm
+     *
+     * @param  string $table
+     * @param  string $folder
+     * @param  object $conn
+     * @param  string $interest
+     *
+     * @return bool
+     */
+    protected function get_perm(string $folder, object $conn, string $interest)
     {
         if ($interest != 'r' && $interest != 'w')
             throw new \InvalidArgumentException("Permissions are 'r' or 'w' but not '$interest'");
@@ -146,6 +180,13 @@ abstract class ApiController extends Controller
         return false;
     }
 
+    /**
+     * get
+     *
+     * @param  mixed $id
+     *
+     * @return void
+     */
     function get(int $id = null){
         $conn = Database::getConnection($this->config['database']);
 
@@ -169,7 +210,6 @@ abstract class ApiController extends Controller
         if ($exclude != null)
             $instance->hide($exclude);
          
-        ////////////////////////////////////////
         $folder = Arrays::shift($_get,'folder');
 
         if ($folder !== null)
@@ -178,15 +218,12 @@ abstract class ApiController extends Controller
             $f->id = $folder;    
             $ok = $f->fetch();
     
-            if (!$ok)
+            if (!$ok || $f->resource_table!=$this->model_table)
                 Factory::response()->sendError('Folder not found', 404); 
     
             if (!$this->get_perm($folder, $conn, 'r'))
                 Factory::response()->sendError("You have not permission for the folder $folder", 403);
         }    
-        ////////////////////////////////////////  
-
-        //var_dump($_get);
 
         if ($id != null)
         {
@@ -238,6 +275,12 @@ abstract class ApiController extends Controller
         }
     } // 
 
+
+    /**
+     * post
+     *
+     * @return void
+     */
     function post(){
         $data = Factory::request()->getBody();
 
@@ -265,7 +308,7 @@ abstract class ApiController extends Controller
                 $f->id = $folder;    
                 $ok = $f->fetch();
         
-                if (!$ok)
+                if (!$ok || $f->resource_table!=$this->model_table)
                     Factory::response()->sendError('Folder not found', 404); 
         
                 if (!$this->get_perm($folder, $conn, 'w'))
@@ -289,6 +332,13 @@ abstract class ApiController extends Controller
     } // 
     
         
+    /**
+     * put
+     *
+     * @param  mixed $id
+     *
+     * @return void
+     */
     function put($id = null){
         if ($id == null)
             Factory::response()->code(400)->sendError("Lacks id in request");
@@ -311,13 +361,15 @@ abstract class ApiController extends Controller
         try {
             $conn = Database::getConnection($this->config['database']);
             $instance->setConn($conn);
-            $instance->id = $id;
 
+            $instance->id = $id;
             $rows = $instance->filter(null, ['id', $id]);
 
             if (count($rows) == 0){
                 Factory::response()->code(404)->sendError("Register for id=$id does not exists");
             }
+
+            $data['belongs_to'] = $this->uid; //
 
             if ($folder !== null)
             {
@@ -325,7 +377,7 @@ abstract class ApiController extends Controller
                 $f->id = $folder;    
                 $ok = $f->fetch();
         
-                if (!$ok)
+                if (!$ok || $f->resource_table!=$this->model_table)
                     Factory::response()->sendError('Folder not found', 404); 
         
                 if (!$this->get_perm($folder, $conn, 'w'))
@@ -340,7 +392,7 @@ abstract class ApiController extends Controller
                     Factory::response()->sendCode(403);
                 }
             }        
-    
+
             if($instance->update($data)!==false)
                 Factory::response()->sendJson("OK");
             else
@@ -351,6 +403,14 @@ abstract class ApiController extends Controller
 
     } // 
     
+
+    /**
+     * patch
+     *
+     * @param  mixed $id
+     *
+     * @return void
+     */
     function patch($id = NULL)
     { 
         if ($id == null)
@@ -376,13 +436,15 @@ abstract class ApiController extends Controller
                 Factory::response()->code(404)->sendError("Register for id=$id does not exists");
             }
 
+            $data['belongs_to'] = $this->uid; //
+
             if ($folder !== null)
             {
                 $f = new FoldersModel($conn);
                 $f->id = $folder;    
                 $ok = $f->fetch();
         
-                if (!$ok)
+                if (!$ok || $f->resource_table!=$this->model_table)
                     Factory::response()->sendError('Folder not found', 404); 
         
                 if (!$this->get_perm($folder, $conn, 'w'))
@@ -407,7 +469,15 @@ abstract class ApiController extends Controller
             Factory::response()->sendError("Error during PATCH for id=$id with message: {$e->getMessage()}");
         }
     } //
+
         
+    /**
+     * delete
+     *
+     * @param  mixed $id
+     *
+     * @return void
+     */
     function delete($id = NULL){
         if($id == NULL)
             Factory::response()->sendError("Lacks id in request",405);
@@ -434,7 +504,7 @@ abstract class ApiController extends Controller
                 $f->id = $folder;    
                 $ok = $f->fetch();
         
-                if (!$ok)
+                if (!$ok || $f->resource_table!=$this->model_table)
                     Factory::response()->sendError('Folder not found', 404); 
         
                 if (!$this->get_perm($folder, $conn, 'w'))

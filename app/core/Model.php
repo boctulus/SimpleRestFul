@@ -30,8 +30,15 @@ class Model {
 		$this->properties = array_keys($this->schema);
 	}
 
-	// filter results 
-	private function _removehidden(&$fields)
+
+	/**
+	 * removehidden
+	 *
+	 * @param  array $fields
+	 *
+	 * @return void
+	 */
+	private function removehidden(&$fields)
 	{	
 		if (!empty($this->hidden)){
 			if (empty($fields)) {
@@ -46,8 +53,16 @@ class Model {
 		}
 	}
 
-	// remove from hidden list of fields
-	function unhide($unhidden_fields){
+	
+	/**
+	 * unhide
+	 * remove from hidden list of fields
+	 * 
+	 * @param  mixed $unhidden_fields
+	 *
+	 * @return void
+	 */
+	function unhide(array $unhidden_fields){
 		if (!empty($this->hidden) && !empty($unhidden_fields)){			
 			foreach ($unhidden_fields as $uf){
 				$k = array_search($uf, $this->hidden);
@@ -56,20 +71,44 @@ class Model {
 		}
 	}
 
-	// hide a field from fetch methods 
+	
+	/**
+	 * hide
+	 * turn off field visibility from fetch methods 
+	 * 
+	 * @param  mixed $fields
+	 *
+	 * @return void
+	 */
 	function hide(array $fields){
 		foreach ($fields as $f)
 			$this->hidden[] = $f;
 	}
 
-	// makes a field fillable
+	
+	/**
+	 * fill
+	 * makes a field fillable
+	 *
+	 * @param  mixed $fields
+	 *
+	 * @return void
+	 */
 	function fill(array $fields){
 		foreach ($fields as $f)
 			$this->fillable[] = $f;
 	}
 
-	// remove from fillable list of fields
-	function unfill($fields){
+	
+	/**
+	 * unfill
+	 * remove from fillable list of fields
+	 * 
+	 * @param  mixed $fields
+	 *
+	 * @return void
+	 */
+	function unfill(array $fields){
 		if (!empty($this->fillable) && !empty($fields)){			
 			foreach ($fields as $uf){
 				$k = array_search($uf, $this->fillable);
@@ -79,14 +118,16 @@ class Model {
 	}
 
 
-	/** 
-	 * Get by id
-	 * 
-	 * @return bool success
+	/**
+	 * fetch
+	 *
+	 * @param  array $fields
+	 *
+	 * @return bool
 	 */
 	function fetch(array $fields = null)
 	{
-		$this->_removehidden($fields);
+		$this->removehidden($fields);
 
 		if ($fields == null){
 			$q  = 'SELECT *';
@@ -113,9 +154,19 @@ class Model {
 		return true;
 	}
 	
+	/**
+	 * fetchAll
+	 *
+	 * @param  array $fields
+	 * @param  array $order
+	 * @param  int $limit
+	 * @param  int $offset
+	 *
+	 * @return mixed
+	 */
 	function fetchAll(array $fields = null, array $order = NULL, int $limit = NULL, int $offset = 0)
 	{
-		$this->_removehidden($fields);
+		$this->removehidden($fields);
 
 		if($limit>0 || $order!=NULL){
 			try {
@@ -160,15 +211,25 @@ class Model {
 			return false;	
 	}
 
-	/*
-		@return array | false
-	*/
+	
+	/**
+	 * filter
+	 *
+	 * @param  array $fields
+	 * @param  array $conditions
+	 * @param  string $conjunction
+	 * @param  array $order
+	 * @param  int $limit
+	 * @param  int $offset
+	 *
+	 * @return array | false
+	 */
 	function filter(array $fields = null, array $conditions, $conjunction = null, array $order = null, int $limit = NULL, int $offset = 0)
 	{
 		if (empty($conjunction))
 			$conjunction = 'AND';
 
-		$this->_removehidden($fields);
+		$this->removehidden($fields);
 
 		if($limit>0 || $order!=NULL){
 			try {
@@ -323,8 +384,16 @@ class Model {
 			return false;
 	}
 
-	// It admits partial updates
-	function update($data)
+	
+	/**
+	 * update
+	 * It admits partial updates
+	 *
+	 * @param  array $data
+	 *
+	 * @return mixed
+	 */
+	function update(array $data)
 	{
 		$vars   = array_keys($data);
 		$values = array_values($data);
@@ -363,6 +432,11 @@ class Model {
 			return false;	
 	}
 
+	/**
+	 * delete
+	 *
+	 * @return mixed
+	 */
 	function delete()
 	{
 		$q = "DELETE FROM ".$this->table_name." WHERE ".$this->id_name." = ?";
