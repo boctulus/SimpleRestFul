@@ -20,6 +20,8 @@ abstract class ApiController extends Controller
     protected $auth_payload = null;
     protected $uid;
     protected $is_admin;
+    protected $role;
+    protected $folder_field;
     protected $default_headers = [
         'access-control-allow-Methods' => 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
         'access-control-allow-credentials' => 'true',
@@ -51,16 +53,16 @@ abstract class ApiController extends Controller
             if (!empty($this->auth_payload)){
                 $this->uid = $this->auth_payload->uid;
                 $this->is_admin = $this->auth_payload->is_admin;
-                $role  = $this->auth_payload->user_role;
+                $this->role  = $this->auth_payload->user_role;
             }else{
                 $this->uid = null;
                 $this->is_admin = false;
-                $role = 'guest';
+                $this->role = 'guest';
             }
 
-            $cruds = $this->scope[$role];
+            $cruds = $this->scope[$this->role];
 
-            if (!is_null($this->scope[$role])){
+            if (!is_null($this->scope[$this->role])){
                 foreach ($operations as $op => $verbs) {
                     if (in_array($op, $cruds))
                         $this->callable = array_merge($this->callable, $verbs);
@@ -231,14 +233,24 @@ abstract class ApiController extends Controller
         {
             $_get = [
                 ['id', $id]
-            ];    
-               
+            ];  
+
+            if ($this->role == 'guest'){
+                $_get[] = [$this->folder_field, NULL];
+            }   
+
             if (empty($folder)){               
                 // User permissions
-                if (!$this->is_admin)
+                if (!$this->is_admin && $this->role!='guest')
                     $_get[] = ['belongs_to', $this->uid];
             }else{
-                $_get[] = [$f->field, $f->value];
+                if (empty($this->folder_field))
+                    Factory::response()->sendError("folder_field is undefined", 403);
+                
+                if ($this->role == 'guest')
+                    Factory::response()->send([]);    
+                    
+                $_get[] = [$this->folder_field, $f->value];
             }
 
             $rows = $instance->filter($fields, $_get); 
@@ -254,15 +266,25 @@ abstract class ApiController extends Controller
 
             // Importante:
             $_get = Arrays::nonassoc($_get);     
+
+            if ($this->role == 'guest'){
+                $_get[] = [$this->folder_field, NULL];
+            }   
                 
             if (empty($folder)){             
                 // User permissions
-                if (!$this->is_admin)
+                if (!$this->is_admin && $this->role!='guest')
                     $_get[] = ['belongs_to', $this->uid];        
             }else{
-                $_get[] = [$f->field, $f->value];
+                if (empty($this->folder_field))
+                    Factory::response()->sendError("'folder_field' is undefined", 403);
+
+                if ($this->role == 'guest')
+                    Factory::response()->send([]);   
+
+                $_get[] = [$this->folder_field, $f->value];
             }
-                    
+
             try {
                 if (!empty($_get)){
                     $rows = $instance->filter($fields, $_get, null, $order, $limit, $offset);
@@ -306,6 +328,9 @@ abstract class ApiController extends Controller
         
             if ($folder !== null)
             {
+                if (empty($this->folder_field))
+                    Factory::response()->sendError("'folder_field' is undefined", 403);
+
                 $f = new FoldersModel($conn);
                 $f->id = $folder;    
                 $ok = $f->fetch();
@@ -317,7 +342,7 @@ abstract class ApiController extends Controller
                     Factory::response()->sendError("You have not permission for the folder $folder", 403);
 
                 unset($data['folder']);    
-                $data[$f->field] = $f->value;
+                $data[$this->folder_field] = $f->value;
                 $data['belongs_to'] = $f->belongs_to;    
             }    
 
@@ -375,6 +400,9 @@ abstract class ApiController extends Controller
 
             if ($folder !== null)
             {
+                if (empty($this->folder_field))
+                    Factory::response()->sendError("'folder_field' is undefined", 403);
+
                 $f = new FoldersModel($conn);
                 $f->id = $folder;    
                 $ok = $f->fetch();
@@ -386,7 +414,7 @@ abstract class ApiController extends Controller
                     Factory::response()->sendError("You have not permission for the folder $folder", 403);
 
                 unset($data['folder']);    
-                $data[$f->field] = $f->value;
+                $data[$this->folder_field] = $f->value;
                 $data['belongs_to'] = $f->belongs_to;    
 
             }else{
@@ -442,6 +470,9 @@ abstract class ApiController extends Controller
 
             if ($folder !== null)
             {
+                if (empty($this->folder_field))
+                    Factory::response()->sendError("'folder_field' is undefined", 403);
+
                 $f = new FoldersModel($conn);
                 $f->id = $folder;    
                 $ok = $f->fetch();
@@ -453,7 +484,7 @@ abstract class ApiController extends Controller
                     Factory::response()->sendError("You have not permission for the folder $folder", 403);
 
                 unset($data['folder']);    
-                $data[$f->field] = $f->value;
+                $data[$this->folder_field] = $f->value;
                 $data['belongs_to'] = $f->belongs_to;    
 
             }else {
@@ -502,6 +533,9 @@ abstract class ApiController extends Controller
 
             if ($folder !== null)
             {
+                if (empty($this->folder_field))
+                    Factory::response()->sendError("'folder_field' is undefined", 403);
+
                 $f = new FoldersModel($conn);
                 $f->id = $folder;    
                 $ok = $f->fetch();
@@ -513,7 +547,7 @@ abstract class ApiController extends Controller
                     Factory::response()->sendError("You have not permission for the folder $folder", 403);
 
                 unset($data['folder']);    
-                $data[$f->field] = $f->value;
+                $data[$this->folder_field] = $f->value;
                 $data['belongs_to'] = $f->belongs_to;    
 
             }else {

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Oct 03, 2019 at 09:44 PM
+-- Generation Time: Oct 07, 2019 at 06:34 PM
 -- Server version: 5.7.27-0ubuntu0.18.04.1
 -- PHP Version: 7.2.19-0ubuntu0.18.04.2
 
@@ -25,26 +25,51 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `folders`
+--
+
+CREATE TABLE `folders` (
+  `id` int(11) NOT NULL,
+  `resource_table` varchar(40) NOT NULL,
+  `value` varchar(40) NOT NULL,
+  `belongs_to` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Dumping data for table `folders`
+--
+
+INSERT INTO `folders` (`id`, `resource_table`, `value`, `belongs_to`) VALUES
+(5, 'products', 'lista', 87),
+(4, 'products', 'lista publica', 90),
+(8, 'products', 'lista10', 90),
+(6, 'products', 'lista2', 90),
+(1, 'products', 'mylist', 1),
+(2, 'products', 'otralista', 72),
+(3, 'products', 'super', 89);
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `group_permissions`
 --
 
 CREATE TABLE `group_permissions` (
   `id` int(11) NOT NULL,
-  `resource_table` varchar(80) NOT NULL,
-  `register` int(11) DEFAULT NULL,
-  `owner` int(11) NOT NULL,
+  `folder_id` int(11) NOT NULL,
+  `belongs_to` int(11) NOT NULL,
   `member` int(11) NOT NULL,
-  `g_read` tinyint(4) NOT NULL,
-  `g_write` tinyint(4) NOT NULL
+  `r` tinyint(4) NOT NULL,
+  `w` tinyint(4) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
 -- Dumping data for table `group_permissions`
 --
 
-INSERT INTO `group_permissions` (`id`, `resource_table`, `register`, `owner`, `member`, `g_read`, `g_write`) VALUES
-(7, 'products', NULL, 1, 4, 1, 1),
-(8, 'products', NULL, 4, 89, 1, 0);
+INSERT INTO `group_permissions` (`id`, `folder_id`, `belongs_to`, `member`, `r`, `w`) VALUES
+(1, 1, 1, 4, 1, 1),
+(2, 2, 72, 79, 1, 1);
 
 -- --------------------------------------------------------
 
@@ -54,11 +79,19 @@ INSERT INTO `group_permissions` (`id`, `resource_table`, `register`, `owner`, `m
 
 CREATE TABLE `other_permissions` (
   `id` int(11) NOT NULL,
-  `resource_table` varchar(80) NOT NULL,
-  `owner` int(11) NOT NULL,
-  `o_read` tinyint(4) NOT NULL,
-  `o_write` tinyint(4) NOT NULL
+  `folder_id` int(11) NOT NULL,
+  `belongs_to` int(11) NOT NULL,
+  `r` tinyint(4) NOT NULL,
+  `w` tinyint(4) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Dumping data for table `other_permissions`
+--
+
+INSERT INTO `other_permissions` (`id`, `folder_id`, `belongs_to`, `r`, `w`) VALUES
+(1, 4, 90, 1, 1),
+(2, 5, 87, 1, 1);
 
 -- --------------------------------------------------------
 
@@ -72,6 +105,7 @@ CREATE TABLE `products` (
   `description` varchar(240) NOT NULL,
   `size` varchar(30) NOT NULL,
   `cost` int(11) NOT NULL,
+  `workspace` varchar(40) DEFAULT NULL,
   `belongs_to` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -79,23 +113,27 @@ CREATE TABLE `products` (
 -- Dumping data for table `products`
 --
 
-INSERT INTO `products` (`id`, `name`, `description`, `size`, `cost`, `belongs_to`) VALUES
-(100, 'Vodka', 'China', '2 1/4 L', 120, 4),
-(103, 'Juice', 'Delicious juice', '1L', 75, 4),
-(105, 'Agua mineral', 'De Córdoba', '1L', 53, 4),
-(106, 'Vodka', 'Rusia', '1L', 290, 4),
-(108, 'Vodka', 'Bangladesh', '2 1/4 L', 700, 4),
-(109, 'Agua minerale', 'De Córdobaaaa', '1L', 530, 4),
-(110, 'AAA', 'aaaa aaaa bbb', '1L', 100, 4),
-(113, 'Vodkaaaa', 'URU', '1L', 550, 86),
-(114, 'AAABBB', 'cccccC', '29', 200, 86),
-(118, '7 Up', 'gaseosa', '1L', 10, 4),
-(119, 'CocaCola', 'gaseosa', '1L', 12, 1),
-(120, 'MiBebida', 'rica rica', '1L', 50, 89),
-(121, 'OtraBebida', 'otra', '1L', 20, 89),
-(122, 'Cerveza de malta', 'Pichu', '1L', 80, 1),
-(123, 'PesiLoca', 'loca', '2L', 50, 1),
-(124, 'CocaCola', 'grande', '2L', 200, 1);
+INSERT INTO `products` (`id`, `name`, `description`, `size`, `cost`, `workspace`, `belongs_to`) VALUES
+(100, 'Vodka', 'China', '2 1/4 L', 129, '', 4),
+(103, 'Juice', 'Delicious juice', '1L', 75, NULL, 4),
+(105, 'Agua mineral', 'De Córdoba', '1L', 525, NULL, 4),
+(106, 'Vodka', 'Rusia', '1L', 390, NULL, 4),
+(113, 'Vodkaaaa', 'URU', '1L', 550, NULL, 86),
+(114, 'AAABBB', 'cccccC', '29', 200, NULL, 86),
+(119, 'CocaCola', 'gaseosa', '1L', 12, NULL, 1),
+(120, 'MiBebida', 'rica rica', '1L', 50, NULL, 89),
+(121, 'OtraBebida', 'otra', '1L', 20, NULL, 89),
+(122, 'Cerveza de malta', 'Pichu', '1L', 80, NULL, 1),
+(123, 'PesiLoca', 'loca', '2L', 50, 'mylist', 1),
+(125, 'Vodka', 'Espectacular!', '1.5L', 199, '', 90),
+(126, 'Uvas fermentadas', 'aaa', '1L', 88, '', 90),
+(127, 'Vodka venezolano', 'del caribe', '1L', 15, NULL, 1),
+(131, 'Vodkaaaabc', 'Rusia', '1L', 550, 'secreto', 4),
+(132, 'Ron venezolano', 'Rico', '1L', 24, NULL, 4),
+(133, 'Vodka venezolano', 'de Vzla', '1L', 15, NULL, 4),
+(137, 'Agua ardiente', 'Si que arde!', '1L', 120, 'lista', 87),
+(140, 'Juguito X', 'de manzana', '1L', 150, 'lista publica', 90),
+(143, 'Agua ', '--', '1L', 10, NULL, 4);
 
 -- --------------------------------------------------------
 
@@ -114,7 +152,6 @@ CREATE TABLE `roles` (
 --
 
 INSERT INTO `roles` (`id`, `name`, `is_admin`) VALUES
-(1, 'guest', 0),
 (2, 'basic', 0),
 (3, 'regular', 0),
 (100, 'admin', 1);
@@ -138,10 +175,10 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `refresh_token`, `login_date`, `user_id`, `role`) VALUES
-(107, '6y7wMpO7p0i3e8iQFh0yV+Kxiot7ZvRibA31UtwWmJz0Lxv+FLuCmJxtLP4/UpiQiT6r0fj5mGm2yEIoDvnrTM/HzWUiPBts9mMheXDpPq5yp2D+k+N8vQ==', 1569781245, 78, 1),
-(108, 'IwG+1lZBGW4TSolhrIPNtZ/P/tcc6jPEWHk3TFX92RziwTweYDnCYiSYvHQiu5r0xzwExwtfyFshFbhvKXBa6aVYGEwZW+qipFmas/3TQM8RWNBRiRtXKw==', 1569781260, 78, 1),
-(109, 'GzALVBWvCinbHGI3peettcBOa2+sMbdCx4lTcwofXCQ6JAyqnugkBScVVGNZ7/xo0HjUeUNkGwF1XRViYW0EuQKW3UbaaOJULkzsuNHXomkEJZxQZNHEtQ==', 1569781277, 78, 1),
-(110, 'y0qvIrSnXjg5D9EIhJ+Q2ljCC9pfLwki0+54f1wthHPdZu8EcPj9jtbS9h1pCNFQife8psL+NAbDeONlRC9aUQiWBO9hD7bfH98ROO/mgMR+1t5nHb0uyQ==', 1569781312, 78, 1),
+(107, '6y7wMpO7p0i3e8iQFh0yV+Kxiot7ZvRibA31UtwWmJz0Lxv+FLuCmJxtLP4/UpiQiT6r0fj5mGm2yEIoDvnrTM/HzWUiPBts9mMheXDpPq5yp2D+k+N8vQ==', 1569781245, 78, 2),
+(108, 'IwG+1lZBGW4TSolhrIPNtZ/P/tcc6jPEWHk3TFX92RziwTweYDnCYiSYvHQiu5r0xzwExwtfyFshFbhvKXBa6aVYGEwZW+qipFmas/3TQM8RWNBRiRtXKw==', 1569781260, 78, 2),
+(109, 'GzALVBWvCinbHGI3peettcBOa2+sMbdCx4lTcwofXCQ6JAyqnugkBScVVGNZ7/xo0HjUeUNkGwF1XRViYW0EuQKW3UbaaOJULkzsuNHXomkEJZxQZNHEtQ==', 1569781277, 78, 2),
+(110, 'y0qvIrSnXjg5D9EIhJ+Q2ljCC9pfLwki0+54f1wthHPdZu8EcPj9jtbS9h1pCNFQife8psL+NAbDeONlRC9aUQiWBO9hD7bfH98ROO/mgMR+1t5nHb0uyQ==', 1569781312, 78, 2),
 (111, 'di3uo1Lt+YBW/MhldXF0viS667Bs4SAOIdgmHdp/AVvYFS208dVMl5quSjA33L0mpr0SSxxGA46f/MhjFIlWuRp7NVclm2/bNVtqqmOHNEOzRVcb9euhDw==', 1569781349, 78, 100),
 (117, '/ofvfcAdCSdz+2jvOsO4t0xsjbib2rEr/fwH+9tygViaW6SAkb4gJ8vPGMG/IZVXEgzLomJnrtrUFsbLFSpOmPpZhLlL4NSmmqAzDkcYBwvVitbipLatsw==', 1569783279, 78, 100),
 (118, '0aaQdLF4wXJlM6Iz36qMo3DXCogTm+iCO75TkKai5Y0UwsBRLH223HVaSMegWdvx2sKGJMytg/bniFhxBatpMBTCaU/P0zZOV0L0L3wQh6zahbTed7t9wA==', 1569783316, 78, 100),
@@ -152,7 +189,7 @@ INSERT INTO `sessions` (`id`, `refresh_token`, `login_date`, `user_id`, `role`) 
 (132, 'o5UTcDbvgRwc+xr7M83OFa1dLN9KIbxy/MfGQgMwwnZqt04XM1F/M1RRzhJkt1pvI9a/XzuAVBzC3wSTRsUMolCoNfAcMM3qKYwdWgSd/eOsdtqNxkvhgQ==', 1569813546, 4, 100),
 (133, '+lBhjl4YMaAlrCDamjOlPN9+iDvZm6wEitc4zGJbIx0lvLBVJ5vRGqEdsZmnLkLZDoz03SfWNgXb5tmwvqPYr7b3kVmQwdB/5DMyWtkFTE+AR+HkKtJXBQ==', 1569813548, 4, 100),
 (135, 'HhH/Kj6UxnstZUKzjaq5aqegVPQaDlGy4D2jTbnZVsbMi5WpCZdV3Q+df0LqG2xss47p6DY7bfJzm2m+IIWZFRBnqXmHSjvEz1a3vgN11iUqWxSMmQtCRg==', 1569813713, 4, 100),
-(146, 'WZMu7gVMZguTvCqmSusbId4TfvDvJEXbD3H8apVaJw8zhjXHw+XMbxeS1xUshyYGMqffawb4bRmMT2RzSWlJq1MEtbeo60p+iJleJSHRIA79YyqpPf2qsA==', 1569867378, 86, 1),
+(146, 'WZMu7gVMZguTvCqmSusbId4TfvDvJEXbD3H8apVaJw8zhjXHw+XMbxeS1xUshyYGMqffawb4bRmMT2RzSWlJq1MEtbeo60p+iJleJSHRIA79YyqpPf2qsA==', 1569867378, 86, 2),
 (147, 'VubW6Fnc7CDTg54LmOnKZQ13BLkKJVNMXQNkV9b4eT3lqusoNmm5DA93knC2Ko12hDcmGQt69Cnns14Umuk5P5DU7P8pLBh5H5lg5JC75r8Wf2vc9Pzg3A==', 1569867390, 86, 2),
 (148, 'pkv7rkDT17P/o5jcqnoxbVg5rpZNXVG7FuCUvgPw+BRrZrhg4yAxkVqTr7dlbl70BzkIxenMosTKbCdXGoW6VqRXL+VMPAx76ljVb5BjU8QgDz+6WGriig==', 1569867393, 86, 2),
 (149, '9gIcgD2vbMLi1vJ32WQ/X8u6bqc11m6SoTmWlbvnOgD+06oxsdlBup63EMu8oOzGi/TMwUMPx0keiBDONFYzP2diyjjUHZaKu67F97JwJetovf/RUcRYLA==', 1569867397, 86, 3),
@@ -178,7 +215,7 @@ INSERT INTO `sessions` (`id`, `refresh_token`, `login_date`, `user_id`, `role`) 
 (174, 'KEmrSdTAUbX5hs71OZTvOH8gcPRA+V/TYPry4Ga5FXgJUBjs89I674ckvnJ8+B04LM36hno0XtelQBUZOFgpDVLvnJehJZiy04spN0bKlo7Lvcf0m/6SvA==', 1569868861, 4, 2),
 (175, 'fh1j5tEAdrNxxYQ1wXXm68DzIt8DhJt+AjYzHwDnW469LmB/lMYWeZO5l6hMFZZmFG/sQyHuBXfDNpbP7R9c0hHnNoOykznxkbzKDDtfZrTxn5W8YiExQQ==', 1569869113, 4, 2),
 (177, '5V0MbNZomo4ezq83/KODC0C98r+CX3FqC8uXFnxRA1JHq8jsx7ljs1Nbtt5l2tB9QE6pcmV/UawphiISKTI4reOcznnoRVrzD/MmpZ3GFgMCUgni/EsAxg==', 1569869178, 4, 2),
-(197, 'wR1CHy04wmASI479wKWPWuKcYJz4TAsKGnGR1FfcTLuVR1CThUecXkPyn+6AwgLupCA3m+P8ZD5rV8+ai2S14Wob7QYg1d3zpHTLzjWVLbQS+CFqKlppbg==', 1570044451, 88, 1),
+(197, 'wR1CHy04wmASI479wKWPWuKcYJz4TAsKGnGR1FfcTLuVR1CThUecXkPyn+6AwgLupCA3m+P8ZD5rV8+ai2S14Wob7QYg1d3zpHTLzjWVLbQS+CFqKlppbg==', 1570044451, 88, 2),
 (198, 'uf+8wFLnpGcITd+E/Ckb1dZshDOcU1QwUb9kkLbUgoaL66FwtBvCA7PX0ZZ5qKB77XA6H99V+w+2WkBPJm6QfFx8X19w/Y8ZI8NvcWNlqVgsBKZKXIIZ3A==', 1570045014, 86, 3),
 (199, 'D/OlQd+uDH0+/onwMM87NPghiX/y1Ag/LeCaevnoU0sn7DOYplsxeeRRWx79KsrlShoqkZxJLhDZzjszCC3IWnQIQQIKjG9ipD2RjGHcpIwZsQuKbmWXsQ==', 1570045017, 86, 3),
 (200, 'sTeJOBEMXHmKhezYKZ1+EqO/CWrkL7+L/uq89t0mUfLTOF6qtWRdlDXqSliS+XeRV8gSd+vPhOUHojWn0JU7u5CcGqTS+e1eXG3QyiEDCY6Hkfi/sr7MNw==', 1570045023, 86, 3),
@@ -200,11 +237,17 @@ INSERT INTO `sessions` (`id`, `refresh_token`, `login_date`, `user_id`, `role`) 
 (216, 'h8BykNjnwWM0VKkNGjhtkuF58vbz5xAbzLKsF7bpwYmpko0ZA/lNS+/hH1+ApoynDwUArikSlO6/mSxfbRQeJBJxcMcmyvX0vGdavWz6kvIMOsTPSTt7ZQ==', 1570045364, 4, 100),
 (217, '+40HXUjJn2z7gCP2VbKA7DGuS2hX6Q4ujtlncoPaKtil0TruXX9KnGaMqBoxXQMoBGSz3oU88zTStRkv/gkGVZfMfP651xjzOwNinN2goDJ5VxLpIkSuQg==', 1570045496, 4, 100),
 (218, 'pw1izsCIlSuloKS7gHiTXbEOfW5LSiPn3PUZiqos/1BKDFmW8JUgfwKp4MqdT4ORPFL3N67leewxCjszs64yLDNxsPxOskT6O0wS+HkTyAO2RVpxMXozWw==', 1570045513, 4, 100),
-(220, 'mbv6nHrVRZErHrlZVwAKaRiEZ0faUtyjQ2sIiwc/svJsOXiXUqT/VpYEshZqDl+VoB+qyZW6uiNhRaDWY/gRSF88Hq1z/0SKEsFD1MBB7Lw/otxAKzscsQ==', 1570045642, 89, 1),
+(220, 'mbv6nHrVRZErHrlZVwAKaRiEZ0faUtyjQ2sIiwc/svJsOXiXUqT/VpYEshZqDl+VoB+qyZW6uiNhRaDWY/gRSF88Hq1z/0SKEsFD1MBB7Lw/otxAKzscsQ==', 1570045642, 89, 2),
 (221, 'y92DK5tV+2pKhBoD7fq/pY1hXBiHz/YY9VJ0PyhqNo4He7zC4VatJw3bizxNgKxG2xyYOfTI3pIk0zCCmVZDi6PGBPiO6Oin2rPdkA9MyGX2A3WTxIJxRg==', 1570045691, 89, 3),
 (226, '69VUxY2LBZJd6y8lxUwcTRakvxbQyT7QJBN57gp29RfJTv7fokBt10ZH1rLM4MS2+jwkLp/mPaUqzqHBqyLRy1IPGGZT+AOmWbNtvdVznEOi+syP0+xFyQ==', 1570052479, 1, 3),
 (228, '+ocrk97NoNDJNNE9rH5mca8lZRLcBndooUL9WITPWJFhe21LYJUhshXv2zVAccGdys42S13HXnCBjTX5KDAqgQZx3jQvzqjc7WdkijQqlHa4vjhCeaULMg==', 1570113646, 4, 2),
-(229, 'qyaniDPhVfBZJs27gKURnAZz1cZC4YL9HumFy9lSRPJvF/coTNpsCx0whmqdk7aLQ9nSpi/7rwsqjUltHaFzr8VFOoIOVRM+mw8PZI2wN9k67bOQA1f6ZA==', 1570116252, 4, 3);
+(234, '1npeW4Cz6AAv2qU0IacqCx2G5SP12AHkl6ZfTxEymnQwAookou+tcJQIAcp3FHEtKt0jN/3X3TtWWbs+rUZ7/BvV8BOQn9pvjpY9pf8GhZQ5Ay2Dn81rbQ==', 1570296240, 1, 3),
+(246, 'qoA9nwDa6YteohpaD7ZfqkUyCHH/d4/HBSqK/jcnnGFKPoZ65zd8k9W41WrnqiJAhad6vdtII1fu5WjON1pz0j75oJPqxQELCc4S7UYX6qjE8qJ33k0aWw==', 1570466224, 4, 2),
+(247, 'bcrofuD4foPklbv12JACRUhsawaNW8zrwxp4Hnr+Zt74dQRxkWkLTMEoVk30AT3si2rv7y4VcVNV5LThMtZrRtSbBGmBJ09FGPCEb1K0sBc7SrhpGylbRQ==', 1570466238, 4, 2),
+(248, 'JxpB+FF3eR76g7bcSL7LYq6TUB92/wjki4PsQV/7lDHf2TS6/QqphtLlvJfbidljShtn9clPpM1LzzqIsjNuI3de60W3epb9DY4K7ee3FDcDZ50QSsXt1A==', 1570466313, 4, 2),
+(249, 'MyYtkQityZJ5O/clZeQph1uITjaM+c4IkJDE0fhdpwPtc9fI4hdWrV2qAVgaLZlpZ1jt1a01gh7YtTKy/w6rTShiEicODjuyxG3u+BUmQXg95St+Dx9dcg==', 1570466403, 4, 2),
+(256, 'ZtEgO5NWzOThMrgmNKXVuUtKm3iOMr0YTgg5yo1cb1lR0Lcukc9kDDhHFsDDic0Uk2UJn4EbC3D8q8oHtdUsFs9lRPGHI75Qex2l8mIdP2slOd6J5ZI/bw==', 1570480878, 1, 3),
+(257, 'PiU7F4stqV2fBaBb9/UwP95BD5+fQvahlRras0v3ZPnOLd6BNfQcsmhdOSa6k08jZLuA7tVbyefnsj5isULYdL/QJHzmDbCR4VEnSCg0GUNrcCKLJpb5kg==', 1570481119, 90, 3);
 
 -- --------------------------------------------------------
 
@@ -220,7 +263,7 @@ CREATE TABLE `users` (
   `password` varchar(45) NOT NULL,
   `enabled` tinyint(1) NOT NULL DEFAULT '1',
   `quota` int(11) NOT NULL DEFAULT '10000',
-  `belongs_to` int(11) NOT NULL
+  `belongs_to` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
@@ -291,7 +334,8 @@ INSERT INTO `users` (`id`, `email`, `firstname`, `lastname`, `password`, `enable
 (86, 'nuevo@gmail.com', 'Norberto', 'Nullo', '561d352157d4dcafc9ca9ba37773711ee4d192fd', 1, 10000, 0),
 (87, 'pedro@gmail.com', 'Pedro', 'Picapiedras', '561d352157d4dcafc9ca9ba37773711ee4d192fd', 1, 10000, 0),
 (88, 'feli@abc', 'Felipe', 'Bozzzolo', '40bd001563085fc35165329ea1ff5c5ecbdbbeef', 1, 10000, 0),
-(89, 'h@', 'Sr H', 'J', '9ee9c0d0bc94a1b9644cee64f1d513ca2f4dafc8', 1, 10000, 0);
+(89, 'h@', 'Sr H', 'J', '9ee9c0d0bc94a1b9644cee64f1d513ca2f4dafc8', 1, 10000, 0),
+(90, 'nano@', 'Nano', 'Perez', '9ee9c0d0bc94a1b9644cee64f1d513ca2f4dafc8', 1, 10000, NULL);
 
 -- --------------------------------------------------------
 
@@ -315,7 +359,6 @@ INSERT INTO `user_role` (`id`, `user_id`, `role_id`, `creation_date`, `modificat
 (1, 5, 2, 1569757474, NULL),
 (2, 1, 100, 1569757474, NULL),
 (3, 4, 100, 1569757474, NULL),
-(4, 14, 1, 1569758595, NULL),
 (5, 9, 100, 1569758632, NULL),
 (6, 11, 100, 1569758637, NULL),
 (7, 13, 100, 1569758640, NULL),
@@ -323,33 +366,41 @@ INSERT INTO `user_role` (`id`, `user_id`, `role_id`, `creation_date`, `modificat
 (10, 48, 2, 0, NULL),
 (11, 86, 2, 0, NULL),
 (12, 86, 3, 0, NULL),
-(13, 86, 1, 0, NULL),
 (14, 86, 100, 0, NULL),
 (15, 87, 3, 0, NULL),
 (16, 89, 3, 0, NULL),
 (17, 4, 3, 0, NULL),
-(18, 1, 3, 0, NULL);
+(18, 1, 3, 0, NULL),
+(20, 90, 3, 0, NULL);
 
 --
 -- Indexes for dumped tables
 --
 
 --
+-- Indexes for table `folders`
+--
+ALTER TABLE `folders`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `resource_table` (`resource_table`,`value`,`belongs_to`),
+  ADD KEY `owner` (`belongs_to`);
+
+--
 -- Indexes for table `group_permissions`
 --
 ALTER TABLE `group_permissions`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `resource_table` (`resource_table`,`owner`,`member`),
-  ADD KEY `owner` (`owner`),
-  ADD KEY `member` (`member`);
+  ADD UNIQUE KEY `folder_id` (`folder_id`,`member`),
+  ADD KEY `member` (`member`),
+  ADD KEY `belongs_to` (`belongs_to`);
 
 --
 -- Indexes for table `other_permissions`
 --
 ALTER TABLE `other_permissions`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `resource` (`resource_table`,`owner`),
-  ADD KEY `user_id` (`owner`);
+  ADD UNIQUE KEY `folder_id` (`folder_id`),
+  ADD KEY `belongs_to` (`belongs_to`);
 
 --
 -- Indexes for table `products`
@@ -395,22 +446,28 @@ ALTER TABLE `user_role`
 --
 
 --
+-- AUTO_INCREMENT for table `folders`
+--
+ALTER TABLE `folders`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+
+--
 -- AUTO_INCREMENT for table `group_permissions`
 --
 ALTER TABLE `group_permissions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `other_permissions`
 --
 ALTER TABLE `other_permissions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `products`
 --
 ALTER TABLE `products`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=125;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=144;
 
 --
 -- AUTO_INCREMENT for table `roles`
@@ -422,36 +479,44 @@ ALTER TABLE `roles`
 -- AUTO_INCREMENT for table `sessions`
 --
 ALTER TABLE `sessions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=230;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=258;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=90;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=91;
 
 --
 -- AUTO_INCREMENT for table `user_role`
 --
 ALTER TABLE `user_role`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- Constraints for dumped tables
 --
 
 --
+-- Constraints for table `folders`
+--
+ALTER TABLE `folders`
+  ADD CONSTRAINT `folders_ibfk_1` FOREIGN KEY (`belongs_to`) REFERENCES `users` (`id`);
+
+--
 -- Constraints for table `group_permissions`
 --
 ALTER TABLE `group_permissions`
-  ADD CONSTRAINT `group_permissions_ibfk_1` FOREIGN KEY (`owner`) REFERENCES `users` (`id`),
-  ADD CONSTRAINT `group_permissions_ibfk_2` FOREIGN KEY (`member`) REFERENCES `users` (`id`);
+  ADD CONSTRAINT `group_permissions_ibfk_1` FOREIGN KEY (`folder_id`) REFERENCES `folders` (`id`),
+  ADD CONSTRAINT `group_permissions_ibfk_2` FOREIGN KEY (`member`) REFERENCES `users` (`id`),
+  ADD CONSTRAINT `group_permissions_ibfk_3` FOREIGN KEY (`belongs_to`) REFERENCES `users` (`id`);
 
 --
 -- Constraints for table `other_permissions`
 --
 ALTER TABLE `other_permissions`
-  ADD CONSTRAINT `other_permissions_ibfk_1` FOREIGN KEY (`owner`) REFERENCES `users` (`id`);
+  ADD CONSTRAINT `other_permissions_ibfk_1` FOREIGN KEY (`folder_id`) REFERENCES `folders` (`id`),
+  ADD CONSTRAINT `other_permissions_ibfk_2` FOREIGN KEY (`belongs_to`) REFERENCES `users` (`id`);
 
 --
 -- Constraints for table `sessions`

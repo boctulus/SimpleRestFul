@@ -6,6 +6,8 @@ use simplerest\core\ApiController;
 
 class MyApiController extends ApiController
 {
+    protected $folder_field;
+    
     // ALC   
     protected $scope = [
         'guest'   => ['read'],  // no envia bearer token

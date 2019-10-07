@@ -6,6 +6,8 @@ use simplerest\controllers\MyApiController;
 
 class Products extends MyApiController
 { 
+    protected $folder_field = 'workspace';
+
     function __construct()
     {
         // CORS
