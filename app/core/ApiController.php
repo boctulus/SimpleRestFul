@@ -235,7 +235,7 @@ abstract class ApiController extends Controller
                 ['id', $id]
             ];  
 
-            if ($this->role == 'guest'){
+            if ($this->role == 'guest' && isset($this->folder_field)){
                 $_get[] = [$this->folder_field, NULL];
             }   
 
@@ -267,7 +267,7 @@ abstract class ApiController extends Controller
             // Importante:
             $_get = Arrays::nonassoc($_get);     
 
-            if ($this->role == 'guest'){
+            if ($this->role == 'guest' && isset($this->folder_field)){
                 $_get[] = [$this->folder_field, NULL];
             }   
                 
