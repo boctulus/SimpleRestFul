@@ -140,19 +140,19 @@ abstract class ApiController extends Controller
 
  
     /**
-     * get_perm
+     * hasPerm
      *
      * @param  string $table
      * @param  string $folder
      * @param  object $conn
-     * @param  string $interest
+     * @param  string $operation
      *
      * @return bool
      */
-    protected function get_perm(string $folder, object $conn, string $interest)
+    protected function hasPerm(string $folder, object $conn, string $operation)
     {
-        if ($interest != 'r' && $interest != 'w')
-            throw new \InvalidArgumentException("Permissions are 'r' or 'w' but not '$interest'");
+        if ($operation != 'r' && $operation != 'w')
+            throw new \InvalidArgumentException("Permissions are 'r' or 'w' but not '$operation'");
 
         $o = new OtherPermissionsModel($conn);
         $rows = $o->filter(null, ['folder_id', $folder]);
@@ -160,7 +160,7 @@ abstract class ApiController extends Controller
         $r = $rows[0]['r'] ?? null;
         $w = $rows[0]['w'] ?? null;
 
-        if (($interest == 'r' && $r) || ($interest == 'w' && $w)) {
+        if (($operation == 'r' && $r) || ($operation == 'w' && $w)) {
             return true;
         }
         
@@ -173,7 +173,7 @@ abstract class ApiController extends Controller
         $r = $rows[0]['r'] ?? null;
         $w = $rows[0]['w'] ?? null;
 
-        if (($interest == 'r' && $r) || ($interest == 'w' && $w)) {
+        if (($operation == 'r' && $r) || ($operation == 'w' && $w)) {
             return true;
         }
 
@@ -221,7 +221,7 @@ abstract class ApiController extends Controller
             if (!$ok || $f->resource_table!=$this->model_table)
                 Factory::response()->sendError('Folder not found', 404); 
     
-            if (!$this->get_perm($folder, $conn, 'r'))
+            if (!$this->hasPerm($folder, $conn, 'r'))
                 Factory::response()->sendError("You have not permission for the folder $folder", 403);
         }    
 
@@ -311,7 +311,7 @@ abstract class ApiController extends Controller
                 if (!$ok || $f->resource_table!=$this->model_table)
                     Factory::response()->sendError('Folder not found', 404); 
         
-                if (!$this->get_perm($folder, $conn, 'w'))
+                if (!$this->hasPerm($folder, $conn, 'w'))
                     Factory::response()->sendError("You have not permission for the folder $folder", 403);
 
                 unset($data['folder']);    
@@ -335,11 +335,11 @@ abstract class ApiController extends Controller
     /**
      * put
      *
-     * @param  mixed $id
+     * @param  int $id
      *
      * @return void
      */
-    function put($id = null){
+    function put(int $id = null){
         if ($id == null)
             Factory::response()->code(400)->sendError("Lacks id in request");
 
@@ -380,7 +380,7 @@ abstract class ApiController extends Controller
                 if (!$ok || $f->resource_table!=$this->model_table)
                     Factory::response()->sendError('Folder not found', 404); 
         
-                if (!$this->get_perm($folder, $conn, 'w'))
+                if (!$this->hasPerm($folder, $conn, 'w'))
                     Factory::response()->sendError("You have not permission for the folder $folder", 403);
 
                 unset($data['folder']);    
@@ -447,7 +447,7 @@ abstract class ApiController extends Controller
                 if (!$ok || $f->resource_table!=$this->model_table)
                     Factory::response()->sendError('Folder not found', 404); 
         
-                if (!$this->get_perm($folder, $conn, 'w'))
+                if (!$this->hasPerm($folder, $conn, 'w'))
                     Factory::response()->sendError("You have not permission for the folder $folder", 403);
 
                 unset($data['folder']);    
@@ -507,7 +507,7 @@ abstract class ApiController extends Controller
                 if (!$ok || $f->resource_table!=$this->model_table)
                     Factory::response()->sendError('Folder not found', 404); 
         
-                if (!$this->get_perm($folder, $conn, 'w'))
+                if (!$this->hasPerm($folder, $conn, 'w'))
                     Factory::response()->sendError("You have not permission for the folder $folder", 403);
 
                 unset($data['folder']);    
