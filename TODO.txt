@@ -1,5 +1,13 @@
 # TODO
 
+- 
+
+- Implementar front con DataTables o bien VueJs
+
+- Swagger for Documentation
+
+Swagger is a widely-used tool to document REST APIs that provides a way to explore the use of a specific API, therefore allowing developers to understand the underlying semantic behavior. It’s a declarative way of adding documentation using annotations which further generates a JSON describing APIs and their usage.
+
 - Al generar los modelos..... modificar la tabla correspondiente agregando el campo belongs_to 
 
 ALTER TABLE `products` ADD `belongs_to` INT NOT NULL AFTER `cost`, ADD INDEX (`belongs_to`);

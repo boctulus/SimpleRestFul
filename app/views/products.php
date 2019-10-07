@@ -125,9 +125,27 @@
 				renew();
 			}
 			
-		}, localStorage.getItem('expires_in') * 1000 - 500); 
+		}, localStorage.getItem('expires_in') * 1000 * 0.97); 
 	});
 	
+	
+	toastr.options = {
+		"closeButton": false,
+		"debug": false,
+		"newestOnTop": false,
+		"progressBar": false,
+		"positionClass": "toast-top-right",
+		"preventDuplicates": false,
+		"onclick": null,
+		"showDuration": "300",
+		"hideDuration": "1000",
+		"timeOut": "5000",
+		"extendedTimeOut": "1000",
+		"showEasing": "swing",
+		"hideEasing": "linear",
+		"showMethod": "fadeIn",
+		"hideMethod": "fadeOut"
+	};
 	
 	function clearForm(){
 		checkpoint();
@@ -147,30 +165,11 @@
 		obj.name = $('#ename').val();	
 		obj.description = $('#edescription').val();	
 		obj.cost = $('#ecost').val();
-		obj.size = $('#esize').val();	
-		//obj.workspace = '';		
+		obj.size = $('#esize').val();		
 					
 		//console.log(obj);	
 					
 		let encoded = JSON.stringify(obj);
-		
-		toastr.options = {
-		  "closeButton": false,
-		  "debug": false,
-		  "newestOnTop": false,
-		  "progressBar": false,
-		  "positionClass": "toast-top-right",
-		  "preventDuplicates": false,
-		  "onclick": null,
-		  "showDuration": "300",
-		  "hideDuration": "1000",
-		  "timeOut": "5000",
-		  "extendedTimeOut": "1000",
-		  "showEasing": "swing",
-		  "hideEasing": "linear",
-		  "showMethod": "fadeIn",
-		  "hideMethod": "fadeOut"
-		}
 
 		$.ajax({
 			type: "PUT",	/* PUT VERB */
@@ -183,24 +182,6 @@
 				if (!data.error){
 					$('#productModalEdit').modal('hide');
 
-					toastr.options = {
-					  "closeButton": false,
-					  "debug": false,
-					  "newestOnTop": false,
-					  "progressBar": false,
-					  "positionClass": "toast-top-right",
-					  "preventDuplicates": false,
-					  "onclick": null,
-					  "showDuration": "300",
-					  "hideDuration": "1000",
-					  "timeOut": "5000",
-					  "extendedTimeOut": "1000",
-					  "showEasing": "swing",
-					  "hideEasing": "linear",
-					  "showMethod": "fadeIn",
-					  "hideMethod": "fadeOut"
-					};
-					
 					table.editRow([id,obj.name,obj.description, obj.size,obj.cost]);
 					toastr["success"]("Product edited!", "Success");
 				}else
@@ -251,29 +232,10 @@
 		obj.name = $('#name').val();	
 		obj.description = $('#description').val();	
 		obj.cost = $('#cost').val();
-		obj.size = $('#size').val();
-		//obj.workspace = '';		
+		obj.size = $('#size').val();		
 				
 		let encoded = JSON.stringify(obj);
-		
-		toastr.options = {
-		  "closeButton": false,
-		  "debug": false,
-		  "newestOnTop": false,
-		  "progressBar": false,
-		  "positionClass": "toast-top-right",
-		  "preventDuplicates": false,
-		  "onclick": null,
-		  "showDuration": "300",
-		  "hideDuration": "1000",
-		  "timeOut": "5000",
-		  "extendedTimeOut": "1000",
-		  "showEasing": "swing",
-		  "hideEasing": "linear",
-		  "showMethod": "fadeIn",
-		  "hideMethod": "fadeOut"
-		}
-
+	
 		$.ajax({
 			type: "POST",
 			url: endpoint,
@@ -285,24 +247,6 @@
 				if (!data.error){
 					$('#productModalAdd').modal('hide');
 
-					toastr.options = {
-					  "closeButton": false,
-					  "debug": false,
-					  "newestOnTop": false,
-					  "progressBar": false,
-					  "positionClass": "toast-top-right",
-					  "preventDuplicates": false,
-					  "onclick": null,
-					  "showDuration": "300",
-					  "hideDuration": "1000",
-					  "timeOut": "5000",
-					  "extendedTimeOut": "1000",
-					  "showEasing": "swing",
-					  "hideEasing": "linear",
-					  "showMethod": "fadeIn",
-					  "hideMethod": "fadeOut"
-					};
-					
 					obj.id = data.id;
 					
 					table.addRow([obj.id,obj.name,obj.description, obj.size,obj.cost]);
@@ -332,6 +276,8 @@
 						headers: {"Authorization": 'Bearer ' + localStorage.getItem('access_token')},
 						success: function(data){
 							$('#tr'+id.toString()).remove();
+							toastr["warning"]("Product deleted!", "Success");
+
 							if(data.error)
 								console.log('Error',data.error);
 						},

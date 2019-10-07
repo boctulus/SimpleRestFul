@@ -1,21 +1,22 @@
 <?php
 
-namespace simplerest\api;
+namespace simplerest\controllers;
 
-use simplerest\controllers\MyApiController;; 
+use simplerest\core\ApiController; 
 
-class OtherPermissions extends MyApiController
-{     
+class MyApiController extends ApiController
+{
+    // ALC   
     protected $scope = [
-        'guest'   => [ ],  
+        'guest'   => ['read'],  // no envia bearer token
         'basic'   => ['read'],
         'regular' => ['read', 'write'],
         'admin'   => ['read', 'write']
     ];
-    
+
     function __construct()
     {
         parent::__construct();
     }
-        
-} // end class
+
+}

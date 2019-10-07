@@ -2,27 +2,17 @@
 
 namespace simplerest\core;
 
-use InvalidArgumentException;
-use simplerest\api\OtherPermissions;
 use simplerest\core\interfaces\IAuth;
 use simplerest\libs\Factory;
 use simplerest\libs\Arrays;
 use simplerest\libs\Database;
 use simplerest\models\GroupPermissionsModel;
 use simplerest\models\OtherPermissionsModel;
-use simplerest\models\RolesModel;
 use simplerest\models\FoldersModel;
 
 abstract class ApiController extends Controller
 {
-    // ALC   
-    protected $scope = [
-        'guest' => [ ],
-        'basic' => ['read'],
-        'regular' => ['read', 'write'],
-        'admin' => ['read', 'write']
-    ];
-
+    protected $scope;
     protected $callable = [];
     protected $config;
     protected $_model;
@@ -44,12 +34,12 @@ abstract class ApiController extends Controller
         if ($this->config['debug_mode'] == false)
             set_exception_handler([$this, 'exception_handler']);
 
-        if ($this->config['enabled_auth']){        
+        if ($this->config['enabled_auth']){ //       
             if ($auth_object == null)
                 $auth_object = new \simplerest\controllers\AuthController();
 
             $operations = [ 
-                'read' => ['get'],
+                'read'   => ['get'],
                 'create' => ['post'],
                 'update' => ['put', 'patch'],
                 'delete' => ['delete'],
@@ -57,16 +47,28 @@ abstract class ApiController extends Controller
             ];           
 
             $this->auth_payload = $auth_object->check_auth();
-            $this->uid = $this->auth_payload->uid;
 
-            // roles and scope
-            $this->is_admin = $this->auth_payload->is_admin;
-            $cruds = $this->scope[$this->auth_payload->user_role];
-
-            foreach ($operations as $op => $verbs) {
-                if (in_array($op, $cruds))
-                    $this->callable = array_merge($this->callable, $verbs);
+            if (!empty($this->auth_payload)){
+                $this->uid = $this->auth_payload->uid;
+                $this->is_admin = $this->auth_payload->is_admin;
+                $role  = $this->auth_payload->user_role;
+            }else{
+                $this->uid = null;
+                $this->is_admin = false;
+                $role = 'guest';
             }
+
+            $cruds = $this->scope[$role];
+
+            if (!is_null($this->scope[$role])){
+                foreach ($operations as $op => $verbs) {
+                    if (in_array($op, $cruds))
+                        $this->callable = array_merge($this->callable, $verbs);
+                }
+            }    
+
+            if (empty($this->callable))
+                Factory::response()->sendError('Authorization not found !',400);
 
             $this->callable = array_merge($this->callable,['head','options']);
     

@@ -147,7 +147,7 @@ class AuthController extends Controller implements IAuth
             $available_roles = $u->fetchRoles();
             
             if (!in_array($role, $available_roles))
-                Factory::response()->sendCode(403);
+                Factory::response()->sendError("You don't have $role role", 401);
 
             $session = new SessionsModel($conn);
             $sid = $session->create([   'refresh_token' => $encrypted, 
@@ -331,9 +331,8 @@ class AuthController extends Controller implements IAuth
         $headers = $req->headers();
         $auth = $headers['Authorization'] ?? $headers['authorization'] ?? null;
         
-        if (empty($auth)){
-            Factory::response()->sendError('Authorization not found !',400);
-        }
+        if (empty($auth))
+            return false;
             
         list($jwt) = sscanf($auth, 'Bearer %s');
 
@@ -362,14 +361,20 @@ class AuthController extends Controller implements IAuth
     
                 if(empty($rows))
                     Factory::response()->sendError('Session not found', 400);
+  
 
+                $requested_role = $rows[0]['role'];
+            
                 $r = new RolesModel($conn);
-                $r->id = $rows[0]['role'];
-                $r->fetch();
+                $r->id = $requested_role;
+                $ok = $r->fetch();
+
+                if (!$ok)
+                    Factory::response()->sendError('Role does not exists', 401); 
 
                 $payload->user_role = $r->name;
                 $payload->is_admin  = $r->is_admin;  
-
+                
 
                 if (count($this->must_have) > 0 || count($this->must_not) > 0) 
                 {   
@@ -416,5 +421,7 @@ class AuthController extends Controller implements IAuth
         }else{
             Factory::response()->sendError('Authorization jwt token not found',400);
         }
+
+        return false;
     }
 }

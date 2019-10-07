@@ -60,10 +60,10 @@ class UsersModel extends Model
 	}
 	
 	/*
-		@return mixed false | array of all available roles for the user
+		@return array of all available roles for the user
 	*/
 	function fetchRoles(){
-		$q  = "SELECT ur.role_id as role FROM " . $this->table_name. ' as u INNER JOIN user_role as ur ON ur.user_id=u.id INNER JOIN roles AS r ON ur.role_id=r.id' . ' WHERE u.'.$this->id_name . '=?';
+		$q  = "SELECT ur.role_id as role, r.name as role_name FROM " . $this->table_name. ' as u INNER JOIN user_role as ur ON ur.user_id=u.id INNER JOIN roles AS r ON ur.role_id=r.id' . ' WHERE u.'.$this->id_name . '=?';
 		$st = $this->conn->prepare($q);
 		$st->execute([$this->id]);
 	
@@ -77,7 +77,7 @@ class UsersModel extends Model
 			return $roles;
 		}
 	
-		return false;
+		return [];
 	}
 	
 }

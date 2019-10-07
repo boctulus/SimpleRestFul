@@ -2,9 +2,9 @@
 
 namespace simplerest\api;
 
-use simplerest\core\ApiController;
+use simplerest\controllers\MyApiController; 
 
-class Products extends ApiController
+class Products extends MyApiController
 { 
     function __construct()
     {
