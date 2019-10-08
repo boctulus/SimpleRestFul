@@ -6,7 +6,23 @@ DOCUMENTACION
 
 La implementación del ACL es parecido al de Linux, habiendo permisos a nivel de rol, para un "grupo" de usuarios y para "otros".
 
-El framework maneja varias tablas para implementar el ACL, entre ellas `group_permissions` se encarga de mantener los permisos de lectura y escritura concedidos por el usuario (owner del recurso) a cierto grupo de usuarios. El campo "register" hace referencia al id de registro en la tabla del endpoint correspondiente (productos, ticketes, etc) y en caso de ser NULL se toma como comodín afectando a todos los registros de esa tabla para ese owner.
+El framework maneja varias tablas para implementar el ACL, entre ellas `group_permissions` se encarga de mantener los permisos de lectura y escritura concedidos por el usuario (owner del recurso) a cierto grupo de usuarios "miembros" del grupo.
+
+También existen permisos para "otros" o sea para cualquier otro usuario sin necesidad de especificarlo. Los permisos para "otros" pueden ser para invitados ("guest") o sea visitantes que no han entregado credenciales.
+
+
+# Roles
+
+Se pueden crear distintos roles que son mantenidos en la tabla 'roles' y cuyo fin es limitar las acciones CRUD que puedan realizar.
+
+Para cada endpoint es posible especificar un conjunto de permisos para cada rol ya sea 'read', 'write' o inclusive ser más específico con 'create', 'read', 'delete' y 'update'.
+
+	protected $scope = [
+	    'guest'   => ['read'],  
+	    'basic'   => ['read'],
+	    'regular' => ['read', 'write'],
+	    'admin'   => ['read', 'write']
+	];
 
 
 # Folders
@@ -21,7 +37,7 @@ Por supuesto pueden aplicarse otros filtros:
 
 	GET /api/products?folder=1&cost=200
 
-Y puede visualizarse un registro en particular (ej: 124) para el que no tendríamos permiso si especificamos el folder:
+Y puede visualizarse un registro en particular (ej: 124) para el que no tendríamos permiso si no especificamos el folder:
 
 	GET /api/products/124?folder=1		
 
@@ -46,25 +62,37 @@ Para crear un registro en un folder del que se ha concedido permiso de escritura
 	POST /api/products
 
 	{
-	    "name": "Vodka venezolanooooooooo",
-	    "description": "de Vzla",
+		"name": "Supreme jugo",
+	    "description": "de manzanas exprimidas",
 	    "size": "1L",
-	    "cost": "15",
-	    "folder": "1"
+	    "cost": "250",
+	    "folder": "8"
 	}
 
-En caso de no tener acceso al folder recibiremos un mensaje de error como:
+O bien se especifica en el "campo clave" que hace identifica al folder, en nuestro caso llamado "workspace" con el valor que corresponda para el folder:
 
 	{
-	    "error": "You have not permission for the folder 2"
+		"name": "Supreme jugo",
+	    "description": "de manzanas exprimidas",
+	    "size": "1L",
+	    "cost": "250",
+	    "workspace": "lista10"
 	}
+
+En el primer caso, si se especifica un folder pero no tenemos acceso recibiremos un mensaje de error como:
+
+	{
+	    "error": "You have not permission for the folder 8"
+	}
+
+En el segundo caso donde especificamos "workspace": "lista10" en vez de "folder": "8", si el folder no existe no habrá advertencia alguna pues solo estamos creando un registro con esa combinación de campos y distintos usuarios pueden tener folders con el mismo nombre así que no hay problema.
 
 Igualmente para modificar un registro de otro usuario que nos ha compartido su folder especificamos el id del folder:
 
 	PUT /api/products/136
 
 	{
-	    "name": "Vodka venezolanoxxxx",
+	    "name": "Vodka venezolano",
 	    "description": "de Vzla",
 	    "size": "1L",
 	    "cost": "15",
@@ -79,4 +107,3 @@ Mismo para borrar un registro perteneciente a un folder:
     	"folder": "1"
 	}
 
-	

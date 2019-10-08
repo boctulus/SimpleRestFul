@@ -146,23 +146,28 @@ abstract class ApiController extends Controller
     /**
      * hasPerm
      *
-     * @param  string $table
-     * @param  string $folder
+     * @param  int    $folder
      * @param  object $conn
      * @param  string $operation
      *
      * @return bool
      */
-    protected function hasPerm(string $folder, object $conn, string $operation)
+    protected function hasPerm(int $folder, object $conn, string $operation)
     {
         if ($operation != 'r' && $operation != 'w')
             throw new \InvalidArgumentException("Permissions are 'r' or 'w' but not '$operation'");
 
         $o = new OtherPermissionsModel($conn);
+
         $rows = $o->filter(null, ['folder_id', $folder]);
 
         $r = $rows[0]['r'] ?? null;
         $w = $rows[0]['w'] ?? null;
+
+        if ($this->role == 'guest'){
+            $r = $r && $rows[0]['guest'];
+            $w = $w && $rows[0]['guest'];
+        }
 
         if (($operation == 'r' && $r) || ($operation == 'w' && $w)) {
             return true;
@@ -192,100 +197,103 @@ abstract class ApiController extends Controller
      * @return void
      */
     function get(int $id = null){
-        $conn = Database::getConnection($this->config['database']);
+        try {
+            
+            $conn = Database::getConnection($this->config['database']);
 
-        $model    = 'simplerest\\models\\'.$this->_model;
-        $instance = new $model($conn); 
+            $model    = 'simplerest\\models\\'.$this->_model;
+            $instance = new $model($conn); 
+            
+            $_get  = Factory::request()->getQuery();
+
+            foreach ($_get as $key => $val){
+                if ($val == 'NULL' || $val == 'null'){
+                    $_get[$key] = NULL;
+                }                
+            }
+
+            $fields = Arrays::shift($_get,'fields');
+            $fields = $fields != NULL ? explode(',',$fields) : NULL;
+
+            $exclude = Arrays::shift($_get,'exclude');
+            $exclude = $exclude != NULL ? explode(',',$exclude) : NULL;
+
+            if ($exclude != null)
+                $instance->hide($exclude);
+            
+            $folder = Arrays::shift($_get,'folder');
+
+            if ($folder !== null)
+            {
+                $f = new FoldersModel($conn);
+                $f->id = $folder;    
+                $ok = $f->fetch();
         
-        $_get  = Factory::request()->getQuery();
+                if (!$ok || $f->resource_table!=$this->model_table)
+                    Factory::response()->sendError('Folder not found', 404); 
+        
+                $folder_access = $f->belongs_to == $this->uid  || $this->hasPerm($folder, $conn, 'r');    
+                if (!$folder_access)
+                    Factory::response()->sendError("You don't have permission for the folder $folder", 403);
+            }    
 
-        foreach ($_get as $key => $val){
-            if ($val == 'NULL' || $val == 'null'){
-                $_get[$key] = NULL;
-            }                
-        }
+            if ($id != null)
+            {
+                $_get = [
+                    ['id', $id]
+                ];  
 
-        $fields = Arrays::shift($_get,'fields');
-        $fields = $fields != NULL ? explode(',',$fields) : NULL;
-
-        $exclude = Arrays::shift($_get,'exclude');
-        $exclude = $exclude != NULL ? explode(',',$exclude) : NULL;
-
-        if ($exclude != null)
-            $instance->hide($exclude);
-         
-        $folder = Arrays::shift($_get,'folder');
-
-        if ($folder !== null)
-        {
-            $f = new FoldersModel($conn);
-            $f->id = $folder;    
-            $ok = $f->fetch();
-    
-            if (!$ok || $f->resource_table!=$this->model_table)
-                Factory::response()->sendError('Folder not found', 404); 
-    
-            if (!$this->hasPerm($folder, $conn, 'r'))
-                Factory::response()->sendError("You have not permission for the folder $folder", 403);
-        }    
-
-        if ($id != null)
-        {
-            $_get = [
-                ['id', $id]
-            ];  
-
-            if ($this->role == 'guest' && isset($this->folder_field)){
-                $_get[] = [$this->folder_field, NULL];
-            }   
-
-            if (empty($folder)){               
-                // User permissions
-                if (!$this->is_admin && $this->role!='guest')
-                    $_get[] = ['belongs_to', $this->uid];
-            }else{
-                if (empty($this->folder_field))
-                    Factory::response()->sendError("folder_field is undefined", 403);
-                
-                if ($this->role == 'guest')
-                    Factory::response()->send([]);    
+                if (empty($folder)){               
+                    // User permissions
+                    if (!$this->is_admin)
+                        $_get[] = ['belongs_to', $this->uid];
+                }else{
+                    if (empty($this->folder_field))
+                        Factory::response()->sendError("folder_field is undefined", 403);
                     
-                $_get[] = [$this->folder_field, $f->value];
-            }
+                    if ($this->role == 'guest' && !$folder_access)
+                        Factory::response()->send([]);    
+                        
+                    $_get[] = [$this->folder_field, $f->value];
+                    $_get[] = ['belongs_to', $f->belongs_to];
+                }
 
-            $rows = $instance->filter($fields, $_get); 
-            if (empty($rows))
-                Factory::response()->sendCode(404);
-            else
-                Factory::response()->send($rows[0]);
-        }else{    
-            // "list
-            $limit  = (int) Arrays::shift($_get,'limit');
-            $offset = (int) Arrays::shift($_get,'offset',0);
-            $order  = Arrays::shift($_get,'order');
+                $rows = $instance->filter($fields, $_get); 
+                if (empty($rows))
+                    Factory::response()->sendCode(404);
+                else
+                    Factory::response()->send($rows[0]);
+            }else{    
+                // "list
 
-            // Importante:
-            $_get = Arrays::nonassoc($_get);     
+                $limit  = (int) Arrays::shift($_get,'limit');
+                $offset = (int) Arrays::shift($_get,'offset',0);
+                $order  = Arrays::shift($_get,'order');
 
-            if ($this->role == 'guest' && isset($this->folder_field)){
-                $_get[] = [$this->folder_field, NULL];
-            }   
-                
-            if (empty($folder)){             
-                // User permissions
-                if (!$this->is_admin && $this->role!='guest')
-                    $_get[] = ['belongs_to', $this->uid];        
-            }else{
-                if (empty($this->folder_field))
-                    Factory::response()->sendError("'folder_field' is undefined", 403);
+                // Importante:
+                $_get = Arrays::nonassoc($_get);     
 
-                if ($this->role == 'guest')
-                    Factory::response()->send([]);   
+              
+                if (empty($folder)){   
+                    // list, sin especificar folder
+                    if ($this->role=='guest')
+                        Factory::response()->send([]);
 
-                $_get[] = [$this->folder_field, $f->value];
-            }
+                    // User permissions
+                    if (!$this->is_admin)
+                        $_get[] = ['belongs_to', $this->uid];        
+                }else{
+                    // list, folder
+                    if (empty($this->folder_field))
+                        Factory::response()->sendError("'folder_field' is undefined", 403);
+                  
+                    if ($this->role == 'guest' && !$folder_access)
+                        Factory::response()->send([]); 
 
-            try {
+                    $_get[] = [$this->folder_field, $f->value];
+                    $_get[] = ['belongs_to', $f->belongs_to];
+                }
+
                 if (!empty($_get)){
                     $rows = $instance->filter($fields, $_get, null, $order, $limit, $offset);
                     Factory::response()->code(200)->send($rows); 
@@ -293,10 +301,12 @@ abstract class ApiController extends Controller
                     $rows = $instance->fetchAll($fields, $order, $limit, $offset);
                     Factory::response()->code(200)->send($rows); 
                 }	
-            } catch (\Exception $e) {
-                Factory::response()->sendError($e->getMessage());
-            }	
-        }
+        
+            }
+
+        } catch (\Exception $e) {
+            Factory::response()->sendError($e->getMessage());
+        }	    
     } // 
 
 
@@ -324,7 +334,7 @@ abstract class ApiController extends Controller
             $conn = Database::getConnection($this->config['database']);
             $instance->setConn($conn);
 
-            $data['belongs_to'] = $this->uid; //
+            $data['belongs_to'] = ($this->role == 'guest' ? -1 : $this->uid); 
         
             if ($folder !== null)
             {
@@ -338,8 +348,8 @@ abstract class ApiController extends Controller
                 if (!$ok || $f->resource_table!=$this->model_table)
                     Factory::response()->sendError('Folder not found', 404); 
         
-                if (!$this->hasPerm($folder, $conn, 'w'))
-                    Factory::response()->sendError("You have not permission for the folder $folder", 403);
+                if ($f->belongs_to != $this->uid  && !$this->hasPerm($folder, $conn, 'w'))
+                    Factory::response()->sendError("You don't have permission for the folder $folder", 403);
 
                 unset($data['folder']);    
                 $data[$this->folder_field] = $f->value;

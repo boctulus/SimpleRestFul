@@ -75,6 +75,26 @@ class DumbController extends Controller
         
     }
 
+    /*
+        SELECT * FROM `other_permissions` AS op INNER JOIN folders AS f ON op.folder_id= f.id WHERE guest=1 AND resource_table='products' AND r=1
+    */
+    function test(){
+        $conn    = Database::getConnection($this->config['database']);
+       
+        $o = new \simplerest\models\OtherPermissionsModel($conn);
+        $p = new ProductsModel($conn);
+       
+        // SELECT * FROM `other_permissions` WHERE guest=1
+        $rows = $o->filter(null, ['guest', 1]);
+
+        foreach ($rows as $row){
+            Debug::debug($row['folder_id']);
+        }
+
+        //Debug::debug($p->filter(null, ['value', $workspace]));  
+              
+    }
+
     function get_nulls(){
         $conn    = Database::getConnection($this->config['database']);
         $product = new ProductsModel($conn);

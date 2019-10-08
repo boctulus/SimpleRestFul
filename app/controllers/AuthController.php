@@ -304,7 +304,6 @@ class AuthController extends Controller implements IAuth
 
             $jwt = $this->gen_jwt($sid_enc, $uid);
 
-            //////////////
             Factory::response()->send([ 
                                         'sid' => $sid_enc,
                                         'access_token'=> $jwt,
@@ -312,7 +311,7 @@ class AuthController extends Controller implements IAuth
                                         'refresh_token' => $refresh,
                                         'expires_in' => $this->config['access_token']['expiration_time'] 
                                         // 'scope' => 'read write'
-                                     ]);
+            ]);
 
         }catch(\Exception $e){
             Factory::response()->sendError($e->getMessage());

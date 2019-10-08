@@ -296,6 +296,8 @@ class Model {
 		$where = implode(" $conjunction ", $_where);
 		
 		$q  .= " WHERE $where";
+
+		//var_dump($q);
 		
 		/// start pagination
 		if($paginator!=null)
@@ -313,7 +315,7 @@ class Model {
 		
 		foreach($values as $ix => $val){
 			if (!isset($this->schema[$vars[$ix]]))
-				throw new \InvalidArgumentException("There is an error near '{$vars[$ix]}'");
+				throw new \InvalidArgumentException("Schema for $this->table_name has no property '{$vars[$ix]}'");
 
 			$const = $this->schema[$vars[$ix]];
 

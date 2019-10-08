@@ -10,7 +10,7 @@ class MyApiController extends ApiController
     
     // ALC   
     protected $scope = [
-        'guest'   => ['read'],  // no envia bearer token
+        'guest'   => ['read'],  
         'basic'   => ['read'],
         'regular' => ['read', 'write'],
         'admin'   => ['read', 'write']
