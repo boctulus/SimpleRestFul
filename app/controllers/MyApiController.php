@@ -7,6 +7,7 @@ use simplerest\core\ApiController;
 class MyApiController extends ApiController
 {
     protected $folder_field;
+    protected $guest_access_root;
     
     // ALC   
     protected $scope = [

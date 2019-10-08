@@ -22,6 +22,7 @@ abstract class ApiController extends Controller
     protected $is_admin;
     protected $role;
     protected $folder_field;
+    protected $guest_access_root = false;
     protected $default_headers = [
         'access-control-allow-Methods' => 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
         'access-control-allow-credentials' => 'true',
@@ -244,10 +245,11 @@ abstract class ApiController extends Controller
                 ];  
 
                 if (empty($folder)){               
-                    // User permissions
+                    // root, by id
                     if (!$this->is_admin)
                         $_get[] = ['belongs_to', $this->uid];
                 }else{
+                    // folder, by id
                     if (empty($this->folder_field))
                         Factory::response()->sendError("folder_field is undefined", 403);
                     
@@ -271,19 +273,20 @@ abstract class ApiController extends Controller
                 $order  = Arrays::shift($_get,'order');
 
                 // Importante:
-                $_get = Arrays::nonassoc($_get);     
-
+                $_get = Arrays::nonassoc($_get);
               
-                if (empty($folder)){   
-                    // list, sin especificar folder
-                    if ($this->role=='guest')
-                        Factory::response()->send([]);
-
-                    // User permissions
-                    if (!$this->is_admin)
-                        $_get[] = ['belongs_to', $this->uid];        
+                if (empty($folder)){
+                    // root, sin especificar folder ni id (lista)
+                    if ($this->role=='guest'){
+                        if (!$this->guest_access_root)
+                            Factory::response()->send([]);
+                        else
+                            $_get[] =  [$this->folder_field, NULL];        
+                    }else
+                        if (!$this->is_admin)
+                            $_get[] = ['belongs_to', $this->uid];        
                 }else{
-                    // list, folder
+                    // folder, sin id
                     if (empty($this->folder_field))
                         Factory::response()->sendError("'folder_field' is undefined", 403);
                   

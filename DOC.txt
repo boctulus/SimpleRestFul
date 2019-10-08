@@ -24,6 +24,16 @@ Para cada endpoint es posible especificar un conjunto de permisos para cada rol 
 	    'admin'   => ['read', 'write']
 	];
 
+El rol "guest" se obtiene al hacer consulta a un endpoint sin haber presentado antes credenciales (estar autenticado).
+
+Un "guest" o invitado no puede en principio visualizar registros que no pertenezcan a folders con permiso de lectura para "otros" especificando que sea también para guests.
+
+Si se necesitara que los invitados pudieran visualizar registros a nivel de root (no folders) creados por cualquier usuario se puede lograr seteando en el ApiController: 
+
+	$guest_access_root = true
+
+En principio es mejor que $guest_access_root esté en false ya que sino se daría el caso donde un invitado tiene más nivel de acceso que un usuario registrado ya que podría visualizar registros que no le pertenecen mientras que el usuario registrado no puede. (Podría enmendarse)
+
 
 # Folders
 
