@@ -12,6 +12,7 @@ class Model {
 	protected $fillable = [];
 	protected $hidden;
 	protected $properties = [];
+	protected $joins = [];
 	protected $conn;
 
 	/*
@@ -117,7 +118,22 @@ class Model {
 		}
 	}
 
+	// INNER JOIN
+	function join($table, $on1, $op, $on2) {
+		$this->joins[] = [$table, $on1, $op, $on2, 'INNER JOIN'];
+		return $this;
+	}
 
+	function leftJoin($table, $on1, $op, $on2) {
+		$this->joins[] = [$table, $on1, $op, $on2, 'LEFT JOIN'];
+		return $this;
+	}
+
+	function rightJoin($table, $on1, $op, $on2) {
+		$this->joins[] = [$table, $on1, $op, $on2, 'LEFT JOIN'];
+		return $this;
+	}
+	
 	/**
 	 * fetch
 	 *
@@ -195,6 +211,16 @@ class Model {
 		if($paginator!=null)
 			$q .= $paginator->getQuery();
 
+		// JOINS
+		$joins = '';
+		foreach ($this->joins as $j){
+			$joins .= "$j[4] $j[0] ON $j[1]$j[2]$j[3] ";
+		}
+
+		$q  .= " $joins";
+
+		//var_dump($q);
+
 		$st = $this->conn->prepare($q);
 
 		if($paginator!=null){	
@@ -211,7 +237,6 @@ class Model {
 			return false;	
 	}
 
-	
 	/**
 	 * filter
 	 *
@@ -295,7 +320,13 @@ class Model {
 		}
 		$where = implode(" $conjunction ", $_where);
 		
-		$q  .= " WHERE $where";
+		// JOINS
+		$joins = '';
+		foreach ($this->joins as $j){
+			$joins .= "$j[4] $j[0] ON $j[1]$j[2]$j[3] ";
+		}
+
+		$q  .= " $joins WHERE $where";
 
 		//var_dump($q);
 		
@@ -314,16 +345,24 @@ class Model {
 		/// end pagination
 		
 		foreach($values as $ix => $val){
-			if (!isset($this->schema[$vars[$ix]]))
-				throw new \InvalidArgumentException("Schema for $this->table_name has no property '{$vars[$ix]}'");
+			//if (!isset($this->schema[$vars[$ix]]))
+			//	throw new \InvalidArgumentException("Schema for $this->table_name has no property '{$vars[$ix]}'");
 
-			$const = $this->schema[$vars[$ix]];
-
-			if ($val === NULL)
+			if(is_int($val))
+				$type = \PDO::PARAM_INT;
+			elseif(is_bool($val))
+				$type = \PDO::PARAM_BOOL;
+			elseif(is_null($val))
 				$type = \PDO::PARAM_NULL;
-			else
+			elseif(is_string($val))
+				$type = \PDO::PARAM_STR;			
+			/*
+			else{				
+				$const = $this->schema[$vars[$ix]];
 				$type = constant("PDO::PARAM_{$const}");
-
+			}
+			*/
+				
 			$st->bindValue(":{$vars[$ix]}", $val, $type);
 		}
 
@@ -437,7 +476,7 @@ class Model {
 	/**
 	 * delete
 	 *
-	 * @return mixed
+	 * @return mixed int | false
 	 */
 	function delete()
 	{

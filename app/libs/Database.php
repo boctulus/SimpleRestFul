@@ -9,11 +9,13 @@ class Database {
 
     private function __construct() { }
 
-    public static function getConnection($config) {
-        $db_name = $config['db_name'];
-		$host    = $config['host'] ?? 'localhost';
-		$user    = $config['user'] ?? 'root';
-		$pass    = $config['pass'] ?? '';
+    public static function getConnection() {
+		$config = include CONFIG_PATH . 'config.php';
+
+        $db_name = $config['database']['db_name'];
+		$host    = $config['database']['host'] ?? 'localhost';
+		$user    = $config['database']['user'] ?? 'root';
+		$pass    = $config['database']['pass'] ?? '';
 		
 		try {
 			$options = [ \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION ];
@@ -24,5 +26,10 @@ class Database {
 		}	
 		
 		return self::$conn;
-    }
+	}
+	
+	public static function model($name) {
+		$class = '\\simplerest\\models\\' . $name . 'Model';
+		return new $class(self::getConnection());
+	}
 }

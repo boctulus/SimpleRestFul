@@ -18,7 +18,7 @@ abstract class Controller
     }
 
     protected function getConnection() {
-        return Database::getConnection($this->config['database']);
+        return Database::getConnection();
     }
 
     function getCallable(){

@@ -30,9 +30,9 @@ Un "guest" o invitado no puede en principio visualizar registros que no pertenez
 
 Si se necesitara que los invitados pudieran visualizar registros a nivel de root (no folders) creados por cualquier usuario se puede lograr seteando en el ApiController: 
 
-	$guest_access_root = true
+	$guest_root_access = true
 
-En principio es mejor que $guest_access_root esté en false ya que sino se daría el caso donde un invitado tiene más nivel de acceso que un usuario registrado ya que podría visualizar registros que no le pertenecen mientras que el usuario registrado no puede. (Podría enmendarse)
+En principio es mejor que $guest_root_access esté en false ya que sino se daría el caso donde un invitado tiene más nivel de acceso que un usuario registrado ya que podría visualizar registros que no le pertenecen mientras que el usuario registrado no puede. (Podría enmendarse)
 
 
 # Folders

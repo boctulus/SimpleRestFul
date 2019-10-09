@@ -51,14 +51,14 @@ class DumbController extends Controller
     */
 
     function get_products(){
-        $conn    = Database::getConnection($this->config['database']);
+        $conn    = Database::getConnection();
         $product = new ProductsModel($conn);
     
         Debug::debug($product->fetchAll());
     }
 
     function filter_products(){
-        $conn    = Database::getConnection($this->config['database']);
+        $conn    = Database::getConnection();
         $product = new ProductsModel($conn);
     
         Debug::debug($product->filter(null, [ 
@@ -75,42 +75,46 @@ class DumbController extends Controller
         
     }
 
+    function joins(){
+        $o = Database::model('OtherPermissions');
+        $rows =   $o->join('folders', 'other_permissions.folder_id', '=', 'folders.id')
+                    ->join('users', 'folders.belongs_to', '=', 'users.id')
+                    ->join('user_role', 'users.id','=', 'user_role.user_id') 
+                    ->filter(null, ['role_id', 2]);  
+        
+        Debug::debug($rows);
+    }
+
     /*
         SELECT * FROM `other_permissions` AS op INNER JOIN folders AS f ON op.folder_id= f.id WHERE guest=1 AND resource_table='products' AND r=1
     */
     function test(){
-        $conn    = Database::getConnection($this->config['database']);
-       
-        $o = new \simplerest\models\OtherPermissionsModel($conn);
-        $p = new ProductsModel($conn);
-       
-        // SELECT * FROM `other_permissions` WHERE guest=1
-        $rows = $o->filter(null, ['guest', 1]);
-
-        foreach ($rows as $row){
-            Debug::debug($row['folder_id']);
-        }
-
-        //Debug::debug($p->filter(null, ['value', $workspace]));  
-              
+        $o = Database::model('OtherPermissions');
+        $rows =   $o->join('folders', 'other_permissions.folder_id', '=',  'folders.id')
+                    ->join('users', 'folders.belongs_to', '=', 'users.id')
+                    ->join('user_role', 'users.id', '=', 'user_role.user_id')
+                    ->join('roles', 'user_role.role_id', '=', 'roles.id') 
+                    ->filter(null, ['name', 'basic']);  
+        
+        Debug::debug($rows);
     }
 
     function get_nulls(){
-        $conn    = Database::getConnection($this->config['database']);
+        $conn    = Database::getConnection();
         $product = new ProductsModel($conn);
     
         Debug::debug($product->filter(null, ['workspace', NULL]));   
     }
 
     function get_users(){
-        $conn    = Database::getConnection($this->config['database']);
+        $conn    = Database::getConnection();
         $u = new UsersModel($conn);
     
         Factory::response()->send($u->fetchAll(null, ['id'=>'DESC']));
     }
 
     function get_user($id){
-        $conn    = Database::getConnection($this->config['database']);
+        $conn    = Database::getConnection();
 
         $u = new UsersModel($conn);
         $u->unhide(['password']);
@@ -123,7 +127,7 @@ class DumbController extends Controller
 
  
     function update_user($id) {
-        $conn    = Database::getConnection($this->config['database']);
+        $conn    = Database::getConnection();
 
         $u = new UsersModel($conn);
         //$u->unfill(['lastname']);
@@ -138,7 +142,7 @@ class DumbController extends Controller
         for ($i=0;$i<20;$i++)
             $email = chr(rand(97,122)) . $email;
         
-        $conn    = Database::getConnection($this->config['database']);
+        $conn    = Database::getConnection();
         
         $u = new UsersModel($conn);
         //$u->fill(['email']);

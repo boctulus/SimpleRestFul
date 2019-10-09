@@ -22,7 +22,7 @@ abstract class ApiController extends Controller
     protected $is_admin;
     protected $role;
     protected $folder_field;
-    protected $guest_access_root = false;
+    protected $guest_root_access = false;
     protected $default_headers = [
         'access-control-allow-Methods' => 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
         'access-control-allow-credentials' => 'true',
@@ -200,7 +200,7 @@ abstract class ApiController extends Controller
     function get(int $id = null){
         try {
             
-            $conn = Database::getConnection($this->config['database']);
+            $conn = Database::getConnection();
 
             $model    = 'simplerest\\models\\'.$this->_model;
             $instance = new $model($conn); 
@@ -278,7 +278,7 @@ abstract class ApiController extends Controller
                 if (empty($folder)){
                     // root, sin especificar folder ni id (lista)
                     if ($this->role=='guest'){
-                        if (!$this->guest_access_root)
+                        if (!$this->guest_root_access)
                             Factory::response()->send([]);
                         else
                             $_get[] =  [$this->folder_field, NULL];        
@@ -334,7 +334,7 @@ abstract class ApiController extends Controller
         $folder = $data['folder'] ?? null;
 
         try {
-            $conn = Database::getConnection($this->config['database']);
+            $conn = Database::getConnection();
             $instance->setConn($conn);
 
             $data['belongs_to'] = ($this->role == 'guest' ? -1 : $this->uid); 
@@ -399,7 +399,7 @@ abstract class ApiController extends Controller
         $folder = $data['folder'] ?? null;    
 
         try {
-            $conn = Database::getConnection($this->config['database']);
+            $conn = Database::getConnection();
             $instance->setConn($conn);
 
             $instance->id = $id;
@@ -467,7 +467,7 @@ abstract class ApiController extends Controller
         $folder = $data['folder'] ?? null; 
 
         try {
-            $conn = Database::getConnection($this->config['database']);
+            $conn = Database::getConnection();
             $model    = 'simplerest\\models\\'.$this->_model;
 
             $instance = new $model($conn);
@@ -532,7 +532,7 @@ abstract class ApiController extends Controller
         $folder = $data['folder'] ?? null;
 
         try {    
-            $conn = Database::getConnection($this->config['database']);
+            $conn = Database::getConnection();
         
             $model    = 'simplerest\\models\\'.$this->_model;
             $instance = new $model($conn);

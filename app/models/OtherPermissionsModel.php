@@ -5,7 +5,7 @@ use simplerest\core\Model;
 
 class OtherPermissionsModel extends Model 
 {
-	protected $table_name = "other_permissions";
+	protected $table_name = 'other_permissions';
 	protected $id_name = 'id';
 	protected $fillable = ['folder_id', 'belongs_to', 'guest', 'r', 'w'];
  
