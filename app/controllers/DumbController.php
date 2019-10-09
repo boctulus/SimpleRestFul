@@ -76,21 +76,22 @@ class DumbController extends Controller
     }
 
     function joins(){
-        $o = Database::model('OtherPermissions');
+        $o = Database::table('other_permissions');
         $rows =   $o->join('folders', 'other_permissions.folder_id', '=',  'folders.id')
                     ->join('users', 'folders.belongs_to', '=', 'users.id')
                     ->join('user_role', 'users.id', '=', 'user_role.user_id')
                     ->join('roles', 'user_role.role_id', '=', 'roles.id') 
-                    ->filter(null, ['name', 'basic']);  
+                    ->filter(null, [
+                        ['guest', 1],
+                        ['resource_table', 'products'],
+                        ['r', 1]
+                    ]);  
         
         Debug::debug($rows);
     }
-
-    /*
-        SELECT * FROM `other_permissions` AS op INNER JOIN folders AS f ON op.folder_id= f.id WHERE guest=1 AND resource_table='products' AND r=1
-    */
+ 
     function test(){
-        $o = Database::model('OtherPermissions');
+        $o = Database::table('other_permissions');
         $rows =   $o->join('folders', 'other_permissions.folder_id', '=',  'folders.id')
                     ->join('users', 'folders.belongs_to', '=', 'users.id')
                     ->join('user_role', 'users.id', '=', 'user_role.user_id')

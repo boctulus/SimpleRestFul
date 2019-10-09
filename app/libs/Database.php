@@ -32,4 +32,13 @@ class Database {
 		$class = '\\simplerest\\models\\' . $name . 'Model';
 		return new $class(self::getConnection());
 	}
+
+	public static function table($tb_name) {
+		$names = explode('_', $tb_name);
+		$names = array_map(function($str){ return ucfirst($str); }, $names);
+		$model = implode('', $names).'Model';
+
+		$class = '\\simplerest\\models\\' . $model;
+		return new $class(self::getConnection());
+	}
 }
