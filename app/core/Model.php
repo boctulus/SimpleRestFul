@@ -130,7 +130,7 @@ class Model {
 	}
 
 	function rightJoin($table, $on1, $op, $on2) {
-		$this->joins[] = [$table, $on1, $op, $on2, 'LEFT JOIN'];
+		$this->joins[] = [$table, $on1, $op, $on2, 'RIGHT JOIN'];
 		return $this;
 	}
 	
