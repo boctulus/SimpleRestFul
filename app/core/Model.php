@@ -345,23 +345,17 @@ class Model {
 		/// end pagination
 		
 		foreach($values as $ix => $val){
-			//if (!isset($this->schema[$vars[$ix]]))
-			//	throw new \InvalidArgumentException("Schema for $this->table_name has no property '{$vars[$ix]}'");
-
-			if(is_int($val))
+			if(is_null($val))
+				$type = \PDO::PARAM_NULL;
+			elseif(isset($this->schema[$vars[$ix]])){
+				$const = $this->schema[$vars[$ix]];
+				$type = constant("PDO::PARAM_{$const}");
+			}elseif(is_int($val))
 				$type = \PDO::PARAM_INT;
 			elseif(is_bool($val))
 				$type = \PDO::PARAM_BOOL;
-			elseif(is_null($val))
-				$type = \PDO::PARAM_NULL;
 			elseif(is_string($val))
 				$type = \PDO::PARAM_STR;			
-			/*
-			else{				
-				$const = $this->schema[$vars[$ix]];
-				$type = constant("PDO::PARAM_{$const}");
-			}
-			*/
 				
 			$st->bindValue(":{$vars[$ix]}", $val, $type);
 		}
