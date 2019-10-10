@@ -41,9 +41,10 @@ Example:
     GET /api/users?exclude=firstname,lastname
 
 
-### Select null values
+### Select null or not null values
 
     GET /api/products?description=NULL
+    GET /api/products?description[neq]=NULL
 
 
 ## POST <CREATE>

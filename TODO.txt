@@ -6,7 +6,7 @@
 
 - Pruebas unitarias
 
-- Agregar operadores NOT NULL y NOT IN, BETWEEN, NOT BETWEEN, LIKE, CONTAINS, NOT CONTAINS, START WITH, ENDS WITH
+- Agregar operadores NOT IN, BETWEEN, NOT BETWEEN, CONTAINS, NOT CONTAINS, START WITH, ENDS WITH
 
 ver 
 https://api.akeneo.com/documentation/filter.html

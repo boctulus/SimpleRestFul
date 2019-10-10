@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Oct 07, 2019 at 06:34 PM
+-- Generation Time: Oct 10, 2019 at 09:57 AM
 -- Server version: 5.7.27-0ubuntu0.18.04.1
 -- PHP Version: 7.2.19-0ubuntu0.18.04.2
 
@@ -40,6 +40,7 @@ CREATE TABLE `folders` (
 --
 
 INSERT INTO `folders` (`id`, `resource_table`, `value`, `belongs_to`) VALUES
+(9, 'products', 'comparto', 4),
 (5, 'products', 'lista', 87),
 (4, 'products', 'lista publica', 90),
 (8, 'products', 'lista10', 90),
@@ -81,6 +82,7 @@ CREATE TABLE `other_permissions` (
   `id` int(11) NOT NULL,
   `folder_id` int(11) NOT NULL,
   `belongs_to` int(11) NOT NULL,
+  `guest` tinyint(4) NOT NULL DEFAULT '0',
   `r` tinyint(4) NOT NULL,
   `w` tinyint(4) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -89,9 +91,11 @@ CREATE TABLE `other_permissions` (
 -- Dumping data for table `other_permissions`
 --
 
-INSERT INTO `other_permissions` (`id`, `folder_id`, `belongs_to`, `r`, `w`) VALUES
-(1, 4, 90, 1, 1),
-(2, 5, 87, 1, 1);
+INSERT INTO `other_permissions` (`id`, `folder_id`, `belongs_to`, `guest`, `r`, `w`) VALUES
+(1, 4, 90, 0, 1, 1),
+(2, 5, 87, 0, 1, 1),
+(4, 6, 90, 1, 1, 1),
+(5, 9, 4, 1, 1, 0);
 
 -- --------------------------------------------------------
 
@@ -114,26 +118,33 @@ CREATE TABLE `products` (
 --
 
 INSERT INTO `products` (`id`, `name`, `description`, `size`, `cost`, `workspace`, `belongs_to`) VALUES
-(100, 'Vodka', 'China', '2 1/4 L', 129, '', 4),
+(100, 'Vodka', 'China', '2 1/4 L', 130, '', 4),
 (103, 'Juice', 'Delicious juice', '1L', 75, NULL, 4),
 (105, 'Agua mineral', 'De Córdoba', '1L', 525, NULL, 4),
 (106, 'Vodka', 'Rusia', '1L', 390, NULL, 4),
 (113, 'Vodkaaaa', 'URU', '1L', 550, NULL, 86),
 (114, 'AAABBB', 'cccccC', '29', 200, NULL, 86),
-(119, 'CocaCola', 'gaseosa', '1L', 12, NULL, 1),
+(119, 'CocaCola', 'gaseosa', '1L', 42, NULL, 1),
 (120, 'MiBebida', 'rica rica', '1L', 50, NULL, 89),
 (121, 'OtraBebida', 'otra', '1L', 20, NULL, 89),
 (122, 'Cerveza de malta', 'Pichu', '1L', 80, NULL, 1),
 (123, 'PesiLoca', 'loca', '2L', 50, 'mylist', 1),
-(125, 'Vodka', 'Espectacular!', '1.5L', 199, '', 90),
-(126, 'Uvas fermentadas', 'aaa', '1L', 88, '', 90),
+(125, 'Vodka', 'Espectacular!', '2L', 150, 'comparto', 90),
+(126, 'Uvas fermentadas', 'aaa', '1L', 88, 'comparto', 90),
 (127, 'Vodka venezolano', 'del caribe', '1L', 15, NULL, 1),
 (131, 'Vodkaaaabc', 'Rusia', '1L', 550, 'secreto', 4),
 (132, 'Ron venezolano', 'Rico', '1L', 24, NULL, 4),
 (133, 'Vodka venezolano', 'de Vzla', '1L', 15, NULL, 4),
 (137, 'Agua ardiente', 'Si que arde!', '1L', 120, 'lista', 87),
-(140, 'Juguito X', 'de manzana', '1L', 150, 'lista publica', 90),
-(143, 'Agua ', '--', '1L', 10, NULL, 4);
+(140, 'Juguito X', 'de manzana', '1L', 120, 'lista publica', 90),
+(143, 'Agua ', '--', '1L', 10, NULL, 4),
+(144, 'Juguito XII', 'de manzanas exprimidas', '1L', 150, 'lista2', 90),
+(145, 'Juguito XII', 'de manzanas exprimidas', '1L', 350, 'lista24', 90),
+(146, 'Juguito XIII', 'de naranjas exprimidasssssssss!!!', '2L', 250, 'lista24', 90),
+(147, 'Aqua fresh', 'Rico', '1L', 10, 'comparto', 4),
+(148, 'Alcohol etílico', '', '1L', 5, 'comparto', 4),
+(149, 'Supreme jugo', 'de manzanas exprimidas', '3L', 265, 'lista10', 90),
+(151, 'Juguito XIII', 'Rico', '1L', 115, 'lista24', 90);
 
 -- --------------------------------------------------------
 
@@ -246,8 +257,8 @@ INSERT INTO `sessions` (`id`, `refresh_token`, `login_date`, `user_id`, `role`) 
 (247, 'bcrofuD4foPklbv12JACRUhsawaNW8zrwxp4Hnr+Zt74dQRxkWkLTMEoVk30AT3si2rv7y4VcVNV5LThMtZrRtSbBGmBJ09FGPCEb1K0sBc7SrhpGylbRQ==', 1570466238, 4, 2),
 (248, 'JxpB+FF3eR76g7bcSL7LYq6TUB92/wjki4PsQV/7lDHf2TS6/QqphtLlvJfbidljShtn9clPpM1LzzqIsjNuI3de60W3epb9DY4K7ee3FDcDZ50QSsXt1A==', 1570466313, 4, 2),
 (249, 'MyYtkQityZJ5O/clZeQph1uITjaM+c4IkJDE0fhdpwPtc9fI4hdWrV2qAVgaLZlpZ1jt1a01gh7YtTKy/w6rTShiEicODjuyxG3u+BUmQXg95St+Dx9dcg==', 1570466403, 4, 2),
-(256, 'ZtEgO5NWzOThMrgmNKXVuUtKm3iOMr0YTgg5yo1cb1lR0Lcukc9kDDhHFsDDic0Uk2UJn4EbC3D8q8oHtdUsFs9lRPGHI75Qex2l8mIdP2slOd6J5ZI/bw==', 1570480878, 1, 3),
-(257, 'PiU7F4stqV2fBaBb9/UwP95BD5+fQvahlRras0v3ZPnOLd6BNfQcsmhdOSa6k08jZLuA7tVbyefnsj5isULYdL/QJHzmDbCR4VEnSCg0GUNrcCKLJpb5kg==', 1570481119, 90, 3);
+(263, 'icLnt80MgduLwY1Ckw8L//vh7fFx+4mJnvdvny0Oao0wY9wzNGrDFaAZqqFmLyKynBcSJ1geq72dl4lkvIechJzTjk9AEvBcgGTt+7Yga2x/bWVCmIYgIQ==', 1570542167, 90, 3),
+(264, 'bVyDFq+MXgObxCoLQ3kG4gOEsRgynfmJBADx2itGNCBV9iIU28wNKbHROeLMvK9CmoRYhZ/GFKRO+5NUsG8Jr5V0fapDCiOWNFCSqM0QDvi1fAEzFbEiow==', 1570549944, 4, 100);
 
 -- --------------------------------------------------------
 
@@ -371,7 +382,8 @@ INSERT INTO `user_role` (`id`, `user_id`, `role_id`, `creation_date`, `modificat
 (16, 89, 3, 0, NULL),
 (17, 4, 3, 0, NULL),
 (18, 1, 3, 0, NULL),
-(20, 90, 3, 0, NULL);
+(20, 90, 3, 0, NULL),
+(21, 85, 2, 0, NULL);
 
 --
 -- Indexes for dumped tables
@@ -449,7 +461,7 @@ ALTER TABLE `user_role`
 -- AUTO_INCREMENT for table `folders`
 --
 ALTER TABLE `folders`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `group_permissions`
@@ -461,13 +473,13 @@ ALTER TABLE `group_permissions`
 -- AUTO_INCREMENT for table `other_permissions`
 --
 ALTER TABLE `other_permissions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `products`
 --
 ALTER TABLE `products`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=144;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=155;
 
 --
 -- AUTO_INCREMENT for table `roles`
@@ -479,7 +491,7 @@ ALTER TABLE `roles`
 -- AUTO_INCREMENT for table `sessions`
 --
 ALTER TABLE `sessions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=258;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=265;
 
 --
 -- AUTO_INCREMENT for table `users`
@@ -491,7 +503,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `user_role`
 --
 ALTER TABLE `user_role`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- Constraints for dumped tables
