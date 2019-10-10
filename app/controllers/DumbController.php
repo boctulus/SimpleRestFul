@@ -63,10 +63,11 @@ class DumbController extends Controller
 
         Debug::debug($product->filter(null, [ 
             ['name', ['CocaCola', 'PesiLoca']],  // IN 
-            ['cost', 600, '>'],
+            ['cost', 550, '>='],
             ['cost', [100, 200]]
         ], 'OR'));    
         
+        /*        
         // implicit 'AND'
         Debug::debug($product->filter(null, [ 
             ['cost', 200, '<'],
@@ -77,7 +78,7 @@ class DumbController extends Controller
             ['cost', 200, '>='],
             ['cost', 270, '<=']
         ]));
-        
+        */
     }
 
     function joins(){

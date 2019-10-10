@@ -221,13 +221,11 @@ abstract class ApiController extends Controller
             foreach ($_get as $key => $val){
                 if ($val == 'NULL' || $val == 'null'){
                     $_get[$key] = NULL;
-                } else if (!is_array($val)){
-                    if (strpos($val, ',')!== false){
-                        $vals = explode(',', $val);
-                        $_get[$key] = $vals;
-                    }                
-                }                   
+                }               
             }
+
+            //var_dump($_get);
+            //exit;
         
             if ($folder !== null)
             {
@@ -287,24 +285,28 @@ abstract class ApiController extends Controller
                     if (is_array($val)){
 
                         $campo = $val[0];                        
-                        foreach ($val[1] as $op => $v){
+                        foreach ((array) $val[1] as $op => $v){
                             
-                            foreach ($allops as $ko => $oo){
-                                if ($op == $oo){
-                                    $op = $eqops[$ko];
-                                    unset($_get[$key]);
-                                }
-                                    
+                            if (strpos($v, ',')!== false){
+                                echo "KEY: $key\n\n";
+                                $vals = explode(',', $v);
+                                unset($_get[$key]);
+                                $_get[] = [$campo, $vals];
+                            }else
+                                foreach ($allops as $ko => $oo){
+                                    if ($op == $oo){
+                                        $op = $eqops[$ko];
+                                        unset($_get[$key]);
+                                        $_get[] = [$campo, $v, $op];
+                                        break;                                    
+                                    }                                    
+                                }   
                             } 
 
-                            $_get[] = [$campo, $v, $op];
-                        } 
-                    }                    
+                    }    
+                                                
                 }
-
-                //var_dump($_get);
-                //exit;
-              
+          
                 if (empty($folder)){
                     // root, sin especificar folder ni id (lista)
                     if ($this->role=='guest'){
