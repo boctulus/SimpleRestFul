@@ -18,7 +18,7 @@ class Paginator
      * @param int $offset
      * @param int $limit
     */
-    public function __construct(array $properties=null, array $order = null, int $offset = 0, int $limit = null){
+    public function __construct(array $order = null, int $offset = 0, int $limit = null){
         $this->order = $order;
         $this->offset = $offset;
         $this->limit = $limit;
@@ -48,9 +48,9 @@ class Paginator
         }
 
         if($this->limit >0){
-            $query .= " LIMIT :offset, :limit";
-            $this->binding[] = [':offset', $this->offset, \PDO::PARAM_INT];
-            $this->binding[] = [':limit', $this->limit, \PDO::PARAM_INT];
+            $query .= " LIMIT ?, ?"; 
+            $this->binding[] = [1, $this->offset, \PDO::PARAM_INT];
+            $this->binding[] = [2, $this->limit, \PDO::PARAM_INT];
         }
 
         $this->query = $query;
@@ -89,19 +89,7 @@ class Paginator
         return $this;
     }
 
-    /**
-     * Set the value of properties
-     *
-     * @return  self
-     */ 
-    public function setProperties($properties): Paginator
-    {
-        $this->properties = $properties;
-        return $this;
-    }
- 
-
-    /**
+     /**
      * Get the value of query
      */ 
     public function getQuery(): string

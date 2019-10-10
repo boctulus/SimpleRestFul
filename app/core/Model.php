@@ -316,8 +316,10 @@ class Model {
 			}	
 		}
 
+		$shift = 0;
 		foreach($vars as $ix => $var){
 			$_where[] = "$var $ops[$ix] ?";
+			$shift++;
 		}
 		$where = implode(" $conjunction ", $_where);
 		
@@ -332,22 +334,13 @@ class Model {
 
 		//DEBUG::debug($vars);
 		//DEBUG::debug($values);
-		//var_dump($q);
 		
-		/// start pagination
-		if($paginator!=null)
+		if($paginator!=null){
 			$q .= $paginator->getQuery();
-			
-		$st = $this->conn->prepare($q);
-
-		if($paginator!=null){	
-			$bindings = $paginator->getBinding();
-			foreach($bindings as $binding){
-				$st->bindValue(...$binding);
-			}
-		} 
-		/// end pagination
+		}
 		
+		$st = $this->conn->prepare($q);
+				
 		foreach($values as $ix => $val){
 			if(is_null($val))
 				$type = \PDO::PARAM_NULL;
@@ -363,6 +356,13 @@ class Model {
 				
 			$st->bindValue($ix+1, $val, $type);
 		}
+
+		if($paginator!=null){	
+			$bindings = $paginator->getBinding();
+			foreach($bindings as $ix => $binding){
+				$st->bindValue($shift +$ix +1, $binding[1], $binding[2]);
+			}
+		} 
 
 		if ($st->execute())
 			return $st->fetchAll(\PDO::FETCH_ASSOC);

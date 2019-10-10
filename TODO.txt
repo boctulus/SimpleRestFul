@@ -1,5 +1,11 @@
 # TODO
 
+- Ante una excepción del modelo imprimir la consulta SQL
+
+- Generar fallos intencionalmente en las URLs para ver si se puede mejorar el reporte de errores (hacerlos más comprensibles)
+
+- Pruebas unitarias
+
 - Agregar operadores NOT NULL y NOT IN, BETWEEN, NOT BETWEEN, LIKE, CONTAINS, NOT CONTAINS, START WITH, ENDS WITH
 
 ver 
