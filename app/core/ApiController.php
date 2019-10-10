@@ -206,13 +206,7 @@ abstract class ApiController extends Controller
             $instance = new $model($conn); 
             
             $_get  = Factory::request()->getQuery();
-
-            foreach ($_get as $key => $val){
-                if ($val == 'NULL' || $val == 'null'){
-                    $_get[$key] = NULL;
-                }                
-            }
-
+            
             $fields = Arrays::shift($_get,'fields');
             $fields = $fields != NULL ? explode(',',$fields) : NULL;
 
@@ -224,6 +218,17 @@ abstract class ApiController extends Controller
             
             $folder = Arrays::shift($_get,'folder');
 
+            foreach ($_get as $key => $val){
+                if ($val == 'NULL' || $val == 'null'){
+                    $_get[$key] = NULL;
+                } else if (!is_array($val)){
+                    if (strpos($val, ',')!== false){
+                        $vals = explode(',', $val);
+                        $_get[$key] = $vals;
+                    }                
+                }                   
+            }
+        
             if ($folder !== null)
             {
                 $f = new FoldersModel($conn);
@@ -274,6 +279,31 @@ abstract class ApiController extends Controller
 
                 // Importante:
                 $_get = Arrays::nonassoc($_get);
+
+                $allops = ['eq', 'gt', 'gteq', 'lteq', 'lt', 'neq'];
+                $eqops  = ['=',  '>' , '>=',   '<=',   '<',  '!=' ];
+
+                foreach ($_get as $key => $val){
+                    if (is_array($val)){
+
+                        $campo = $val[0];                        
+                        foreach ($val[1] as $op => $v){
+                            
+                            foreach ($allops as $ko => $oo){
+                                if ($op == $oo){
+                                    $op = $eqops[$ko];
+                                    unset($_get[$key]);
+                                }
+                                    
+                            } 
+
+                            $_get[] = [$campo, $v, $op];
+                        } 
+                    }                    
+                }
+
+                //var_dump($_get);
+                //exit;
               
                 if (empty($folder)){
                     // root, sin especificar folder ni id (lista)
@@ -296,6 +326,8 @@ abstract class ApiController extends Controller
                     $_get[] = [$this->folder_field, $f->value];
                     $_get[] = ['belongs_to', $f->belongs_to];
                 }
+
+                //var_dump($_get); ////
 
                 if (!empty($_get)){
                     $rows = $instance->filter($fields, $_get, null, $order, $limit, $offset);

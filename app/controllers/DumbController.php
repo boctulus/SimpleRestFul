@@ -60,17 +60,22 @@ class DumbController extends Controller
     function filter_products(){
         $conn    = Database::getConnection();
         $product = new ProductsModel($conn);
-    
+
         Debug::debug($product->filter(null, [ 
             ['name', ['CocaCola', 'PesiLoca']],  // IN 
             ['cost', 600, '>'],
-            ['cost', [100,200]]
+            ['cost', [100, 200]]
         ], 'OR'));    
         
         // implicit 'AND'
         Debug::debug($product->filter(null, [ 
             ['cost', 200, '<'],
             ['name', 'CocaCola'] 
+        ]));        
+
+        Debug::debug($product->filter(null, [ 
+            ['cost', 200, '>='],
+            ['cost', 270, '<=']
         ]));
         
     }

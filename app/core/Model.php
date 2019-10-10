@@ -2,6 +2,7 @@
 namespace simplerest\core;
 
 use simplerest\libs\Debug;
+use simplerest\libs\Arrays;
 
 class Model {
 
@@ -285,7 +286,7 @@ class Model {
 		$values = [];
 		$ops    = [];
 		if (count($conditions)>0){
-			if(is_array($conditions[0])){
+			if(is_array($conditions[Arrays::array_key_first($conditions)])){
 				foreach ($conditions as $cond) {
 					if(is_array($cond[1])){
 
@@ -316,7 +317,7 @@ class Model {
 		}
 
 		foreach($vars as $ix => $var){
-			$_where[] = "$var $ops[$ix] :$var";
+			$_where[] = "$var $ops[$ix] ?";
 		}
 		$where = implode(" $conjunction ", $_where);
 		
@@ -328,6 +329,9 @@ class Model {
 
 		$q  .= " $joins WHERE $where";
 
+
+		//DEBUG::debug($vars);
+		//DEBUG::debug($values);
 		//var_dump($q);
 		
 		/// start pagination
@@ -357,7 +361,7 @@ class Model {
 			elseif(is_string($val))
 				$type = \PDO::PARAM_STR;			
 				
-			$st->bindValue(":{$vars[$ix]}", $val, $type);
+			$st->bindValue($ix+1, $val, $type);
 		}
 
 		if ($st->execute())

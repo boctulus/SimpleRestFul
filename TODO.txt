@@ -69,7 +69,6 @@ https://api.github.com/users/veesahni
 https://lumen.laravel.com/docs/6.x/database
 - Implementar mi data-validator
 - Generar Modelos con sus schemas a partir de la DB como con CRUDO usando un comando.
-- Auto-joins basado en convenciones (Doctrine hace lo mismo)
 - Probar en Windows
 - Investigar a la competencia en frameworks MVC y API Rest
 - oAuth ?
@@ -81,7 +80,6 @@ https://lumen.laravel.com/docs/6.x/database
 - Migrations, seeders,...
 - Sanitización a nivel de urls, FILTER_SANITIZE_URL
 - Sanitización a nivel de base de datos
-- Documentar !!!! <-- comenzar
 - Upload de archivos con Content-type application/x-www-form-urlencoded ó multipart/form-data
 https://stackoverflow.com/a/4083908/980631
 Si se genera un error, detallar según:

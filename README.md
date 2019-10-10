@@ -12,6 +12,23 @@
     GET /api/products?name=Vodka
     GET /api/products?name=Vodka&size=1L
 
+A OR B
+
+    GET /api/products?name=Vodka,Wisky,Tekila
+
+### Comparision operators
+
+    =    eq
+    !=   neq
+    >    gt
+    <    lt
+    >=   gteq
+    <=   lteq
+
+Example:    
+
+    GET /api/products?cost[gteq]=100&cost[lteq]=250
+
 ### List of fields to include
 
     GET /api/products?fields=id,name,cost
