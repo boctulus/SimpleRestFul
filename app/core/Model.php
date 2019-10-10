@@ -287,13 +287,14 @@ class Model {
 		if (count($conditions)>0){
 			if(is_array($conditions[Arrays::array_key_first($conditions)])){
 				foreach ($conditions as $cond) {
-					if(is_array($cond[1])){
+					if(is_array($cond[1]) && (empty($cond[2]) || in_array($cond[2], ['IN', 'NOT IN']) )){
 
 						if($this->schema[$cond[0]] == 'STR')	
 							$cond[1] = array_map(function($e){ return "'$e'";}, $cond[1]);   
 						
 						$in_val = implode(', ', $cond[1]);
-						$_where[] = "$cond[0] IN ($in_val) ";
+						$opx = !empty($cond[2]) ? $cond[2] : 'IN';
+						$_where[] = "$cond[0] $opx ($in_val) ";
 					}else{
 						$vars[]   = $cond[0];
 						$values[] = $cond[1];

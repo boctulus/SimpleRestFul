@@ -66,8 +66,11 @@ class DumbController extends Controller
             ['cost', 550, '>='],
             ['cost', [100, 200]]
         ], 'OR'));    
-        
-        /*        
+                
+        Debug::debug($product->filter(null, [ 
+            ['name', ['CocaCola', 'PesiLoca', 'Wisky'], 'NOT IN']
+        ]));
+
         // implicit 'AND'
         Debug::debug($product->filter(null, [ 
             ['cost', 200, '<'],
@@ -78,7 +81,7 @@ class DumbController extends Controller
             ['cost', 200, '>='],
             ['cost', 270, '<=']
         ]));
-        */
+    
     }
 
     function joins(){
@@ -97,18 +100,12 @@ class DumbController extends Controller
     }
  
     function test(){
-        $o = Database::table('other_permissions');
-        $rows =   $o->join('folders', 'other_permissions.folder_id', '=',  'folders.id')
-                    ->join('users', 'folders.belongs_to', '=', 'users.id')
-                    ->join('user_role', 'users.id', '=', 'user_role.user_id')
-                    ->join('roles', 'user_role.role_id', '=', 'roles.id') 
-                    ->filter(null, [
-                        ['guest', 1],
-                        ['resource_table', 'products'],
-                        ['r', 1]
-                    ]);  
-        
-        Debug::debug($rows);
+        $conn    = Database::getConnection();
+        $product = new ProductsModel($conn);
+
+        Debug::debug($product->filter(null, [ 
+            ['name', ['CocaCola', 'PesiLoca', 'Wisky'], 'NOT IN']
+        ]));
     }
 
     function get_nulls(){
