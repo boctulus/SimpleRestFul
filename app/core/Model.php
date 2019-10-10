@@ -226,11 +226,10 @@ class Model {
 
 		if($paginator!=null){	
 			$bindings = $paginator->getBinding();
-			foreach($bindings as $binding){
-				$st->bindParam(...$binding);
+			foreach($bindings as $ix => $binding){
+				$st->bindValue($ix +1, $binding[1], $binding[2]);
 			}
 		} 
-		/// end pagination
 
 		if ($st->execute())
 			return $st->fetchAll(\PDO::FETCH_ASSOC);
