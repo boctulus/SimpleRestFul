@@ -287,8 +287,7 @@ abstract class ApiController extends Controller
                         $campo = $val[0];                        
                         foreach ((array) $val[1] as $op => $v){
                             
-                            if (strpos($v, ',')!== false){
-                                echo "KEY: $key\n\n";
+                            if (strpos($v, ',')!== false){    
                                 $vals = explode(',', $v);
                                 unset($_get[$key]);
                                 $_get[] = [$campo, $vals];
@@ -302,7 +301,6 @@ abstract class ApiController extends Controller
                                     }                                    
                                 }   
                             } 
-
                     }    
                                                 
                 }
