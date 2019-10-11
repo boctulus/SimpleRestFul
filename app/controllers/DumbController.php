@@ -104,8 +104,9 @@ class DumbController extends Controller
         $product = new ProductsModel($conn);
 
         Debug::debug($product->filter(null, [ 
-            ['name', ['CocaCola', 'PesiLoca', 'Wisky'], 'NOT IN']
-        ]));
+            ['name', ['CocaCola', 'PesiLoca', 'Wisky', 'Vodka'], 'NOT IN'],
+            ['workspace', 'comparto']
+        ],null, ['cost' => 'ASC']));
     }
 
     function get_nulls(){

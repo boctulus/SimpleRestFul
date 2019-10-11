@@ -288,13 +288,16 @@ class Model {
 			if(is_array($conditions[Arrays::array_key_first($conditions)])){
 				foreach ($conditions as $cond) {
 					if(is_array($cond[1]) && (empty($cond[2]) || in_array($cond[2], ['IN', 'NOT IN']) )){
-
-						if($this->schema[$cond[0]] == 'STR')	
-							$cond[1] = array_map(function($e){ return "'$e'";}, $cond[1]);   
 						
-						$in_val = implode(', ', $cond[1]);
+						$cond_1 = array_map(function($e){ return '?';}, $cond[1]);  
+						$in_val = implode(', ', $cond_1);				
+						
 						$opx = !empty($cond[2]) ? $cond[2] : 'IN';
 						$_where[] = "$cond[0] $opx ($in_val) ";
+
+						foreach((array) $cond[1] as $c)
+							$values[] = $c;
+
 					}else{
 						$vars[]   = $cond[0];
 						$values[] = $cond[1];
@@ -309,7 +312,7 @@ class Model {
 				$vars[]   = $conditions[0];
 				$values[] = $conditions[1];
 		
-				if ($conditions[1] === NULL && (empty($conditions[2]) || $conditions[2]=='='))
+				if ($conditions[1] === NULL && (empty($conditions[2]) || $conditions[2]== '='))
 					$ops[] = 'IS';
 				else	
 					$ops[] = $conditions[2] ?? '='; 
@@ -334,6 +337,7 @@ class Model {
 
 		//DEBUG::debug($vars);
 		//DEBUG::debug($values);
+		//DEBUG::debug($q);
 		
 		if($paginator!=null){
 			$q .= $paginator->getQuery();
@@ -344,7 +348,7 @@ class Model {
 		foreach($values as $ix => $val){
 			if(is_null($val))
 				$type = \PDO::PARAM_NULL;
-			elseif(isset($this->schema[$vars[$ix]])){
+			elseif(isset($vars[$ix]) && isset($this->schema[$vars[$ix]])){
 				$const = $this->schema[$vars[$ix]];
 				$type = constant("PDO::PARAM_{$const}");
 			}elseif(is_int($val))
