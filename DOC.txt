@@ -117,3 +117,9 @@ Mismo para borrar un registro perteneciente a un folder:
     	"folder": "1"
 	}
 
+
+### Versionado
+
+Se sugiere implementarlo agregando un parámetro en la url:
+
+	GET /api/products/136/version=2

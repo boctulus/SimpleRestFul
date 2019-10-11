@@ -33,26 +33,32 @@ class Paginator
         $query = '';
         if (!empty($this->orders)){
             $query .= ' ORDER BY ';
-
+            
             foreach($this->orders as $field => $order){
 
-                if ($order == 'ASC' || $order == 'DESC')
-                    $ord = $order;
-                else
+                if ($order == 'ASC' || $order == 'DESC'){
+                    $query .= "$field $order, ";
+                    $query .= '? ?, '; 
+                    $this->binding[] = [1, $field, \PDO::PARAM_STR];
+                    $this->binding[] = [2, $order, \PDO::PARAM_STR];
+                    $shift = 2;
+                }else
                     throw new \InvalidArgumentException("order should be ASC or DESC!");   
 
                 if(!in_array($field,$this->properties))
                     throw new \InvalidArgumentException("property '$field' not found!");   
 
-                $query .= "$field $ord, "; 
+                
             }
             $query = substr($query,0,strlen($query)-2);
-        }
+
+        }else
+            $shift = 0;
 
         if($this->limit >0){
             $query .= " LIMIT ?, ?"; 
-            $this->binding[] = [1, $this->offset, \PDO::PARAM_INT];
-            $this->binding[] = [2, $this->limit, \PDO::PARAM_INT];
+            $this->binding[] = [1 + $shift, $this->offset, \PDO::PARAM_INT];
+            $this->binding[] = [2 + $shift, $this->limit, \PDO::PARAM_INT];
         }
 
         $this->query = $query;
