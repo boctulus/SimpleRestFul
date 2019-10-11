@@ -130,7 +130,7 @@
 	
 		$.ajax({
 			type: "POST",
-			url: '/auth/token_renew',
+			url: '/auth/refresh',
 			data : JSON.stringify({sid: localStorage.getItem('sid')}),
 			dataType: 'json',
 			headers: {"Authorization": 'Basic ' + localStorage.getItem('refresh_token')}, 

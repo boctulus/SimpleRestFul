@@ -19,7 +19,16 @@ class MyApiController extends ApiController
 
     function __construct()
     {
-        parent::__construct();
+        // CORS
+        $headers = [
+            'access-control-allow-Origin' => '*'
+        ];
+   
+        $auth = new \simplerest\controllers\AuthController();
+        $auth->addMustHave([ 'enabled' => 1 ], 403, 'Usuario no habilitado');
+        $auth->addMustNotHave([ 'quota' => 0 ], 403, 'Quota exceded');      
+        
+        parent::__construct($headers, $auth);
     }
 
 }

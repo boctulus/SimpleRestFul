@@ -49,7 +49,7 @@ abstract class ApiController extends Controller
                 'write'  => ['post', 'put', 'patch', 'delete']
             ];           
 
-            $this->auth_payload = $auth_object->check_auth();
+            $this->auth_payload = $auth_object->check();
 
             if (!empty($this->auth_payload)){
                 $this->uid = $this->auth_payload->uid;
@@ -274,6 +274,11 @@ abstract class ApiController extends Controller
                 $limit  = (int) Arrays::shift($_get,'limit');
                 $offset = (int) Arrays::shift($_get,'offset',0);
                 $order  = Arrays::shift($_get,'order');
+
+                if ($limit !=0)
+                    $limit = min($limit, $this->config['max_records']);
+                else    
+                    $limit = $this->config['max_records'];
 
                 // Importante:
                 $_get = Arrays::nonassoc($_get);

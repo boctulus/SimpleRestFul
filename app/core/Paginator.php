@@ -18,10 +18,11 @@ class Paginator
      * @param int $offset
      * @param int $limit
     */
-    public function __construct(array $order = null, int $offset = 0, int $limit = null){
+    public function __construct($properties = null, array $order = null, int $offset = 0, int $limit = null){
         $this->order = $order;
         $this->offset = $offset;
         $this->limit = $limit;
+        $this->properties = $properties;
 
         if ($order!=null && $limit!=null)
             $this->compile();

@@ -32,11 +32,11 @@ class AuthController extends Controller implements IAuth
         parent::__construct();
     }
        
-    function addmust_have(array $conditions, $http_code, $msg) {
+    function addMustHave(array $conditions, $http_code, $msg) {
         $this->must_have[] = [ $conditions , $http_code, $msg ];
     }
 
-    function addmust_not(array $conditions, $http_code, $msg) {
+    function addMustNotHave(array $conditions, $http_code, $msg) {
         $this->must_not[]  = [ $conditions , $http_code, $msg ];
     }
 
@@ -181,7 +181,7 @@ class AuthController extends Controller implements IAuth
         
         Only by POST*
     */	
-    function token_renew()
+    function refresh()
     {
         if ($_SERVER['REQUEST_METHOD']=='OPTIONS'){
             // passs
@@ -324,7 +324,7 @@ class AuthController extends Controller implements IAuth
     
     @return mixed object | null
     */
-    function check_auth() {
+    function check() {
 
         $req = Factory::request();        
         $headers = $req->headers();

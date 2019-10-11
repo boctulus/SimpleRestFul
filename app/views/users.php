@@ -11,7 +11,7 @@
 
 <script type="text/javascript">
 	const endpoint = '/api/users';
-	const minutes_for_token_renew = 2 // 2
+	const minutes_for_refresh = 2 // 2
 
 	let $data = [];
 	let table = new JqTable('tb_users');
@@ -27,7 +27,7 @@
 				checkpoint();
 			
 			// diff is less than 2 minute
-			if ( ((localStorage.getItem('exp')*1000) - (new Date()).getTime()) < 60000 * minutes_for_token_renew){
+			if ( ((localStorage.getItem('exp')*1000) - (new Date()).getTime()) < 60000 * minutes_for_refresh){
 				renew();
 			}
 			

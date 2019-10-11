@@ -11,8 +11,8 @@ class Factory {
 		return \simplerest\core\Request::getInstance();
 	}
 
-	static function check_auth(){
+	static function check(){
 		$auth = new \simplerest\controllers\AuthController();
-        return $auth->check_auth();
+        return $auth->check();
 	}
 }

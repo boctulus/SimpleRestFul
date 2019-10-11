@@ -22,6 +22,17 @@ https://www.ibm.com/support/knowledgecenter/en/SS6KJL_8.6.4/FEB/ref_data_rest_ap
 Más
 https://restdb.io/docs/querying-with-the-api
 
+- Traer colecciones de recursos relacioandos
+
+  GET  /customers/5/orders
+
+<-- lista de órdenes de compra para el cliente con id=5
+
+o...
+
+  GET /customers/1/orders/99/products
+
+<-- productos de la orden 99 del cliente 1
 
 - Implementar front con DataTables o bien VueJs
 
@@ -96,7 +107,7 @@ https://lumen.laravel.com/docs/6.x/database
 - Form de registro (front)
 - Paginador (front)
 - Controles más complejos como checkbox, radio, combobox
-- Routers como en Laravel (!)
+- Routers como en Laravel 
 - Middlewares
 - Migrations, seeders,...
 - Sanitización a nivel de urls, FILTER_SANITIZE_URL
@@ -140,6 +151,7 @@ Content-type: application/json
 
 
 - Leer atentamente
+https://docs.microsoft.com/es-es/azure/architecture/best-practices/api-design  !!!
 https://www.vinaysahni.com/best-practices-for-a-pragmatic-restful-api
 https://phauer.com/2015/restful-api-design-best-practices/
 https://www.paradigmadigital.com/dev/oauth-2-0-equilibrio-y-usabilidad-en-la-securizacion-de-apis/

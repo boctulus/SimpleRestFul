@@ -29,6 +29,9 @@ return [
 
 	'session' => [
 		'secret_key' => 'fabcefdeefdcabcdea457123efda67857123efda67857123efda00234244fabc'
-	]
+	],
+
+	// podría haber otro límite que dependa del rol del usuario o algo en su registro
+	'max_records' => 50
 		
 ];
