@@ -62,12 +62,12 @@ class UsersModel extends Model
 	/*
 		@return array of all available roles for the user
 	*/
-	function fetchRoles(){
-		$q  = "SELECT ur.role_id as role, r.name as role_name FROM " . $this->table_name. ' as u INNER JOIN user_role as ur ON ur.user_id=u.id INNER JOIN roles AS r ON ur.role_id=r.id' . ' WHERE u.'.$this->id_name . '=?';
-		$st = $this->conn->prepare($q);
-		$st->execute([$this->id]);
-	
-		$rows = $st->fetchAll(\PDO::FETCH_ASSOC);
+	function fetchRoles()
+	{
+		$this->table_name = 'users as u';
+		$this->join('user_role as ur', 'ur.user_id', '=', 'u.id');
+		$this->join('roles as r', 'ur.role_id', '=', 'r.id');
+		$rows = $this->filter(['ur.role_id as role', 'r.name as role_name'], ['u.id', $this->id]);
 
 		if (!empty($rows)){
 			$roles = [];

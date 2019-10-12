@@ -33,12 +33,17 @@ class Database {
 		return new $class(self::getConnection());
 	}
 
-	public static function table($tb_name) {
+	public static function table($tb_name, $alias = NULL) {
 		$names = explode('_', $tb_name);
 		$names = array_map(function($str){ return ucfirst($str); }, $names);
-		$model = implode('', $names).'Model';
+		$model = implode('', $names).'Model';		
 
 		$class = '\\simplerest\\models\\' . $model;
-		return new $class(self::getConnection());
+		$obj = new $class(self::getConnection(), $alias);
+		
+		if (!is_null($alias))
+			$obj->setTableAlias($alias);
+
+		return $obj;
 	}
 }

@@ -7,6 +7,7 @@ use simplerest\libs\Arrays;
 class Model {
 
 	protected $table_name;
+	protected $table_alias = '';
 	protected $id_name = 'id';
 	protected $schema;
 	protected $nullable = [];
@@ -25,13 +26,16 @@ class Model {
 			$this->conn = $conn;
 			$this->conn->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 		}
-		
+
 		if (empty($this->schema))
 			throw new \Exception ("Schema is empty!");
 
 		$this->properties = array_keys($this->schema);
 	}
 
+	public function setTableAlias($tb_alias){
+		$this->table_alias = " as $tb_alias";
+	}
 
 	/**
 	 * removehidden
@@ -154,7 +158,7 @@ class Model {
 			$q  = "SELECT ".implode(", ", $select_fields_array);
 		}
 
-		$q  .= " FROM ".$this->table_name." WHERE ".$this->id_name." = :id";
+		$q  .= " FROM ".$this->table_name. ' '.$this->table_alias." WHERE ".$this->id_name." = :id";
 
 		$st = $this->conn->prepare($q);
 		$st->bindParam(":id", $this->{$this->id_name}, constant('PDO::PARAM_'.$this->schema[$this->id_name]));
@@ -206,7 +210,7 @@ class Model {
 			$q  = "SELECT ".implode(", ", $select_fields_array);
 		}
 
-		$q  .= ' FROM '.$this->table_name;
+		$q  .= ' FROM '.$this->table_name. ' '.$this->table_alias;
 
 		/// start pagination
 		if($paginator!=null)
@@ -254,7 +258,7 @@ class Model {
 		if (empty($conjunction))
 			$conjunction = 'AND';
 
-		$this->removehidden($fields);
+		$this->removehidden($fields);		
 
 		if($limit>0 || $order!=NULL){
 			try {
@@ -270,14 +274,14 @@ class Model {
 		}else
 			$paginator = null;	
 
-		if ($fields == null)
+		if (empty($fields))
 			$q  = 'SELECT *';
 		else {
-			$select_fields_array = array_intersect($fields, $this->properties);
-			$q  = "SELECT ".implode(", ", $select_fields_array);
+			//$fields = array_intersect($fields, $this->properties);
+			$q  = "SELECT ".implode(", ", $fields);
 		}
 
-		$q  .= ' FROM '.$this->table_name;
+		$q  .= ' FROM '.$this->table_name. ' '.$this->table_alias;
 
 		$_where = [];
 
@@ -376,7 +380,7 @@ class Model {
 
 	function exists()
 	{
-		$q  = "SELECT * FROM ".$this->table_name." WHERE ".$this->id_name."=:id";
+		$q  = "SELECT * FROM ".$this->table_name. ' '.$this->table_alias." WHERE ".$this->id_name."=:id";
 		$st = $this->conn->prepare( $q );
 		$st->bindParam(":id", $this->{$this->id_name}, \PDO::PARAM_INT);
 		$st->execute();
@@ -409,7 +413,7 @@ class Model {
 		$symbols = array_map(function($v){ return ":$v";}, $vars);
 		$str_vals = implode(', ',$symbols);
 
-		$q = "INSERT INTO ".$this->table_name." ($str_vars) VALUES ($str_vals)";
+		$q = "INSERT INTO ".$this->table_name. ' '.$this->table_alias." ($str_vars) VALUES ($str_vals)";
 		$st = $this->conn->prepare($q);
 	 
 		foreach($vals as $ix => $val){
@@ -454,7 +458,7 @@ class Model {
 		}
 		$set =trim(substr($set, 0, strlen($set)-2));
 
-		$q = "UPDATE ".$this->table_name." 
+		$q = "UPDATE ".$this->table_name. ' '.$this->table_alias." 
 				SET $set
 				WHERE ".$this->id_name."= :id";
 	 
@@ -482,7 +486,7 @@ class Model {
 	 */
 	function delete()
 	{
-		$q = "DELETE FROM ".$this->table_name." WHERE ".$this->id_name." = ?";
+		$q = "DELETE FROM ".$this->table_name. ' '.$this->table_alias." WHERE ".$this->id_name." = ?";
 		$st = $this->conn->prepare($q);
 		$st->bindParam(1, $this->{$this->id_name});
 	 

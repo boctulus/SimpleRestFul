@@ -2,7 +2,7 @@
 
 namespace simplerest\core;
 
-use \simplerest\libs\Url;
+include HELPERS_PATH . 'view.php';
 
 class View
 {

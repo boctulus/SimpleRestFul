@@ -85,8 +85,8 @@ class DumbController extends Controller
     }
 
     function joins(){
-        $o = Database::table('other_permissions');
-        $rows =   $o->join('folders', 'other_permissions.folder_id', '=',  'folders.id')
+        $o = Database::table('other_permissions', 'op');
+        $rows =   $o->join('folders', 'op.folder_id', '=',  'folders.id')
                     ->join('users', 'folders.belongs_to', '=', 'users.id')
                     ->join('user_role', 'users.id', '=', 'user_role.user_id')
                     ->join('roles', 'user_role.role_id', '=', 'roles.id') 
@@ -99,16 +99,6 @@ class DumbController extends Controller
         Debug::debug($rows);
     }
  
-    function test(){
-        $conn    = Database::getConnection();
-        $product = new ProductsModel($conn);
-
-        Debug::debug($product->filter(null, [ 
-            ['name', ['CocaCola', 'PesiLoca', 'Wisky', 'Vodka'], 'NOT IN'],
-            ['workspace', 'comparto']
-        ],null, ['cost' => 'ASC']));
-    }
-
     function get_nulls(){
         $conn    = Database::getConnection();
         $product = new ProductsModel($conn);
@@ -168,6 +158,17 @@ class DumbController extends Controller
         $ur = new UserRoleModel($conn);
         $id = $ur->create([ 'user_id' => $user_id, 'role_id' => $role_id, 'creation_date'=> time() ]);
         echo $id;
+    }
+
+    function test(){
+        $conn    = Database::getConnection();
+        $u = new UsersModel($conn);
+
+        $u->email = 'boctulus@gmail.com';
+        $u->password = 'gogogo2k';
+        $ok = $u->checkUserAndPass();
+
+        Debug::debug($ok);
     }
 
 

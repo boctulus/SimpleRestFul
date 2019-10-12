@@ -38,6 +38,9 @@ if (!defined('API_PATH'))
 if (!defined('LIBS_PATH'))
     define('LIBS_PATH', APP_PATH . 'libs' . DIRECTORY_SEPARATOR);   
 
+if (!defined('HELPERS_PATH'))
+    define('HELPERS_PATH', APP_PATH . 'helpers' . DIRECTORY_SEPARATOR);  
+
 
 if (!defined('PUBLIC_PATH'))
     define('PUBLIC_PATH', ROOT_PATH . 'public' . DIRECTORY_SEPARATOR); 
