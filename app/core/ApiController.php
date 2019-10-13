@@ -290,22 +290,9 @@ abstract class ApiController extends Controller
                     if (is_array($val)){
 
                         $campo = $val[0];
-                        //var_dump($val[1]); exit; //                        
-                      
-                        // 'eq', 'gt', ...
+                        //var_dump($val[1]); exit; //                         
 
-                        if (is_array($val[1])){
-                            $op = array_keys($val[1])[0];
-                            $v  = array_values($val[1])[0];
-
-                            foreach ($allops as $ko => $oo){
-                                if ($op == $oo){
-                                    $op = $eqops[$ko];
-                                    unset($_get[$key]);
-                                    $_get[] = [$campo, $v, $op];                                    
-                                    break;                                    
-                                }                                    
-                            }   
+                        if (is_array($val[1])){                             
 
                             foreach ($val[1] as $op => $v){
                                 switch ($op) {
@@ -321,10 +308,39 @@ abstract class ApiController extends Controller
                                         unset($_get[$key]);
                                         $_get[] = [$campo, '%'.$v, 'like'];
                                     break;
+                                    case 'in':                                         
+                                        if (strpos($v, ',')!== false){    
+                                            $vals = explode(',', $v);
+                                            unset($_get[$key]);
+                                            $_get[] = [$campo, $vals, 'IN']; 
+                                        }                                         
+                                    break;
+                                    case 'notin':
+                                        if (strpos($v, ',')!== false){    
+                                            $vals = explode(',', $v);
+                                            unset($_get[$key]);
+                                            $_get[] = [$campo, $vals, 'NOT IN'];
+                                        }                                         
+                                    break;
+                                    default:
+                                        // 'eq', 'gt', ...
+                                        $op = array_keys($val[1])[0];
+                                        $v  = array_values($val[1])[0];
+
+                                        foreach ($allops as $ko => $oo){
+                                            if ($op == $oo){
+                                                $op = $eqops[$ko];
+                                                unset($_get[$key]);
+                                                $_get[] = [$campo, $v, $op];                             
+                                                break;                                    
+                                            }                                    
+                                        }
+                                    break;
                                 }
                             }
                             
                         }else{
+                            // habilitar [in] y notin
                             $v = $val[1];
                             if (strpos($v, ',')!== false){    
                                 $vals = explode(',', $v);

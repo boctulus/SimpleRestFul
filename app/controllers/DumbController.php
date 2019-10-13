@@ -61,23 +61,24 @@ class DumbController extends Controller
         $conn    = Database::getConnection();
         $product = new ProductsModel($conn);
 
+        /*
         Debug::debug($product->filter(null, [ 
                 ['name', ['Vodka', 'Wisky', 'Tekila']], // IN 
                 ['belongs_to', 90]
         ]));
-
-        exit; ///
 
         Debug::debug($product->filter(null, [ 
             ['name', ['CocaCola', 'PesiLoca']], 
             ['cost', 550, '>='],
             ['cost', [100, 200]]
         ], 'OR'));    
-                
+        */
+
         Debug::debug($product->filter(null, [ 
-            ['name', ['CocaCola', 'PesiLoca', 'Wisky'], 'NOT IN']
+            ['name', ['CocaCola', 'PesiLoca', 'Wisky', 'Vodka'], 'NOT IN']
         ]));
 
+        /*
         // implicit 'AND'
         Debug::debug($product->filter(null, [ 
             ['cost', 200, '<'],
@@ -88,7 +89,7 @@ class DumbController extends Controller
             ['cost', 200, '>='],
             ['cost', 270, '<=']
         ]));
-    
+        */
     }
 
     function joins(){

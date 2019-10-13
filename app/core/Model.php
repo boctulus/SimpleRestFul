@@ -297,7 +297,7 @@ class Model {
 							$cond[1] = array_map(function($e){ return "'$e'";}, $cond[1]);   
 						
 						$in_val = implode(', ', $cond[1]);
-						$_where[] = "$cond[0] IN ($in_val) ";						
+						$_where[] = "$cond[0] $cond[2] ($in_val) ";						
 
 					}else{
 						$vars[]   = $cond[0];

@@ -12,9 +12,11 @@
     GET /api/products?name=Vodka
     GET /api/products?name=Vodka&size=1L
 
-IN list
+IN / NOT IN
 
     GET /api/products?name=Vodka,Wisky,Tekila
+    GET /api/products?name[in]=Vodka,Wisky,Tekila
+    GET /api/products?name[notin]=CocaCola,7up
 
 ### String comparisons   
 
