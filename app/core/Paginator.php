@@ -37,10 +37,7 @@ class Paginator
             foreach($this->orders as $field => $order){
 
                 if ($order == 'ASC' || $order == 'DESC'){
-                    $query .= '? ?, '; 
-                    $this->binding[] = [1, $field, \PDO::PARAM_STR];
-                    $this->binding[] = [2, $order, \PDO::PARAM_STR];
-                    $shift = 2;
+                    $query .= "$field $order, ";
                 }else
                     throw new \InvalidArgumentException("order should be ASC or DESC!");   
 
@@ -51,13 +48,12 @@ class Paginator
             }
             $query = substr($query,0,strlen($query)-2);
 
-        }else
-            $shift = 0;
+        }
 
         if($this->limit >0){
             $query .= " LIMIT ?, ?"; 
-            $this->binding[] = [1 + $shift, $this->offset, \PDO::PARAM_INT];
-            $this->binding[] = [2 + $shift, $this->limit, \PDO::PARAM_INT];
+            $this->binding[] = [1 , $this->offset, \PDO::PARAM_INT];
+            $this->binding[] = [2 , $this->limit, \PDO::PARAM_INT];
         }
 
         $this->query = $query;

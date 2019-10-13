@@ -293,14 +293,11 @@ class Model {
 				foreach ($conditions as $cond) {
 					if(is_array($cond[1]) && (empty($cond[2]) || in_array($cond[2], ['IN', 'NOT IN']) )){
 						
-						$cond_1 = array_map(function($e){ return '?';}, $cond[1]);  
-						$in_val = implode(', ', $cond_1);				
+						if($this->schema[$cond[0]] == 'STR')	
+							$cond[1] = array_map(function($e){ return "'$e'";}, $cond[1]);   
 						
-						$opx = !empty($cond[2]) ? $cond[2] : 'IN';
-						$_where[] = "$cond[0] $opx ($in_val) ";
-
-						foreach((array) $cond[1] as $c)
-							$values[] = $c;
+						$in_val = implode(', ', $cond[1]);
+						$_where[] = "$cond[0] IN ($in_val) ";						
 
 					}else{
 						$vars[]   = $cond[0];
@@ -336,7 +333,7 @@ class Model {
 			$joins .= "$j[4] $j[0] ON $j[1]$j[2]$j[3] ";
 		}
 
-		$q  .= " $joins WHERE $where";
+		$q  .= "$joins WHERE $where";
 
 		if($paginator!==null){
 			$q .= $paginator->getQuery();
@@ -346,17 +343,19 @@ class Model {
 		//DEBUG::debug($vars);
 		//DEBUG::debug($values);
 		
-		var_dump($q);
+		//var_dump($q);
+		//var_dump($vars);
 		//var_dump($values);
 
 		$st = $this->conn->prepare($q);
 				
 		foreach($values as $ix => $val){
+			
 			if(is_null($val)){
 				$type = \PDO::PARAM_NULL;
-			//}elseif(isset($vars[$ix]) && isset($this->schema[$vars[$ix]])){
-			//	$const = $this->schema[$vars[$ix]];
-			//	$type = constant("PDO::PARAM_{$const}");
+			}elseif(isset($vars[$ix]) && isset($this->schema[$vars[$ix]])){
+				$const = $this->schema[$vars[$ix]];
+				$type = constant("PDO::PARAM_{$const}");
 			}elseif(is_int($val))
 				$type = \PDO::PARAM_INT;
 			elseif(is_bool($val))
