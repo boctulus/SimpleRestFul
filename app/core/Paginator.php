@@ -37,7 +37,6 @@ class Paginator
             foreach($this->orders as $field => $order){
 
                 if ($order == 'ASC' || $order == 'DESC'){
-                    $query .= "$field $order, ";
                     $query .= '? ?, '; 
                     $this->binding[] = [1, $field, \PDO::PARAM_STR];
                     $this->binding[] = [2, $order, \PDO::PARAM_STR];

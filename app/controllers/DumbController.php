@@ -62,7 +62,14 @@ class DumbController extends Controller
         $product = new ProductsModel($conn);
 
         Debug::debug($product->filter(null, [ 
-            ['name', ['CocaCola', 'PesiLoca']],  // IN 
+                ['name', ['Vodka', 'Wisky', 'Tekila']], // IN 
+                ['belongs_to', 90]
+        ]));
+
+        exit; ///
+
+        Debug::debug($product->filter(null, [ 
+            ['name', ['CocaCola', 'PesiLoca']], 
             ['cost', 550, '>='],
             ['cost', [100, 200]]
         ], 'OR'));    
@@ -169,6 +176,11 @@ class DumbController extends Controller
         $ok = $u->checkUserAndPass();
 
         Debug::debug($ok);
+    }
+
+    function test2() {
+        $p = Database::table('products');
+        Debug::debug($p->filter(null, ['name', '%jugo%', 'like'] ));
     }
 
 

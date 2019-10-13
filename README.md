@@ -12,11 +12,21 @@
     GET /api/products?name=Vodka
     GET /api/products?name=Vodka&size=1L
 
-A OR B
+IN list
 
     GET /api/products?name=Vodka,Wisky,Tekila
 
-### Comparision operators
+### String comparisons   
+
+    contains
+    startswith
+    endswith
+
+Example
+
+    GET /api/products?name[contains]=jugo 
+
+### Numerical comparisons
 
     =    eq
     !=   neq

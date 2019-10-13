@@ -213,7 +213,7 @@ class Model {
 		$q  .= ' FROM '.$this->table_name. ' '.$this->table_alias;
 
 		/// start pagination
-		if($paginator!=null)
+		if($paginator!==null)
 			$q .= $paginator->getQuery();
 
 		// JOINS
@@ -258,7 +258,7 @@ class Model {
 		if (empty($conjunction))
 			$conjunction = 'AND';
 
-		$this->removehidden($fields);		
+		$this->removehidden($fields);	
 
 		if($limit>0 || $order!=NULL){
 			try {
@@ -323,12 +323,12 @@ class Model {
 			}	
 		}
 
-		$shift = 0;
 		foreach($vars as $ix => $var){
 			$_where[] = "$var $ops[$ix] ?";
-			$shift++;
 		}
+
 		$where = implode(" $conjunction ", $_where);
+		$shift = substr_count($where, '?');
 		
 		// JOINS
 		$joins = '';
@@ -338,39 +338,44 @@ class Model {
 
 		$q  .= " $joins WHERE $where";
 
-
-		//DEBUG::debug($vars);
-		//DEBUG::debug($values);
-		//DEBUG::debug($q);
-		
-		if($paginator!=null){
+		if($paginator!==null){
 			$q .= $paginator->getQuery();
 		}
 		
+		//DEBUG::debug($q);
+		//DEBUG::debug($vars);
+		//DEBUG::debug($values);
+		
+		var_dump($q);
+		//var_dump($values);
+
 		$st = $this->conn->prepare($q);
 				
 		foreach($values as $ix => $val){
-			if(is_null($val))
+			if(is_null($val)){
 				$type = \PDO::PARAM_NULL;
-			elseif(isset($vars[$ix]) && isset($this->schema[$vars[$ix]])){
-				$const = $this->schema[$vars[$ix]];
-				$type = constant("PDO::PARAM_{$const}");
+			//}elseif(isset($vars[$ix]) && isset($this->schema[$vars[$ix]])){
+			//	$const = $this->schema[$vars[$ix]];
+			//	$type = constant("PDO::PARAM_{$const}");
 			}elseif(is_int($val))
 				$type = \PDO::PARAM_INT;
 			elseif(is_bool($val))
 				$type = \PDO::PARAM_BOOL;
 			elseif(is_string($val))
-				$type = \PDO::PARAM_STR;			
-				
+				$type = \PDO::PARAM_STR;	
+
 			$st->bindValue($ix+1, $val, $type);
+			//echo "Bind: ".($ix+1)." - $val ($type)\n";
 		}
 
-		if($paginator!=null){	
+			
+		if ($paginator !== null){
 			$bindings = $paginator->getBinding();
 			foreach($bindings as $ix => $binding){
 				$st->bindValue($shift +$ix +1, $binding[1], $binding[2]);
-			}
-		} 
+				//echo "Bind: ".($shift +$ix +1)." - $binding[1] ($binding[2])\n";
+			}	
+		}			
 
 		if ($st->execute())
 			return $st->fetchAll(\PDO::FETCH_ASSOC);

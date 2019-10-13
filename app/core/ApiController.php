@@ -289,25 +289,51 @@ abstract class ApiController extends Controller
                 foreach ($_get as $key => $val){
                     if (is_array($val)){
 
-                        $campo = $val[0];                        
-                        foreach ((array) $val[1] as $op => $v){
+                        $campo = $val[0];
+                        //var_dump($val[1]); exit; //                        
+                      
+                        // 'eq', 'gt', ...
+
+                        if (is_array($val[1])){
+                            $op = array_keys($val[1])[0];
+                            $v  = array_values($val[1])[0];
+
+                            foreach ($allops as $ko => $oo){
+                                if ($op == $oo){
+                                    $op = $eqops[$ko];
+                                    unset($_get[$key]);
+                                    $_get[] = [$campo, $v, $op];                                    
+                                    break;                                    
+                                }                                    
+                            }   
+
+                            foreach ($val[1] as $op => $v){
+                                switch ($op) {
+                                    case 'contains':
+                                        unset($_get[$key]);
+                                        $_get[] = [$campo, '%'.$v.'%', 'like'];
+                                    break;
+                                    case 'startswith':
+                                        unset($_get[$key]);
+                                        $_get[] = [$campo, $v.'%', 'like'];
+                                    break;
+                                    case 'endswith':
+                                        unset($_get[$key]);
+                                        $_get[] = [$campo, '%'.$v, 'like'];
+                                    break;
+                                }
+                            }
                             
+                        }else{
+                            $v = $val[1];
                             if (strpos($v, ',')!== false){    
                                 $vals = explode(',', $v);
                                 unset($_get[$key]);
-                                $_get[] = [$campo, $vals];
-                            }else
-                                foreach ($allops as $ko => $oo){
-                                    if ($op == $oo){
-                                        $op = $eqops[$ko];
-                                        unset($_get[$key]);
-                                        $_get[] = [$campo, $v, $op];
-                                        break;                                    
-                                    }                                    
-                                }   
+                                $_get[] = [$campo, $vals];                                
                             } 
-                    }    
-                                                
+                        }   
+                        
+                    }                           
                 }
           
                 if (empty($folder)){
@@ -333,6 +359,7 @@ abstract class ApiController extends Controller
                 }
 
                 //var_dump($_get); ////
+                //var_export($_get); 
 
                 if (!empty($_get)){
                     $rows = $instance->filter($fields, $_get, null, $order, $limit, $offset);
