@@ -39,7 +39,14 @@ Example
 
 Example:    
 
+    GET /api/products?order[cost]=ASC&cost[between]=200,300
     GET /api/products?cost[gteq]=100&cost[lteq]=250
+   
+
+### BETWEEN
+
+    GET /api/products?creation_time[between]=2019-10-15,2019-09-01 
+
 
 ### List of fields to include
 

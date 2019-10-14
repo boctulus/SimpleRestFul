@@ -322,6 +322,18 @@ abstract class ApiController extends Controller
                                             $_get[] = [$campo, $vals, 'NOT IN'];
                                         }                                         
                                     break;
+                                    case 'between':
+                                        if (substr_count($v, ',') == 1){    
+                                            $vals = explode(',', $v);
+                                            unset($_get[$key]);
+
+                                            $min = min($vals[0],$vals[1]);
+                                            $max = max($vals[0],$vals[1]);
+
+                                            $_get[] = [$campo, $min, '>='];
+                                            $_get[] = [$campo, $max, '<='];
+                                        }                                         
+                                    break;
                                     default:
                                         // 'eq', 'gt', ...
                                         $op = array_keys($val[1])[0];

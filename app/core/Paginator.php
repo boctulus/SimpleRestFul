@@ -35,6 +35,7 @@ class Paginator
             $query .= ' ORDER BY ';
             
             foreach($this->orders as $field => $order){
+                $order = strtoupper($order);
 
                 if ($order == 'ASC' || $order == 'DESC'){
                     $query .= "$field $order, ";

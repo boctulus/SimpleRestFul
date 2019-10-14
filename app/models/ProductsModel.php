@@ -11,8 +11,8 @@ class ProductsModel extends Model
 {
 	protected $table_name = "products";
 	protected $id_name = 'id';
-	protected $fillable = ['name','description','size','cost', 'workspace', 'belongs_to'];
-	protected $nullable = ['workspace'];
+	protected $fillable = ['name','description','size','cost', 'creation_time', 'modification_time', 'workspace', 'belongs_to'];
+	protected $nullable = ['workspace', 'creation_time', 'modification_time'];
  
 	/*
 		Types are INT, STR and BOOL among others
@@ -24,6 +24,8 @@ class ProductsModel extends Model
 		'description' => 'STR',
 		'size' => 'STR',
 		'cost' => 'INT',
+		'creation_time' => 'STR',
+		'modification_time' => 'STR',
 		'workspace' => 'STR', 
 		'belongs_to' => 'INT'  // 
 	];

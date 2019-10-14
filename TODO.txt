@@ -1,12 +1,18 @@
 # TODO
 
+- De existir el campo `creation_time`, usarlo en el 'post'
+
+IDEM para `modification_time` actualizarlo con 'put', 'patch'
+
+- Definir para cada endpoint si el delete es "hard" o "soft".  
+
 - Ante una excepción del modelo imprimir la consulta SQL
 
 - Generar fallos intencionalmente en las URLs para ver si se puede mejorar el reporte de errores (hacerlos más comprensibles)
 
 - Pruebas unitarias
 
-- Agregar operadores NOT IN, BETWEEN, NOT BETWEEN, CONTAINS, NOT CONTAINS, START WITH, ENDS WITH
+- Agregar operadores  BETWEEN, NOT BETWEEN
 
 ver 
 https://api.akeneo.com/documentation/filter.html
