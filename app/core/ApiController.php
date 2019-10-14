@@ -38,8 +38,8 @@ abstract class ApiController extends Controller
             set_exception_handler([$this, 'exception_handler']);
 
         if ($this->config['enabled_auth']){ //       
-            if ($auth_object == null)
-                $auth_object = new \simplerest\controllers\AuthController();
+            #if ($auth_object == null)
+            #    $auth_object = new \simplerest\controllers\AuthController();
 
             $operations = [ 
                 'read'   => ['get'],
@@ -352,7 +352,7 @@ abstract class ApiController extends Controller
                             }
                             
                         }else{
-                            // habilitar [in] y notin
+                            // IN
                             $v = $val[1];
                             if (strpos($v, ',')!== false){    
                                 $vals = explode(',', $v);
@@ -483,6 +483,7 @@ abstract class ApiController extends Controller
         $model    = 'simplerest\\models\\'.$this->_model;
         $instance = new $model();
         $instance->id = $id;
+        $has_modified = $instance->inSchema(['modified']);
         $missing = $instance->diffWithSchema($data, ['id', 'belongs_to']);
 
         if (!empty($missing))
@@ -502,6 +503,11 @@ abstract class ApiController extends Controller
             }
 
             $data['belongs_to'] = $this->uid; //
+
+            if ($has_modified){
+                $d = new \DateTime();
+                $data['modified'] = $d->format('Y-m-d G:i:s');
+            }                
 
             if ($folder !== null)
             {
@@ -564,6 +570,7 @@ abstract class ApiController extends Controller
 
             $instance = new $model($conn);
             $instance->id = $id;
+            $has_modified = $instance->inSchema(['modified']);
 
             $rows = $instance->filter(null, ['id', $id]);
             
@@ -572,6 +579,11 @@ abstract class ApiController extends Controller
             }
 
             $data['belongs_to'] = $this->uid; //
+
+            if ($has_modified){
+                $d = new \DateTime();
+                $data['modified'] = $d->format('Y-m-d G:i:s');
+            }  
 
             if ($folder !== null)
             {

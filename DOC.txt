@@ -1,6 +1,62 @@
 DOCUMENTACION 
 -------------
 
+# Modelo
+
+	Cada modelo es definido en una clase en /app/models que extiende a Model y donde se define el schema y algunas propiedades de los campos. Ejemplo:
+
+
+	class ProductsModel extends Model 
+	{
+		protected $table_name = "products";
+		protected $id_name = 'id';
+		protected $fillable = ['name','description','size','cost', 'modified', 'workspace', 'belongs_to'];
+		protected $nullable = ['workspace', 'created', 'modified'];
+	 
+		/*
+			Types are INT, STR and BOOL among others
+			see: https://secure.php.net/manual/en/pdo.constants.php 
+		*/
+		protected $schema = [
+			'id' => 'INT',
+			'name' => 'STR',
+			'description' => 'STR',
+			'size' => 'STR',
+			'cost' => 'INT',
+			'created' => 'STR',
+			'modified' => 'STR',
+			'workspace' => 'STR', 
+			'belongs_to' => 'INT'  
+		];
+
+	    public function __construct($db = NULL){
+			parent::__construct($db);
+		}
+
+	}
+
+
+Como puede observarse cada campo en el schema es de un tipo, el nombre de la tabla se especifica en $table_name aunque se recomienda que coincida con el nombre de la clase modelo en minúsculas. 
+
+Todas las tablas deben tener un único id inclusive si son "tablas intermedias" (conocidas también como "tablas puente") y se especifica en la propiedad $id_name.
+
+Los campos que pueden ser rellenados al hacer un INSERT o un UPDATE deben especificarse dentro del array $fillable. 
+
+Si un campo puede ser NULL, debe incluirse en el array $nullable.
+
+Si el modelo posee un campo llamado "modified" automáticamente será utilizado en las actualizaciones a nivel de la API Rest. No afecta si se utilizan los modelos directamente.
+
+Como los modelos heredan de la clase Model adquieren funcionalidad de métodos como:
+
+create()
+delte()
+update()
+exists()
+fetch()
+fetchAll()
+filter()
+etc.
+
 
 ### ACL
 
