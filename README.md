@@ -28,6 +28,7 @@ Example
 
     GET /api/products?name[contains]=jugo 
 
+
 ### Numerical comparisons
 
     =    eq
@@ -37,16 +38,14 @@ Example
     >=   gteq
     <=   lteq
 
-Example:    
-
-    GET /api/products?order[cost]=ASC&cost[between]=200,300
-    GET /api/products?cost[gteq]=100&cost[lteq]=250
-   
+Example:  
+    
+    GET /api/products?cost[gteq]=100&cost[lteq]=25
 
 ### BETWEEN
 
-    GET /api/products?creation_time[between]=2019-10-15,2019-09-01 
-
+    GET /api/products?order[cost]=ASC&cost[between]=200,300
+    GET /api/products?creation_time[between]=2019-10-15,2019-09-01
 
 ### List of fields to include
 
@@ -54,11 +53,9 @@ Example:
     GET /api/products/83?fields=id,name,cost
     GET /api/products?fields=id,cost&name=Vodka
 
-
 ### Exclude fields
 
     GET /api/users?exclude=firstname,lastname
-
 
 ### Select null or not null values
 
