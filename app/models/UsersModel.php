@@ -6,7 +6,7 @@ namespace simplerest\models;
 use simplerest\core\Model;
 
 class UsersModel extends Model
- {
+ { 
 	protected $table_name = "users";
 	protected $id_name = 'id';
 	protected $fillable = [
@@ -14,10 +14,12 @@ class UsersModel extends Model
 							'password',
 							'firstname',
 							'lastname',
+							'enabled',
+							'quota',
 							'belongs_to'
 	];
 
-	protected $hidden = ['password'];
+	protected $hidden = ['password', 'belongs_to'];
 
 	/*
 		Types are INT, STR and BOOL among others

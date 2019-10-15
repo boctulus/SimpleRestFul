@@ -504,23 +504,16 @@ class Model {
 		'''Reflection'''
 	*/
 	
-	function inSchema($props, array $excluded = []){
-		if (is_object($props))
-			$props = (array) $props;
-		
-		$props = array_keys($props);
-		
+	function inSchema(array $props){
+
 		if (empty($props))
 			throw new \InvalidArgumentException("Properties not found!");
 		
-		$missing_properties = [];
-
-		foreach ($this->properties as $exp){
-			if (!in_array($exp, $props) && !in_array($exp, $excluded)){
+		foreach ($props as $prop)
+			if (!in_array($prop, $this->properties)){
 				return false; 
 			}	
-		}
-
+		
 		return true;
 	}
 

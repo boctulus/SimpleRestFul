@@ -486,6 +486,8 @@ abstract class ApiController extends Controller
         $has_modified = $instance->inSchema(['modified']);
         $missing = $instance->diffWithSchema($data, ['id', 'belongs_to']);
 
+        var_dump($has_modified);
+
         if (!empty($missing))
             Factory::response()->sendError('Lack some properties in your request: '.implode(',',$missing), 400);
 
