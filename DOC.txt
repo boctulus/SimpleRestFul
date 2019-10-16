@@ -199,12 +199,13 @@ Mismo para borrar un registro perteneciente a un folder:
 	}
 
 
-### Soft delete
+### Soft delete y el la papelera
 
-	En cada endpoint se puede definir si el delete es "soft" o "hard" mediante la propiedad $soft_delete en la api. Ejemplo:
+En cada endpoint se puede definir si el delete es "soft" o "hard" mediante la propiedad $soft_delete en la api. Ejemplo:
 
 class Products extends MyApiController
 { 
+	// solo hard delete
     protected $soft_delete = false;
 
     // ...
@@ -215,13 +216,37 @@ Para visualizar registros borrados filtrar con trashed=true, ejemplo:
 
 La hacer un GET sobre un registro en particular se puede visualizar aún si tiene un soft delete. Se puede observar que el campo `deleted_at` guarda la fecha de borrado.
 
-Para recuperar un registro borrado con soft delete se setea "null" el campo `deleted_at`
+Para recuperar un registro borrado con soft delete se puede lograr seteando "null" el campo `deleted_at`
 
 	PATCH api/products/125
 
 	{
 		"deleted_at": "null"
 	}
+
+
+### La Papelera
+
+Cuando un registro es marcado como borrado aparece en TrashCan, la papelera de reciclaje, que provee brinda la posibilidad de gestionar todas las operaciones sobre elementos eliminados.
+
+Para ver elementos en la papelera
+
+	GET /api/TrashCan?entity=products
+	GET /api/TrashCan/157?entity=products
+
+
+Para hacer un "undelete" de un recurso se hace un PATCH o PUT sobre el TrashCan
+
+	PATCH /api/TrashCan/157	
+
+	{
+		"entity": "Products",
+		"trashed": "false"
+	}
+
+Para eliminar *permanentemente* un recurso se realiza un DELETE sobre el elemento en la papelera:
+
+	DELETE /api/TrashCan/157?entity=products		
 
 
 ### Versionado

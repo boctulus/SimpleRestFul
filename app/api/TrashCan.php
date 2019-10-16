@@ -1,210 +1,37 @@
 <?php
 
-namespace simplerest\core;
+namespace simplerest\api;
 
-use simplerest\core\interfaces\IAuth;
+use simplerest\controllers\MyApiController;
 use simplerest\libs\Factory;
 use simplerest\libs\Arrays;
 use simplerest\libs\Database;
-use simplerest\models\GroupPermissionsModel;
-use simplerest\models\OtherPermissionsModel;
-use simplerest\models\FoldersModel;
 
-abstract class ApiController extends Controller
-{
-    protected $scope;
-    protected $callable = [];
-    protected $config;
-    protected $modelName;
-    protected $model_table;
-    protected $soft_delete;
-    protected $auth_payload = null;
-    protected $uid;
-    protected $is_admin;
-    protected $role;
-    protected $folder_field;
-    protected $guest_root_access = false;
-    protected $default_headers = [
-        'access-control-allow-Methods' => 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-        'access-control-allow-credentials' => 'true',
-        'access-control-allow-headers' => 'AccountKey,x-requested-with, Content-Type, origin, authorization, accept, client-security-token, host, date, cookie, cookie2',
-        'content-type' => 'application/json; charset=UTF-8',
-    ];
-
-    function __construct(array $headers = [], IAuth $auth_object = null) 
-    {        
-        $this->config = include CONFIG_PATH . 'config.php';
-
-        if ($this->config['debug_mode'] == false)
-            set_exception_handler([$this, 'exception_handler']);
-
-        if ($this->config['enabled_auth']){ //       
-
-            $operations = [ 
-                'read'   => ['get'],
-                'create' => ['post'],
-                'update' => ['put', 'patch'],
-                'delete' => ['delete'],
-                'write'  => ['post', 'put', 'patch', 'delete']
-            ];           
-
-            $this->auth_payload = $auth_object->check();
-
-            if (!empty($this->auth_payload)){
-                $this->uid = $this->auth_payload->uid;
-                $this->is_admin = $this->auth_payload->is_admin;
-                $this->role  = $this->auth_payload->user_role;
-            }else{
-                $this->uid = null;
-                $this->is_admin = false;
-                $this->role = 'guest';
-            }
-
-            $cruds = $this->scope[$this->role];
-
-            if (!is_null($this->scope[$this->role])){
-                foreach ($operations as $op => $verbs) {
-                    if (in_array($op, $cruds))
-                        $this->callable = array_merge($this->callable, $verbs);
-                }
-            }    
-
-            if (empty($this->callable))
-                Factory::response()->sendError('Authorization not found !',400);
-
-            $this->callable = array_merge($this->callable,['head','options']);
-    
-            // headers
-            $verbos = array_merge($this->callable, ['options']);            
-            $headers = array_merge($headers, ['access-control-allow-Methods' => implode(',',array_map( function ($e){ return strtoupper($e); },$verbos)) ]);
-            $this->setheaders($headers);            
-        }    
-
-        if (preg_match('/([A-Z][a-z0-9_]+[A-Z]*[a-z0-9_]*[A-Z]*[a-z0-9_]*[A-Z]*[a-z0-9_]*)/', get_called_class(), $matchs)){
-            $this->modelName = $matchs[1] . 'Model';
-            $this->model_table = strtolower($matchs[1]);
-        }    
-    }
-
-    
-    /**
-     * setheaders
-     * mover a Response *
-     *
-     * @param  mixed $headers
-     *
-     * @return void
-     */
-    private function setheaders(array $headers = []) {
-        $headers = array_merge($this->default_headers, $headers);     
-
-        foreach ($headers as $k => $val){
-            if (empty($val))
-                continue;
-            
-            header("${k}:$val");
-        }
-    }
-
-    /**
-     * exception_handler
-     *
-     * @param  mixed $e
-     *
-     * @return void
-     */
-    function exception_handler($e) {
-        Factory::response()->sendError($e->getMessage());
-    }
-
-    
-    /**
-     * head
-     * discard conentent (body)
-     * 
-     * @param  mixed $id
-     *
-     * @return void
-     */
-    function head(int $id = null) {
-        if (method_exists($this,'get')){
-            ob_start();
-            $this->get($id);
-            ob_end_clean();
-        }
-    }
-
-    /**
-     * options
-     *
-     * @return void
-     */
-    function options(){
-    }
-
- 
-    /**
-     * hasPerm
-     *
-     * @param  int    $folder
-     * @param  object $conn
-     * @param  string $operation
-     *
-     * @return bool
-     */
-    protected function hasPerm(int $folder, object $conn, string $operation)
+class TrashCan extends MyApiController
+{   
+    function __construct()
     {
-        if ($operation != 'r' && $operation != 'w')
-            throw new \InvalidArgumentException("Permissions are 'r' or 'w' but not '$operation'");
-
-        $o = new OtherPermissionsModel($conn);
-
-        $rows = $o->filter(null, ['folder_id', $folder]);
-
-        $r = $rows[0]['r'] ?? null;
-        $w = $rows[0]['w'] ?? null;
-
-        if ($this->role == 'guest'){
-            $r = $r && $rows[0]['guest'];
-            $w = $w && $rows[0]['guest'];
-        }
-
-        if (($operation == 'r' && $r) || ($operation == 'w' && $w)) {
-            return true;
-        }
-        
-        $g = new GroupPermissionsModel($conn);
-        $rows = $g->filter(null, [
-                                    ['folder_id', $folder], 
-                                    ['member', $this->uid]
-        ]);
-
-        $r = $rows[0]['r'] ?? null;
-        $w = $rows[0]['w'] ?? null;
-
-        if (($operation == 'r' && $r) || ($operation == 'w' && $w)) {
-            return true;
-        }
-
-        return false;
+        parent::__construct();
     }
 
-    /**
-     * get
-     *
-     * @param  mixed $id
-     *
-     * @return void
-     */
     function get(int $id = null){
         try {            
-
-            $conn = Database::getConnection();
-
-            $model    = 'simplerest\\models\\'.$this->modelName;
-            $instance = new $model($conn); 
-            
+            /////////////////////////////////////////////////////
             $_get  = Factory::request()->getQuery();
+
+            $entity = Arrays::shift($_get,'entity'); 
+
+            if (empty($entity))
+                Factory::response()->sendError('Entity is required', 400);
+
+            $this->modelName = ucfirst($entity) . 'Model';
+            $this->model_table = strtolower($entity);
+
+            $model    = 'simplerest\\models\\'. $this->modelName;
+            
+            $conn = Database::getConnection();
+            $instance = new $model($conn); 
+            ////////////////////////////////////////////////////
             
             $fields = Arrays::shift($_get,'fields');
             $fields = $fields != NULL ? explode(',',$fields) : NULL;
@@ -214,10 +41,6 @@ abstract class ApiController extends Controller
 
             if ($exclude != null)
                 $instance->hide($exclude);
-            
-            ///
-            $trashed = Arrays::shift($_get,'trashed');                  
-            ///
 
             $folder = Arrays::shift($_get,'folder');
 
@@ -225,11 +48,8 @@ abstract class ApiController extends Controller
                 if ($val == 'NULL' || $val == 'null'){
                     $_get[$key] = NULL;
                 }               
-            }
+            }    
 
-            //var_dump($_get);
-            //exit;
-        
             if ($folder !== null)
             {
                 $f = new FoldersModel($conn);
@@ -244,10 +64,10 @@ abstract class ApiController extends Controller
                     Factory::response()->sendError("You don't have permission for the folder $folder", 403);
             }
 
+            $instance->showDeleted(); //
+
             if ($id != null)
             {
-                $instance->showDeleted(); //
-
                 $_get = [
                     ['id', $id]
                 ];  
@@ -268,9 +88,11 @@ abstract class ApiController extends Controller
                     $_get[] = ['belongs_to', $f->belongs_to];
                 }
 
+                $_get[] = ['deleted_at', NULL, 'IS NOT'];
+
                 $rows = $instance->filter($fields, $_get); 
                 if (empty($rows))
-                    Factory::response()->sendCode(404);
+                    Factory::response()->sendError('Not found in trash can', 404);
                 else
                     Factory::response()->send($rows[0]);
             }else{    
@@ -391,8 +213,8 @@ abstract class ApiController extends Controller
                     $_get[] = ['belongs_to', $f->belongs_to];
                 }
 
-                if ($trashed)
-                    $instance->showDeleted();
+
+                $_get[] = ['deleted_at', NULL, 'IS NOT'];
 
                 //var_dump($_get); ////
                 //var_export($_get); 
@@ -412,66 +234,10 @@ abstract class ApiController extends Controller
         }	    
     } // 
 
-
-    /**
-     * post
-     *
-     * @return void
-     */
     function post(){
-        $data = Factory::request()->getBody();
+        Factory::response()->sendError('You can not create a trashcan resource',405);
+    }        
 
-        if (empty($data))
-            Factory::response()->sendError('Invalid JSON',400);
-        
-        $model    = '\\simplerest\\models\\'.$this->modelName;
-        $instance = new $model();
-        $missing = $instance->diffWithSchema($data, ['id', 'belongs_to']);
-
-        if (!empty($missing))
-            Factory::response()->sendError('Lack some properties in your request: '.implode(',',$missing), 400);
-    
-        $folder = $data['folder'] ?? null;
-
-        try {
-            $conn = Database::getConnection();
-            $instance->setConn($conn);
-
-            $data['belongs_to'] = ($this->role == 'guest' ? -1 : $this->uid); 
-        
-            if ($folder !== null)
-            {
-                if (empty($this->folder_field))
-                    Factory::response()->sendError("'folder_field' is undefined", 403);
-
-                $f = new FoldersModel($conn);
-                $f->id = $folder;    
-                $ok = $f->fetch();
-        
-                if (!$ok || $f->resource_table!=$this->model_table)
-                    Factory::response()->sendError('Folder not found', 404); 
-        
-                if ($f->belongs_to != $this->uid  && !$this->hasPerm($folder, $conn, 'w'))
-                    Factory::response()->sendError("You don't have permission for the folder $folder", 403);
-
-                unset($data['folder']);    
-                $data[$this->folder_field] = $f->value;
-                $data['belongs_to'] = $f->belongs_to;    
-            }    
-
-            if ($instance->create($data)!==false){
-                Factory::response()->send(['id' => $instance->id], 201);
-            }	
-            else
-                Factory::response()->sendError("Error: creation of resource fails!");
-
-        } catch (\Exception $e) {
-            Factory::response()->sendError($e->getMessage());
-        }	
-
-    } // 
-    
-        
     /**
      * put
      *
@@ -488,8 +254,27 @@ abstract class ApiController extends Controller
         if (empty($data))
             Factory::response()->sendError('Invalid JSON',400);
         
-        $model    = 'simplerest\\models\\'.$this->modelName;
-        $instance = new $model();
+        /////////////////////////////////////////////////////
+        $_get  = Factory::request()->getQuery();
+
+        if (!isset($data['entity']))
+            Factory::response()->sendError('Entity is needed', 400);
+
+        $entity = $data['entity']; 
+       
+        $this->modelName = ucfirst($entity) . 'Model';
+        $this->model_table = strtolower($entity);
+
+        $model    = 'simplerest\\models\\'. $this->modelName;
+        
+        $conn = Database::getConnection();
+        $instance = new $model($conn); 
+        ////////////////////////////////////////////////////
+
+        ///
+        $trashed = $data['trashed'] ?? true;                  
+        ///
+
         $instance->showDeleted(); //
         $instance->id = $id;
         $missing = $instance->diffWithSchema($data, ['id', 'belongs_to']);
@@ -504,10 +289,14 @@ abstract class ApiController extends Controller
             $instance->setConn($conn);
 
             $instance->id = $id;
-            $rows = $instance->filter(null, ['id', $id]);
+
+            $rows = $instance->filter(null, [
+                ['id', $id],
+                ['deleted_at', NULL, 'IS NOT']
+            ]);
 
             if (count($rows) == 0){
-                Factory::response()->code(404)->sendError("Register for id=$id does not exists");
+                Factory::response()->code(404)->sendError("Register for id=$id does not exists in trash can");
             }
 
             $data['belongs_to'] = $this->uid; //
@@ -542,6 +331,17 @@ abstract class ApiController extends Controller
                     $data[$k] = NULL;
             }
 
+            //////////////////////////////////
+            if (isset($data['trashed']))
+                unset($data['trashed']);
+
+            unset($data['entity']);    
+
+            if (strtolower($trashed) === "false" || $trashed === 0){
+                $data['deleted_at'] = NULL;
+            }
+            //////////////////////////////////
+
             if($instance->update($data)!==false)
                 Factory::response()->sendJson("OK");
             else
@@ -550,8 +350,7 @@ abstract class ApiController extends Controller
             Factory::response()->sendError("Error during update for id=$id with message: {$e->getMessage()}");
         }
 
-    } // 
-    
+    } //  
 
     /**
      * patch
@@ -573,17 +372,38 @@ abstract class ApiController extends Controller
         $folder = $data['folder'] ?? null; 
 
         try {
-            $conn = Database::getConnection();
-            $model    = 'simplerest\\models\\'.$this->modelName;
 
-            $instance = new $model($conn);
+            /////////////////////////////////////////////////////
+            $_get  = Factory::request()->getQuery();
+
+            if (!isset($data['entity']))
+                Factory::response()->sendError('Entity is needed', 400);
+
+            $entity = $data['entity']; 
+        
+            $this->modelName = ucfirst($entity) . 'Model';
+            $this->model_table = strtolower($entity);
+
+            $model    = 'simplerest\\models\\'. $this->modelName;
+            
+            $conn = Database::getConnection();
+            $instance = new $model($conn); 
+            ////////////////////////////////////////////////////
+
+            ///
+            $trashed = $data['trashed'] ?? true;                  
+            ///
+
             $instance->id = $id;
             $instance->showDeleted(); //
 
-            $rows = $instance->filter(null, ['id', $id]);
+            $rows = $instance->filter(null, [
+                ['id', $id],
+                ['deleted_at', NULL, 'IS NOT']
+            ]);
             
             if (count($rows) == 0){
-                Factory::response()->code(404)->sendError("Register for id=$id does not exists");
+                Factory::response()->code(404)->sendError("Register for id=$id does not exists in trash can");
             }
 
             $data['belongs_to'] = $this->uid; //
@@ -618,6 +438,18 @@ abstract class ApiController extends Controller
                     $data[$k] = NULL;
             }
 
+            //////////////////////////////////
+            if (isset($data['trashed']))
+                unset($data['trashed']);
+
+            unset($data['entity']);     
+
+            if (strtolower($trashed) === "false" || $trashed === 0){
+                $data['deleted_at'] = NULL;
+            }
+            //////////////////////////////////
+              
+
             if($instance->update($data)!==false)
                 Factory::response()->sendJson("OK");
             else
@@ -628,7 +460,6 @@ abstract class ApiController extends Controller
         }
     } //
 
-        
     /**
      * delete
      *
@@ -643,18 +474,32 @@ abstract class ApiController extends Controller
         $data = Factory::request()->getBody();        
         $folder = $data['folder'] ?? null;
 
-        try {    
-            $conn = Database::getConnection();
-        
-            $model    = 'simplerest\\models\\'.$this->modelName;
-            $instance = new $model($conn);
-            $instance->id = $id;
-            $instance->showDeleted(); //
+        try { 
 
-            $rows = $instance->filter(null, ['id', $id]);
+            /////////////////////////////////////////////////////
+            $_get  = Factory::request()->getQuery();
+
+            $entity = Arrays::shift($_get,'entity'); 
+           
+            $this->modelName = ucfirst($entity) . 'Model';
+            $this->model_table = strtolower($entity);
+
+            $model    = 'simplerest\\models\\'. $this->modelName;
+            
+            $conn = Database::getConnection();
+            $instance = new $model($conn); 
+            ////////////////////////////////////////////////////
+
+            $instance->id = $id;
+
+            $instance->showDeleted(); //
+            $rows = $instance->filter(null, [
+                ['id', $id],
+                ['deleted_at', NULL, 'IS NOT']
+            ]);
             
             if (count($rows) == 0){
-                Factory::response()->code(404)->sendError("Register for id=$id does not exists");
+                Factory::response()->code(404)->sendError("Register for id=$id does not exists in trash");
             }
 
             if ($folder !== null)
@@ -682,17 +527,17 @@ abstract class ApiController extends Controller
                 }
             }   
 
-            if($instance->delete($this->soft_delete)){
+            if($instance->delete(false)){
                 Factory::response()->sendJson("OK");
             }	
             else
-                Factory::response()->sendError("Record not found",404);
+                Factory::response()->sendError("Record not found in trash can",404);
 
         } catch (\Exception $e) {
             Factory::response()->sendError("Error during PATCH for id=$id with message: {$e->getMessage()}");
         }
 
     } // 
-       
-    
-}  
+
+        
+} // end class
