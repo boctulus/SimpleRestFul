@@ -28,7 +28,6 @@ Example
 
     GET /api/products?name[contains]=jugo 
 
-
 ### Numerical comparisons
 
     =    eq
@@ -62,6 +61,23 @@ Example:
     GET /api/products?description=NULL
     GET /api/products?description[neq]=NULL
 
+### ORDER BY
+
+    GET /api/products?order[cost]=DESC
+    GET /api/products?order[cost]=DESC&order[name]=ASC
+    GET /api/products?order[cost]=ASC&order[id]=DESC
+
+### LIMIT
+
+    GET /api/products?limit=10
+    GET /api/products?offset=40&limit=10
+    GET /api/products?limit=10&order[name]=ASC&order[cost]=DESC&size=2L
+
+### Show soft-deleted items
+
+    GET /api/products?trashed=true
+    GET /api/products/157?trashed=true
+    
 
 ## POST <CREATE>
 
@@ -76,9 +92,11 @@ With a request body like:
         "cost": "200"
     }
 
+
 ## DELETE
 
     DELETE /api/products/100
+
 
 ## PUT  <UPDATE>
 
@@ -88,10 +106,11 @@ With a request body like:
 
     {
         "name": "Vodka",
-        "description": "from Bielorussia",
+        "description": "from Russia",
         "size": "2L",
         "cost": "200"
     }
+
 
 ## PATCH <PARTIAL UPDATE>
 
@@ -100,18 +119,7 @@ With a request body like:
 With a request body like:
 
     {
-        "description": "from Bielorussia!",
+        "description": "from Mongolia",
         "cost": "230"
     }
 
-## ORDER BY
-
-    GET /api/products?order[cost]=DESC
-    GET /api/products?order[cost]=DESC&order[name]=ASC
-    GET /api/products?order[cost]=ASC&order[id]=DESC
-
-## LIMIT
-
-    GET /api/products?limit=10
-    GET /api/products?offset=40&limit=10
-    GET /api/products?limit=10&order[name]=ASC&order[cost]=DESC&size=2L

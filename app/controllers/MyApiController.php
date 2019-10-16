@@ -8,6 +8,7 @@ class MyApiController extends ApiController
 {
     protected $folder_field;
     protected $guest_root_access;
+    protected $soft_delete = true;
     
     // ALC   
     protected $scope = [

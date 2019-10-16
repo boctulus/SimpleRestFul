@@ -15,6 +15,7 @@ class Model {
 	protected $hidden;
 	protected $properties = [];
 	protected $joins = [];
+	protected $show_deleted = false;
 	protected $conn;
 
 	/*
@@ -35,6 +36,10 @@ class Model {
 
 	public function setTableAlias($tb_alias){
 		$this->table_alias = " as $tb_alias";
+	}
+
+	public function showDeleted(){
+		$this->show_deleted = true;
 	}
 
 	/**
@@ -160,6 +165,11 @@ class Model {
 
 		$q  .= " FROM ".$this->table_name. ' '.$this->table_alias." WHERE ".$this->id_name." = :id";
 
+		if ($this->inSchema(['deleted_at'])){
+			if (!$this->show_deleted)
+				$q  .= " AND deleted_at IS NULL";	
+		}
+
 		$st = $this->conn->prepare($q);
 		$st->bindParam(":id", $this->{$this->id_name}, constant('PDO::PARAM_'.$this->schema[$this->id_name]));
 		$st->execute();
@@ -187,6 +197,10 @@ class Model {
 	 */
 	function fetchAll(array $fields = null, array $order = NULL, int $limit = NULL, int $offset = 0)
 	{
+		if ($this->inSchema(['deleted_at'])){
+			return $this->filter($fields, [], null, $order, $limit, $offset);
+		}
+
 		$this->removehidden($fields);
 
 		if($limit>0 || $order!=NULL){
@@ -333,7 +347,17 @@ class Model {
 			$joins .= "$j[4] $j[0] ON $j[1]$j[2]$j[3] ";
 		}
 
-		$q  .= "$joins WHERE $where";
+		$q  .= $joins;
+		
+		if (empty($where))
+			$where = 1;
+		
+		$q  .= "WHERE $where";
+
+		if ($this->inSchema(['deleted_at'])){
+			if (!$this->show_deleted)
+				$q  .= (empty(trim($where)) ? '' : ' AND') . " deleted_at IS NULL";	
+		}
 
 		if($paginator!==null){
 			$q .= $paginator->getQuery();
@@ -384,7 +408,7 @@ class Model {
 
 	function exists()
 	{
-		$q  = "SELECT * FROM ".$this->table_name. ' '.$this->table_alias." WHERE ".$this->id_name."=:id";
+		$q  = "SELECT * FROM ".$this->table_name . " WHERE ".$this->id_name."=:id";
 		$st = $this->conn->prepare( $q );
 		$st->bindParam(":id", $this->{$this->id_name}, \PDO::PARAM_INT);
 		$st->execute();
@@ -462,9 +486,13 @@ class Model {
 		}
 		$set =trim(substr($set, 0, strlen($set)-2));
 
-		$q = "UPDATE ".$this->table_name. ' '.$this->table_alias." 
-				SET $set
-				WHERE ".$this->id_name."= :id";
+		if ($this->inSchema(['modified_at'])){
+			$d = new \DateTime();
+			$set .= ', modified_at = "'. $d->format('Y-m-d G:i:s').'"';
+		}   
+
+		$q = "UPDATE ".$this->table_name.
+				" SET $set WHERE ".$this->id_name."= :id";
 	 
 		$st = $this->conn->prepare($q);
 	
@@ -486,10 +514,32 @@ class Model {
 	/**
 	 * delete
 	 *
-	 * @return mixed int | false
+	 * @param  bool  $soft_delete 
+	 * @return mixed
 	 */
-	function delete()
+	function delete($soft_delete = true)
 	{
+		if ($soft_delete){
+			if (!$this->inSchema(['deleted_at'])){
+				throw new \Exception("There is no 'deleted_at' for ".$this->table_name);
+			} 
+
+			$d = new \DateTime();
+			$at = $d->format('Y-m-d G:i:s');
+
+			$q = "UPDATE ".$this->table_name.
+				" SET deleted_at = '$at' WHERE ".$this->id_name."= :id";
+	 
+			$st = $this->conn->prepare($q);	
+			
+			$st->bindParam(':id', $this->{$this->id_name});
+		
+			if($st->execute())
+				return $st->rowCount();
+			else 
+				return false;	
+		}
+
 		$q = "DELETE FROM ".$this->table_name. ' '.$this->table_alias." WHERE ".$this->id_name." = ?";
 		$st = $this->conn->prepare($q);
 		$st->bindParam(1, $this->{$this->id_name});
@@ -504,6 +554,13 @@ class Model {
 		'''Reflection'''
 	*/
 	
+	/**
+	 * inSchema
+	 *
+	 * @param  array $props
+	 *
+	 * @return bool
+	 */
 	function inSchema(array $props){
 
 		if (empty($props))
@@ -545,6 +602,11 @@ class Model {
 	{
 		return $this->properties;
 	}
+
+	public function isNullable(string $field){
+		return in_array($field, $this->nullable);
+	}
+
 
 	/**
 	 * Set the value of conn

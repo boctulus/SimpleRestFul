@@ -17,6 +17,7 @@ abstract class ApiController extends Controller
     protected $config;
     protected $_model;
     protected $model_table;
+    protected $soft_delete;
     protected $auth_payload = null;
     protected $uid;
     protected $is_admin;
@@ -38,8 +39,6 @@ abstract class ApiController extends Controller
             set_exception_handler([$this, 'exception_handler']);
 
         if ($this->config['enabled_auth']){ //       
-            #if ($auth_object == null)
-            #    $auth_object = new \simplerest\controllers\AuthController();
 
             $operations = [ 
                 'read'   => ['get'],
@@ -198,8 +197,8 @@ abstract class ApiController extends Controller
      * @return void
      */
     function get(int $id = null){
-        try {
-            
+        try {            
+
             $conn = Database::getConnection();
 
             $model    = 'simplerest\\models\\'.$this->_model;
@@ -216,6 +215,10 @@ abstract class ApiController extends Controller
             if ($exclude != null)
                 $instance->hide($exclude);
             
+            ///
+            $trashed = Arrays::shift($_get,'trashed');                  
+            ///
+
             $folder = Arrays::shift($_get,'folder');
 
             foreach ($_get as $key => $val){
@@ -239,10 +242,12 @@ abstract class ApiController extends Controller
                 $folder_access = $f->belongs_to == $this->uid  || $this->hasPerm($folder, $conn, 'r');    
                 if (!$folder_access)
                     Factory::response()->sendError("You don't have permission for the folder $folder", 403);
-            }    
+            }
 
             if ($id != null)
             {
+                $instance->showDeleted(); //
+
                 $_get = [
                     ['id', $id]
                 ];  
@@ -386,10 +391,13 @@ abstract class ApiController extends Controller
                     $_get[] = ['belongs_to', $f->belongs_to];
                 }
 
+                if ($trashed)
+                    $instance->showDeleted();
+
                 //var_dump($_get); ////
                 //var_export($_get); 
 
-                if (!empty($_get)){
+                if (!empty($_get)){                    
                     $rows = $instance->filter($fields, $_get, null, $order, $limit, $offset);
                     Factory::response()->code(200)->send($rows); 
                 }else {
@@ -482,11 +490,9 @@ abstract class ApiController extends Controller
         
         $model    = 'simplerest\\models\\'.$this->_model;
         $instance = new $model();
+        $instance->showDeleted(); //
         $instance->id = $id;
-        $has_modified = $instance->inSchema(['modified']);
         $missing = $instance->diffWithSchema($data, ['id', 'belongs_to']);
-
-        var_dump($has_modified);
 
         if (!empty($missing))
             Factory::response()->sendError('Lack some properties in your request: '.implode(',',$missing), 400);
@@ -505,11 +511,6 @@ abstract class ApiController extends Controller
             }
 
             $data['belongs_to'] = $this->uid; //
-
-            if ($has_modified){
-                $d = new \DateTime();
-                $data['modified'] = $d->format('Y-m-d G:i:s');
-            }                
 
             if ($folder !== null)
             {
@@ -534,7 +535,12 @@ abstract class ApiController extends Controller
                 if (!$this->is_admin && $rows[0]['belongs_to'] != $this->uid){
                     Factory::response()->sendCode(403);
                 }
-            }        
+            }       
+            
+            foreach ($data as $k => $v){
+                if (strtoupper($v) == 'NULL' && $instance->isNullable($k)) 
+                    $data[$k] = NULL;
+            }
 
             if($instance->update($data)!==false)
                 Factory::response()->sendJson("OK");
@@ -572,7 +578,7 @@ abstract class ApiController extends Controller
 
             $instance = new $model($conn);
             $instance->id = $id;
-            $has_modified = $instance->inSchema(['modified']);
+            $instance->showDeleted(); //
 
             $rows = $instance->filter(null, ['id', $id]);
             
@@ -581,11 +587,6 @@ abstract class ApiController extends Controller
             }
 
             $data['belongs_to'] = $this->uid; //
-
-            if ($has_modified){
-                $d = new \DateTime();
-                $data['modified'] = $d->format('Y-m-d G:i:s');
-            }  
 
             if ($folder !== null)
             {
@@ -612,6 +613,11 @@ abstract class ApiController extends Controller
                 }
             }        
      
+            foreach ($data as $k => $v){
+                if (strtoupper($v) == 'NULL' && $instance->isNullable($k)) 
+                    $data[$k] = NULL;
+            }
+
             if($instance->update($data)!==false)
                 Factory::response()->sendJson("OK");
             else
@@ -675,7 +681,7 @@ abstract class ApiController extends Controller
                 }
             }   
 
-            if($instance->delete()){
+            if($instance->delete($this->soft_delete)){
                 Factory::response()->sendJson("OK");
             }	
             else

@@ -52,14 +52,33 @@ class DumbController extends Controller
 
     function get_products(){
         $conn    = Database::getConnection();
-        $product = new ProductsModel($conn);
+        $p = new ProductsModel($conn);
     
-        Debug::debug($product->fetchAll());
+        //$p->showDeleted(); 
+        Debug::debug($p->fetchAll());
+    }
+
+    function get_product($id){
+        $conn    = Database::getConnection();
+
+        $p = new ProductsModel($conn);        
+        $p->id = $id;
+        $p->showDeleted();  
+        $ok = $p->fetch(null); 
+
+        if ($ok)
+            Debug::debug($p);
     }
 
     function filter_products(){
         $conn    = Database::getConnection();
-        $product = new ProductsModel($conn);
+        
+        $p = new ProductsModel($conn);
+        //$p->showDeleted(); 
+
+        Debug::debug($p->filter(null, [ 
+            ['size', '3L']
+        ]));
 
         /*
         Debug::debug($product->filter(null, [ 
@@ -72,13 +91,11 @@ class DumbController extends Controller
             ['cost', 550, '>='],
             ['cost', [100, 200]]
         ], 'OR'));    
-        */
 
         Debug::debug($product->filter(null, [ 
             ['name', ['CocaCola', 'PesiLoca', 'Wisky', 'Vodka'], 'NOT IN']
         ]));
 
-        /*
         // implicit 'AND'
         Debug::debug($product->filter(null, [ 
             ['cost', 200, '<'],
@@ -130,7 +147,7 @@ class DumbController extends Controller
         $u->id = $id;
         $u->fetch();
 
-        \simplerest\libs\Debug::debug($u);
+        Debug::debug($u);
     }
 
  
@@ -179,9 +196,14 @@ class DumbController extends Controller
         Debug::debug($ok);
     }
 
-    function test2() {
-        $p = Database::table('products');
-        Debug::debug($p->filter(null, ['name', '%jugo%', 'like'] ));
+    function restore($id){
+        $conn    = Database::getConnection();
+
+        $p = new ProductsModel($conn);        
+        $p->id = $id;
+        $ok = $p->restore();
+
+        var_dump($ok);
     }
 
 

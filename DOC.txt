@@ -13,8 +13,8 @@ SimpleRest utiliza la arquitectura MVC donde modelos y controladores se implemen
 	{
 		protected $table_name = "products";
 		protected $id_name = 'id';
-		protected $fillable = ['name','description','size','cost', 'modified', 'workspace', 'belongs_to'];
-		protected $nullable = ['workspace', 'created', 'modified'];
+		protected $fillable = ['name','description','size','cost', 'workspace', 'belongs_to'];
+		protected $nullable = ['workspace', 'created'];
 	 
 		/*
 			Types are INT, STR and BOOL among others
@@ -38,7 +38,6 @@ SimpleRest utiliza la arquitectura MVC donde modelos y controladores se implemen
 
 	}
 
-
 Como puede observarse cada campo en el schema es de un tipo, el nombre de la tabla se especifica en $table_name aunque se recomienda que coincida con el nombre de la clase modelo en minúsculas. 
 
 Todas las tablas deben tener un único id inclusive si son "tablas intermedias" (conocidas también como "tablas puente") y se especifica en la propiedad $id_name.
@@ -47,7 +46,7 @@ Los campos que pueden ser rellenados al hacer un INSERT o un UPDATE deben especi
 
 Si un campo puede ser NULL, debe incluirse en el array $nullable.
 
-Si el modelo posee un campo llamado "modified" automáticamente será utilizado en las actualizaciones a nivel de la API Rest. No afecta si se utilizan los modelos directamente.
+Si el modelo posee un campo llamado "modified_at" automáticamente será utilizado al llamar al método update()
 
 Como los modelos heredan de la clase Model adquieren funcionalidad de métodos como:
 
@@ -197,6 +196,23 @@ Mismo para borrar un registro perteneciente a un folder:
 
 	{
     	"folder": "1"
+	}
+
+
+### Soft delete
+
+	En cada endpoint se puede definir si el delete es "soft" o "hard".
+
+Para visualizar registros borrados.......
+
+La hacer un GET sobre un registro en particular se puede visualizar aún si tiene un soft delete. Se puede observar que el campo `deleted_at` guarda la fecha de borrado.
+
+Para recuperar un registro borrado con soft delete se setea "null" el campo `deleted_at`
+
+	PATCH api/products/125
+
+	{
+		"deleted_at": "null"
 	}
 
 

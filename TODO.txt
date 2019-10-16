@@ -1,10 +1,41 @@
 # TODO
 
-- De existir el campo `creation_time`, usarlo en el 'post'
+- Usar un envelope como en Instagram
 
-IDEM para `modification_time` actualizarlo con 'put', 'patch'
+Every response is contained by an envelope. That is, each response has a predictable set of keys with which you can expect to interact:
 
-- Definir para cada endpoint si el delete es "hard" o "soft".  
+  {
+      "meta": {
+          "code": 200
+      },
+      "data": {
+          ...
+      },
+      "pagination": {
+          "next_url": "...",
+          "next_max_id": "13872296"
+      }
+  }
+
+The meta key is used to communicate extra information about the response to the developer. If all goes well, you'll only ever see a code key with value 200. However, sometimes things go wrong, and in that case you might see a response like:
+
+{
+    "meta": {
+        "error_type": "OAuthException",
+        "code": 400,
+        "error_message": "..."
+    }
+}  
+
+Sometimes you just can't get enough. For this reason, we've provided a convenient way to access more data in any request for sequential data. Simply call the url in the next_url parameter and we'll respond with the next set of data.
+
+{
+    ...
+    "pagination": {
+        "next_url": "https://api.instagram.com/v1/self/media/recent?access_token=fb2e77d.47a0479900504cb3ab4a1f626d174d2d&max_id=13872296",
+        "next_max_id": "13872296"
+    }
+}
 
 - Ante una excepción del modelo imprimir la consulta SQL
 
