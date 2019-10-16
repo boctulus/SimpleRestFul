@@ -201,7 +201,7 @@ Mismo para borrar un registro perteneciente a un folder:
 
 ### Soft delete y el la papelera
 
-En cada endpoint se puede definir si el delete es "soft" o "hard" mediante la propiedad $soft_delete en la api. Ejemplo:
+En cada endpoint se puede definir si se habilita el "soft" delete mediante la propiedad $soft_delete en la api. Ejemplo:
 
 class Products extends MyApiController
 { 

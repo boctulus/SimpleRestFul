@@ -42,27 +42,11 @@ class TrashCan extends MyApiController
             if ($exclude != null)
                 $instance->hide($exclude);
 
-            $folder = Arrays::shift($_get,'folder');
-
             foreach ($_get as $key => $val){
                 if ($val == 'NULL' || $val == 'null'){
                     $_get[$key] = NULL;
                 }               
-            }    
-
-            if ($folder !== null)
-            {
-                $f = new FoldersModel($conn);
-                $f->id = $folder;    
-                $ok = $f->fetch();
-        
-                if (!$ok || $f->resource_table!=$this->model_table)
-                    Factory::response()->sendError('Folder not found', 404); 
-        
-                $folder_access = $f->belongs_to == $this->uid  || $this->hasPerm($folder, $conn, 'r');    
-                if (!$folder_access)
-                    Factory::response()->sendError("You don't have permission for the folder $folder", 403);
-            }
+            } 
 
             $instance->showDeleted(); //
 
@@ -72,23 +56,8 @@ class TrashCan extends MyApiController
                     ['id', $id]
                 ];  
 
-                if (empty($folder)){               
-                    // root, by id
-                    if (!$this->is_admin)
-                        $_get[] = ['belongs_to', $this->uid];
-                }else{
-                    // folder, by id
-                    if (empty($this->folder_field))
-                        Factory::response()->sendError("folder_field is undefined", 403);
-                    
-                    if ($this->role == 'guest' && !$folder_access)
-                        Factory::response()->send([]);    
-                        
-                    $_get[] = [$this->folder_field, $f->value];
-                    $_get[] = ['belongs_to', $f->belongs_to];
-                }
-
                 $_get[] = ['deleted_at', NULL, 'IS NOT'];
+                $_get[] = ['belongs_to', $this->uid];
 
                 $rows = $instance->filter($fields, $_get); 
                 if (empty($rows))
@@ -201,18 +170,7 @@ class TrashCan extends MyApiController
                     }else
                         if (!$this->is_admin)
                             $_get[] = ['belongs_to', $this->uid];        
-                }else{
-                    // folder, sin id
-                    if (empty($this->folder_field))
-                        Factory::response()->sendError("'folder_field' is undefined", 403);
-                  
-                    if ($this->role == 'guest' && !$folder_access)
-                        Factory::response()->send([]); 
-
-                    $_get[] = [$this->folder_field, $f->value];
-                    $_get[] = ['belongs_to', $f->belongs_to];
                 }
-
 
                 $_get[] = ['deleted_at', NULL, 'IS NOT'];
 
@@ -281,9 +239,7 @@ class TrashCan extends MyApiController
 
         if (!empty($missing))
             Factory::response()->sendError('Lack some properties in your request: '.implode(',',$missing), 400);
-
-        $folder = $data['folder'] ?? null;    
-
+       
         try {
             $conn = Database::getConnection();
             $instance->setConn($conn);
@@ -300,31 +256,10 @@ class TrashCan extends MyApiController
             }
 
             $data['belongs_to'] = $this->uid; //
-
-            if ($folder !== null)
-            {
-                if (empty($this->folder_field))
-                    Factory::response()->sendError("'folder_field' is undefined", 403);
-
-                $f = new FoldersModel($conn);
-                $f->id = $folder;    
-                $ok = $f->fetch();
-        
-                if (!$ok || $f->resource_table!=$this->model_table)
-                    Factory::response()->sendError('Folder not found', 404); 
-        
-                if (!$this->hasPerm($folder, $conn, 'w'))
-                    Factory::response()->sendError("You have not permission for the folder $folder", 403);
-
-                unset($data['folder']);    
-                $data[$this->folder_field] = $f->value;
-                $data['belongs_to'] = $f->belongs_to;    
-
-            }else{
-                if (!$this->is_admin && $rows[0]['belongs_to'] != $this->uid){
-                    Factory::response()->sendCode(403);
-                }
-            }       
+            
+            if (!$this->is_admin && $rows[0]['belongs_to'] != $this->uid){
+                Factory::response()->sendCode(403);
+            }                
             
             foreach ($data as $k => $v){
                 if (strtoupper($v) == 'NULL' && $instance->isNullable($k)) 
@@ -369,8 +304,6 @@ class TrashCan extends MyApiController
         if (empty($data))
             Factory::response()->sendError('Invalid JSON',400);
         
-        $folder = $data['folder'] ?? null; 
-
         try {
 
             /////////////////////////////////////////////////////
@@ -407,31 +340,10 @@ class TrashCan extends MyApiController
             }
 
             $data['belongs_to'] = $this->uid; //
-
-            if ($folder !== null)
-            {
-                if (empty($this->folder_field))
-                    Factory::response()->sendError("'folder_field' is undefined", 403);
-
-                $f = new FoldersModel($conn);
-                $f->id = $folder;    
-                $ok = $f->fetch();
-        
-                if (!$ok || $f->resource_table!=$this->model_table)
-                    Factory::response()->sendError('Folder not found', 404); 
-        
-                if (!$this->hasPerm($folder, $conn, 'w'))
-                    Factory::response()->sendError("You have not permission for the folder $folder", 403);
-
-                unset($data['folder']);    
-                $data[$this->folder_field] = $f->value;
-                $data['belongs_to'] = $f->belongs_to;    
-
-            }else {
-                if (!$this->is_admin && $rows[0]['belongs_to'] != $this->uid){
-                    Factory::response()->sendCode(403);
-                }
-            }        
+            
+            if (!$this->is_admin && $rows[0]['belongs_to'] != $this->uid){
+                Factory::response()->sendCode(403);
+            }                
      
             foreach ($data as $k => $v){
                 if (strtoupper($v) == 'NULL' && $instance->isNullable($k)) 
@@ -501,31 +413,10 @@ class TrashCan extends MyApiController
             if (count($rows) == 0){
                 Factory::response()->code(404)->sendError("Register for id=$id does not exists in trash");
             }
-
-            if ($folder !== null)
-            {
-                if (empty($this->folder_field))
-                    Factory::response()->sendError("'folder_field' is undefined", 403);
-
-                $f = new FoldersModel($conn);
-                $f->id = $folder;    
-                $ok = $f->fetch();
-        
-                if (!$ok || $f->resource_table!=$this->model_table)
-                    Factory::response()->sendError('Folder not found', 404); 
-        
-                if (!$this->hasPerm($folder, $conn, 'w'))
-                    Factory::response()->sendError("You have not permission for the folder $folder", 403);
-
-                unset($data['folder']);    
-                $data[$this->folder_field] = $f->value;
-                $data['belongs_to'] = $f->belongs_to;    
-
-            }else {
-                if (!$this->is_admin && $rows[0]['belongs_to'] != $this->uid){
-                    Factory::response()->sendCode(403);
-                }
-            }   
+            
+            if (!$this->is_admin && $rows[0]['belongs_to'] != $this->uid){
+                Factory::response()->sendCode(403);
+            }               
 
             if($instance->delete(false)){
                 Factory::response()->sendJson("OK");
