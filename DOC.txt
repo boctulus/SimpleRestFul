@@ -201,9 +201,17 @@ Mismo para borrar un registro perteneciente a un folder:
 
 ### Soft delete
 
-	En cada endpoint se puede definir si el delete es "soft" o "hard".
+	En cada endpoint se puede definir si el delete es "soft" o "hard" mediante la propiedad $soft_delete en la api. Ejemplo:
 
-Para visualizar registros borrados.......
+class Products extends MyApiController
+{ 
+    protected $soft_delete = false;
+
+    // ...
+
+Para visualizar registros borrados filtrar con trashed=true, ejemplo:
+
+	GET /api/products?trashed=true
 
 La hacer un GET sobre un registro en particular se puede visualizar aún si tiene un soft delete. Se puede observar que el campo `deleted_at` guarda la fecha de borrado.
 
