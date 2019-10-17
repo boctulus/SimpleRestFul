@@ -69,6 +69,22 @@ o...
 
 <-- productos de la orden 99 del cliente 1
 
+- ACL, eventos beforeCheckAccess y afterCheckAccess ?
+
+https://docs.phalcon.io/3.4/en/acl
+
+- Implementar X-Rate-Limit-Limit, X-Rate-Limit-Remaining y X-Rate-Limit-Reset
+
+Se deben poder especificar para cada endpoint
+
+https://developer.twitter.com/en/docs/basics/rate-limiting
+https://stackoverflow.com/questions/16022624/examples-of-http-api-rate-limiting-http-response-headers
+https://apisyouwonthate.com/blog/what-is-api-rate-limiting-all-about
+https://developer.github.com/v3/rate_limit/
+https://developer.vimeo.com/guidelines/rate-limiting
+https://support.exactonline.com/community/s/knowledge-base#All-All-HNO-Simulation-gen-apilimits
+https://stackoverflow.com/a/49611482/980631
+
 - Implementar front con DataTables o bien VueJs
 
 - Swagger for Documentation
@@ -126,7 +142,6 @@ Content-Length: ...
     <link rel="close" href="/accounts/12345/close" />
 </account>
 
-- SoftDelete
 - Reemplazar sha1() por password_hash / password_verify 
 - Versionado ej: http://simplerest.lan/api/v1/users
 - "Prety print" con ?prety=true, ejemplo de la salida:
@@ -154,9 +169,7 @@ https://www.php.net/manual/en/features.file-upload.errors.php
 
 - Aceptar distintos "Accept" y "Content-type" y responder acordemente
 
-- Operador LIKE como ?name[like]=*Vodka* o... ?name[like]=Vodka* o ?name[like]=*Vodka
-- Consultas más complejas para API Rest incluyendo operadores lt, gt, ge, le, ne (!=) y or 
-Sacar ideas de: https://dev.targetprocess.com/docs/custom-calculations
+- Sacar ideas de: https://dev.targetprocess.com/docs/custom-calculations
 
 * "additional details embedded"
 * Overriding the HTTP method

@@ -11,6 +11,7 @@ class TrashCan extends MyApiController
 {   
     function __construct()
     {
+        $this->scope['guest'] = [];        
         parent::__construct();
     }
 
@@ -53,11 +54,10 @@ class TrashCan extends MyApiController
             if ($id != null)
             {
                 $_get = [
-                    ['id', $id]
+                    ['id', $id],
+                    ['deleted_at', NULL, 'IS NOT'],
+                    ['belongs_to', $this->uid]
                 ];  
-
-                $_get[] = ['deleted_at', NULL, 'IS NOT'];
-                $_get[] = ['belongs_to', $this->uid];
 
                 $rows = $instance->filter($fields, $_get); 
                 if (empty($rows))
@@ -177,13 +177,13 @@ class TrashCan extends MyApiController
                 //var_dump($_get); ////
                 //var_export($_get); 
 
-                if (!empty($_get)){                    
+                //if (!empty($_get)){                    
                     $rows = $instance->filter($fields, $_get, null, $order, $limit, $offset);
                     Factory::response()->code(200)->send($rows); 
-                }else {
-                    $rows = $instance->fetchAll($fields, $order, $limit, $offset);
-                    Factory::response()->code(200)->send($rows); 
-                }	
+                //}else {
+                //    $rows = $instance->fetchAll($fields, $order, $limit, $offset);
+                //    Factory::response()->code(200)->send($rows); 
+                //}	
         
             }
 

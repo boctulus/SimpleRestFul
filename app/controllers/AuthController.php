@@ -24,10 +24,9 @@ class AuthController extends Controller implements IAuth
     { 
         header('access-control-allow-credentials: true');
         header('access-control-allow-headers: AccountKey,x-requested-with, Content-Type, origin, authorization, accept, client-security-token, host, date, cookie, cookie2'); 
-        header('access-control-allow-Methods: GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS'); 
+        header('access-control-allow-Methods: POST,OPTIONS'); 
         header('access-control-allow-Origin: *');
         header('content-type: application/json; charset=UTF-8');
-        header("Set-Cookie: hidden=value; httpOnly");  /// ???
 
         parent::__construct();
     }
@@ -145,16 +144,24 @@ class AuthController extends Controller implements IAuth
             list($refresh, $encrypted) = $this->pass_gen();
 
             $available_roles = $u->fetchRoles();
-            
-            if (!in_array($role, $available_roles))
-                Factory::response()->sendError("You don't have $role role", 401);
+
+            // hook aquí
+            if ($role == null){
+                // Si hay un solo rol posible,...
+                if (count($available_roles) == 1){
+                    $role = (int) $available_roles[0];
+                } else
+                    Factory::response()->sendError("Provide a role, please", 400);
+            }else 
+                if (!in_array($role, $available_roles))
+                    Factory::response()->sendError("You don't have $role role", 401);
 
             $session = new SessionsModel($conn);
             $sid = $session->create([   'refresh_token' => $encrypted, 
                                         'login_date' => time(), 
                                         'user_id' => $u->id,
                                         'role' => $role 
-                                    ]);
+            ]);
                                             
             if (!$sid)
                 Factory::response()->sendError("Authentication fails", 500); 
@@ -262,7 +269,7 @@ class AuthController extends Controller implements IAuth
         $ok = $s->delete();
 
         if ($ok)
-            Factory::response()->send('OK - session was deleted',200);
+            Factory::response()->send('OK - session was destroyed',200);
         else
             Factory::response()->sendCode(500);    
     }
