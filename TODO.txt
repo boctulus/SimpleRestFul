@@ -161,6 +161,9 @@ https://lumen.laravel.com/docs/6.x/database
 - Middlewares
 - Migrations, seeders,...
 - Sanitización a nivel de urls, FILTER_SANITIZE_URL
+
+https://www.w3schools.com/php/php_filter.asp
+
 - Sanitización a nivel de base de datos
 - Upload de archivos con Content-type application/x-www-form-urlencoded ó multipart/form-data
 https://stackoverflow.com/a/4083908/980631
@@ -207,3 +210,27 @@ https://medium.com/crowdbotics/how-to-write-an-api-in-3-lines-of-code-with-djang
 https://idratherbewriting.com/learnapidoc/pubapis_openapi_tutorial_overview.html
 https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md
 https://hackernoon.com/designing-rest-api-with-open-api-specification-oas-v2-0-v3-0-using-swagger-11dd4ef8cea6
+
+- Revisar 
+
+https://stackoverflow.com/questions/36514344/how-to-make-use-of-session-in-rest-api/36515140
+
+- Multiples roles simultaneos?
+
+{
+    "iss": "stackoverflow",
+    "sub": "joe",
+    "aud": ["all"],
+    "iat": 1300819370,
+    "exp": 1300819380,
+    "jti": "3F2504E0-4F89-11D3-9A0C-0305E82C3301"
+    "context": {
+        "user": {
+            "key": "joe",
+            "displayName": "Joe Smith"
+        },
+        "roles":["admin","finaluser"]
+    }
+}
+
+https://stackoverflow.com/questions/38897514/what-to-store-in-a-jwt

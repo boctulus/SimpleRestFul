@@ -145,7 +145,7 @@ class AuthController extends Controller implements IAuth
 
             $available_roles = $u->fetchRoles();
 
-            // hook aquí
+            // HOOK aquí             (!)
             if ($role == null){
                 // Si hay un solo rol posible,...
                 if (count($available_roles) == 1){
@@ -366,8 +366,7 @@ class AuthController extends Controller implements IAuth
                 $rows = $s->filter(null, ['id', $this->session_decrypt($payload->sid)]);
     
                 if(empty($rows))
-                    Factory::response()->sendError('Session not found', 400);
-  
+                    Factory::response()->sendError('Session not found', 400);  
 
                 $requested_role = $rows[0]['role'];
             
