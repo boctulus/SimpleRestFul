@@ -476,7 +476,7 @@ class Model {
 		if(!empty($this->fillable) && is_array($this->fillable)){
 			foreach($vars as $var){
 				if (!in_array($var,$this->fillable))
-					throw new \InvalidArgumentException("$var is no fillable");
+					throw new \InvalidArgumentException("update: $var is no fillable");
 			}
 		}
 		
@@ -574,6 +574,12 @@ class Model {
 		return true;
 	}
 
+	function getMissing($fields){
+		$diff =  array_diff($this->properties, array_keys($fields));
+		return array_diff($diff, $this->nullable);
+	}
+
+	// dejar de utilizar
 	function diffWithSchema($props, array $excluded = []){
 		if (is_object($props))
 			$props = (array) $props;
@@ -586,6 +592,7 @@ class Model {
 		$missing_properties = [];
 
 		$excluded = array_merge($this->nullable, $excluded);
+		
 		foreach ($this->properties as $ix => $exp){
 			if (!in_array($exp, $props) && !in_array($exp, $excluded)){
 				$missing_properties[] = $exp; 

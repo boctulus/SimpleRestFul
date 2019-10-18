@@ -81,15 +81,6 @@ class AuthController extends Controller implements IAuth
             'typ' => 'JWT',
             'iat' => $time, 
             'exp' => $time + $this->config['access_token']['expiration_time'],
-            'ip' => [
-                'REMOTE_ADDR' => $_SERVER['REMOTE_ADDR'] ?? '',
-                'HTTP_CLIENT_IP' => $_SERVER['HTTP_CLIENT_IP'] ?? '',
-                'HTTP_FORWARDED' => $_SERVER['HTTP_FORWARDED'] ?? '',
-                'HTTP_FORWARDED_FOR' => $_SERVER['HTTP_FORWARDED_FOR'] ?? '',
-                'HTTP_X_FORWARDED' => $_SERVER['HTTP_X_FORWARDED'] ?? '',
-                'HTTP_X_FORWARDED_FOR' => $_SERVER['HTTP_X_FORWARDED_FOR'] ?? ''
-            ],
-            'sid' => $encoded_sid,
             'uid' => $uid
         ];
         
@@ -293,7 +284,7 @@ class AuthController extends Controller implements IAuth
                 Factory::response()->sendError('Email already exists');
                     
 
-            $missing = $u->diffWithSchema($data, ['id','enabled','quota','belongs_to']);
+            $missing = $u->getMissing($data, []);
             if (!empty($missing))
                 Factory::response()->sendError('Lack some properties in your request: '.implode(',',$missing), 400);
 
@@ -304,21 +295,15 @@ class AuthController extends Controller implements IAuth
             $uid = $u->create($data);
             if (empty($uid))
                 Factory::response()->sendError("Error in user registration!");
-            
-            $session = new SessionsModel($conn);
-            $sid = $session->create([ 'refresh_token' => $encrypted, 'login_date' => time(), 'user_id' => $uid ]);
-            $sid_enc = $this->session_encrypt($sid);
 
-            $jwt = $this->gen_jwt($sid_enc, $uid);
+            if ($u->inSchema(['belongs_to'])){
+                $u->update(['belongs_to' => $uid]);
+            }
 
-            Factory::response()->send([ 
-                                        'sid' => $sid_enc,
-                                        'access_token'=> $jwt,
-                                        'token_type' => 'bearer', 
-                                        'refresh_token' => $refresh,
-                                        'expires_in' => $this->config['access_token']['expiration_time'] 
-                                        // 'scope' => 'read write'
-            ]);
+            // HOOK
+            // podría o no devolverse un access token
+
+            Factory::response()->send('User was created', 201);
 
         }catch(\Exception $e){
             Factory::response()->sendError($e->getMessage());

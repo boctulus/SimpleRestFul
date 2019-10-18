@@ -18,8 +18,8 @@ class UsersModel extends Model
 							'quota',
 							'belongs_to'
 	];
-
-	protected $hidden = ['password', 'belongs_to'];
+	protected $nullable = ['id', 'enabled', 'quota', 'belongs_to'];
+	protected $hidden   = ['password', 'belongs_to'];
 
 	/*
 		Types are INT, STR and BOOL among others

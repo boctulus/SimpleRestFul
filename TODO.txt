@@ -233,4 +233,12 @@ https://stackoverflow.com/questions/36514344/how-to-make-use-of-session-in-rest-
     }
 }
 
+iss (issuer): identifies the principal that issued the JWT.
+sub (subject): identifies the principal that is the subject of the JWT. Must be unique
+aud (audience): identifies the recipients that the JWT is intended for (array of strings/uri)
+exp (expiration time): identifies the expiration time (UTC Unix) after which you must no longer accept this token. It should be after the issued-at time.
+nbf(not before): identifies the UTC Unix time before which the JWT must not be accepted
+iat (issued at): identifies the UTC Unix time at which the JWT was issued
+jti (JWT ID): provides a unique identifier for the JWT.
+
 https://stackoverflow.com/questions/38897514/what-to-store-in-a-jwt

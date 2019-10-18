@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Oct 10, 2019 at 09:57 AM
+-- Generation Time: Oct 18, 2019 at 08:27 PM
 -- Server version: 5.7.27-0ubuntu0.18.04.1
 -- PHP Version: 7.2.19-0ubuntu0.18.04.2
 
@@ -106,9 +106,12 @@ INSERT INTO `other_permissions` (`id`, `folder_id`, `belongs_to`, `guest`, `r`, 
 CREATE TABLE `products` (
   `id` int(11) NOT NULL,
   `name` varchar(50) NOT NULL,
-  `description` varchar(240) NOT NULL,
+  `description` varchar(240) DEFAULT NULL,
   `size` varchar(30) NOT NULL,
   `cost` int(11) NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified_at` datetime DEFAULT NULL,
+  `deleted_at` datetime DEFAULT NULL,
   `workspace` varchar(40) DEFAULT NULL,
   `belongs_to` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -117,34 +120,36 @@ CREATE TABLE `products` (
 -- Dumping data for table `products`
 --
 
-INSERT INTO `products` (`id`, `name`, `description`, `size`, `cost`, `workspace`, `belongs_to`) VALUES
-(100, 'Vodka', 'China', '2 1/4 L', 130, '', 4),
-(103, 'Juice', 'Delicious juice', '1L', 75, NULL, 4),
-(105, 'Agua mineral', 'De Córdoba', '1L', 525, NULL, 4),
-(106, 'Vodka', 'Rusia', '1L', 390, NULL, 4),
-(113, 'Vodkaaaa', 'URU', '1L', 550, NULL, 86),
-(114, 'AAABBB', 'cccccC', '29', 200, NULL, 86),
-(119, 'CocaCola', 'gaseosa', '1L', 42, NULL, 1),
-(120, 'MiBebida', 'rica rica', '1L', 50, NULL, 89),
-(121, 'OtraBebida', 'otra', '1L', 20, NULL, 89),
-(122, 'Cerveza de malta', 'Pichu', '1L', 80, NULL, 1),
-(123, 'PesiLoca', 'loca', '2L', 50, 'mylist', 1),
-(125, 'Vodka', 'Espectacular!', '2L', 150, 'comparto', 90),
-(126, 'Uvas fermentadas', 'aaa', '1L', 88, 'comparto', 90),
-(127, 'Vodka venezolano', 'del caribe', '1L', 15, NULL, 1),
-(131, 'Vodkaaaabc', 'Rusia', '1L', 550, 'secreto', 4),
-(132, 'Ron venezolano', 'Rico', '1L', 24, NULL, 4),
-(133, 'Vodka venezolano', 'de Vzla', '1L', 15, NULL, 4),
-(137, 'Agua ardiente', 'Si que arde!', '1L', 120, 'lista', 87),
-(140, 'Juguito X', 'de manzana', '1L', 120, 'lista publica', 90),
-(143, 'Agua ', '--', '1L', 10, NULL, 4),
-(144, 'Juguito XII', 'de manzanas exprimidas', '1L', 150, 'lista2', 90),
-(145, 'Juguito XII', 'de manzanas exprimidas', '1L', 350, 'lista24', 90),
-(146, 'Juguito XIII', 'de naranjas exprimidasssssssss!!!', '2L', 250, 'lista24', 90),
-(147, 'Aqua fresh', 'Rico', '1L', 10, 'comparto', 4),
-(148, 'Alcohol etílico', '', '1L', 5, 'comparto', 4),
-(149, 'Supreme jugo', 'de manzanas exprimidas', '3L', 265, 'lista10', 90),
-(151, 'Juguito XIII', 'Rico', '1L', 115, 'lista24', 90);
+INSERT INTO `products` (`id`, `name`, `description`, `size`, `cost`, `created_at`, `modified_at`, `deleted_at`, `workspace`, `belongs_to`) VALUES
+(100, 'Vodka', 'China', '2 1/4 L', 130, '2019-07-04 00:00:00', NULL, NULL, '', 4),
+(103, 'Juice', 'Delicious juice', '1L', 75, '2019-09-13 00:00:00', NULL, NULL, NULL, 4),
+(105, 'Agua mineral', 'De Córdoba', '1L', 525, '2019-03-15 00:00:00', NULL, NULL, NULL, 4),
+(106, 'Vodka', 'Rusia', '1L', 390, '2019-02-16 00:00:00', NULL, NULL, NULL, 4),
+(113, 'Vodkaaaa', 'URU', '1L', 550, '2019-03-31 00:00:00', NULL, NULL, NULL, 86),
+(114, 'AAABBB', 'cccccC', '29', 200, '2019-01-23 00:00:00', NULL, NULL, NULL, 86),
+(119, 'CocaCola', 'gaseosa', '1L', 39, '2018-10-15 00:00:00', NULL, NULL, NULL, 1),
+(120, 'MiBebida', 'rica rica', '1L', 50, '2018-12-23 00:00:00', NULL, '2019-10-16 21:44:17', NULL, 89),
+(121, 'OtraBebida', 'otra', '1L', 20, '2019-09-28 00:00:00', NULL, NULL, NULL, 89),
+(122, 'Cerveza de malta', 'Pichu', '1L', 80, '2018-12-29 00:00:00', NULL, NULL, NULL, 1),
+(123, 'PesiLoca', 'loca', '2L', 50, '2018-12-16 00:00:00', NULL, NULL, 'mylist', 1),
+(125, 'Vodka', 'Genial', '3L', 250, '2017-01-10 00:00:00', '2019-10-16 19:56:29', NULL, 'comparto', 90),
+(126, 'Uvas fermentadas', 'Espectacular', '5L', 300, '2019-06-24 00:00:00', '2019-10-14 22:39:51', '2019-10-16 21:43:47', 'comparto', 90),
+(127, 'Vodka venezolano', 'del caribe', '1L', 15, '2019-07-12 00:00:00', NULL, NULL, NULL, 1),
+(131, 'Vodkaaaabc', 'Rusia', '1L', 550, '2019-06-04 00:00:00', NULL, NULL, 'secreto', 4),
+(132, 'Ron venezolano', 'Rico', '1L', 24, '2019-10-03 00:00:00', NULL, NULL, NULL, 4),
+(133, 'Vodka venezolano', 'de Vzla', '1L', 15, '2019-09-19 00:00:00', NULL, NULL, NULL, 4),
+(137, 'Agua ardiente', 'Si que arde!', '1L', 120, '2019-07-16 00:00:00', NULL, '2019-10-16 19:36:57', 'lista', 87),
+(143, 'Agua ', '--', '1L', 10, '2019-06-03 00:00:00', NULL, '2019-10-16 21:44:20', NULL, 4),
+(144, 'Juguito XII', 'de manzanas exprimidas', '2L', 150, '2019-01-12 00:00:00', NULL, NULL, 'lista2', 90),
+(145, 'Juguito XII', 'de manzanas exprimidas', '1L', 350, '2019-02-09 00:00:00', NULL, NULL, 'lista24', 90),
+(146, 'Wisky', NULL, '2L', 255, '2019-08-31 00:00:00', '2019-10-16 10:28:20', '2019-10-16 21:43:50', 'lista24', 90),
+(147, 'Aqua fresh', 'Rico', '1L', 10, '2019-03-20 00:00:00', NULL, NULL, 'comparto', 4),
+(148, 'Alcohol etílico', '', '1L', 5, '2019-04-21 00:00:00', NULL, '2019-10-16 21:44:24', 'comparto', 4),
+(151, 'Juguito XIII', 'Rico', '1L', 355, '2019-10-03 00:00:00', '2019-10-15 17:00:58', NULL, 'lista24', 90),
+(155, 'AA', 'BBB', '12', 12, '2019-09-22 00:00:00', NULL, NULL, NULL, 48),
+(156, 'JJ', 'AA', '2L', 120, '2019-07-30 00:00:00', NULL, NULL, NULL, 48),
+(158, 'AB', 'ab', '1.5L', 250, '2019-10-14 16:57:42', NULL, NULL, NULL, 90),
+(159, 'Agua mineral', 'De Cba', '2L', 25, '2019-10-14 18:08:45', '2019-10-15 16:57:25', NULL, NULL, 90);
 
 -- --------------------------------------------------------
 
@@ -257,8 +262,28 @@ INSERT INTO `sessions` (`id`, `refresh_token`, `login_date`, `user_id`, `role`) 
 (247, 'bcrofuD4foPklbv12JACRUhsawaNW8zrwxp4Hnr+Zt74dQRxkWkLTMEoVk30AT3si2rv7y4VcVNV5LThMtZrRtSbBGmBJ09FGPCEb1K0sBc7SrhpGylbRQ==', 1570466238, 4, 2),
 (248, 'JxpB+FF3eR76g7bcSL7LYq6TUB92/wjki4PsQV/7lDHf2TS6/QqphtLlvJfbidljShtn9clPpM1LzzqIsjNuI3de60W3epb9DY4K7ee3FDcDZ50QSsXt1A==', 1570466313, 4, 2),
 (249, 'MyYtkQityZJ5O/clZeQph1uITjaM+c4IkJDE0fhdpwPtc9fI4hdWrV2qAVgaLZlpZ1jt1a01gh7YtTKy/w6rTShiEicODjuyxG3u+BUmQXg95St+Dx9dcg==', 1570466403, 4, 2),
-(263, 'icLnt80MgduLwY1Ckw8L//vh7fFx+4mJnvdvny0Oao0wY9wzNGrDFaAZqqFmLyKynBcSJ1geq72dl4lkvIechJzTjk9AEvBcgGTt+7Yga2x/bWVCmIYgIQ==', 1570542167, 90, 3),
-(264, 'bVyDFq+MXgObxCoLQ3kG4gOEsRgynfmJBADx2itGNCBV9iIU28wNKbHROeLMvK9CmoRYhZ/GFKRO+5NUsG8Jr5V0fapDCiOWNFCSqM0QDvi1fAEzFbEiow==', 1570549944, 4, 100);
+(271, 'Qogqf8rre+BQMb1CCl6ov0VP00bxIeSsVsK1m5/oc1l9ujT4Av2xsauLB3t2wSm11wuvGVD67A0LpwE7eGEJL9NvDBaVYaf28ms0mFaU08vn+5YI+i8nmA==', 1570831144, 90, 3),
+(272, '3PZPLwbQQlhHxFk0Sh5KgKNOsM+twJw2lKB3ATmcvvPGbXZjj1X2T/GkizXd7qyEAu8RvYSawQtcvav/cUB0ue+F5B9K4oLXUzT1UxjHzeMUBhf5K1VT2A==', 1570885652, 1, 3),
+(273, 'Ok6PBHJ9xiYoR4IMoopBiSEwXeAnxLCGHE6Rjmfzdk+pnbTVWzuNy0C6Ia5rjUqyzCjaUsuM4UYdIaTZMps+tUBCxNRY0EzmYITi8TyWBQ3gfgtn5LGbtQ==', 1570885661, 1, 3),
+(274, 'Jy0+oKOmAZIk+njJtJl+Cg+qw1CsdmzaXQlvFNOOAvS6W3/ChRJJ8aA+uOwfZ1MEFryOR5quI9Ur6HKauPwTSJN5R1S2sS1y82cHphnKE40Z2uqgJ/knfg==', 1570885666, 1, 100),
+(275, 'LNUkMutUGy+59+Yt3dyVigp9vYfdgqRJRQluoO5RQpg9N1Ov6O7qlQgPkMf7SKpifC5gqOUqjX6k7pVMpOBqUL8rEtarUuqiLnVot76rt3OhGDs/yMIuAg==', 1570885667, 1, 100),
+(278, 'wkq/EQ3y/w80wXR1D0n3/JcggTIdZJxA1wvtZiOeAYt3VZI5abD49aQ17iqFhawv5CqtIV9wwoWAAy9ekZbM1hFmAi4Jjh/zaJQQTjVhH4I+c8lMO+O0rQ==', 1571102451, 1, 100),
+(279, 's9EAMmOXs/XWVng7e2m3F8pWS5RVJantScLKROLdYl4rj38n9Z2jWOVxXo+lwzctSqiJn9FFKq6CW7L0Fh/oQiqoYKRcESspjA3BItiLpyr5+ja5T4i3OA==', 1571264959, 1, 3),
+(280, 'AirpOfpCsjGTJwx0FeYEFpnZsiOzLoJQjJLKO5l5tMSQx+lQPPayM6dppAOQjhkkON+iAEZ+W8gVHRNIZn+C49Dk7TD5fzuifkETmGxkcQoDt110CqM2oA==', 1571265319, 86, 3),
+(281, 'YceRtPDTUS0Rtplt+Oi93Zb8tnBK/IsV8MkW/TmePWUWyW/I9AX/cjigCOflHFCt4QgCFjgQSdPWAKrXpiPMwz7WoV+2jnm2pbsQou1L0SYzqxSNz8e4dA==', 1571265394, 1, 100),
+(282, 'lf4sFbcwSMvZy8rP2Gd7ik0Tm9VjHSbcdSsuftt2xX7hjCcwzK8OJ/4zy42ERDmOwAgZXZ9DxTkaMnJYGNEImu/OeTggS0/RuhVzM8Wx74dihRN4vwW27g==', 1571265936, 87, 3),
+(283, 'SbYAhQg9bt/G/JJoxX5aVXFrf4c0urKIr1hO0GRmzIZ9qp1Wqp5O/R7wnOs/6+AuhmeuHIaGnlBiun+9fEGOPREXxu0kQ3On7z/S2g76RB5EgdXIXjq4lA==', 1571266955, 1, 100),
+(284, '/dOqRGbdsIC6BYeggrK6SqtHP9oT5vxXXLntaWccCTKYBHWT6yraagDqQpYJ34cQht0vuGWRkAm+BrQvIyrd2Hp6XlAvlZ30jHWV+vE3l/j3SwrDolr0bA==', 1571345040, 87, 3),
+(285, 'kWOKyoiGP37ZTHMQZA4cZ7ynVSPwKUxLgJp2qGK69X7Z1KOnF7SnSdRwKhNVSpeuslkLA552rvf8omFOWYxW/v5eMzbNC6Jyt3YkXix2N+4DLiQ2ukbxkQ==', 1571345360, 4, 2),
+(286, 'd1bTwoSL78DrZyvcDNCxozwFquWA4DHwfO+yL6gDWLUWYCiPOU8w2rhFF58+7dFKk4jl4TAiFSub17sUKseNtN4WDdzf4RfYrrDqr+SAEYGpXKjyX1/Fkw==', 1571345889, 90, 3),
+(287, 'sYIH6u2HZNlwwPFqCIoIjXfeW093GS7yUcqIAkg+dLirbUayuaDrMjI4DzREZA9G0e6hCYjKvrQFXU7uzVn86HheaxRuSalLdWtyB3nV6Rrz0G18MDMJ5Q==', 1571345950, 90, 3),
+(288, 'uqhFE7kwyTbnwNLP+v6DlOU6sa/vDhN4NfDV1+TAs/98H0bvSwjhMACiRV95ksTbsCS6wcIqq3U5+JK7NKqlPUsqezWDlqFOTaZk2YQ8LSMns8N5yjFGWQ==', 1571345997, 90, 3),
+(289, 'kA8lN9dgjYMKKjmYfZCpqLn0/2Mos7U/xna0a51vjVj2SUMp3wIBhVtuMJWWmLdvB+sLximeRoyEmDHtL1mAdJwQHiSQWVE1ne45hH2FVReEZCxn+XHaMg==', 1571346071, 4, 3),
+(290, 'c0pFQu3fdrO3/r+xJ0l9Mvt/O4t4Rg7Ry6i0UojjrioXVeBLcD9N5j4MlDDlEm/HdbYmjepxAIRXIZDtr/dqFZn+00dFNkdV3SQofy7zvBiJVnNGTS6VVw==', 1571346084, 4, 2),
+(291, 'gGp+RH4yFX2gp7ZpwHFJddcNfqFKWendPdSbnNh/R8YWcg81KTyq5ktEXvDvTX/7/bjbjWr7Hf2WMKeO6PLalxvMIh9qD6fgTCTz40ygNhpOh77U4xGlDg==', 1571370966, 4, 2),
+(292, 'aVwIKvKpt681MI5NrEe3QsksOxtrkbk/vkuvuQ+1Oht1DhcB+m6yhzC0UtlDOzZnEP2skalJc7fyMYoKTWTwNZdnv0MxMlao/rzRZt8HO0Y2acrdutMUyw==', 1571371135, 4, 2),
+(293, '7AhUmpPaPAREg3m66LNlM7v3rbnD9aUcbz4Qm7uiD7mUr7I99LZNQdbbOK5qSGi8tFKKFYqlZ8VbezSdAQbAxwTyiD3NPdFTFGwPHGwnVq1Wxb8wWyC4mQ==', 1571371380, 1, 3),
+(294, 'Cm6xnRiYmTWQnP7BsgQqiciD95TBaMBe87ufeWpEOX/lxBYB6TFlDd+4UOO0JjwLVqQU/oYp7yb9kxjwTv/X1bg/jgvxEXUM+zd7LWdOKP5SRVOwLi2Oag==', 1571420656, 1, 100);
 
 -- --------------------------------------------------------
 
@@ -301,7 +326,7 @@ INSERT INTO `users` (`id`, `email`, `firstname`, `lastname`, `password`, `enable
 (39, 'qbosmfvwezohbutpifbopeter@abc.com', 'Peter', 'Norton', 'xxx', 1, 513, 0),
 (40, 'gjappgiduiqczagnousspeter@abc.com', 'Peter', 'Norton', 'xxx', 1, 1155, 0),
 (41, 'ymcshlekdzhugvmwbjpipeter@abc.com', 'Peter', 'Norton', 'xxx', 1, 4233, 0),
-(42, 'wfipnoycrkxlpuhuyetwpeter@abc.com', 'Peter', 'Norton', 'xxx', 1, 7700, 0),
+(42, 'peterrr@abc.com', 'Peterrr', 'Norton', 'xxx', 1, 9999, 1),
 (43, 'vydqkgqszpncijwhxeiapeter@abc.com', 'Peter', 'Norton', 'xxx', 1, 5803, 0),
 (44, 'itbrknzsfnawnhxgmockpeter@abc.com', 'Peter', 'Norton', 'xxx', 1, 5914, 0),
 (45, 'cproifnsfxvkxtppbgdupeter@abc.com', 'Peter', 'Norton', 'xxx', 1, 2161, 0),
@@ -346,7 +371,8 @@ INSERT INTO `users` (`id`, `email`, `firstname`, `lastname`, `password`, `enable
 (87, 'pedro@gmail.com', 'Pedro', 'Picapiedras', '561d352157d4dcafc9ca9ba37773711ee4d192fd', 1, 10000, 0),
 (88, 'feli@abc', 'Felipe', 'Bozzzolo', '40bd001563085fc35165329ea1ff5c5ecbdbbeef', 1, 10000, 0),
 (89, 'h@', 'Sr H', 'J', '9ee9c0d0bc94a1b9644cee64f1d513ca2f4dafc8', 1, 10000, 0),
-(90, 'nano@', 'Nano', 'Perez', '9ee9c0d0bc94a1b9644cee64f1d513ca2f4dafc8', 1, 10000, NULL);
+(90, 'nano@', 'Nano', 'Perez', '9ee9c0d0bc94a1b9644cee64f1d513ca2f4dafc8', 1, 10000, NULL),
+(102, 'feli@delacasita', 'Sr K', 'NS/NC', '561d352157d4dcafc9ca9ba37773711ee4d192fd', 1, 10000, 102);
 
 -- --------------------------------------------------------
 
@@ -383,7 +409,8 @@ INSERT INTO `user_role` (`id`, `user_id`, `role_id`, `creation_date`, `modificat
 (17, 4, 3, 0, NULL),
 (18, 1, 3, 0, NULL),
 (20, 90, 3, 0, NULL),
-(21, 85, 2, 0, NULL);
+(21, 85, 2, 0, NULL),
+(22, 48, 3, 0, NULL);
 
 --
 -- Indexes for dumped tables
@@ -479,7 +506,7 @@ ALTER TABLE `other_permissions`
 -- AUTO_INCREMENT for table `products`
 --
 ALTER TABLE `products`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=155;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=162;
 
 --
 -- AUTO_INCREMENT for table `roles`
@@ -491,19 +518,19 @@ ALTER TABLE `roles`
 -- AUTO_INCREMENT for table `sessions`
 --
 ALTER TABLE `sessions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=265;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=295;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=91;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=103;
 
 --
 -- AUTO_INCREMENT for table `user_role`
 --
 ALTER TABLE `user_role`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
 -- Constraints for dumped tables
