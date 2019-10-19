@@ -4,7 +4,7 @@ namespace simplerest\core\interfaces;
 
 interface IAuth {
     function login();
-    function refresh();
+    function token();
     function signup();
     function check();   
 }

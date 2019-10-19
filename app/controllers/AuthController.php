@@ -140,7 +140,7 @@ class AuthController extends Controller implements IAuth
         
         Only by POST*
     */	
-    function refresh()
+    function token()
     {
         if ($_SERVER['REQUEST_METHOD']=='OPTIONS'){
             // passs

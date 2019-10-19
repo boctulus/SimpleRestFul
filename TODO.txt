@@ -198,6 +198,11 @@ Content-type: application/json
   "error_description": "The access token expired"
 }
 
+- Donde almacenar con seguridad Refresh tokens !!!!!
+
+https://stackoverflow.com/questions/48690373/where-to-store-refresh-token-safely
+https://github.com/IdentityServer/IdentityServer3/issues/2039
+
 - Custom Actions (Nested Resources)
 
 

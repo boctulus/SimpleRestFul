@@ -130,7 +130,7 @@
 	
 		$.ajax({
 			type: "POST",
-			url: '/auth/refresh',
+			url: '/auth/token',
 			dataType: 'json',
 			headers: {"Authorization": 'Bearer ' + localStorage.getItem('refresh_token')}, 
 			success: function(data){
