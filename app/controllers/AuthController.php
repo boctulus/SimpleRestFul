@@ -9,6 +9,7 @@ use simplerest\libs\Factory;
 use simplerest\models\UsersModel;
 use simplerest\models\SessionsModel;
 use simplerest\models\RolesModel;
+use simplerest\models\UserRoleModel;
 use simplerest\libs\Debug;
 use simplerest\libs\crypto\SaferCrypto;
 
@@ -39,52 +40,24 @@ class AuthController extends Controller implements IAuth
         $this->must_not[]  = [ $conditions , $http_code, $msg ];
     }
 
-
-    /*
-        Refresh token generator
-    */
-    protected function pass_gen(){
-        $key = hex2bin($this->config['refresh_token']['secret_key']);    
-        
-        $refresh='';
-        for ($i=0;$i<10;$i++){
-            $refresh .= chr(rand(58,64));
-            $refresh .= chr(rand(65,90));
-            $refresh .= chr(rand(97,122));	
-            $refresh .= chr(rand(123,126));
-        }	
-    
-        $encrypted = SaferCrypto::encrypt($refresh, $key, true);
-
-        return [ $refresh, $encrypted ];
-    }
-
     protected function pass_dec($encrypted){
         $key = hex2bin($this->config['refresh_token']['secret_key']); 
         return SaferCrypto::decrypt($encrypted, $key, true);
     }
 
-    protected function session_encrypt($sid){
-        $key = hex2bin($this->config['session']['secret_key']); 
-        return SaferCrypto::encrypt($sid, $key, true);
-    }
-
-    protected function session_decrypt($encrypted){
-        $key = hex2bin($this->config['session']['secret_key']); 
-        return SaferCrypto::decrypt($encrypted, $key, true);
-    }
-
-    protected function gen_jwt($encoded_sid, $uid){
+    protected function gen_jwt(array $props, string $token_type){
         $time = time();
+
         $payload = [
-            'alg' => $this->config['access_token']['encryption'],
+            'alg' => $this->config[$token_type]['encryption'],
             'typ' => 'JWT',
             'iat' => $time, 
-            'exp' => $time + $this->config['access_token']['expiration_time'],
-            'uid' => $uid
+            'exp' => $time + $this->config[$token_type]['expiration_time']
         ];
         
-        return \Firebase\JWT\JWT::encode($payload, $this->config['access_token']['secret_key'],  $this->config['access_token']['encryption']);
+        $payload = array_merge($payload, $props);
+
+        return \Firebase\JWT\JWT::encode($payload, $this->config[$token_type]['secret_key'],  $this->config[$token_type]['encryption']);
     }
 
     /*
@@ -132,8 +105,6 @@ class AuthController extends Controller implements IAuth
         
         if ($u->checkUserAndPass()){
 
-            list($refresh, $encrypted) = $this->pass_gen();
-
             $available_roles = $u->fetchRoles();
 
             // HOOK aquí             (!)
@@ -147,22 +118,12 @@ class AuthController extends Controller implements IAuth
                 if (!in_array($role, $available_roles))
                     Factory::response()->sendError("You don't have $role role", 401);
 
-            $session = new SessionsModel($conn);
-            $sid = $session->create([   'refresh_token' => $encrypted, 
-                                        'login_date' => time(), 
-                                        'user_id' => $u->id,
-                                        'role' => $role 
-            ]);
-                                            
-            if (!$sid)
-                Factory::response()->sendError("Authentication fails", 500); 
+            $access  = $this->gen_jwt(['uid' => $u->id, 'role' => $role], 'access_token');
+            $refresh = $this->gen_jwt(['uid'=> $u->id, 'role' => $role], 'refresh_token');
 
-            $sid_enc = $this->session_encrypt($sid);                  
-            $jwt = $this->gen_jwt($sid_enc, $u->id);
-
+            // 'expires_in' no iría más por fuera de los tokens
             Factory::response()->send([ 
-                                        'sid' => $sid_enc,
-                                        'access_token'=> $jwt,
+                                        'access_token'=> $access,
                                         'token_type' => 'bearer', 
                                         'refresh_token' => $refresh,
                                         'expires_in' => $this->config['access_token']['expiration_time'] 
@@ -189,7 +150,6 @@ class AuthController extends Controller implements IAuth
 
         $request = Factory::request();
 
-        $sid_enc = $request->getBodyParam('sid');
         $headers = $request->headers();
         $auth = $headers['Authorization'] ?? $headers['authorization'] ?? null;
 
@@ -197,34 +157,31 @@ class AuthController extends Controller implements IAuth
             Factory::response()->sendError('Authorization not found',400);
         }
 
-        if (empty($sid_enc)){
-            Factory::response()->sendError('sid is needed !',400);
-        }
-
         try {                                      
             // refresh token
-            list($refresh) = sscanf($auth, 'Basic %s');
+            list($refresh) = sscanf($auth, 'Bearer %s');
 
-            if(empty($refresh))
-                Factory::response()->sendError('Token not found',400);
+            $payload = \Firebase\JWT\JWT::decode($refresh, $this->config['refresh_token']['secret_key'], [ $this->config['refresh_token']['encryption'] ]);
             
-            $sid = $this->session_decrypt($sid_enc);
-           
-            $conn = $this->getConnection();            
-            $s = new SessionsModel($conn);
-            $rows = $s->filter(null, ['id', $sid]);
+            if (empty($payload))
+                Factory::response()->sendError('Unauthorized!',401);                     
 
-            if(empty($rows))
-                Factory::response()->sendError('Session not found', 400);
+            if (empty($payload->uid)){
+                Factory::response()->sendError('uid is needed',400);
+            }
 
-            if($this->pass_dec($rows[0]['refresh_token']) != $refresh) 
-                Factory::response()->sendError('Refresh token is invalid',400);
+            if (empty($payload->role)){
+                Factory::response()->sendError('role is needed',400);
+            }
 
-            $jwt = $this->gen_jwt($sid_enc, $rows[0]['user_id']);
-            
+            if ($payload->exp < time())
+                Factory::response()->sendError('Token expired, please log in',401);
+
+            $access  = $this->gen_jwt(['uid' => $payload->uid, 'role' => $payload->role], 'access_token');
+
             ///////////
             Factory::response()->send([ 
-                                        'access_token'=> $jwt,
+                                        'access_token'=> $access,
                                         'token_type' => 'bearer', 
                                         'expires_in' => $this->config['access_token']['expiration_time'] 
                                         // 'scope' => 'read write'
@@ -233,36 +190,6 @@ class AuthController extends Controller implements IAuth
         } catch (\Exception $e) {
             Factory::response()->sendError($e->getMessage(), 400);
         }	
-    }
-
-    /*
-        'refresh token' destructor 
-    */
-    function logout()
-    {  
-        if ($_SERVER['REQUEST_METHOD']=='OPTIONS'){
-            // passs
-            Factory::response()->send('OK',200);
-        }elseif ($_SERVER['REQUEST_METHOD']!='POST')
-            Factory::response()->sendError('Incorrect verb',405);
-
-        $sid_enc = Factory::request()->getBodyParam('sid');    
-
-        if (empty($sid_enc)){
-            Factory::response()->sendError('sid is needed !',400);
-        }
-
-        $sid = $this->session_decrypt($sid_enc);
-           
-        $conn = $this->getConnection();            
-        $s = new SessionsModel($conn);
-        $s->id = $sid;
-        $ok = $s->delete();
-
-        if ($ok)
-            Factory::response()->send('OK - session was destroyed',200);
-        else
-            Factory::response()->sendCode(500);    
     }
 
     function signup()
@@ -284,13 +211,11 @@ class AuthController extends Controller implements IAuth
                 Factory::response()->sendError('Email already exists');
                     
 
-            $missing = $u->getMissing($data, []);
+            $missing = $u->getMissing($data);
             if (!empty($missing))
                 Factory::response()->sendError('Lack some properties in your request: '.implode(',',$missing), 400);
 
             $data['password'] = sha1($data['password']);
-
-            list($refresh, $encrypted) = $this->pass_gen();
 
             $uid = $u->create($data);
             if (empty($uid))
@@ -300,11 +225,25 @@ class AuthController extends Controller implements IAuth
                 $u->update(['belongs_to' => $uid]);
             }
 
+            $ur = new UserRoleModel($conn);
+            $id = $ur->create([ 'user_id' => $uid, 'role_id' => 1 ]);  // registered
+
             // HOOK
             // podría o no devolverse un access token
 
-            Factory::response()->send('User was created', 201);
+            // Factory::response()->send('User was created', 201);
 
+            $access  = $this->gen_jwt(['uid' => $u->id, 'role' => 1], 'access_token');
+            $refresh = $this->gen_jwt(['uid'=> $u->id, 'role' => 1], 'refresh_token');
+
+            // 'expires_in' no iría más por fuera de los tokens
+            Factory::response()->send([ 
+                                        'access_token'=> $access,
+                                        'token_type' => 'bearer', 
+                                        'refresh_token' => $refresh,
+                                        'expires_in' => $this->config['access_token']['expiration_time'] 
+                                        // 'scope' => 'read write'
+                                      ]);
         }catch(\Exception $e){
             Factory::response()->sendError($e->getMessage());
         }	
@@ -337,39 +276,24 @@ class AuthController extends Controller implements IAuth
                 if (empty($payload))
                     Factory::response()->sendError('Unauthorized!',401);                     
 
-                if (empty($payload->sid)){
-                    Factory::response()->sendError('sid is needed',400);
+                if (empty($payload->uid)){
+                    Factory::response()->sendError('uid is needed',400);
+                }
+
+                if (empty($payload->role)){
+                    Factory::response()->sendError('role is needed',400);
                 }
 
                 if ($payload->exp < time())
                     Factory::response()->sendError('Token expired',401);
-                    
 
-                $conn = $this->getConnection();
-
-                $s = new SessionsModel($conn);
-                $rows = $s->filter(null, ['id', $this->session_decrypt($payload->sid)]);
-    
-                if(empty($rows))
-                    Factory::response()->sendError('Session not found', 400);  
-
-                $requested_role = $rows[0]['role'];
-            
-                $r = new RolesModel($conn);
-                $r->id = $requested_role;
-                $ok = $r->fetch();
-
-                if (!$ok)
-                    Factory::response()->sendError('Role does not exists', 401); 
-
-                $payload->user_role = $r->name;
-                $payload->is_admin  = $r->is_admin;  
-                
 
                 if (count($this->must_have) > 0 || count($this->must_not) > 0) 
                 {   
+                    $conn = $this->getConnection();
+
                     $u = new UsersModel($conn);
-                    $u->id = $rows[0]['user_id'];
+                    $u->id = $payload->uid;
                     $u->fetch();
 
                     foreach ($this->must_have as $must){

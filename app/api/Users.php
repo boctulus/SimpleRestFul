@@ -7,10 +7,11 @@ use simplerest\controllers\MyApiController;
 class Users extends MyApiController
 {     
     protected $scope = [
-        'guest'   => [], 
-        'basic'   => ['read'],
-        'regular' => ['read', 'write'],
-        'admin'   => ['read', 'write']
+        'guest'      => [], 
+        'registered' => ['read', 'write'],
+        'basic'      => ['read'],
+        'regular'    => ['read', 'write'],
+        'admin'      => ['read', 'write']
     ];
 
     function __construct()

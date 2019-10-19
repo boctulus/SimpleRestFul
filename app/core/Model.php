@@ -574,7 +574,14 @@ class Model {
 		return true;
 	}
 
-	function getMissing($fields){
+	/**
+	 * getMissing
+	 *
+	 * @param  array $fields
+	 *
+	 * @return array
+	 */
+	function getMissing(array $fields){
 		$diff =  array_diff($this->properties, array_keys($fields));
 		return array_diff($diff, $this->nullable);
 	}

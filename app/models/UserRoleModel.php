@@ -11,6 +11,14 @@ class UserRoleModel extends Model
 	protected $id_name = 'id';
 	protected $fillable = [ 'user_id', 'role_id', 'creation_date', 'modification_date'];
 	protected $hidden = [ ];
+	protected $nullable = ['creation_date', 'modification_date'];
+
+	/*
+		Unique constraints
+	*/
+	//static protected $unique = [
+	//	['user_id', 'role_id']
+	//];
 
 	/*
 		Types are INT, STR and BOOL among others
@@ -20,17 +28,9 @@ class UserRoleModel extends Model
 		'id' => 'INT',
 		'user_id' => 'INT',
 		'role_id' => 'INT',
-		'creation_date'  => 'INT',
-		'modification_date'  => 'INT'
+		'creation_date'  => 'STR',
+		'modification_date'  => 'STR'
 	];
-
-	/*
-		Unique constraints
-	*/
-	//static protected $unique = [
-	//	['user_id', 'role_id']
-	//];
-
 
     function __construct($db = NULL){
         parent::__construct($db);

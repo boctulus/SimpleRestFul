@@ -4,27 +4,20 @@ namespace simplerest\models;
 
 use simplerest\core\Model;
 
-class RolesModel extends Model
- {
-	protected $table_name = "roles";
-	protected $id_name = 'id';
-	protected $fillable = ['name'];
-	protected $hidden = [ ];
+class RolesModel {
 
-	/*
-		Types are INT, STR and BOOL among others
-		see: https://secure.php.net/manual/en/pdo.constants.php 
-	*/
-	protected $schema = [
-		'id' => 'INT',
-		'name' => 'STR',
-		'is_admin' => 'INT'
+	protected $roles = [
+		1 => ['name'=> 'registered', 'is_admin'=> false],
+		2 => ['name'=> 'basic', 'is_admin'=> false],
+		3 =>  ['name'=> 'regular', 'is_admin'=> false],
+		100 => ['name'=> 'admin', 'is_admin'=> true]
 	];
 
-
-    public function __construct($db = NULL){
-        parent::__construct($db);
-    }
+	function is_admin($role_id){
+		return $this->roles[$role_id]['is_admin'];
+	}
 	
-	
+	function getRoleName($role_id){
+		return $this->roles[$role_id]['name'];
+	}
 }

@@ -85,7 +85,7 @@
 					localStorage.setItem('refresh_token',data.refresh_token);
 					localStorage.setItem('expires_in',data.expires_in);
 					localStorage.setItem('exp', parseInt((new Date).getTime() / 1000) + data.expires_in);
-					localStorage.setItem('sid',data.sid);
+					//localStorage.setItem('sid',data.sid);
 					localStorage.setItem('role', obj.role);
 					console.log('Tokens obtenidos');
 					window.location = base_url;
@@ -131,14 +131,15 @@
 		$.ajax({
 			type: "POST",
 			url: '/auth/refresh',
-			data : JSON.stringify({sid: localStorage.getItem('sid')}),
 			dataType: 'json',
-			headers: {"Authorization": 'Basic ' + localStorage.getItem('refresh_token')}, 
+			headers: {"Authorization": 'Bearer ' + localStorage.getItem('refresh_token')}, 
 			success: function(data){
 				if (typeof data.access_token != 'undefined'){
 					localStorage.setItem('access_token',data.access_token);
 					localStorage.setItem('expires_in',data.expires_in);
 					localStorage.setItem('exp', parseInt((new Date).getTime() / 1000) + data.expires_in);
+					
+					//console.log(data.access_token);
 				}else{
 					console.log('Error en la renovación del token');
 					////////window.location = login_page;

@@ -181,7 +181,7 @@ class DumbController extends Controller
         $conn = $this->getConnection();
 
         $ur = new UserRoleModel($conn);
-        $id = $ur->create([ 'user_id' => $user_id, 'role_id' => $role_id, 'creation_date'=> time() ]);
+        $id = $ur->create([ 'user_id' => $user_id, 'role_id' => $role_id ]);
         echo $id;
     }
 

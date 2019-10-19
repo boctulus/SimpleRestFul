@@ -9,6 +9,7 @@ use simplerest\libs\Database;
 use simplerest\models\GroupPermissionsModel;
 use simplerest\models\OtherPermissionsModel;
 use simplerest\models\FoldersModel;
+use simplerest\models\RolesModel;
 
 abstract class ApiController extends Controller
 {
@@ -51,9 +52,11 @@ abstract class ApiController extends Controller
             $this->auth_payload = $auth_object->check();
 
             if (!empty($this->auth_payload)){
-                $this->uid = $this->auth_payload->uid;
-                $this->is_admin = $this->auth_payload->is_admin;
-                $this->role  = $this->auth_payload->user_role;
+                $this->uid = $this->auth_payload->uid; 
+
+                $r = new RolesModel();
+                $this->role  = $r->getRoleName($this->auth_payload->role);
+                $this->is_admin = $r->is_admin($this->auth_payload->role);
             }else{
                 $this->uid = null;
                 $this->is_admin = false;
@@ -70,7 +73,7 @@ abstract class ApiController extends Controller
             }    
 
             if (empty($this->callable))
-                Factory::response()->sendError('Authorization not found !',400);
+                Factory::response()->sendError('You are not authorized',403);
 
             $this->callable = array_merge($this->callable,['head','options']);
     

@@ -12,10 +12,11 @@ class MyApiController extends ApiController
     
     // ALC   
     protected $scope = [
-        'guest'   => ['read'],  
-        'basic'   => ['read'],
-        'regular' => ['read', 'write'],
-        'admin'   => ['read', 'write']
+        'guest'      => [],  
+        'registered' => [],
+        'basic'      => ['read'],
+        'regular'    => ['read', 'write'],
+        'admin'      => ['read', 'write']
     ];
 
     function __construct()
