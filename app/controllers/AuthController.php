@@ -103,7 +103,7 @@ class AuthController extends Controller implements IAuth
         $u->email = $email;
         $u->password = $password;
         
-        if ($u->checkUserAndPass()){
+        if ($u->checkCredentials()){
 
             $available_roles = $u->fetchRoles();
 
@@ -215,7 +215,7 @@ class AuthController extends Controller implements IAuth
             if (!empty($missing))
                 Factory::response()->sendError('Lack some properties in your request: '.implode(',',$missing), 400);
 
-            $data['password'] = sha1($data['password']);
+            $data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
 
             $uid = $u->create($data);
             if (empty($uid))

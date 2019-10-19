@@ -40,6 +40,30 @@ class UsersModel extends Model
         parent::__construct($db);
     }
 	
+	function checkCredentials()
+	{
+		$pass = $this->password;
+		
+		$q  = "SELECT * FROM ".$this->table_name." WHERE email=?";
+		$st = $this->conn->prepare($q);
+		$st->execute([$this->email]);
+	
+		$row = $st->fetch(\PDO::FETCH_OBJ);
+		
+		if ($row){
+			$hash = $row->password;
+
+			if (password_verify($pass, $hash)){
+				foreach ($row as $k => $field){
+					$this->{$k} = $row->$k;
+				}
+				return true;
+			}	
+		}
+		
+		return false;
+	}
+
 	/*
 		Usar password_hash / password_verify en su lugar
 	*/
