@@ -236,7 +236,6 @@ class AuthController extends Controller implements IAuth
             $access  = $this->gen_jwt(['uid' => $u->id, 'role' => 1], 'access_token');
             $refresh = $this->gen_jwt(['uid'=> $u->id, 'role' => 1], 'refresh_token');
 
-            // 'expires_in' no iría más por fuera de los tokens
             Factory::response()->send([ 
                                         'access_token'=> $access,
                                         'token_type' => 'bearer', 
