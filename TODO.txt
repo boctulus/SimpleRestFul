@@ -1,5 +1,13 @@
 # TODO
 
+- Los roles deben ser simultaneos sumándose los scopes !
+
+- Arreglar lo que pasa si un usuario es borrado con soft delete (warnings)
+
+- Convertir automáticamente condiciones simples de tipo clave => valor en [clave, valor] para filter
+
+- Parsear errores en las urls como /api/users&... donde debe ser ? por &
+
 - Usar un envelope como en Instagram
 
 Every response is contained by an envelope. That is, each response has a predictable set of keys with which you can expect to interact:

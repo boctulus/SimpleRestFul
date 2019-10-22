@@ -55,9 +55,11 @@ class TrashCan extends MyApiController
             {
                 $_get = [
                     ['id', $id],
-                    ['deleted_at', NULL, 'IS NOT'],
-                    ['belongs_to', $this->uid]
+                    ['deleted_at', NULL, 'IS NOT']
                 ];  
+
+                if (!$this->is_admin)
+                        $_get[] = ['belongs_to', $this->uid];
 
                 $rows = $instance->filter($fields, $_get); 
                 if (empty($rows))
@@ -216,7 +218,7 @@ class TrashCan extends MyApiController
         $_get  = Factory::request()->getQuery();
 
         if (!isset($data['entity']))
-            Factory::response()->sendError('Entity is needed', 400);
+            Factory::response()->sendError('Entity is needed in request body', 400);
 
         $entity = $data['entity']; 
        
@@ -310,7 +312,7 @@ class TrashCan extends MyApiController
             $_get  = Factory::request()->getQuery();
 
             if (!isset($data['entity']))
-                Factory::response()->sendError('Entity is needed', 400);
+                Factory::response()->sendError('Entity is needed in request body', 400);
 
             $entity = $data['entity']; 
         

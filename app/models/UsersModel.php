@@ -16,9 +16,10 @@ class UsersModel extends Model
 							'lastname',
 							'enabled',
 							'quota',
+							'deleted_at',
 							'belongs_to'
 	];
-	protected $nullable = ['id', 'enabled', 'quota', 'belongs_to'];
+	protected $nullable = ['id', 'firstname', 'lastname', 'enabled', 'quota',  'deleted_at', 'belongs_to'];
 	protected $hidden   = ['password', 'belongs_to'];
 
 	/*
@@ -33,6 +34,7 @@ class UsersModel extends Model
 		'lastname'=> 'STR',
 		'enabled' => 'INT',
 		'quota' => 'INT',
+		'deleted_at' => 'STR',
 		'belongs_to' => 'INT'
 	];
 

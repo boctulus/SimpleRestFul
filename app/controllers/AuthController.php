@@ -125,8 +125,8 @@ class AuthController extends Controller implements IAuth
             Factory::response()->send([ 
                                         'access_token'=> $access,
                                         'token_type' => 'bearer', 
-                                        'refresh_token' => $refresh,
-                                        'expires_in' => $this->config['access_token']['expiration_time'] 
+                                        'expires_in' => $this->config['access_token']['expiration_time'],
+                                        'refresh_token' => $refresh                                         
                                         // 'scope' => 'read write'
                                       ]);
             
@@ -239,8 +239,8 @@ class AuthController extends Controller implements IAuth
             Factory::response()->send([ 
                                         'access_token'=> $access,
                                         'token_type' => 'bearer', 
-                                        'refresh_token' => $refresh,
-                                        'expires_in' => $this->config['access_token']['expiration_time'] 
+                                        'expires_in' => $this->config['access_token']['expiration_time'],
+                                        'refresh_token' => $refresh                                         
                                         // 'scope' => 'read write'
                                       ]);
         }catch(\Exception $e){

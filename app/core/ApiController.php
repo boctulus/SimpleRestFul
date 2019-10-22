@@ -249,7 +249,7 @@ abstract class ApiController extends Controller
 
             if ($id != null)
             {
-                $instance->showDeleted(); //
+                #$instance->showDeleted(); //
 
                 $_get = [
                     ['id', $id]

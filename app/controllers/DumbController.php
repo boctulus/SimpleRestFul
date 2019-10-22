@@ -150,6 +150,17 @@ class DumbController extends Controller
         Debug::debug($u);
     }
 
+    function del_user($id){
+        $conn    = Database::getConnection();
+
+        $u = new UsersModel($conn);
+        $u->id = $id;
+        $u->delete();
+        $u->filter(null,['id', $id]);
+
+        Debug::debug($u);
+    }
+
  
     function update_user($id) {
         $conn    = Database::getConnection();

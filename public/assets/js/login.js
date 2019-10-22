@@ -107,21 +107,6 @@
 	function logout(){
 		localStorage.removeItem('access_token');
 		localStorage.removeItem('refresh_token');
-
-		$.ajax({
-			type: "POST",
-			url: '/auth/logout',
-			data : JSON.stringify({sid: localStorage.getItem('sid')}),
-			dataType: 'json',
-			success: function(data){
-				//console.log('OK', data);
-			},
-			error: function(xhr){
-				//console.log('Error en el borrado de la session', xhr);
-				window.location = login_page;
-			}
-		});		
-
 		window.location.href = login_page;
 	}
 

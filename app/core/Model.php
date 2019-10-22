@@ -38,8 +38,8 @@ class Model {
 		$this->table_alias = " as $tb_alias";
 	}
 
-	public function showDeleted(){
-		$this->show_deleted = true;
+	public function showDeleted($state = true){
+		$this->show_deleted = $state;
 	}
 
 	/**
@@ -175,7 +175,8 @@ class Model {
 		$st->execute();
 		
 		$row = $st->fetch(\PDO::FETCH_OBJ);
-		if (!$row)
+
+		if ($row === false)
 			return false;
 	 
 		foreach ($select_fields_array as $prop){
@@ -406,6 +407,7 @@ class Model {
 			return false;	
 	}
 
+	// debería considerar el soft delete !!!!
 	function exists()
 	{
 		$q  = "SELECT * FROM ".$this->table_name . " WHERE ".$this->id_name."=:id";
@@ -521,7 +523,7 @@ class Model {
 	{
 		if ($soft_delete){
 			if (!$this->inSchema(['deleted_at'])){
-				throw new \Exception("There is no 'deleted_at' for ".$this->table_name);
+				throw new \Exception("There is no 'deleted_at' for ".$this->table_name. ' schema');
 			} 
 
 			$d = new \DateTime();
