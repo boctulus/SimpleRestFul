@@ -2,6 +2,7 @@
 
 namespace simplerest\models;
 
+use Exception;
 use simplerest\core\Model;
 
 class RolesModel {
@@ -19,8 +20,24 @@ class RolesModel {
 		100 => ['name'=> 'admin',     'is_admin' => true]
 	];
 
-	function is_admin($role_id){
-		return $this->roles[$role_id]['is_admin'];
+	/**
+	 * is_admin
+	 *
+	 * @param  mixed $role_name
+	 *
+	 * @return bool
+	 */
+	function is_admin(string $role_name){
+
+		if ($role_name == 'admin')
+			return true;
+
+		foreach ($this->roles as $r){
+			if ($r['name'] == $role_name)
+				return $r['is_admin'];
+		}
+
+		throw new \Exception("Role is not in model");
 	}
 	
 	function getRoleName($role_id){

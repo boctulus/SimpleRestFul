@@ -94,7 +94,7 @@ class UsersModel extends Model
 	{
 		$this->table_name = 'users as u';
 		$this->join('user_role as ur', 'ur.user_id', '=', 'u.id');
-		$rows = $this->filter(['ur.role_id as role'], ['u.id', $this->id]);
+		$rows = $this->filter(['ur.role_id as role'], ['u.id', $this->id]);	
 
 		if (!empty($rows)){
 			$roles = [];

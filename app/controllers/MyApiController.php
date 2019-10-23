@@ -27,9 +27,6 @@ class MyApiController extends ApiController
         ];
    
         $auth = new \simplerest\controllers\AuthController();
-        $auth->addMustHave([ 'enabled' => 1 ], 403, 'Usuario no habilitado');
-        $auth->addMustNotHave([ 'quota' => 0 ], 403, 'Quota exceded');      
-        
         parent::__construct($headers, $auth);
     }
 

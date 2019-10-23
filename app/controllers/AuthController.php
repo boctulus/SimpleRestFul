@@ -83,7 +83,6 @@ class AuthController extends Controller implements IAuth
                 
                 $email = $data->email ?? null;
                 $password = $data->password ?? null;
-                $role = $data->role ?? null;
             break;
 
             default:
@@ -105,21 +104,19 @@ class AuthController extends Controller implements IAuth
         
         if ($u->checkCredentials()){
 
-            $available_roles = $u->fetchRoles();
+            $role_ids = $u->fetchRoles();
 
-            // HOOK aquí             (!)
-            if ($role == null){
-                // Si hay un solo rol posible,...
-                if (count($available_roles) == 1){
-                    $role = (int) $available_roles[0];
-                } else
-                    Factory::response()->sendError("Provide a role, please", 400);
-            }else 
-                if (!in_array($role, $available_roles))
-                    Factory::response()->sendError("You don't have $role role", 401);
+            $roles = [];
 
-            $access  = $this->gen_jwt(['uid' => $u->id, 'role' => $role], 'access_token');
-            $refresh = $this->gen_jwt(['uid'=> $u->id, 'role' => $role], 'refresh_token');
+            if (count($role_ids) != 0){
+                $r = new RolesModel();
+                foreach ($role_ids as $role_id){
+                    $roles[] = $r->getRoleName($role_id);
+                }
+            }
+
+            $access  = $this->gen_jwt(['uid' => $u->id, 'roles' => $roles], 'access_token');
+            $refresh = $this->gen_jwt(['uid'=> $u->id, 'roles' => $roles], 'refresh_token');
 
             // 'expires_in' no iría más por fuera de los tokens
             Factory::response()->send([ 
@@ -170,14 +167,14 @@ class AuthController extends Controller implements IAuth
                 Factory::response()->sendError('uid is needed',400);
             }
 
-            if (empty($payload->role)){
-                Factory::response()->sendError('role is needed',400);
+            if (empty($payload->roles)){
+                Factory::response()->sendError('Undefined roles',400);
             }
 
             if ($payload->exp < time())
                 Factory::response()->sendError('Token expired, please log in',401);
 
-            $access  = $this->gen_jwt(['uid' => $payload->uid, 'role' => $payload->role], 'access_token');
+            $access  = $this->gen_jwt(['uid' => $payload->uid, 'roles' => $payload->roles], 'access_token');
 
             ///////////
             Factory::response()->send([ 
@@ -227,14 +224,12 @@ class AuthController extends Controller implements IAuth
 
             $ur = new UserRoleModel($conn);
             $id = $ur->create([ 'user_id' => $uid, 'role_id' => 1 ]);  // registered
+            
+            $r = new RolesModel();
+            $registered = $r->getRoleName(1);
 
-            // HOOK
-            // podría o no devolverse un access token
-
-            // Factory::response()->send('User was created', 201);
-
-            $access  = $this->gen_jwt(['uid' => $u->id, 'role' => 1], 'access_token');
-            $refresh = $this->gen_jwt(['uid'=> $u->id, 'role' => 1], 'refresh_token');
+            $access  = $this->gen_jwt(['uid' => $u->id, 'roles' => [$registered] ], 'access_token');
+            $refresh = $this->gen_jwt(['uid'=> $u->id, 'roles' => [$registered] ], 'refresh_token');
 
             Factory::response()->send([ 
                                         'access_token'=> $access,
@@ -255,9 +250,8 @@ class AuthController extends Controller implements IAuth
     @return mixed object | null
     */
     function check() {
-
-        $req = Factory::request();        
-        $headers = $req->headers();
+      
+        $headers = Factory::request()->headers();
         $auth = $headers['Authorization'] ?? $headers['authorization'] ?? null;
         
         if (empty($auth))
@@ -279,46 +273,12 @@ class AuthController extends Controller implements IAuth
                     Factory::response()->sendError('uid is needed',400);
                 }
 
-                if (empty($payload->role)){
-                    Factory::response()->sendError('role is needed',400);
+                if (empty($payload->roles)){
+                    Factory::response()->sendError('Undefined roles',400);
                 }
 
                 if ($payload->exp < time())
                     Factory::response()->sendError('Token expired',401);
-
-
-                if (count($this->must_have) > 0 || count($this->must_not) > 0) 
-                {   
-                    $conn = $this->getConnection();
-
-                    $u = new UsersModel($conn);
-                    $u->id = $payload->uid;
-                    $u->fetch();
-
-                    foreach ($this->must_have as $must){
-                        $conditions = $must[0];
-                        $code = $must[1];
-                        $msg  = $must[2];
-        
-                        foreach ($conditions as $k => $val){
-                            if ($u->$k != $val){
-                                Factory::response()->sendError($msg, $code);
-                            }
-                        }
-                    }    
-
-                    foreach ($this->must_not as $not){
-                        $conditions = $not[0];
-                        $code = $not[1];
-                        $msg  = $not[2];
-        
-                        foreach ($conditions as $k => $val){
-                            if ($u->$k == $val){
-                                Factory::response()->sendError($msg, $code);
-                            }
-                        }
-                    }    
-                }
                 
                 return ($payload);
 

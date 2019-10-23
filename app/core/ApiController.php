@@ -21,8 +21,8 @@ abstract class ApiController extends Controller
     protected $soft_delete;
     protected $auth_payload = null;
     protected $uid;
-    protected $is_admin;
-    protected $role;
+    protected $is_admin = false;
+    protected $roles = [];
     protected $folder_field;
     protected $guest_root_access = false;
     protected $default_headers = [
@@ -55,22 +55,37 @@ abstract class ApiController extends Controller
                 $this->uid = $this->auth_payload->uid; 
 
                 $r = new RolesModel();
-                $this->role  = $r->getRoleName($this->auth_payload->role);
-                $this->is_admin = $r->is_admin($this->auth_payload->role);
+                $this->roles  = $this->auth_payload->roles;  /// ???
+
+                foreach ($this->roles as $role){
+                    if ($r->is_admin($role)){
+                        $this->is_admin = true;
+                        break;
+                    }
+                }
             }else{
                 $this->uid = null;
                 $this->is_admin = false;
-                $this->role = 'guest';
+                $this->roles = ['guest'];
             }
 
-            $cruds = $this->scope[$this->role];
+            // y si ya se que es admin....
+            if ($this->is_admin){
+                $this->callable = ['get', 'post', 'put', 'patch', 'delete'];
+            }else{
+                foreach ($this->roles as $role){
+                    $cruds = $this->scope[$role];
+    
+                    if (!empty($this->scope[$role])){
+                        foreach ($operations as $op => $verbs) {
+                            if (in_array($op, $cruds))
+                                $this->callable = array_merge($this->callable, $verbs);
+                        }
+                    } 
+                }    
+            }
 
-            if (!is_null($this->scope[$this->role])){
-                foreach ($operations as $op => $verbs) {
-                    if (in_array($op, $cruds))
-                        $this->callable = array_merge($this->callable, $verbs);
-                }
-            }    
+            //var_export($this->callable);
 
             if (empty($this->callable))
                 Factory::response()->sendError('You are not authorized',403);
@@ -145,6 +160,9 @@ abstract class ApiController extends Controller
     function options(){
     }
 
+    protected function is_guest(){
+        return (count($this->roles) == 0);
+    }
  
     /**
      * hasPerm
@@ -167,7 +185,7 @@ abstract class ApiController extends Controller
         $r = $rows[0]['r'] ?? null;
         $w = $rows[0]['w'] ?? null;
 
-        if ($this->role == 'guest'){
+        if ($this->is_guest()){
             $r = $r && $rows[0]['guest'];
             $w = $w && $rows[0]['guest'];
         }
@@ -264,7 +282,7 @@ abstract class ApiController extends Controller
                     if (empty($this->folder_field))
                         Factory::response()->sendError("folder_field is undefined", 403);
                     
-                    if ($this->role == 'guest' && !$folder_access)
+                    if ($this->is_guest() && !$folder_access)
                         Factory::response()->send([]);    
                         
                     $_get[] = [$this->folder_field, $f->value];
@@ -374,7 +392,7 @@ abstract class ApiController extends Controller
           
                 if (empty($folder)){
                     // root, sin especificar folder ni id (lista)
-                    if ($this->role=='guest'){
+                    if ($this->is_guest()){
                         if (!$this->guest_root_access)
                             Factory::response()->send([]);
                         else
@@ -387,7 +405,7 @@ abstract class ApiController extends Controller
                     if (empty($this->folder_field))
                         Factory::response()->sendError("'folder_field' is undefined", 403);
                   
-                    if ($this->role == 'guest' && !$folder_access)
+                    if ($this->is_guest() && !$folder_access)
                         Factory::response()->send([]); 
 
                     $_get[] = [$this->folder_field, $f->value];
@@ -440,7 +458,7 @@ abstract class ApiController extends Controller
             $conn = Database::getConnection();
             $instance->setConn($conn);
 
-            $data['belongs_to'] = ($this->role == 'guest' ? -1 : $this->uid); 
+            $data['belongs_to'] = ($this->is_guest() ? -1 : $this->uid); 
         
             if ($folder !== null)
             {

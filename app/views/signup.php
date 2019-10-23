@@ -3,7 +3,7 @@
 
 <div class="row vcenter">
 	<div class="col-xs-12 col-sm-12 col-md-6 col-md-push-3">
-		<h1 style="font-size: 2em; padding-bottom: 0.5em;">Registro</h1>
+		<h1 style="font-size: 3em; padding-bottom: 0.5em;">Registro</h1>
 
 		<form action="#" onsubmit="return false;">
 			<div class="form-group">
