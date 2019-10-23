@@ -4,14 +4,15 @@ namespace simplerest\api;
 
 use simplerest\controllers\MyApiController;
 
-class GroupPermissions extends MyApiController
+class UserRole extends MyApiController
 {     
     protected $scope = [
-        'guest'   => [ ],  
-        'basic'   => ['read'],
-        'regular' => ['read', 'write']
+        'guest'      => [], 
+        'registered' => [],
+        'basic'      => [],
+        'regular'    => []
     ];
-    
+
     function __construct()
     {
         parent::__construct();

@@ -15,8 +15,7 @@ class MyApiController extends ApiController
         'guest'      => [],  
         'registered' => [],
         'basic'      => ['read'],
-        'regular'    => ['read', 'write'],
-        'admin'      => ['read', 'write']
+        'regular'    => ['read', 'write']
     ];
 
     function __construct()

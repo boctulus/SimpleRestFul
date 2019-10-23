@@ -55,7 +55,7 @@ abstract class ApiController extends Controller
                 $this->uid = $this->auth_payload->uid; 
 
                 $r = new RolesModel();
-                $this->roles  = $this->auth_payload->roles;  /// ???
+                $this->roles  = $this->auth_payload->roles;
 
                 foreach ($this->roles as $role){
                     if ($r->is_admin($role)){
@@ -161,7 +161,7 @@ abstract class ApiController extends Controller
     }
 
     protected function is_guest(){
-        return (count($this->roles) == 0);
+        return (count($this->roles) == 1 && $this->roles[0] == 'guest');
     }
  
     /**
@@ -458,7 +458,8 @@ abstract class ApiController extends Controller
             $conn = Database::getConnection();
             $instance->setConn($conn);
 
-            $data['belongs_to'] = ($this->is_guest() ? -1 : $this->uid); 
+            if ($instance->inSchema(['belongs_to']))
+                $data['belongs_to'] = ($this->is_guest() ? -1 : $this->uid); 
         
             if ($folder !== null)
             {
@@ -705,14 +706,14 @@ abstract class ApiController extends Controller
                 }
             }   
 
-            if($instance->delete($this->soft_delete)){
+            if($instance->delete($this->soft_delete && $instance->inSchema(['deleted_at']) )){
                 Factory::response()->sendJson("OK");
             }	
             else
                 Factory::response()->sendError("Record not found",404);
 
         } catch (\Exception $e) {
-            Factory::response()->sendError("Error during PATCH for id=$id with message: {$e->getMessage()}");
+            Factory::response()->sendError("Error during DELETE for id=$id with message: {$e->getMessage()}");
         }
 
     } // 

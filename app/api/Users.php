@@ -10,8 +10,7 @@ class Users extends MyApiController
         'guest'      => [], 
         'registered' => ['read', 'write'],
         'basic'      => ['read'],
-        'regular'    => ['read', 'write'],
-        'admin'      => ['read', 'write']
+        'regular'    => ['read', 'write']
     ];
 
     function __construct()

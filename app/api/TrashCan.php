@@ -162,17 +162,16 @@ class TrashCan extends MyApiController
                     }                           
                 }
           
-                if (empty($folder)){
-                    // root, sin especificar folder ni id (lista)
-                    if ($this->role=='guest'){
-                        if (!$this->guest_root_access)
-                            Factory::response()->send([]);
-                        else
-                            $_get[] =  [$this->folder_field, NULL];        
-                    }else
-                        if (!$this->is_admin)
-                            $_get[] = ['belongs_to', $this->uid];        
-                }
+                
+                // root, sin especificar folder ni id (lista)
+                if ($this->is_guest()){
+                    if (!$this->guest_root_access)
+                        Factory::response()->send([]);
+
+                }else
+                    if (!$this->is_admin)
+                        $_get[] = ['belongs_to', $this->uid];        
+            
 
                 $_get[] = ['deleted_at', NULL, 'IS NOT'];
 
@@ -257,7 +256,8 @@ class TrashCan extends MyApiController
                 Factory::response()->code(404)->sendError("Register for id=$id does not exists in trash can");
             }
 
-            $data['belongs_to'] = $this->uid; //
+            if (!$this->is_admin)
+                    $_get[] = ['belongs_to', $this->uid];
             
             if (!$this->is_admin && $rows[0]['belongs_to'] != $this->uid){
                 Factory::response()->sendCode(403);
@@ -341,7 +341,8 @@ class TrashCan extends MyApiController
                 Factory::response()->code(404)->sendError("Register for id=$id does not exists in trash can");
             }
 
-            $data['belongs_to'] = $this->uid; //
+            if (!$this->is_admin)
+                $_get[] = ['belongs_to', $this->uid];
             
             if (!$this->is_admin && $rows[0]['belongs_to'] != $this->uid){
                 Factory::response()->sendCode(403);
@@ -385,8 +386,7 @@ class TrashCan extends MyApiController
         if($id == NULL)
             Factory::response()->sendError("Lacks id in request",405);
 
-        $data = Factory::request()->getBody();        
-        $folder = $data['folder'] ?? null;
+        $data = Factory::request()->getBody(); 
 
         try { 
 
