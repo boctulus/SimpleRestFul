@@ -1,6 +1,10 @@
 # TODO
 
+- No debería ser posible ver un 200 (OK) al borrar un registro borrado
+
 - Los roles deben ser simultaneos sumándose los scopes !
+
+- Advertir que se está intentando usar un operador inexistente en la API ejemplo: ne por neq
 
 - Arreglar lo que pasa si un usuario es borrado con soft delete (warnings)
 

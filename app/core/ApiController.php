@@ -495,7 +495,7 @@ abstract class ApiController extends Controller
         $instance = new $model();
         $instance->showDeleted(); //
         $instance->id = $id;
-        $missing = $instance->diffWithSchema($data, ['id', 'belongs_to']);
+        $missing = $instance->diffWithSchema($data, ['id', 'password', 'belongs_to']);
 
         if (!empty($missing))
             Factory::response()->sendError('Lack some properties in your request: '.implode(',',$missing), 400);
@@ -513,7 +513,8 @@ abstract class ApiController extends Controller
                 Factory::response()->code(404)->sendError("Register for id=$id does not exists");
             }
 
-            $data['belongs_to'] = $this->uid; //
+            if (!$this->is_admin)
+                unset($data['belongs_to']); //
 
             if ($folder !== null)
             {
@@ -589,7 +590,8 @@ abstract class ApiController extends Controller
                 Factory::response()->code(404)->sendError("Register for id=$id does not exists");
             }
 
-            $data['belongs_to'] = $this->uid; //
+            if (!$this->is_admin)
+                unset($data['belongs_to']); //
 
             if ($folder !== null)
             {
@@ -652,7 +654,7 @@ abstract class ApiController extends Controller
             $model    = 'simplerest\\models\\'.$this->modelName;
             $instance = new $model($conn);
             $instance->id = $id;
-            $instance->showDeleted(); //
+            #$instance->showDeleted(); //
 
             $rows = $instance->filter(null, ['id', $id]);
             
