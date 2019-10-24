@@ -11,7 +11,11 @@
             echo "localStorage.setItem('expires_in','$expires_in');";    
         
         if (isset($exp))
-            echo "localStorage.setItem('exp', parseInt((new Date).getTime() / 1000) + $expires_in);";      
+            echo "localStorage.setItem('exp', parseInt((new Date).getTime() / 1000) + $expires_in);"; 
+            
+        if (!isset($error)){
+            echo "window.location.replace('/')";
+        }        
     ?>
 
 </script>    
@@ -22,7 +26,5 @@
         echo '<div class="error">';
         echo $error;
         echo '</div>';
-    }else{
-        echo 'OK';
-    }        
+    }     
 ?>

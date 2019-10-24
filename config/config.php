@@ -18,13 +18,13 @@ return [
 	'enabled_auth' => true,
 
 	'access_token' => [
-		'secret_key' =>'BHH#**@())0))@Jhr&@&#()_hrrK@911kk19))K)_!.S>!_)#I@#(',
+		'secret_key' =>'/`D*x!I<T^SH*_~&<#-&^%s~etN,RX`G_|{<+#"-I<{!}*![[}${([-zC<~pX$,e~#[[h~nyW?~:`ak><_b@>@=|$o=?h}!u+U&[##/\(> []T.Yx_J\x|g{\N`h^})\_a/<D#X( m+qb#|-,i>-~.j~(RG&[_*.,`r^LM,.E<V:`v~?;`~#p&<:W;>\%\]~fE}d~m{!u@,"Jt<b-?}A=m]H$-`|[B&@<.u@FAl:u}@>|ft!?|&|@|=@aTC@v\|Oe Gn|Rg}}; !@\@D+~@.;~<V[&yno^U|>{?{:vc`^[S`W?V<E<|[;}]}{|-{o["|}E[Op&$yL%+*}G}(|]..?,w}!#P+,=a(+`<<*^N.:V#$%.lr(%:!|&zM#%F?";=]ABb.;/[xd)#{^J]!~~|){[>a:*]>`%-"~\Fu}LBUW_},J[+,a$(? G,#" |$}VTS%*}K(|[_&:gm%^I/z+[M_E<(.n|j#$-<|]${*{+$[b_*/}m$m^&T^%>[^&!]|k+L',
 		'expiration_time' => 60000,   // seconds
 		'encryption' => 'HS256'			
 	],
 
 	'refresh_token' => [
-		'secret_key' => '$(:T_z{&(=O[c}!.:I\u}$,;X[k}$,@M^h~%*=Y^r{#*<B^e{&/>A`u}"*?J[z}&*:O^e~&+>P]t}$(<U^l|!):U_l{!-;D`j~!)?K\y|$)?K_n{!,<R`b} +<N[f{%.>J]f~#+:G^o|%.?V_q|%(=Y`k|%.>R]a|&(?S^z~ /?N_b}",=P[c}%.;L[m~%)>Q_r{#.>A\p|".<J\q}#(;W`j~ *@O\o{&,?I\i~"*=O`o{$-?V^n{#+:O_f|$.@M\x~$/@I\z~$.=P^z|".?U\p|!(>L_s|%,=J\u~!*;T[y{!-;A\u{ (:V]l}#-@R[o|"(:I\o}&.?D`m~!+@Z^u| /:A^y~#.:A]k|!->B^o|&*;E^m}$)>S\x|"(;T]n}%)@U]q{"+<G\i|!/:R]g|"+=Q_r|#-;G^f}$)>Q_k{ (@X_w}&->N_a~$,?S\t}"/:T[x{&+;D\d|$-:P^v| ,?U_f{ +:W^q|",?G_n~ +<I_g|!.;A^w}!,;E[n|%',
+		'secret_key' => '^~~W?]]t@U|~yKi`b$;:#"F(HD`@K:[~|>d}{o%&{^M^(>d (?]~H@!$ #$}(]%,z~+#^_|b~eD.?hgb],w/E.;$$-(]~\h*)+"N^{,uWFT,!L&=%Y[)[?}p;r}!`/i`BJ?c]]"~&^w!_*XYD-!|.]-`[)R!)x$^=`Y>A`,IR~;|>q]//nPh};;"h>S@p^#)/j}Q^+]&>[F{;J,%&%{y:w|<A]&s[,:.|%?djk=<uZe;-(;}rg:J~|[:oF^.{|R;<wo){+[!H\~*|`V~[G~$gZ~)|K|+)lr[%>$_%>{)\)`~C" ==n#?eH:;&moG,}=|[(:P;;:&|_}tmuZ/W\/o:\&)];~>|]}y\,o-Mm|@;<hX>([?W_};#%@$!y{C(r~,&=]+%.?_?A%!f}=VX$|@*Iu:?<(A/^S\}L|=${$_*P)^"qtetg`~`|fC)K^/%/-s&W e]l}T{:M|{{Z#~/Um*.s$"^&^)NV},!> &"[O&\)?>cv(&#U|||l=~W"{]\$^',
 		'expiration_time' => 315360000,   // seconds
 		'encryption' => 'HS256'	
 	],

@@ -27,16 +27,16 @@ class LoginController extends MyController
 		$google_ctrl = new GoogleController();
 		$res = $google_ctrl->login_or_register();
 
-		if ($res['code'] == 200){
-			$this->view('google_login.php', [
+		if (isset($res['data'])){
+			$this->view('social_login.php', [
 				'title'=>'Google login', 
-				'hidenav'=> false,
+				'hidenav'=> true,
 				'access_token' => $res['data']['access_token'],
 				'expires_in' => $res['data']['expires_in'],
 				'refresh_token' => $res['data']['refresh_token']
 			]);
 		}else {
-			$this->view('google_login.php', [
+			$this->view('social_login.php', [
 				'title'=>'Google login', 
 				'hidenav'=> false,
 				'error' => $res['error']
