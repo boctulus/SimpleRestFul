@@ -66,7 +66,7 @@
 				<div class="text-center social-btn">
 					<a href="#" class="btn btn-primary btn-block"><i class="fa fa-facebook"></i> Sign in with <b>Facebook</b></a>
 					<!--a href="#" class="btn btn-info btn-block"><i class="fa fa-twitter"></i> Sign in with <b>Twitter</b></a-->
-					<a href="#" class="btn btn-danger btn-block"><i class="fa fa-google"></i> Sign in with <b>Google</b></a>
+					<a href="<?= $client->createAuthUrl() ?>" class="btn btn-danger btn-block"><i class="fa fa-google"></i> Sign in with <b>Google</b></a>
 				</div>
 
 				<div class="or-seperator"><i>or</i></div>

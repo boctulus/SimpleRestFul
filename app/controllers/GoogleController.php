@@ -7,13 +7,14 @@ use simplerest\core\Request;
 use simplerest\libs\Database;
 use simplerest\models\UsersModel;
 use simplerest\models\UserRoleModel;
+use simplerest\models\RolesModel;
 use simplerest\libs\Factory;
 use simplerest\libs\Debug;
 use simplerest\core\Controller;
 
 define('GOOGLE_CLIENT_ID', '228180780767-4p8t6nvocukmu44ti57o60n1ck6sokpd.apps.googleusercontent.com');
 define('GOOGLE_CLIENT_SECRET', 'JByioBo6mRiVBkhW3ldylYKD');
-define('GOOGLE_REDIRECT_URL', 'http://simplerest.tk/google/login_or_register');
+define('GOOGLE_REDIRECT_URL', 'http://simplerest.tk/login/google_login');
 
 // fusionar con LoginController
 class GoogleController extends MyController
@@ -41,10 +42,8 @@ class GoogleController extends MyController
         $this->client = $client;
     }    
 
-    function index(){        
-        $this->view('google_login.php', ['client'=>$this->client, 
-                                        'redirect_uri' => GOOGLE_REDIRECT_URL
-                                        ]);
+    function getClient(){
+        return $this->client;
     }
 
     protected function gen_jwt(array $props, string $token_type){
@@ -72,7 +71,7 @@ class GoogleController extends MyController
 
             $this->client->setAccessToken($auth);
         }else
-            Factory::response()->sendError('Invalid', 400);
+            return ['error' => 'Invalid', 'code' => 400];
 
         /*
         if ($this->client->isAccessTokenExpired() )    
@@ -84,7 +83,7 @@ class GoogleController extends MyController
         }
         */
 
-        Debug::debug($auth);        
+        //Debug::debug($auth);        
         /*
             Array
             (
@@ -120,7 +119,7 @@ class GoogleController extends MyController
             ["exp"]=> int(1571718220) } 
         */
 
-        Debug::debug($payload);
+        //Debug::debug($payload);
         
         if (!$payload)
             exit;
@@ -135,41 +134,60 @@ class GoogleController extends MyController
             if (count($rows)>0){
                 // Email already exists
                 $uid = $rows[0]['id'];
+
+                $ur = new UserRoleModel($conn);
+                $rows = $ur->filter(['role_id'],['user_id', $uid]);
+
+                $roles = [];
+                if (count($rows) > 0){         
+                    $r = new RolesModel();           
+                    foreach ($rows as $row){
+                        $roles[] = $r->getRoleName($row['role_id']);
+                    }
+                }
             }else{
                 $data['email'] = $payload['email'];
                 $data['firstname'] = $payload['given_name'] ?? NULL;
                 $data['lastname'] = $payload['family_name'] ?? NULL;
-                $data['enabled'] = 1;
-                $data['quota']= 10000;
-
+                
                 $uid = $u->create($data);
                 if (empty($uid))
-                    Factory::response()->sendError("Error in user registration!");
+                    return ['error' => 'Error in user registration!', 'code' => 500];
     
                 if ($u->inSchema(['belongs_to'])){
                     $u->update(['belongs_to' => $uid]);
                 }
     
                 $ur = new UserRoleModel($conn);
-                $id = $ur->create([ 'user_id' => $uid, 'role_id' => 1 ]);  // registered        
-            }
-                    
-            /*
-                Da para pensar si debe de haber un solo rol y un rol por defecto... creería que NO 
+                $id = $ur->create([ 'user_id' => $uid, 'role_id' => 1 ]);  // registered     
+                
+                $r = new RolesModel();
+                $registered = $r->getRoleName(1);
+                $roles = [$registered];
+            }  
+            
 
-            */
-            $access  = $this->gen_jwt(['uid' => $uid, 'role' => 1, 'google_auth' => $auth], 'access_token');
-            $refresh = $this->gen_jwt(['uid' => $uid, 'role' => 1, 'google_auth' => $auth], 'refresh_token');
+            $my_payload = [
+                'uid' => $uid, 
+                'roles' => $roles
+                //'google_auth' => $auth
+            ];
 
-            Factory::response()->send([ 
-                                        'access_token'=> $access,
-                                        'token_type' => 'bearer', 
-                                        'expires_in' => $this->config['access_token']['expiration_time'],
-                                        'refresh_token' => $refresh                                         
-                                        // 'scope' => 'read write'
-                                        ]);
+            $access  = $this->gen_jwt($my_payload, 'access_token');
+            $refresh = $this->gen_jwt($my_payload, 'refresh_token');
+
+            return ['code' => 200,  
+                    'data' => [ 
+                                'access_token'=> $access,
+                                'token_type' => 'bearer', 
+                                'expires_in' => $this->config['access_token']['expiration_time'],
+                                'refresh_token' => $refresh                                         
+                                // 'scope' => 'read write'
+                    ],
+                    'error' => ''
+            ];
         }catch(\Exception $e){
-            Factory::response()->sendError($e->getMessage());
+            return ['error' => $e->getMessage(), 'code' => 500];
         }	
 
     }

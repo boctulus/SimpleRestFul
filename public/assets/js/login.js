@@ -47,7 +47,6 @@
 					localStorage.setItem('refresh_token',data.refresh_token);
 					localStorage.setItem('expires_in',data.expires_in);
 					localStorage.setItem('exp', parseInt((new Date).getTime() / 1000) + data.expires_in);
-					localStorage.setItem('sid',data.sid);
 					console.log('Tokens obtenidos',data);
 					window.location = base_url; 
 				}else{		
@@ -69,7 +68,6 @@
 		
 		obj.email = $('#email').val();	
 		obj.password = $('#password').val();
-		obj.role = $('#role').val();	
 		
 		// get form data
 		//obj = this.serializeObject();
@@ -85,8 +83,6 @@
 					localStorage.setItem('refresh_token',data.refresh_token);
 					localStorage.setItem('expires_in',data.expires_in);
 					localStorage.setItem('exp', parseInt((new Date).getTime() / 1000) + data.expires_in);
-					//localStorage.setItem('sid',data.sid);
-					localStorage.setItem('role', obj.role);
 					console.log('Tokens obtenidos');
 					window.location = base_url;
 				}else{	
