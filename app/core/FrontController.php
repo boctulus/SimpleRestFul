@@ -45,10 +45,9 @@ class FrontController
             $class_name = "${namespace}${class_name}Controller";
         }
        
-        if (strpos($class_name,'&') !== false){
+        if (strpos($class_name,'&') !== false)
             Response::getInstance()->send("Malformed url (& instead of ?)", 400); 
-        }
-
+            
         if (!class_exists($class_name))
             Response::getInstance()->send("Internal error - controller class '$class_name' not loaded", 500);  
 
@@ -63,7 +62,7 @@ class FrontController
                 Response::getInstance()->send("Not authorized for $controller:$method", 403);
             }
         }
-            
+
         $data = call_user_func_array([$controller_obj, $method], $params);
         Response::getInstance()->send($data);
         exit;

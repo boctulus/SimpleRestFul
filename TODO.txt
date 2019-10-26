@@ -8,6 +8,8 @@
 
 - Convertir automáticamente condiciones simples de tipo clave => valor en [clave, valor] para filter
 
+- Terminar conector de Facebook que requiere SSL
+
 - Usar un envelope como en Instagram
 
 Every response is contained by an envelope. That is, each response has a predictable set of keys with which you can expect to interact:
@@ -99,9 +101,7 @@ https://stackoverflow.com/a/49611482/980631
 
 Swagger is a widely-used tool to document REST APIs that provides a way to explore the use of a specific API, therefore allowing developers to understand the underlying semantic behavior. It’s a declarative way of adding documentation using annotations which further generates a JSON describing APIs and their usage.
 
-- Al generar los modelos..... modificar la tabla correspondiente agregando el campo belongs_to 
-
-ALTER TABLE `products` ADD `belongs_to` INT NOT NULL AFTER `cost`, ADD INDEX (`belongs_to`);
+- Al generar los modelos..... modificar la tabla correspondiente agregando el campo `deleted_at` y `belongs_to` ? 
 
 - Ofrecer la forma de filtrado compatible con JSON:API
 
@@ -158,7 +158,6 @@ https://lumen.laravel.com/docs/6.x/database
 - Implementar mi data-validator
 - Generar Modelos con sus schemas a partir de la DB como con CRUDO usando un comando.
 - Probar en Windows
-- Investigar a la competencia en frameworks MVC y API Rest
 - Form de registro (front)
 - Paginador (front)
 - Controles más complejos como checkbox, radio, combobox

@@ -18,6 +18,10 @@ class DumbController extends Controller
         parent::__construct();
     }
 
+    function index(){
+        return 'INDEX';
+    }
+
     function sum($a, $b){
         $res = (int) $a + (int) $b;
         return  "$a + $b = " . $res;

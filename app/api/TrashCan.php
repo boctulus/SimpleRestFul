@@ -21,9 +21,13 @@ class TrashCan extends MyApiController
             $_get  = Factory::request()->getQuery();
 
             $entity = Arrays::shift($_get,'entity'); 
+            $pretty = Arrays::shift($_get,'pretty');
 
             if (empty($entity))
                 Factory::response()->sendError('Entity is required', 400);
+
+            if (strpos($entity,'?') !== false)
+                Factory::response()->sendError("Malformed url (? instead of &)", 400); 
 
             $this->modelName = ucfirst($entity) . 'Model';
             $this->model_table = strtolower($entity);
@@ -178,14 +182,11 @@ class TrashCan extends MyApiController
                 //var_dump($_get); ////
                 //var_export($_get); 
 
-                //if (!empty($_get)){                    
-                    $rows = $instance->filter($fields, $_get, null, $order, $limit, $offset);
-                    Factory::response()->code(200)->send($rows); 
-                //}else {
-                //    $rows = $instance->fetchAll($fields, $order, $limit, $offset);
-                //    Factory::response()->code(200)->send($rows); 
-                //}	
-        
+                if (strtolower($pretty) == 'true' || $pretty == 1)
+                    Factory::response()->setPretty(true);
+                                  
+                $rows = $instance->filter($fields, $_get, null, $order, $limit, $offset);
+                Factory::response()->code(200)->send($rows); 
             }
 
         } catch (\Exception $e) {
