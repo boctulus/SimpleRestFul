@@ -13,9 +13,17 @@ class FrontController
         $req = Request::getInstance();
 
         $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+                
+        /*
         if (strpos($path, $config['BASE_URL']) === 1) {
             $path = substr($path, strlen($config['BASE_URL'])+1) ;
+        }elseif (strpos($path, $config['BASE_URL']) === 0) {
+            $path = substr($path, strlen($config['BASE_URL'])) ;
         }
+        */
+
+        if ($path === false)
+            Response::getInstance()->sendError('Malformed url', 400); 
 
         $_params = explode('/', $path);
 
@@ -46,13 +54,13 @@ class FrontController
         }
        
         if (strpos($class_name,'&') !== false)
-            Response::getInstance()->send("Malformed url (& instead of ?)", 400); 
+            Response::getInstance()->sendError("Malformed url (& instead of ?)", 400); 
             
         if (!class_exists($class_name))
-            Response::getInstance()->send("Internal error - controller class '$class_name' not loaded", 500);  
+            Response::getInstance()->sendError("Internal error - controller class '$class_name' not loaded", 500);  
 
         if (!method_exists($class_name, $method))
-            Response::getInstance()->send("Internal error - method '$method' does not exist in $class_name", 500); 
+            Response::getInstance()->sendError("Internal error - method '$method' does not exist in $class_name", 500); 
                 
         $controller_obj = new $class_name();
 
