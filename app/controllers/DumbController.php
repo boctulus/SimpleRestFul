@@ -135,7 +135,9 @@ class DumbController extends Controller
         $conn    = Database::getConnection();
         $u = new UsersModel($conn);
     
-        Factory::response()->send($u->fetchAll(null, ['id'=>'DESC']));
+        echo '<pre>';
+        Factory::response()->setPretty(true)->send($u->fetchAll(null, ['id'=>'DESC']));
+        echo '</pre>';
     }
 
     function get_user($id){

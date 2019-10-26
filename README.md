@@ -16,13 +16,13 @@ IN / NOT IN
 
     GET /api/products?name=Vodka,Wisky,Tekila
     GET /api/products?name[in]=Vodka,Wisky,Tekila
-    GET /api/products?name[notin]=CocaCola,7up
+    GET /api/products?name[notIn]=CocaCola,7up
 
 ### String comparisons   
 
     contains
-    startswith
-    endswith
+    startsWith
+    endsWith
 
 Example
 
@@ -78,6 +78,9 @@ Example:
     GET /api/products?trashed=true
     GET /api/products/157?trashed=true
     
+### Pretty print 
+
+    GET /api/products?pretty=true
 
 ## POST <CREATE>
 

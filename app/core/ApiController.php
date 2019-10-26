@@ -236,11 +236,9 @@ abstract class ApiController extends Controller
             if ($exclude != null)
                 $instance->hide($exclude);
             
-            ///
             $trashed = Arrays::shift($_get,'trashed');                  
-            ///
-
-            $folder = Arrays::shift($_get,'folder');
+            $pretty  = Arrays::shift($_get,'pretty');
+            $folder  = Arrays::shift($_get,'folder');
 
             foreach ($_get as $key => $val){
                 if ($val == 'NULL' || $val == 'null'){
@@ -326,11 +324,11 @@ abstract class ApiController extends Controller
                                         unset($_get[$key]);
                                         $_get[] = [$campo, '%'.$v.'%', 'like'];
                                     break;
-                                    case 'startswith':
+                                    case 'startsWith':
                                         unset($_get[$key]);
                                         $_get[] = [$campo, $v.'%', 'like'];
                                     break;
-                                    case 'endswith':
+                                    case 'endsWith':
                                         unset($_get[$key]);
                                         $_get[] = [$campo, '%'.$v, 'like'];
                                     break;
@@ -341,7 +339,7 @@ abstract class ApiController extends Controller
                                             $_get[] = [$campo, $vals, 'IN']; 
                                         }                                         
                                     break;
-                                    case 'notin':
+                                    case 'notIn':
                                         if (strpos($v, ',')!== false){    
                                             $vals = explode(',', $v);
                                             unset($_get[$key]);
@@ -412,11 +410,14 @@ abstract class ApiController extends Controller
                     $_get[] = ['belongs_to', $f->belongs_to];
                 }
 
-                if ($trashed)
+                if (strtolower($trashed) == 'true' || $trashed == 1)
                     $instance->showDeleted();
 
                 //var_dump($_get); ////
                 //var_export($_get); 
+
+                if (strtolower($pretty) == 'true' || $pretty == 1)
+                    Factory::response()->setPretty(true);
 
                 if (!empty($_get)){                    
                     $rows = $instance->filter($fields, $_get, null, $order, $limit, $offset);

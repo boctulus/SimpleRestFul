@@ -9,6 +9,7 @@ class Response
     static protected $http_code_msg = '';
     static protected $instance = NULL;
     static protected $version = '1.1';
+    static protected $pretty  = false;
 
 
     protected function __construct() { }
@@ -47,6 +48,20 @@ class Response
         return static::getInstance();
     }
 
+    public function setPretty($state){
+        static::$pretty = $state;
+        return static::getInstance();
+    }
+
+    public function encode($data){
+        $options = 0;
+
+        if (static::$pretty)
+            $options = $options | JSON_PRETTY_PRINT;
+            
+        return json_encode($data, $options);  
+    }
+
     public function send($data, int $http_code = NULL){
         $http_code = $http_code != NULL ? $http_code : static::$http_code;
         
@@ -57,7 +72,7 @@ class Response
             header(trim('HTTP/'.static::$version.' '.$http_code.' '.static::$http_code_msg));
         
         if (is_array($data) || is_object($data))
-            $data = json_encode($data);
+            $data = $this->encode($data);
 
         echo $data; 
         exit;  	
@@ -75,7 +90,7 @@ class Response
         if ($http_code != NULL)
             header(trim('HTTP/'.static::$version.' '.$http_code.' '.static::$http_code_msg));
        
-        echo json_encode($data); 
+        echo $this->encode($data); 
         exit;  	
     }
 

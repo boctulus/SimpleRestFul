@@ -45,12 +45,16 @@ class FrontController
             $class_name = "${namespace}${class_name}Controller";
         }
        
+        if (strpos($class_name,'&') !== false){
+            Response::getInstance()->send("Malformed url (& instead of ?)", 400); 
+        }
+
         if (!class_exists($class_name))
-            throw new \Exception ("Controller class '$class_name' not loaded");  
+            Response::getInstance()->send("Internal error - controller class '$class_name' not loaded", 500);  
 
         if (!method_exists($class_name, $method))
-            throw new \Exception ("Method '$method' does not exist in $class_name ***"); 
-                   
+            Response::getInstance()->send("Internal error - method '$method' does not exist in $class_name", 500); 
+                
         $controller_obj = new $class_name();
 
         // Only for API Rest

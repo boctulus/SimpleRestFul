@@ -3,21 +3,18 @@
 namespace simplerest\controllers;
 
 use Exception;
-use simplerest\core\Request;
-use simplerest\libs\Database;
+use simplerest\core\Controller;
 use simplerest\models\UsersModel;
 use simplerest\models\UserRoleModel;
 use simplerest\models\RolesModel;
-use simplerest\libs\Factory;
 use simplerest\libs\Debug;
-use simplerest\core\Controller;
 
 define('GOOGLE_CLIENT_ID', '228180780767-4p8t6nvocukmu44ti57o60n1ck6sokpd.apps.googleusercontent.com');
 define('GOOGLE_CLIENT_SECRET', 'JByioBo6mRiVBkhW3ldylYKD');
 define('GOOGLE_REDIRECT_URL', 'http://simplerest.tk/login/google_login');
 
 // fusionar con LoginController
-class GoogleController extends MyController
+class GoogleController extends Controller
 {
     protected $client;
 
@@ -67,7 +64,7 @@ class GoogleController extends MyController
             $auth = $this->client->fetchAccessTokenWithAuthCode($_GET['code']);
 
             if (isset($auth['error']))
-                Factory::response()->sendError($auth['error_description'], 400);
+                return ['error' => $auth['error_description'], 'code' => 400];
 
             $this->client->setAccessToken($auth);
         }else
@@ -190,9 +187,7 @@ class GoogleController extends MyController
             return ['error' => $e->getMessage(), 'code' => 500];
         }	
 
-    }
-
-        
+    }        
 
 	
 }

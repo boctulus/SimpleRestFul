@@ -98,11 +98,11 @@ class TrashCan extends MyApiController
                                         unset($_get[$key]);
                                         $_get[] = [$campo, '%'.$v.'%', 'like'];
                                     break;
-                                    case 'startswith':
+                                    case 'startsWith':
                                         unset($_get[$key]);
                                         $_get[] = [$campo, $v.'%', 'like'];
                                     break;
-                                    case 'endswith':
+                                    case 'endsWith':
                                         unset($_get[$key]);
                                         $_get[] = [$campo, '%'.$v, 'like'];
                                     break;
@@ -113,7 +113,7 @@ class TrashCan extends MyApiController
                                             $_get[] = [$campo, $vals, 'IN']; 
                                         }                                         
                                     break;
-                                    case 'notin':
+                                    case 'notIn':
                                         if (strpos($v, ',')!== false){    
                                             $vals = explode(',', $v);
                                             unset($_get[$key]);
