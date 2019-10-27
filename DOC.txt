@@ -210,19 +210,8 @@ class Products extends MyApiController
 
     // ...
 
-Para visualizar registros borrados filtrar con trashed=true, ejemplo:
 
-	GET /api/products?trashed=true
-
-La hacer un GET sobre un registro en particular se puede visualizar aún si tiene un soft delete. Se puede observar que el campo `deleted_at` guarda la fecha de borrado.
-
-Para recuperar un registro borrado con soft delete se puede lograr seteando "null" el campo `deleted_at`
-
-	PATCH api/products/125
-
-	{
-		"deleted_at": "null"
-	}
+La única forma de visualizar registros borrados de forma "suave" así como recuperarlos o borrarlos definitivamente es mediante la papelera con la ventaja de que ésta tiene sus propios permisos.
 
 
 ### La Papelera

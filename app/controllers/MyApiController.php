@@ -10,7 +10,7 @@ class MyApiController extends ApiController
     protected $guest_root_access;
     protected $soft_delete = true;
     
-    // ALC   
+    // ACL   
     protected $scope = [
         'guest'      => [],  
         'registered' => [],

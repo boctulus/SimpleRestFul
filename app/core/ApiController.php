@@ -235,8 +235,7 @@ abstract class ApiController extends Controller
 
             if ($exclude != null)
                 $instance->hide($exclude);
-            
-            $trashed = Arrays::shift($_get,'trashed');                  
+                       
             $pretty  = Arrays::shift($_get,'pretty');
             $folder  = Arrays::shift($_get,'folder');
 
@@ -265,8 +264,6 @@ abstract class ApiController extends Controller
 
             if ($id != null)
             {
-                #$instance->showDeleted(); //
-
                 $_get = [
                     ['id', $id]
                 ];  
@@ -410,9 +407,6 @@ abstract class ApiController extends Controller
                     $_get[] = ['belongs_to', $f->belongs_to];
                 }
 
-                if (strtolower($trashed) == 'true' || $trashed == 1)
-                    $instance->showDeleted();
-
                 //var_dump($_get); ////
                 //var_export($_get); 
 
@@ -533,8 +527,13 @@ abstract class ApiController extends Controller
                 Factory::response()->code(404)->sendError("Register for id=$id does not exists");
             }
 
-            if (!$this->is_admin)
-                unset($data['belongs_to']); //
+            if (!$this->is_admin){
+                if (isset($data['belongs_to']))
+                    unset($data['belongs_to']);
+
+                if (isset($data['deleted_at']))
+                    unset($data['deleted_at']);
+            }
 
             if ($folder !== null)
             {
@@ -610,8 +609,13 @@ abstract class ApiController extends Controller
                 Factory::response()->code(404)->sendError("Register for id=$id does not exists");
             }
 
-            if (!$this->is_admin)
-                unset($data['belongs_to']); //
+            if (!$this->is_admin){
+                if (isset($data['belongs_to']))
+                    unset($data['belongs_to']);
+
+                if (isset($data['deleted_at']))
+                    unset($data['deleted_at']);
+            }
 
             if ($folder !== null)
             {

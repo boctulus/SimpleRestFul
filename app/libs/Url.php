@@ -17,5 +17,32 @@ class Url {
     static function section($view){
         include VIEWS_PATH . $view;
     }
+
+    /**
+     * url_check - complement for parse_url
+     *
+     * @param  string $url
+     *
+     * @return bool
+     */
+    static function url_check(string $url){
+        $sym = null;
+    
+        $len = strlen($url);
+        for ($i=0; $i<$len; $i++){
+            if ($url[$i] == '?'){
+                if ($sym == '?' || $sym == '&')
+                    return false;
+    
+                $sym = '?';
+            }elseif ($url[$i] == '&'){
+                if ($sym === null)
+                    return false;
+    
+                $sym = '&';
+            } 
+        }
+        return true;
+    }
 }
 

@@ -10,6 +10,10 @@
 
 - Terminar conector de Facebook que requiere SSL
 
+- Intentar atajar el error al buscar un campo que no existe:
+
+http://simplerest.lan/api/products?campo=valor
+
 - Usar un envelope como en Instagram
 
 Every response is contained by an envelope. That is, each response has a predictable set of keys with which you can expect to interact:
