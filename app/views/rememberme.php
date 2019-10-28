@@ -55,21 +55,18 @@
 	}
 </style>
 
+
 <div class="row vcenter">
 	<div class="col-xs-12 col-sm-12 col-md-6 col-md-push-3">
 		<h1 style="font-size: 3em; padding-bottom: 0.5em;">Login</h1>
 
 		<form action="#" onsubmit="return false;">
 
-			<div class="form-group" >
-
-				<div class="text-center social-btn">
-					<a href="<?= $fb_auth_url ?>" class="btn btn-primary btn-block"><i class="fa fa-facebook"></i> Sign in with <b>Facebook</b></a>
-					<!--a href="#" class="btn btn-info btn-block"><i class="fa fa-twitter"></i> Sign in with <b>Twitter</b></a-->
-					<a href="<?= $gl_auth_url ?>" class="btn btn-danger btn-block"><i class="fa fa-google"></i> Sign in with <b>Google</b></a>
+			<div class="form-group" >		
+					
+				<div style="text-align:right; margin-bottom:1em;">
+					Tiene cuenta? <a href="/login">Ingresar</a>
 				</div>
-
-				<div class="or-seperator"><i>or</i></div>
 
 				<div class="input-group" style="margin-bottom:1em;">
 					<span class="input-group-addon">
@@ -77,29 +74,16 @@
 					</span>
 					<input type="email" class="form-control" id="email" placeholder="email" required="required">
 				</div>
-
-				<div class="input-group" style="margin-bottom:1em;">
-					<span class="input-group-addon">
-					<i class="glyphicon glyphicon-lock"></i>
-					</span>
-					<input type="password" class="form-control" id="password" placeholder="Password" required="required">
-				</div>
 				
-				<div style="color:red; text-align: center;" id="loginError"></div>
+				<div style="color:red; text-align: center;" id="remembermeError"></div>
 			
 			</div>
-
-			<div style="margin-bottom:1em;">
-				<a href="/login/rememberme">Recordar contraseña</a>
-			</div>	
 
 			<div class="form-group">
-				<button type="submit" class="btn btn-primary btn-lg btn-block login-btn" onClick="login()">Login</button>
+				<button type="submit" class="btn btn-primary btn-lg btn-block login-btn" onClick="rememberme()">Recuérdame</button>
 			</div>
-			
-			<div style="text-align:right;">
-				No registrado? <a href="/login/signup">regístrese</a>
-			</div>	
+
+			No registrado? <a href="/login/signup">regístrese</a>
 		</form>		
 		
 	</div>

@@ -12,10 +12,12 @@
         
         if (isset($exp))
             echo "localStorage.setItem('exp', parseInt((new Date).getTime() / 1000) + $expires_in);"; 
-            
+           
+          
         if (!isset($error)){
             echo "window.location.replace('/')";
-        }        
+        } 
+              
     ?>
 
 </script>    

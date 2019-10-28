@@ -7,15 +7,11 @@ use simplerest\core\Controller;
 use simplerest\core\interfaces\IAuth;
 use simplerest\libs\Factory;
 use simplerest\models\UsersModel;
-use simplerest\models\SessionsModel;
 use simplerest\models\RolesModel;
 use simplerest\models\UserRoleModel;
 use simplerest\libs\Debug;
-use simplerest\libs\crypto\SaferCrypto;
 
-/*
-    Debería ser un Singletón
-*/
+
 class AuthController extends Controller implements IAuth
 {
     protected $must_have = [];
@@ -38,11 +34,6 @@ class AuthController extends Controller implements IAuth
 
     function addMustNotHave(array $conditions, $http_code, $msg) {
         $this->must_not[]  = [ $conditions , $http_code, $msg ];
-    }
-
-    protected function pass_dec($encrypted){
-        $key = hex2bin($this->config['refresh_token']['secret_key']); 
-        return SaferCrypto::decrypt($encrypted, $key, true);
     }
 
     protected function gen_jwt(array $props, string $token_type){
@@ -282,7 +273,7 @@ class AuthController extends Controller implements IAuth
                 
                 return ($payload);
 
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 /*
                 * the token was not able to be decoded.
                 * this is likely because the signature was not able to be verified (tampered token)
@@ -297,4 +288,6 @@ class AuthController extends Controller implements IAuth
 
         return false;
     }
+
+    
 }

@@ -17,6 +17,8 @@ class Model {
 	protected $joins = [];
 	protected $show_deleted = false;
 	protected $conn;
+	protected $where;
+	protected $values = [];
 
 	/*
 		Chequear en cada método si hay una conexión 
@@ -298,6 +300,7 @@ class Model {
 
 		$q  .= ' FROM '.$this->table_name. ' '.$this->table_alias;
 
+		//////////////////
 		$_where = [];
 
 		$vars   = [];
@@ -340,6 +343,8 @@ class Model {
 		}
 
 		$where = implode(" $conjunction ", $_where);
+		///////////
+
 		$shift = substr_count($where, '?');
 		
 		// JOINS
@@ -407,7 +412,149 @@ class Model {
 			return false;	
 	}
 
-	// debería considerar el soft delete !!!!
+	
+	function where(array $conditions, $conjunction = 'AND')
+	{		
+		$_where = [];
+
+		$vars   = [];
+		$ops    = [];
+		if (count($conditions)>0){
+			if(is_array($conditions[Arrays::array_key_first($conditions)])){
+				foreach ($conditions as $cond) {
+					if(is_array($cond[1]) && (empty($cond[2]) || in_array($cond[2], ['IN', 'NOT IN']) )){
+						
+						if($this->schema[$cond[0]] == 'STR')	
+							$cond[1] = array_map(function($e){ return "'$e'";}, $cond[1]);   
+						
+						$in_val = implode(', ', $cond[1]);
+						$_where[] = "$cond[0] $cond[2] ($in_val) ";						
+
+					}else{
+						$vars[]   = $cond[0];
+						$this->values[] = $cond[1];
+
+						if ($cond[1] === NULL && (empty($cond[2]) || $cond[2]=='='))
+							$ops[] = 'IS';
+						else	
+							$ops[] = $cond[2] ?? '=';
+					}	
+				}
+			}else{
+				$vars[]   = $conditions[0];
+				$this->values[] = $conditions[1];
+		
+				if ($conditions[1] === NULL && (empty($conditions[2]) || $conditions[2]== '='))
+					$ops[] = 'IS';
+				else	
+					$ops[] = $conditions[2] ?? '='; 
+			}	
+		}
+
+		foreach($vars as $ix => $var){
+			$_where[] = "$var $ops[$ix] ?";
+		}
+
+		$this->where = implode(" $conjunction ", $_where);
+	}
+
+	/**
+	 * update
+	 * It admits partial updates
+	 *
+	 * @param  array $data
+	 *
+	 * @return mixed
+	 * 
+	 * Al aplicaro, si no existe un WHERE, usar como WHERE el AND de las propiedades del objeto
+	 * 
+	 */
+	function update(array $data)
+	{
+		$vars   = array_keys($data);
+		$values = array_values($data);
+
+		if(!empty($this->fillable) && is_array($this->fillable)){
+			foreach($vars as $var){
+				if (!in_array($var,$this->fillable))
+					throw new \InvalidArgumentException("update: $var is no fillable");
+			}
+		}
+		
+		$set = '';
+		foreach($vars as $ix => $var){
+			$set .= " $var = ?, ";
+		}
+		$set =trim(substr($set, 0, strlen($set)-2));
+
+		if ($this->inSchema(['modified_at'])){
+			$d = new \DateTime();
+			$set .= ', modified_at = "'. $d->format('Y-m-d G:i:s').'"';
+		}   
+
+		$where = (empty($this->where) ? $this->id_name."= ?" : $this->where);
+
+		$q = "UPDATE ".$this->table_name .
+				" SET $set WHERE " . $where;
+	 
+		$st = $this->conn->prepare($q);
+	
+		foreach($values as $ix => $val){
+			if (!isset($this->schema[$vars[$ix]]))
+				throw new \InvalidArgumentException("there is an error near '{$vars[$ix]}'");
+
+			$const = $this->schema[$vars[$ix]];	
+			$st->bindValue($ix +1, $val, constant("PDO::PARAM_{$const}"));
+		}
+
+		$st->bindParam($ix + count($values), $this->{$this->id_name}, \PDO::PARAM_INT); //
+	 
+		if($st->execute())
+			return $st->rowCount();
+		else 
+			return false;	
+	}
+
+	/**
+	 * delete
+	 *
+	 * @param  bool  $soft_delete 
+	 * @return mixed
+	 */
+	function delete($soft_delete = true)
+	{
+		if ($soft_delete){
+			if (!$this->inSchema(['deleted_at'])){
+				throw new \Exception("There is no 'deleted_at' for ".$this->table_name. ' schema');
+			} 
+
+			$d = new \DateTime();
+			$at = $d->format('Y-m-d G:i:s');
+
+			$q = "UPDATE ".$this->table_name.
+				" SET deleted_at = '$at' WHERE ".$this->id_name."= ?";
+	 
+			$st = $this->conn->prepare($q);	
+			
+			$st->bindParam(1, $this->{$this->id_name});
+		
+			if($st->execute())
+				return $st->rowCount();
+			else 
+				return false;	
+		}
+
+		$q = "DELETE FROM ".$this->table_name. ' '.$this->table_alias." WHERE ".$this->id_name." = ?";
+		$st = $this->conn->prepare($q);
+		$st->bindParam(1, $this->{$this->id_name});
+	 
+		if($st->execute())
+			return $st->rowCount();
+		else
+			return false;	
+	}
+
+	// debería considerar el soft delete ?!
 	function exists()
 	{
 		$q  = "SELECT * FROM ".$this->table_name . " WHERE ".$this->id_name."=:id";
@@ -445,7 +592,7 @@ class Model {
 
 		$q = "INSERT INTO ".$this->table_name. ' '.$this->table_alias." ($str_vars) VALUES ($str_vals)";
 		$st = $this->conn->prepare($q);
-	 
+		
 		foreach($vals as $ix => $val){
 			//if (!isset($this->schema[$vars[$ix]]))  # posible dupe
 			//	throw new InvalidArgumentException("there is an error near '{$vars[$ix]}'");
@@ -460,98 +607,7 @@ class Model {
 		}else
 			return false;
 	}
-
-	
-	/**
-	 * update
-	 * It admits partial updates
-	 *
-	 * @param  array $data
-	 *
-	 * @return mixed
-	 */
-	function update(array $data)
-	{
-		$vars   = array_keys($data);
-		$values = array_values($data);
-
-		if(!empty($this->fillable) && is_array($this->fillable)){
-			foreach($vars as $var){
-				if (!in_array($var,$this->fillable))
-					throw new \InvalidArgumentException("update: $var is no fillable");
-			}
-		}
 		
-		$set = '';
-		foreach($vars as $ix => $var){
-			$set .= " $var = :$var, ";
-		}
-		$set =trim(substr($set, 0, strlen($set)-2));
-
-		if ($this->inSchema(['modified_at'])){
-			$d = new \DateTime();
-			$set .= ', modified_at = "'. $d->format('Y-m-d G:i:s').'"';
-		}   
-
-		$q = "UPDATE ".$this->table_name.
-				" SET $set WHERE ".$this->id_name."= :id";
-	 
-		$st = $this->conn->prepare($q);
-	
-		foreach($values as $ix => $val){
-			if (!isset($this->schema[$vars[$ix]]))
-				throw new \InvalidArgumentException("there is an error near '{$vars[$ix]}'");
-
-			$const = $this->schema[$vars[$ix]];	
-			$st->bindValue(":{$vars[$ix]}", $val, constant("PDO::PARAM_{$const}"));
-		}
-		$st->bindParam(':id', $this->{$this->id_name});
-	 
-		if($st->execute())
-			return $st->rowCount();
-		else 
-			return false;	
-	}
-
-	/**
-	 * delete
-	 *
-	 * @param  bool  $soft_delete 
-	 * @return mixed
-	 */
-	function delete($soft_delete = true)
-	{
-		if ($soft_delete){
-			if (!$this->inSchema(['deleted_at'])){
-				throw new \Exception("There is no 'deleted_at' for ".$this->table_name. ' schema');
-			} 
-
-			$d = new \DateTime();
-			$at = $d->format('Y-m-d G:i:s');
-
-			$q = "UPDATE ".$this->table_name.
-				" SET deleted_at = '$at' WHERE ".$this->id_name."= :id";
-	 
-			$st = $this->conn->prepare($q);	
-			
-			$st->bindParam(':id', $this->{$this->id_name});
-		
-			if($st->execute())
-				return $st->rowCount();
-			else 
-				return false;	
-		}
-
-		$q = "DELETE FROM ".$this->table_name. ' '.$this->table_alias." WHERE ".$this->id_name." = ?";
-		$st = $this->conn->prepare($q);
-		$st->bindParam(1, $this->{$this->id_name});
-	 
-		if($st->execute())
-			return $st->rowCount();
-		else
-			return false;	
-	}
-
 	/*
 		'''Reflection'''
 	*/

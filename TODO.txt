@@ -1,5 +1,7 @@
 # TODO
 
+- Corregir: al tener `belongs_to` como nullable en el modelo (en Users por ejemplo)... revienta! 
+
 - Recuperar contraseña
 
 - Advertir que se está intentando usar un operador inexistente en la API ejemplo: ne por neq

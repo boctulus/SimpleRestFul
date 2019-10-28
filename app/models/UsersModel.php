@@ -17,8 +17,8 @@ class UsersModel extends Model
 							'deleted_at',
 							'belongs_to'
 	];
-	protected $nullable = ['id', 'firstname', 'lastname', 'deleted_at', 'belongs_to'];
-	protected $hidden   = ['password', 'belongs_to'];
+	protected $nullable = ['id', 'firstname', 'lastname', 'deleted_at', 'belongs_to', 'confirmed_email'];
+	protected $hidden   = ['password', /* 'belongs_to', */ 'confirmed_email'];
 
 	/*
 		Types are INT, STR and BOOL among others
@@ -27,6 +27,7 @@ class UsersModel extends Model
 	protected $schema = [
 		'id' => 'INT',
 		'email' => 'STR',
+		'confirmed_email' => 'INT',
 		'password' => 'STR',
 		'firstname' => 'STR',
 		'lastname'=> 'STR',
