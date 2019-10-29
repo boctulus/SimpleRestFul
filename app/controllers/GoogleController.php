@@ -126,14 +126,14 @@ class GoogleController extends Controller
             $conn = $this->getConnection();	
             $u = new UsersModel($conn);
 
-            //	
-            $rows = $u->filter(['id'],['email', $payload['email']]);
+            // exits	
+            $rows = $u->where(['email', $payload['email']])->get(['id']);
             if (count($rows)>0){
                 // Email already exists
                 $uid = $rows[0]['id'];
 
                 $ur = new UserRoleModel($conn);
-                $rows = $ur->filter(['role_id'],['user_id', $uid]);
+                $rows = $ur->where(['user_id', $uid])->get(['role_id']);
 
                 $roles = [];
                 if (count($rows) > 0){         

@@ -65,7 +65,7 @@ class TrashCan extends MyApiController
                 if (!$this->is_admin)
                         $_get[] = ['belongs_to', $this->uid];
 
-                $rows = $instance->filter($fields, $_get); 
+                $rows = $instance->where($_get)->get($fields); 
                 if (empty($rows))
                     Factory::response()->sendError('Not found in trash can', 404);
                 else
@@ -185,7 +185,7 @@ class TrashCan extends MyApiController
                 if (strtolower($pretty) == 'true' || $pretty == 1)
                     Factory::response()->setPretty(true);
                                   
-                $rows = $instance->filter($fields, $_get, null, $order, $limit, $offset);
+                $rows = $instance->where($_get)->get($fields, $order, $limit, $offset);
                 Factory::response()->code(200)->send($rows); 
             }
 
@@ -236,8 +236,7 @@ class TrashCan extends MyApiController
         ///
 
         $instance->showDeleted(); //
-        $instance->id = $id;
-        $missing = $instance->diffWithSchema($data, ['id', 'belongs_to']);
+         $missing = $instance->diffWithSchema($data, ['id', 'belongs_to']);
 
         if (!empty($missing))
             Factory::response()->sendError('Lack some properties in your request: '.implode(',',$missing), 400);
@@ -246,12 +245,10 @@ class TrashCan extends MyApiController
             $conn = Database::getConnection();
             $instance->setConn($conn);
 
-            $instance->where(['id', $id]); ///*
-
-            $rows = $instance->filter(null, [
+            $rows = $instance->where([
                 ['id', $id],
                 ['deleted_at', NULL, 'IS NOT']
-            ]);
+            ])->get();
 
             if (count($rows) == 0){
                 Factory::response()->code(404)->sendError("Register for id=$id does not exists in trash can");
@@ -330,13 +327,12 @@ class TrashCan extends MyApiController
             $trashed = $data['trashed'] ?? true;                  
             ///
 
-            $instance->where(['id', $id]);
             $instance->showDeleted(); //
 
-            $rows = $instance->filter(null, [
+            $rows = $instance->where([
                 ['id', $id],
                 ['deleted_at', NULL, 'IS NOT']
-            ]);
+            ])->get();
             
             if (count($rows) == 0){
                 Factory::response()->code(404)->sendError("Register for id=$id does not exists in trash can");
@@ -408,10 +404,10 @@ class TrashCan extends MyApiController
             $instance->id = $id;
 
             $instance->showDeleted(); //
-            $rows = $instance->filter(null, [
+            $rows = $instance->where([
                 ['id', $id],
                 ['deleted_at', NULL, 'IS NOT']
-            ]);
+            ])->get();
             
             if (count($rows) == 0){
                 Factory::response()->code(404)->sendError("Register for id=$id does not exists in trash");

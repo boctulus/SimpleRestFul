@@ -77,43 +77,58 @@ class DumbController extends Controller
     function filter_products(){
         $conn    = Database::getConnection();
         
-        $p = new ProductsModel($conn);
-        //$p->showDeleted(); 
-
         /*
-        Debug::debug($p->filter(null, [ 
+        Debug::debug((new ProductsModel($conn))->showDeleted()->where([ 
             ['size', '3L']
-        ]));
+        ])->get());
         */
-
-        Debug::debug($p->filter(null, [ 
-                ['name', ['Vodka', 'Wisky', 'Tekila']], // IN 
-                ['belongs_to', 90]
-        ]));
+    
+        /*
+        Debug::debug((new ProductsModel($conn))->where([ 
+            ['name', ['Vodka', 'Wisky', 'Tekila','CocaCola']], // IN 
+            ['belongs_to', 90]
+        ])->get());
+        */  
+        
+        $_get = array (
+            0 => 
+            array (
+              0 => 'name',
+          1 => 
+              array (
+                0 => 'Tekila',
+          1 => 'Vodka',
+          2 => 'Wisky',
+          3 => 'Juice',
+              ),
+            ),
+          );
+          
+        Debug::debug((new ProductsModel($conn))->where($_get)->get());  
 
         /*
-        Debug::debug($p->filter(null, [ 
+        Debug::debug(Database::table('products')->where([ 
             ['name', ['CocaCola', 'PesiLoca']], 
             ['cost', 550, '>='],
             ['cost', [100, 200]]
-        ], 'OR'));    
+        ], 'OR')->get());    
 
-        Debug::debug($p->filter(null, [ 
+        Debug::debug(Database::table('products')->where([ 
             ['name', ['CocaCola', 'PesiLoca', 'Wisky', 'Vodka'], 'NOT IN']
-        ]));
+        ])->get());
 
         // implicit 'AND'
-        Debug::debug($p->filter(null, [ 
+        Debug::debug(Database::table('products')->where([ 
             ['cost', 200, '<'],
             ['name', 'CocaCola'] 
-        ]));        
+        ])->get());        
 
-        Debug::debug($p->filter(null, [ 
+        Debug::debug(Database::table('products')->where([ 
             ['cost', 200, '>='],
             ['cost', 270, '<=']
-        ]));
+        ])->get());
         */
-    
+            
     }
 
     function joins(){
@@ -121,21 +136,21 @@ class DumbController extends Controller
         $rows =   $o->join('folders', 'op.folder_id', '=',  'folders.id')
                     ->join('users', 'folders.belongs_to', '=', 'users.id')
                     ->join('user_role', 'users.id', '=', 'user_role.user_id')
-                    ->join('roles', 'user_role.role_id', '=', 'roles.id') 
-                    ->filter(null, [
+                    //->join('roles', 'user_role.role_id', '=', 'roles.id') 
+                    ->where([
                         ['guest', 1],
                         ['resource_table', 'products'],
                         ['r', 1]
-                    ]);  
+                    ])->get();  
         
         Debug::debug($rows);
     }
  
     function get_nulls(){
         $conn    = Database::getConnection();
-        $product = new ProductsModel($conn);
+        $p = new ProductsModel($conn);
     
-        Debug::debug($product->filter(null, ['workspace', NULL]));   
+        Debug::debug($p->where(['workspace', NULL])->get());   
     }
 
     function get_users(){
@@ -224,6 +239,14 @@ class DumbController extends Controller
         
         Debug::debug($id);
     }
+
+    function update_products() {
+        $p = Database::table('products');
+        $count = $p->where(['cost', 100, '<'])->update(['belongs_to' => 90]);
+        
+        Debug::debug($count);
+    }
+
 
    
 }

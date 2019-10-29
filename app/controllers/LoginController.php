@@ -187,7 +187,7 @@ class LoginController extends MyController
 			Factory::response()->sendError('Empty email', 400);
 
 		$u = Database::table('users');
-		$rows = $u->filter(['id'], ['email', $email]);
+		$rows = $u->where(['email', $email])->get(['id']);
 
 		if (count($rows) === 0)
 			Factory::response()->send([]);
@@ -260,7 +260,7 @@ class LoginController extends MyController
 		}	
 
 		if (!isset($error)){
-			$rows = $u->filter(['id'], ['email', $payload->email]);
+			$rows = $u->where(['email', $payload->email])->get(['id']);
 			$u->id = $rows[0]['id'];
 
 			$role_ids = $u->fetchRoles();
@@ -400,7 +400,7 @@ class LoginController extends MyController
 
 				//Factory::response()->send(['success' => $ok]);
 
-				$rows = $u->filter(['id'], ['email', $payload->email]);
+				$rows = $u->where(['email', $payload->email])->get(['id']);
 				$u->id = $rows[0]['id'];
 
 				$role_ids = $u->fetchRoles();
@@ -416,7 +416,7 @@ class LoginController extends MyController
 				
 				$access  = $this->gen_jwt(['uid' => $u->id, 'roles' => $roles], 'access_token');
 				$refresh = $this->gen_jwt(['uid'=> $u->id, 'roles' => $roles], 'refresh_token');
-
+ 
 				Factory::response()->send([
 					'access_token' => $access,
 					'expires_in' => $this->config['email']['expires_in'],

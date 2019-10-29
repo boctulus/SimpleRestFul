@@ -180,7 +180,7 @@ abstract class ApiController extends Controller
 
         $o = new OtherPermissionsModel($conn);
 
-        $rows = $o->filter(null, ['folder_id', $folder]);
+        $rows = $o->where(['folder_id', $folder])->get();
 
         $r = $rows[0]['r'] ?? null;
         $w = $rows[0]['w'] ?? null;
@@ -195,10 +195,10 @@ abstract class ApiController extends Controller
         }
         
         $g = new GroupPermissionsModel($conn);
-        $rows = $g->filter(null, [
+        $rows = $g->where([
                                     ['folder_id', $folder], 
                                     ['member', $this->uid]
-        ]);
+        ])->get();
 
         $r = $rows[0]['r'] ?? null;
         $w = $rows[0]['w'] ?? null;
@@ -209,7 +209,7 @@ abstract class ApiController extends Controller
 
         return false;
     }
-
+    
     /**
      * get
      *
@@ -284,14 +284,14 @@ abstract class ApiController extends Controller
                     $_get[] = ['belongs_to', $f->belongs_to];
                 }
 
-                $rows = $instance->filter($fields, $_get); 
+                $rows = $instance->where($_get)->get($fields); 
                 if (empty($rows))
                     Factory::response()->sendCode(404);
                 else
                     Factory::response()->send($rows[0]);
             }else{    
                 // "list
-
+                
                 $limit  = (int) Arrays::shift($_get,'limit');
                 $offset = (int) Arrays::shift($_get,'offset',0);
                 $order  = Arrays::shift($_get,'order');
@@ -332,15 +332,13 @@ abstract class ApiController extends Controller
                                     case 'in':                                         
                                         if (strpos($v, ',')!== false){    
                                             $vals = explode(',', $v);
-                                            unset($_get[$key]);
-                                            $_get[] = [$campo, $vals, 'IN']; 
+                                            $_get[$key] = [$campo, $vals, 'IN']; 
                                         }                                         
                                     break;
                                     case 'notIn':
                                         if (strpos($v, ',')!== false){    
                                             $vals = explode(',', $v);
-                                            unset($_get[$key]);
-                                            $_get[] = [$campo, $vals, 'NOT IN'];
+                                            $_get[$key] = [$campo, $vals, 'NOT IN'];
                                         }                                         
                                     break;
                                     case 'between':
@@ -363,8 +361,7 @@ abstract class ApiController extends Controller
                                         foreach ($allops as $ko => $oo){
                                             if ($op == $oo){
                                                 $op = $eqops[$ko];
-                                                unset($_get[$key]);
-                                                $_get[] = [$campo, $v, $op];                             
+                                                $_get[$key] = [$campo, $v, $op];                             
                                                 break;                                    
                                             }                                    
                                         }
@@ -374,11 +371,11 @@ abstract class ApiController extends Controller
                             
                         }else{
                             // IN
+
                             $v = $val[1];
                             if (strpos($v, ',')!== false){    
                                 $vals = explode(',', $v);
-                                unset($_get[$key]);
-                                $_get[] = [$campo, $vals];                                
+                                $_get[$key] = [$campo, $vals];                                
                             } 
                         }   
                         
@@ -408,13 +405,12 @@ abstract class ApiController extends Controller
                 }
 
                 //var_dump($_get); ////
-                //var_export($_get); 
-
+             
                 if (strtolower($pretty) == 'true' || $pretty == 1)
                     Factory::response()->setPretty(true);
 
                 if (!empty($_get)){                    
-                    $rows = $instance->filter($fields, $_get, null, $order, $limit, $offset);
+                    $rows = $instance->where($_get)->get($fields, $order, $limit, $offset);
                     Factory::response()->code(200)->send($rows); 
                 }else {
                     $rows = $instance->fetchAll($fields, $order, $limit, $offset);
@@ -508,7 +504,6 @@ abstract class ApiController extends Controller
         $model    = 'simplerest\\models\\'.$this->modelName;
         $instance = new $model();
         $instance->showDeleted(); //
-        $instance->where(['id', $id]);
         $missing = $instance->diffWithSchema($data, ['id', 'password', 'belongs_to']);
 
         if (!empty($missing))
@@ -521,7 +516,7 @@ abstract class ApiController extends Controller
             $instance->setConn($conn);
 
             $instance->where(['id', $id]);
-            $rows = $instance->filter(null, ['id', $id]);
+            $rows = $instance->get();
 
             if (count($rows) == 0){
                 Factory::response()->code(404)->sendError("Register for id=$id does not exists");
@@ -569,6 +564,7 @@ abstract class ApiController extends Controller
                 Factory::response()->sendJson("OK");
             else
                 Factory::response()->sendError("Error in UPDATE");
+
         } catch (\Exception $e) {
             Factory::response()->sendError("Error during update for id=$id with message: {$e->getMessage()}");
         }
@@ -600,10 +596,9 @@ abstract class ApiController extends Controller
             $model    = 'simplerest\\models\\'.$this->modelName;
 
             $instance = new $model($conn);
-            $instance->where(['id', $id]);
             $instance->showDeleted(); //
 
-            $rows = $instance->filter(null, ['id', $id]);
+            $rows = $instance->get();
             
             if (count($rows) == 0){
                 Factory::response()->code(404)->sendError("Register for id=$id does not exists");
@@ -677,10 +672,9 @@ abstract class ApiController extends Controller
         
             $model    = 'simplerest\\models\\'.$this->modelName;
             $instance = new $model($conn);
-            $instance->id = $id;
             #$instance->showDeleted(); //
 
-            $rows = $instance->filter(null, ['id', $id]);
+            $rows = $instance->where(['id', $id])->get();
             
             if (count($rows) == 0){
                 Factory::response()->code(404)->sendError("Register for id=$id does not exists");

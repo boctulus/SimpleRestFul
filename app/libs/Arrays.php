@@ -46,8 +46,9 @@ class Arrays
 
     function is_assoc(array $arr)
     {
-        if (array() === $arr) return false;
-        return array_keys($arr) !== range(0, count($arr) - 1);
+        foreach(array_keys($arr) as $key)
+		if (!is_int($key)) return TRUE;
+	        return FALSE;
     }
 }
 

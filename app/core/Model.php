@@ -18,6 +18,7 @@ class Model {
 	protected $show_deleted = false;
 	protected $conn;
 	protected $where;
+	protected $vars = [];
 	protected $values = [];
 
 	/*
@@ -38,10 +39,12 @@ class Model {
 
 	public function setTableAlias($tb_alias){
 		$this->table_alias = " as $tb_alias";
+		return $this;
 	}
 
 	public function showDeleted($state = true){
 		$this->show_deleted = $state;
+		return $this;
 	}
 
 	/**
@@ -132,17 +135,17 @@ class Model {
 
 	// INNER JOIN
 	function join($table, $on1, $op, $on2) {
-		$this->joins[] = [$table, $on1, $op, $on2, 'INNER JOIN'];
+		$this->joins[] = [$table, $on1, $op, $on2, ' INNER JOIN'];
 		return $this;
 	}
 
 	function leftJoin($table, $on1, $op, $on2) {
-		$this->joins[] = [$table, $on1, $op, $on2, 'LEFT JOIN'];
+		$this->joins[] = [$table, $on1, $op, $on2, ' LEFT JOIN'];
 		return $this;
 	}
 
 	function rightJoin($table, $on1, $op, $on2) {
-		$this->joins[] = [$table, $on1, $op, $on2, 'RIGHT JOIN'];
+		$this->joins[] = [$table, $on1, $op, $on2, ' RIGHT JOIN'];
 		return $this;
 	}
 	
@@ -201,7 +204,7 @@ class Model {
 	function fetchAll(array $fields = null, array $order = NULL, int $limit = NULL, int $offset = 0)
 	{
 		if ($this->inSchema(['deleted_at'])){
-			return $this->filter($fields, [], null, $order, $limit, $offset);
+			return $this->get($fields, $order, $limit, $offset);
 		}
 
 		$this->removehidden($fields);
@@ -259,18 +262,16 @@ class Model {
 	}
 
 	/**
-	 * filter
+	 * get
 	 *
 	 * @param  array $fields
-	 * @param  array $conditions
-	 * @param  string $conjunction
 	 * @param  array $order
 	 * @param  int $limit
 	 * @param  int $offset
 	 *
 	 * @return array | false
 	 */
-	function filter(array $fields = null, array $conditions, $conjunction = null, array $order = null, int $limit = NULL, int $offset = 0)
+	function get(array $fields = null, array $order = null, int $limit = NULL, int $offset = 0)
 	{
 		if (empty($conjunction))
 			$conjunction = 'AND';
@@ -300,51 +301,11 @@ class Model {
 
 		$q  .= ' FROM '.$this->table_name. ' '.$this->table_alias;
 
-		//////////////////
-		$_where = [];
-
-		$vars   = [];
-		$values = [];
-		$ops    = [];
-		if (count($conditions)>0){
-			if(is_array($conditions[Arrays::array_key_first($conditions)])){
-				foreach ($conditions as $cond) {
-					if(is_array($cond[1]) && (empty($cond[2]) || in_array($cond[2], ['IN', 'NOT IN']) )){
-						if($this->schema[$cond[0]] == 'STR')	
-							$cond[1] = array_map(function($e){ return "'$e'";}, $cond[1]);   
-						
-						$in_val = implode(', ', $cond[1]);
-
-						$op = isset($cond[2]) ? $cond[2] : 'IN';
-						$_where[] = "$cond[0] $op ($in_val) ";						
-
-					}else{
-						$vars[]   = $cond[0];
-						$values[] = $cond[1];
-
-						if ($cond[1] === NULL && (empty($cond[2]) || $cond[2]=='='))
-							$ops[] = 'IS';
-						else	
-							$ops[] = $cond[2] ?? '=';
-					}	
-				}
-			}else{
-				$vars[]   = $conditions[0];
-				$values[] = $conditions[1];
-		
-				if ($conditions[1] === NULL && (empty($conditions[2]) || $conditions[2]== '='))
-					$ops[] = 'IS';
-				else	
-					$ops[] = $conditions[2] ?? '='; 
-			}	
-		}
-
-		foreach($vars as $ix => $var){
-			$_where[] = "$var $ops[$ix] ?";
-		}
-
-		$where = implode(" $conjunction ", $_where);
-		///////////
+		////////////////////////
+		$where  = $this->where;
+		$values = $this->values;
+		$vars   = $this->vars;
+		////////////////////////
 
 		$shift = substr_count($where, '?');
 		
@@ -412,7 +373,6 @@ class Model {
 		else
 			return false;	
 	}
-
 	
 	/**
 	 * where
@@ -469,10 +429,18 @@ class Model {
 			$_where[] = "$var $ops[$ix] ?";
 		}
 
-		Debug::debug($vars);
+		$this->vars = $vars;
 
 		$this->where = implode(" $conjunction ", $_where);
 		return $this;
+	}
+
+	function filter(array $fields = null, array $conditions, $conjunction = null, array $order = null, int $limit = NULL, int $offset = 0)
+	{
+		if (!empty($conditions))
+			$this->where($conditions, $conjunction);
+
+		return $this->get($order, $limit, $offset);
 	}
 
 	/**
@@ -508,11 +476,12 @@ class Model {
 		}   
 
 		$q = "UPDATE ".$this->table_name .
-				" SET $set WHERE " . $this->where;
-	 
+				" SET $set WHERE " . $this->where;		
+
 		$st = $this->conn->prepare($q);
 
 		$values = array_merge($values, $this->values);
+		$vars   = array_merge($vars, $this->vars);
 
 		foreach($values as $ix => $val){			
 			if(is_null($val)){
@@ -560,9 +529,13 @@ class Model {
 		
 		$st = $this->conn->prepare($q);
 		
+		$vars = $this->vars;
 		foreach($this->values as $ix => $val){			
 			if(is_null($val)){
 				$type = \PDO::PARAM_NULL;
+			}elseif(isset($vars[$ix]) && isset($this->schema[$vars[$ix]])){
+				$const = $this->schema[$vars[$ix]];
+				$type = constant("PDO::PARAM_{$const}");
 			}elseif(is_int($val))
 				$type = \PDO::PARAM_INT;
 			elseif(is_bool($val))
@@ -578,22 +551,6 @@ class Model {
 			return $st->rowCount();
 		else 
 			return false;		
-	}
-
-	// debería considerar el soft delete ?!
-	function exists()
-	{
-		$q  = "SELECT * FROM ".$this->table_name . " WHERE ".$this->id_name."=:id";
-		$st = $this->conn->prepare( $q );
-		$st->bindParam(":id", $this->{$this->id_name}, \PDO::PARAM_INT);
-		$st->execute();
-		
-		$row = $st->fetch(\PDO::FETCH_ASSOC);
-
-		if (!$row)
-			return false;
-		else
-			return true;
 	}
 
 	/*

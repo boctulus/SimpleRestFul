@@ -194,8 +194,8 @@ class AuthController extends Controller implements IAuth
             $conn = $this->getConnection();	
             $u = new UsersModel($conn);
 
-            //	
-            if (count($u->filter(['id'],['email', $data['email']]))>0)
+            // exits
+            if (count($u->where(['email', $data['email']])->get(['id']))>0)
                 Factory::response()->sendError('Email already exists');
                     
 
