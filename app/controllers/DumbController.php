@@ -80,37 +80,40 @@ class DumbController extends Controller
         $p = new ProductsModel($conn);
         //$p->showDeleted(); 
 
+        /*
         Debug::debug($p->filter(null, [ 
             ['size', '3L']
         ]));
+        */
 
-        /*
-        Debug::debug($product->filter(null, [ 
+        Debug::debug($p->filter(null, [ 
                 ['name', ['Vodka', 'Wisky', 'Tekila']], // IN 
                 ['belongs_to', 90]
         ]));
 
-        Debug::debug($product->filter(null, [ 
+        /*
+        Debug::debug($p->filter(null, [ 
             ['name', ['CocaCola', 'PesiLoca']], 
             ['cost', 550, '>='],
             ['cost', [100, 200]]
         ], 'OR'));    
 
-        Debug::debug($product->filter(null, [ 
+        Debug::debug($p->filter(null, [ 
             ['name', ['CocaCola', 'PesiLoca', 'Wisky', 'Vodka'], 'NOT IN']
         ]));
 
         // implicit 'AND'
-        Debug::debug($product->filter(null, [ 
+        Debug::debug($p->filter(null, [ 
             ['cost', 200, '<'],
             ['name', 'CocaCola'] 
         ]));        
 
-        Debug::debug($product->filter(null, [ 
+        Debug::debug($p->filter(null, [ 
             ['cost', 200, '>='],
             ['cost', 270, '<=']
         ]));
         */
+    
     }
 
     function joins(){
@@ -160,11 +163,9 @@ class DumbController extends Controller
         $conn    = Database::getConnection();
 
         $u = new UsersModel($conn);
-        $u->id = $id;
-        $u->delete();
-        $u->filter(null,['id', $id]);
-
-        Debug::debug($u);
+        $ok = (bool) $u->where(['id' => $id])->delete(false);
+        
+        Debug::debug($ok);
     }
 
  
@@ -172,11 +173,9 @@ class DumbController extends Controller
         $conn    = Database::getConnection();
 
         $u = new UsersModel($conn);
-        //$u->unfill(['lastname']);
-        $u->where(['id', $id]);
-        $ok = $u->update(['firstname'=>'PaulinoxxxxxyyzTTT', 'lastname'=>'Bozzoxx000555zZ']);
+        $count = $u->where(['firstname' => 'HHH', 'lastname' => 'AAA', 'id' => 17])->update(['firstname'=>'Nico', 'lastname'=>'Buzzi', 'belongs_to' => 17]);
         
-        Debug::debug($ok);
+        Debug::debug($count);
     }
 
     function update_user2() 
@@ -202,6 +201,14 @@ class DumbController extends Controller
         Debug::debug($ok);
     }
 
+    function update_users() {
+        $conn    = Database::getConnection();
+
+        $u = new UsersModel($conn);
+        $count = $u->where([ ['lastname', ['AAA', 'Buzzi']] ])->update(['firstname'=>'Nicos']);
+        
+        Debug::debug($count);
+    }
 
     function create_user($email, $password, $firstname, $lastname)
      {        
@@ -218,95 +225,5 @@ class DumbController extends Controller
         Debug::debug($id);
     }
 
-    function create_userrole($user_id, $role_id = 1){
-        $conn = $this->getConnection();
-
-        $ur = new UserRoleModel($conn);
-        $id = $ur->create([ 'user_id' => $user_id, 'role_id' => $role_id ]);
-        echo $id;
-    }
-
-    function restore($id){
-        $conn    = Database::getConnection();
-
-        $p = new ProductsModel($conn);        
-        $p->id = $id;
-        $ok = $p->restore();
-
-        var_dump($ok);
-    }
-
-    /*
-        JWT token for email confirmation & remember me
-    */
-    protected function gen_jwt(string $email, string $secret_key, string $encryption, string $exp_time){
-        $time = time();
-
-        $payload = [
-            'alg' => $encryption,
-            'typ' => 'JWT',
-            'iat' => $time, 
-            'exp' => $time + $exp_time,
-            'email' => $email
-        ];
-
-        return \Firebase\JWT\JWT::encode($payload, $secret_key,  $encryption);
-    }
-
-    function test(){    
-        $email = 'boctulus@gmail.com';
-        ////
-        $u = Database::table('users');
-		$rows = $u->filter(['id'], ['email', $email]);
-
-		if (count($rows) === 0)
-			Factory::response()->send([]);
-
-		$exp = time() + $this->config['email']['expires_in'];	
-
-        $base_url =  (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https://" : "http://") . $_SERVER['HTTP_HOST'];
-
-        $token = $this->gen_jwt($email, $this->config['email']['secret_key'], $this->config['email']['encryption'], $this->config['email']['expires_in'] );
-        echo $url = $base_url . '?token=' . $token . '&expires=' . $exp; 
-    }
-
-    
-    function confirm_email($jwt, $exp){
-
-		if ((int) $exp < time())
-            $error = 'Token expired';
-            
-        if($jwt != null)
-        {
-            try{
-                // Checking for token invalidation or outdated token
-                
-                $payload = \Firebase\JWT\JWT::decode($jwt, $this->config['email']['secret_key'], [ $this->config['email']['encryption'] ]);
-                
-                if (empty($payload))
-                    Factory::response()->sendError('Unauthorized!',401);                     
-
-                if (empty($payload->email)){
-                    Factory::response()->sendError('email is needed',400);
-                }
-
-                if ($payload->exp < time())
-                    Factory::response()->sendError('Token expired',401);
-                
-                echo $payload->email;
-
-            } catch (\Exception $e) {
-                /*
-                * the token was not able to be decoded.
-                * this is likely because the signature was not able to be verified (tampered token)
-                *
-                * reach this point if token is empty or invalid
-                */
-                Factory::response()->sendError($e->getMessage(),401);
-            }	
-        }else{
-            Factory::response()->sendError('Authorization jwt token not found',400);
-        }     
-    }
-
+   
 }

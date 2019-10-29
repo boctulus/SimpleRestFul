@@ -310,12 +310,13 @@ class Model {
 			if(is_array($conditions[Arrays::array_key_first($conditions)])){
 				foreach ($conditions as $cond) {
 					if(is_array($cond[1]) && (empty($cond[2]) || in_array($cond[2], ['IN', 'NOT IN']) )){
-						
 						if($this->schema[$cond[0]] == 'STR')	
 							$cond[1] = array_map(function($e){ return "'$e'";}, $cond[1]);   
 						
 						$in_val = implode(', ', $cond[1]);
-						$_where[] = "$cond[0] $cond[2] ($in_val) ";						
+
+						$op = isset($cond[2]) ? $cond[2] : 'IN';
+						$_where[] = "$cond[0] $op ($in_val) ";						
 
 					}else{
 						$vars[]   = $cond[0];
@@ -413,8 +414,20 @@ class Model {
 	}
 
 	
+	/**
+	 * where
+	 *
+	 * @param  array  $conditions
+	 * @param  string $conjunction
+	 *
+	 * @return object
+	 */
 	function where(array $conditions, $conjunction = 'AND')
 	{		
+		if (Arrays::is_assoc($conditions)){
+			$conditions = Arrays::nonassoc($conditions);
+		}
+
 		$_where = [];
 
 		$vars   = [];
@@ -422,14 +435,15 @@ class Model {
 		if (count($conditions)>0){
 			if(is_array($conditions[Arrays::array_key_first($conditions)])){
 				foreach ($conditions as $cond) {
-					if(is_array($cond[1]) && (empty($cond[2]) || in_array($cond[2], ['IN', 'NOT IN']) )){
-						
+					if(is_array($cond[1]) && (empty($cond[2]) || in_array($cond[2], ['IN', 'NOT IN']) ))
+					{						
 						if($this->schema[$cond[0]] == 'STR')	
 							$cond[1] = array_map(function($e){ return "'$e'";}, $cond[1]);   
 						
 						$in_val = implode(', ', $cond[1]);
-						$_where[] = "$cond[0] $cond[2] ($in_val) ";						
-
+						
+						$op = isset($cond[2]) ? $cond[2] : 'IN';
+						$_where[] = "$cond[0] $op ($in_val) ";	
 					}else{
 						$vars[]   = $cond[0];
 						$this->values[] = $cond[1];
@@ -455,6 +469,8 @@ class Model {
 			$_where[] = "$var $ops[$ix] ?";
 		}
 
+		Debug::debug($vars);
+
 		$this->where = implode(" $conjunction ", $_where);
 		return $this;
 	}
@@ -466,8 +482,6 @@ class Model {
 	 * @param  array $data
 	 *
 	 * @return mixed
-	 * 
-	 * Al aplicaro, si no existe un WHERE, usar como WHERE el AND de las propiedades del objeto
 	 * 
 	 */
 	function update(array $data)
@@ -493,14 +507,8 @@ class Model {
 			$set .= ', modified_at = "'. $d->format('Y-m-d G:i:s').'"';
 		}   
 
-		if (empty($this->where)){
-			$where = $this->id_name."= ?";
-		}else{
-			$where = $this->where;
-		}
-
 		$q = "UPDATE ".$this->table_name .
-				" SET $set WHERE " . $where;
+				" SET $set WHERE " . $this->where;
 	 
 		$st = $this->conn->prepare($q);
 
@@ -545,27 +553,31 @@ class Model {
 			$d = new \DateTime();
 			$at = $d->format('Y-m-d G:i:s');
 
-			$q = "UPDATE ".$this->table_name.
-				" SET deleted_at = '$at' WHERE ".$this->id_name."= ?";
-	 
-			$st = $this->conn->prepare($q);	
-			
-			$st->bindParam(1, $this->{$this->id_name});
-		
-			if($st->execute())
-				return $st->rowCount();
-			else 
-				return false;	
+			return $this->update(['deleted_at' => $at]);
 		}
 
-		$q = "DELETE FROM ".$this->table_name. ' '.$this->table_alias." WHERE ".$this->id_name." = ?";
+		$q = "DELETE FROM ".$this->table_name. ' '.$this->table_alias." WHERE ".$this->where;
+		
 		$st = $this->conn->prepare($q);
-		$st->bindParam(1, $this->{$this->id_name});
+		
+		foreach($this->values as $ix => $val){			
+			if(is_null($val)){
+				$type = \PDO::PARAM_NULL;
+			}elseif(is_int($val))
+				$type = \PDO::PARAM_INT;
+			elseif(is_bool($val))
+				$type = \PDO::PARAM_BOOL;
+			elseif(is_string($val))
+				$type = \PDO::PARAM_STR;	
+
+			$st->bindValue($ix+1, $val, $type);
+			//echo "Bind: ".($ix+1)." - $val ($type)\n";
+		}
 	 
 		if($st->execute())
 			return $st->rowCount();
-		else
-			return false;	
+		else 
+			return false;		
 	}
 
 	// debería considerar el soft delete ?!
