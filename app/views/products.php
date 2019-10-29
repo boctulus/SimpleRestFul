@@ -330,7 +330,7 @@
 			},
 			error: function(data){
 				if (data.status == 401){
-					checkpoint() /////////
+					checkpoint(); /////////
 				}
 
 				if (typeof data.responseJSON != 'undefined' && typeof data.responseJSON.error != 'undefined')

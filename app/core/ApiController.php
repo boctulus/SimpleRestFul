@@ -508,7 +508,7 @@ abstract class ApiController extends Controller
         $model    = 'simplerest\\models\\'.$this->modelName;
         $instance = new $model();
         $instance->showDeleted(); //
-        $instance->id = $id;
+        $instance->where(['id', $id]);
         $missing = $instance->diffWithSchema($data, ['id', 'password', 'belongs_to']);
 
         if (!empty($missing))
@@ -520,7 +520,7 @@ abstract class ApiController extends Controller
             $conn = Database::getConnection();
             $instance->setConn($conn);
 
-            $instance->id = $id;
+            $instance->where(['id', $id]);
             $rows = $instance->filter(null, ['id', $id]);
 
             if (count($rows) == 0){
@@ -600,7 +600,7 @@ abstract class ApiController extends Controller
             $model    = 'simplerest\\models\\'.$this->modelName;
 
             $instance = new $model($conn);
-            $instance->id = $id;
+            $instance->where(['id', $id]);
             $instance->showDeleted(); //
 
             $rows = $instance->filter(null, ['id', $id]);

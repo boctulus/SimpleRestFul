@@ -172,8 +172,9 @@ function update_pass()
 	if ($('#password').val() != $('#password_confirmation').val()){
 		$('#passChangeError').text('Contraseñas no coinciden');
 		return;
-	}else $('#passChangeError').text('');
-	
+	}else 
+		$('#passChangeError').text('');
+
 	var obj = {};
 	
 	obj.password = $('#password').val();
@@ -182,7 +183,7 @@ function update_pass()
 	$.ajax({
 		type : "PATCH",
 		url: "/login/change_email_process",
-		headers: {"Authorization": 'Bearer ' + token,
+		headers: {"Authorization": 'Bearer ' + token},
 		data : JSON.stringify(obj),
 		dataType: 'json',
 		success : function(data) {

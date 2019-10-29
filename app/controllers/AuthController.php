@@ -210,6 +210,7 @@ class AuthController extends Controller implements IAuth
                 Factory::response()->sendError("Error in user registration!");
 
             if ($u->inSchema(['belongs_to'])){
+                $u->where(['id', $u->id]);
                 $u->update(['belongs_to' => $uid]);
             }
 

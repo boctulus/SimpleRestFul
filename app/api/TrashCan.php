@@ -246,7 +246,7 @@ class TrashCan extends MyApiController
             $conn = Database::getConnection();
             $instance->setConn($conn);
 
-            $instance->id = $id;
+            $instance->where(['id', $id]); ///*
 
             $rows = $instance->filter(null, [
                 ['id', $id],
@@ -330,7 +330,7 @@ class TrashCan extends MyApiController
             $trashed = $data['trashed'] ?? true;                  
             ///
 
-            $instance->id = $id;
+            $instance->where(['id', $id]);
             $instance->showDeleted(); //
 
             $rows = $instance->filter(null, [

@@ -39,10 +39,6 @@ class LoginController extends MyController
 		$this->view('signup.php', ['title'=>'Registro', 'hidenav'=> true]);
 	}
 
-	function rememberme(){
-		$this->view('rememberme.php', ['title'=>'Recuérdame', 'hidenav'=> true]);
-	}
-
 	function google_login()
 	{
 		$google_ctrl = new GoogleController();
@@ -165,6 +161,10 @@ class LoginController extends MyController
         return \Firebase\JWT\JWT::encode($payload, $this->config[$token_type]['secret_key'],  $this->config[$token_type]['encryption']);
     }
 
+	function rememberme(){
+		$this->view('rememberme.php', ['title'=>'Recuérdame', 'hidenav'=> true]);
+	}
+
 	/*
 		Las urls para cambio de correo son muy similares a esta:
 
@@ -226,8 +226,6 @@ class LoginController extends MyController
 			if($jwt != null)
 			{
 				try {
-					// Checking for token invalidation or outdated token
-					
 					$payload = \Firebase\JWT\JWT::decode($jwt, $this->config['email']['secret_key'], [ $this->config['email']['encryption'] ]);
 					
 					if (empty($payload))
@@ -240,20 +238,12 @@ class LoginController extends MyController
 					if ($payload->exp < time())
 						$error = 'Token expired';
 						
-					$conn    = Database::getConnection();
+					$u = Database::table('users');
+					$affected = $u->where(['email', $payload->email])
+						   		->update(['confirmed_email' => 1]);
 					
-					$q = "UPDATE users SET confirmed_email = 1 WHERE email = :email";
-		
-					$st = $conn->prepare($q);
-					$st->bindValue(":email", $payload->email, \PDO::PARAM_STR);
-								
-					if($st->execute()){
-						//$affected = $st->rowCount();
-						//if ($affected == 0)
-						//	Factory::response()->sendError('Error en activación', 500);
-					}					
-					else 
-						$error = 'Error en activación';				
+					//if (!$ok)		
+					//	$error = 'Error en activación';				
 
 				} catch (\Exception $e) {
 					/*
@@ -270,7 +260,6 @@ class LoginController extends MyController
 		}	
 
 		if (!isset($error)){
-			$u = new UsersModel($conn);
 			$rows = $u->filter(['id'], ['email', $payload->email]);
 			$u->id = $rows[0]['id'];
 
@@ -334,21 +323,6 @@ class LoginController extends MyController
 
 					if ($payload->exp < time())
 						$error = 'Token expired';
-						
-					$conn    = Database::getConnection();
-					
-					$q = "UPDATE users SET confirmed_email = 1 WHERE email = :email";
-		
-					$st = $conn->prepare($q);
-					$st->bindValue(":email", $payload->email, \PDO::PARAM_STR);
-								
-					if($st->execute()){
-						//$affected = $st->rowCount();
-						//if ($affected == 0)
-						//	Factory::response()->sendError('Error en activación', 500);
-					}					
-					else 
-						$error = 'Error en activación';				
 
 				} catch (\Exception $e) {
 					/*
@@ -364,25 +338,7 @@ class LoginController extends MyController
 			}     
 		}	
 
-		if (!isset($error)){
-			$u = new UsersModel($conn);
-			$rows = $u->filter(['id'], ['email', $payload->email]);
-			$u->id = $rows[0]['id'];
-
-			$role_ids = $u->fetchRoles();
-
-			$roles = [];
-
-			if (count($role_ids) != 0){
-				$r = new RolesModel();
-				foreach ($role_ids as $role_id){
-					$roles[] = $r->getRoleName($role_id);
-				}
-			}
-			
-			$access  = $this->gen_jwt(['uid' => $u->id, 'roles' => $roles], 'access_token');
-			$refresh = $this->gen_jwt(['uid'=> $u->id, 'roles' => $roles], 'refresh_token');
-
+		if (!isset($error)){						
 			//
 			// Cargar vista 
 			// donde poder setear una nueva contraseña
@@ -390,10 +346,7 @@ class LoginController extends MyController
 
 			$this->view('update_pass.php', [
 				'title'=>'Recuperación de contraseña', 
-				'hidenav'=> true,
-				'access_token' => $access,
-				'expires_in' => $this->config['email']['expires_in'],
-				'refresh_token' => $refresh
+				'hidenav'=> true
 			]);
 	
 		}else {
@@ -442,15 +395,34 @@ class LoginController extends MyController
                 if ($payload->exp < time())
                     Factory::response()->sendError('Token expired',401);
         
-					
-				var_dump($payload->email);
-				var_dump($data['password']);
-
 				$u = Database::table('users');
-				$ok = $u->where(['email', $payload->email])->update(['password' => password_hash($data['password'], PASSWORD_DEFAULT)]);
+				$affected = $u->where(['email', $payload->email])->update(['password' => password_hash($data['password'], PASSWORD_DEFAULT)]);
 
-				var_dump($ok);
+				//Factory::response()->send(['success' => $ok]);
 
+				$rows = $u->filter(['id'], ['email', $payload->email]);
+				$u->id = $rows[0]['id'];
+
+				$role_ids = $u->fetchRoles();
+
+				$roles = [];
+
+				if (count($role_ids) != 0){
+					$r = new RolesModel();
+					foreach ($role_ids as $role_id){
+						$roles[] = $r->getRoleName($role_id);
+					}
+				}
+				
+				$access  = $this->gen_jwt(['uid' => $u->id, 'roles' => $roles], 'access_token');
+				$refresh = $this->gen_jwt(['uid'=> $u->id, 'roles' => $roles], 'refresh_token');
+
+				Factory::response()->send([
+					'access_token' => $access,
+					'expires_in' => $this->config['email']['expires_in'],
+					'refresh_token' => $refresh
+				]);
+				
             } catch (\Exception $e) {
                 /*
                 * the token was not able to be decoded.
@@ -463,8 +435,7 @@ class LoginController extends MyController
         }else{
             Factory::response()->sendError('Authorization jwt token not found',400);
         }
-
-        return false;
+       
 	}
 	
 }

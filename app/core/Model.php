@@ -456,6 +456,7 @@ class Model {
 		}
 
 		$this->where = implode(" $conjunction ", $_where);
+		return $this;
 	}
 
 	/**
@@ -492,22 +493,35 @@ class Model {
 			$set .= ', modified_at = "'. $d->format('Y-m-d G:i:s').'"';
 		}   
 
-		$where = (empty($this->where) ? $this->id_name."= ?" : $this->where);
+		if (empty($this->where)){
+			$where = $this->id_name."= ?";
+		}else{
+			$where = $this->where;
+		}
 
 		$q = "UPDATE ".$this->table_name .
 				" SET $set WHERE " . $where;
 	 
 		$st = $this->conn->prepare($q);
-	
-		foreach($values as $ix => $val){
-			if (!isset($this->schema[$vars[$ix]]))
-				throw new \InvalidArgumentException("there is an error near '{$vars[$ix]}'");
 
-			$const = $this->schema[$vars[$ix]];	
-			$st->bindValue($ix +1, $val, constant("PDO::PARAM_{$const}"));
+		$values = array_merge($values, $this->values);
+
+		foreach($values as $ix => $val){			
+			if(is_null($val)){
+				$type = \PDO::PARAM_NULL;
+			}elseif(isset($vars[$ix]) && isset($this->schema[$vars[$ix]])){
+				$const = $this->schema[$vars[$ix]];
+				$type = constant("PDO::PARAM_{$const}");
+			}elseif(is_int($val))
+				$type = \PDO::PARAM_INT;
+			elseif(is_bool($val))
+				$type = \PDO::PARAM_BOOL;
+			elseif(is_string($val))
+				$type = \PDO::PARAM_STR;	
+
+			$st->bindValue($ix+1, $val, $type);
+			//echo "Bind: ".($ix+1)." - $val ($type)\n";
 		}
-
-		$st->bindParam($ix + count($values), $this->{$this->id_name}, \PDO::PARAM_INT); //
 	 
 		if($st->execute())
 			return $st->rowCount();

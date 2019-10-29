@@ -173,8 +173,8 @@ class DumbController extends Controller
 
         $u = new UsersModel($conn);
         //$u->unfill(['lastname']);
-        $u->id = $id;
-        $ok = $u->update(['firstname'=>'Paulinoxxxxxyyz', 'lastname'=>'Bozzoxx000555zZ']);
+        $u->where(['id', $id]);
+        $ok = $u->update(['firstname'=>'PaulinoxxxxxyyzTTT', 'lastname'=>'Bozzoxx000555zZ']);
         
         Debug::debug($ok);
     }
@@ -183,7 +183,9 @@ class DumbController extends Controller
     {
         $firstname = '';
         for ($i=0;$i<20;$i++)
-        $firstname = chr(rand(97,122));
+            $firstname .= chr(rand(97,122));
+
+        $lastname = strtoupper($firstname);    
 
         ////
         $conn    = Database::getConnection();
@@ -191,7 +193,11 @@ class DumbController extends Controller
         $u = new UsersModel($conn);
 
         // implementar !!!
-        $ok = $u->where([ [ 'email', 'nano@'] ])->update(['firstname'=> $firstname]);
+        $ok = $u->where([ [ 'email', 'nano@'], ['deleted_at', NULL] ])
+        ->update([ 
+                    'firstname' => $firstname, 
+                    'lastname' => $lastname
+        ]);
         
         Debug::debug($ok);
     }

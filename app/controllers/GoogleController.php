@@ -152,6 +152,7 @@ class GoogleController extends Controller
                     return ['error' => 'Error in user registration!', 'code' => 500];
     
                 if ($u->inSchema(['belongs_to'])){
+                    $u->where(['id', $u->id]);
                     $u->update(['belongs_to' => $uid]);
                 }
     
