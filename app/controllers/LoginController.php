@@ -205,15 +205,16 @@ class LoginController extends MyController
 				to: $email
 				body: $url
 		*/
-
-		//Factory::response()->send(['data' => $url ]);
-
+	
+		/*
+			El OK debería ser al terminar el proceso incluido el envio del correo
+		*/
 		$ok = (bool) Utils::logger($url);
 		Factory::response()->send(['success' => $ok ]);
+	}
 
-		/*
-			Si se pudo enviar el correo, redirigir a la vista donde le dice que chequee en la carpeta de "correo no deseado"
-		*/
+	function rememeberme_mail_sent(){
+		$this->view('rememeberme_mail_sent.php', ['title'=>'Recuérdame', 'hidenav'=> true]);
 	}
 
 	function confirm_email($jwt, $exp)

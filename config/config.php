@@ -8,9 +8,9 @@ return [
 
 	'database' => [
 		'host' => 'localhost',
-		'db_name' => 'api_sb', 
-		'user' => 'boctulus', 
-		'pass' => 'gogogo2k'
+		'db_name' => 'simplerest', 
+		'user' => 'simplerest', 
+		'pass' => 'Hvr0tf9Is'
 	], 
 
 	'debug_mode'   => true,

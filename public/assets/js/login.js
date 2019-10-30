@@ -142,16 +142,17 @@ function rememberme(){
 	// get form data
 	//obj = this.serializeObject();
 
+	$('#remembermeError').text('');
+
 	$.ajax({
 		type: "POST",
 		url: '/login/rememberme_process',
 		data: JSON.stringify(obj),
 		dataType: 'json', 
 		success: function(data){
-			$('#remembermeError').text('');
-			
-			console.log('OK');
-			console.log(data);
+			if (typeof data.success != 'undefined'){
+				window.location.replace('/login/rememeberme_mail_sent/' + window.btoa(obj.email));
+			}
 		},
 		error: function(xhr, status, error){
 			console.log('ERROR');
