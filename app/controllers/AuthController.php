@@ -95,10 +95,9 @@ class AuthController extends Controller implements IAuth
         
         if ($u->checkCredentials()){
 
-            $role_ids = $u->fetchRoles();
+            $role_ids = $u->fetchRoles($u->id);
 
             $roles = [];
-
             if (count($role_ids) != 0){
                 $r = new RolesModel();
                 foreach ($role_ids as $role_id){

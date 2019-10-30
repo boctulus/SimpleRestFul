@@ -88,11 +88,11 @@ class UsersModel extends Model
 	/*
 		@return array of all available roles for the user
 	*/
-	function fetchRoles()
+	function fetchRoles($id)
 	{
-		$this->table_name = 'users as u';
+		$this->table_alias = ' as u';
 		$this->join('user_role as ur', 'ur.user_id', '=', 'u.id');
-		$rows = $this->where(['u.id', $this->id])->get(['ur.role_id as role']);	
+		$rows = $this->where(['u.id', $id])->get(['ur.role_id as role']);	
 
 		if (!empty($rows)){
 			$roles = [];

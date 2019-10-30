@@ -197,7 +197,7 @@ class LoginController extends MyController
 		$base_url =  (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https://" : "http://") . $_SERVER['HTTP_HOST'];
 
 		$token = $this->gen_jwt2($email, $this->config['email']['secret_key'], $this->config['email']['encryption'], $this->config['email']['expires_in'] );
-		$url = $base_url . '/login/confirm_email/' . $token . '/' . $exp; 
+		$url = $base_url . '/login/change_email/' . $token . '/' . $exp; 
 
 		/*
 			mail -->
@@ -239,9 +239,9 @@ class LoginController extends MyController
 						$error = 'Token expired';
 						
 					$u = Database::table('users');
-					$affected = $u->where(['email', $payload->email])
+					$ok = (bool) $u->where(['email', $payload->email])
 						   		->update(['confirmed_email' => 1]);
-					
+										
 					//if (!$ok)		
 					//	$error = 'Error en activación';				
 
@@ -260,9 +260,10 @@ class LoginController extends MyController
 		}	
 
 		if (!isset($error)){
-			$rows = $u->where(['email', $payload->email])->get(['id']);
+			$rows = Database::table('users')->where(['email', $payload->email])->get(['id']);
+			
+			$u = Database::table('users');
 			$u->id = $rows[0]['id'];
-
 			$role_ids = $u->fetchRoles();
 
 			$roles = [];
@@ -394,19 +395,17 @@ class LoginController extends MyController
 
                 if ($payload->exp < time())
                     Factory::response()->sendError('Token expired',401);
-        
-				$u = Database::table('users');
-				$affected = $u->where(['email', $payload->email])->update(['password' => password_hash($data['password'], PASSWORD_DEFAULT)]);
+		
+				
+				$rows = Database::table('users')->where(['email', $payload->email])->get(['id']);
 
-				//Factory::response()->send(['success' => $ok]);
+				$affected = Database::table('users')->where(['id', $rows[0]['id']])->update(['password' => password_hash($data['password'], PASSWORD_DEFAULT)]);
 
-				$rows = $u->where(['email', $payload->email])->get(['id']);
-				$u->id = $rows[0]['id'];
-
-				$role_ids = $u->fetchRoles();
+				//Factory::response()->send(['success' => $ok]);				
+				
+				$role_ids = Database::table('users')->fetchRoles($rows[0]['id']);
 
 				$roles = [];
-
 				if (count($role_ids) != 0){
 					$r = new RolesModel();
 					foreach ($role_ids as $role_id){
@@ -414,8 +413,8 @@ class LoginController extends MyController
 					}
 				}
 				
-				$access  = $this->gen_jwt(['uid' => $u->id, 'roles' => $roles], 'access_token');
-				$refresh = $this->gen_jwt(['uid'=> $u->id, 'roles' => $roles], 'refresh_token');
+				$access  = $this->gen_jwt(['uid' => $rows[0]['id'], 'roles' => $roles], 'access_token');
+				$refresh = $this->gen_jwt(['uid'=> $rows[0]['id'], 'roles' => $roles], 'refresh_token');
  
 				Factory::response()->send([
 					'access_token' => $access,

@@ -11,7 +11,7 @@ use simplerest\libs\Debug;
 
 define('APP_ID', '533640957216135');
 define('APP_SECRET', '234a9cf42e8710ed813d45ed9e0fb212');
-define('CALLBACK', 'https://simplerest.tk/login/fb_callback');
+define('CALLBACK', 'https://simplerest.co/login/fb_callback');
 
 class FacebookController extends Controller
 {
