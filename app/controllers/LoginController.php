@@ -209,7 +209,7 @@ class LoginController extends MyController
 		//Factory::response()->send(['data' => $url ]);
 
 		$ok = (bool) Utils::logger($url);
-		//Factory::response()->send(['data' => $ok ]);
+		Factory::response()->send(['success' => $ok ]);
 
 		/*
 			Si se pudo enviar el correo, redirigir a la vista donde le dice que chequee en la carpeta de "correo no deseado"
