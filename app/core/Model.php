@@ -227,7 +227,7 @@ class Model {
 
 		$this->removehidden($fields);
 
-		$order  = array_merge($this->order, $order);
+		$order  = !empty($order) ? array_merge($this->order, $order) : $this->order;
 		$limit  = $limit  ?? $this->limit  ?? null;
 		$offset = $offset ?? $this->offset ?? 0; 
 
