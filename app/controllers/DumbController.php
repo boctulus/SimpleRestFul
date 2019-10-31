@@ -73,6 +73,8 @@ class DumbController extends Controller
         //Debug::debug($p->order(['cost'=>'ASC'])->take(4)->offset(1)->fetchAll(null, ['id'=>'DESC']));
 
         //Debug::debug($p->order(['cost'=>'ASC'])->order(['id'=>'DESC'])->take(4)->offset(1)->fetchAll());
+
+        //Debug::debug($p->take(4)->offset(1)->fetchAll(null, ['cost'=>'ASC', 'id'=>'DESC']));
     }
 
     function get_product($id){
