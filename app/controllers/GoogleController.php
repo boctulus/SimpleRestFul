@@ -11,7 +11,7 @@ use simplerest\libs\Debug;
 
 define('GOOGLE_CLIENT_ID', '228180780767-4p8t6nvocukmu44ti57o60n1ck6sokpd.apps.googleusercontent.com');
 define('GOOGLE_CLIENT_SECRET', 'JByioBo6mRiVBkhW3ldylYKD');
-define('GOOGLE_REDIRECT_URL', 'http://simplerest.co/login/google_login');
+define('GOOGLE_REDIRECT_URL', 'https://simplerest.co/login/google_login');
 
 // fusionar con LoginController
 class GoogleController extends Controller

@@ -15,8 +15,10 @@ function checkpoint()
 	if ((localStorage.getItem('access_token') == null) || expired){
 		if (localStorage.getItem('refresh_token')){
 			renew();	
-		}else 
-			window.location = login_page;
+		}else{
+			//window.location = login_page; 
+		} 
+			
 	}		 
 }
 

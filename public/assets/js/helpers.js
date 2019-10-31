@@ -1,7 +1,7 @@
 
 function getSiteRoot()
 {
-    var rootPath = window.location.protocol + "//" + window.location.host + "/";
+    var rootPath = "//" + window.location.host + "/";
     if (window.location.hostname == "localhost")
     {
         var path = window.location.pathname;

@@ -1,5 +1,10 @@
 <?php
 
+if (!defined('HTTP_PROTOCOL'))
+    define('HTTP_PROTOCOL', 'http');
+
+////////////////////////////////////
+
 if (!defined('ROOT_PATH'))
     define('ROOT_PATH', dirname(__DIR__) . DIRECTORY_SEPARATOR );
 

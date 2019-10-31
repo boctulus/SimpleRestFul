@@ -2,8 +2,6 @@
 
 - Corregir: al tener `belongs_to` como nullable en el modelo (en Users por ejemplo)... revienta! 
 
-- Recuperar contraseña
-
 - Advertir que se está intentando usar un operador inexistente en la API ejemplo: ne por neq
 
 - Arreglar lo que pasa si un usuario es borrado con soft delete (warnings)
@@ -84,6 +82,8 @@ o...
   GET /customers/1/orders/99/products
 
 <-- productos de la orden 99 del cliente 1
+
+- Un usuario que cambia la contraseña sigue verificado? debería poder volverse read-only el correo o bien al cambiar el correo ser obligario verificarlo de nuevo.
 
 - ACL, eventos beforeCheckAccess y afterCheckAccess ?
 

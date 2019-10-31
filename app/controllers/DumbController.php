@@ -62,6 +62,19 @@ class DumbController extends Controller
         Debug::debug($p->fetchAll());
     }
 
+    function order(){
+        $conn    = Database::getConnection();
+        $p = new ProductsModel($conn);
+    
+        Debug::debug($p->order(['cost'=>'ASC', 'id'=>'DESC'])->take(4)->offset(1)->fetchAll());
+
+        //Debug::debug($p->order(['cost'=>'ASC'])->order(['id'=>'DESC'])->take(4)->offset(1)->fetchAll());
+
+        //Debug::debug($p->order(['cost'=>'ASC'])->take(4)->offset(1)->fetchAll(null, ['id'=>'DESC']));
+
+        //Debug::debug($p->order(['cost'=>'ASC'])->order(['id'=>'DESC'])->take(4)->offset(1)->fetchAll());
+    }
+
     function get_product($id){
         $conn    = Database::getConnection();
 
@@ -77,36 +90,15 @@ class DumbController extends Controller
     function filter_products(){
         $conn    = Database::getConnection();
         
-        /*
         Debug::debug((new ProductsModel($conn))->showDeleted()->where([ 
             ['size', '3L']
         ])->get());
-        */
     
-        /*
         Debug::debug((new ProductsModel($conn))->where([ 
             ['name', ['Vodka', 'Wisky', 'Tekila','CocaCola']], // IN 
             ['belongs_to', 90]
         ])->get());
-        */  
-        
-        $_get = array (
-            0 => 
-            array (
-              0 => 'name',
-          1 => 
-              array (
-                0 => 'Tekila',
-          1 => 'Vodka',
-          2 => 'Wisky',
-          3 => 'Juice',
-              ),
-            ),
-          );
-          
-        Debug::debug((new ProductsModel($conn))->where($_get)->get());  
-
-        /*
+    
         Debug::debug(Database::table('products')->where([ 
             ['name', ['CocaCola', 'PesiLoca']], 
             ['cost', 550, '>='],
@@ -126,9 +118,7 @@ class DumbController extends Controller
         Debug::debug(Database::table('products')->where([ 
             ['cost', 200, '>='],
             ['cost', 270, '<=']
-        ])->get());
-        */
-            
+        ])->get());            
     }
 
     function joins(){

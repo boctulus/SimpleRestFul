@@ -1,14 +1,16 @@
 <?php
 
 function assets($resource){
+    /*
     if (!empty($_SERVER['HTTPS']) && ('on' == $_SERVER['HTTPS'])) {
-        $protocol = 'https://';
+        $protocol = 'https:';
     } else {
-        $protocol = 'http://';
+        $protocol = 'http:';
     }
+    */
 
     $config = include CONFIG_PATH . 'config.php';
-    return $protocol.$_SERVER['HTTP_HOST'].'/'.$config['BASE_URL'].'assets/'.$resource;
+    return '//' . $_SERVER['HTTP_HOST'].$config['BASE_URL'].'assets/'.$resource;
 }
 
 function section($view){

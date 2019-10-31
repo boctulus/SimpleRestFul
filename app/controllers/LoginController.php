@@ -168,11 +168,11 @@ class LoginController extends MyController
 	/*
 		Las urls para cambio de correo son muy similares a esta:
 
-		http://simplerest.lan/login/confirm_email/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU3MjI2OTE4NiwiZXhwIjoxNTcyODczOTg2LCJlbWFpbCI6InBlcGVAZ21haWwuY29tIn0.fl_jVsAe16ePinDY0QT8GRK_cuk0Ebn3CVNfCgfnM3s/1572873986
+		//simplerest.lan/login/confirm_email/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU3MjI2OTE4NiwiZXhwIjoxNTcyODczOTg2LCJlbWFpbCI6InBlcGVAZ21haWwuY29tIn0.fl_jVsAe16ePinDY0QT8GRK_cuk0Ebn3CVNfCgfnM3s/1572873986
 
 		Solo cambia el nombre del "action" por change_email :
 
-		http://simplerest.lan/login/change_email/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU3MjI2OTE4NiwiZXhwIjoxNTcyODczOTg2LCJlbWFpbCI6InBlcGVAZ21haWwuY29tIn0.fl_jVsAe16ePinDY0QT8GRK_cuk0Ebn3CVNfCgfnM3s/1572873986
+		//simplerest.lan/login/change_email/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU3MjI2OTE4NiwiZXhwIjoxNTcyODczOTg2LCJlbWFpbCI6InBlcGVAZ21haWwuY29tIn0.fl_jVsAe16ePinDY0QT8GRK_cuk0Ebn3CVNfCgfnM3s/1572873986
 
 	*/
 	function rememberme_process(){
@@ -194,7 +194,7 @@ class LoginController extends MyController
 
 		$exp = time() + $this->config['email']['expires_in'];	
 
-		$base_url =  (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https://" : "http://") . $_SERVER['HTTP_HOST'];
+		$base_url =  HTTP_PROTOCOL . '//' . $_SERVER['HTTP_HOST'];
 
 		$token = $this->gen_jwt2($email, $this->config['email']['secret_key'], $this->config['email']['encryption'], $this->config['email']['expires_in'] );
 		$url = $base_url . '/login/change_email/' . $token . '/' . $exp; 

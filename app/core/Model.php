@@ -20,6 +20,9 @@ class Model {
 	protected $where;
 	protected $vars = [];
 	protected $values = [];
+	protected $order = [];
+	protected $limit;
+	protected $offset;
 
 	/*
 		Chequear en cada método si hay una conexión 
@@ -149,6 +152,21 @@ class Model {
 		return $this;
 	}
 	
+	function order(array $o){
+		$this->order = array_merge($this->order, $o);
+		return $this;
+	}
+
+	function take(int $limit){
+		$this->limit = $limit;
+		return $this;
+	}
+
+	function offset(int $n){
+		$this->offset = $n;
+		return $this;
+	}
+
 	/**
 	 * fetch
 	 *
@@ -201,13 +219,17 @@ class Model {
 	 *
 	 * @return mixed
 	 */
-	function fetchAll(array $fields = null, array $order = NULL, int $limit = NULL, int $offset = 0)
+	function fetchAll(array $fields = null, array $order = NULL, int $limit = NULL, int $offset = null)
 	{
 		if ($this->inSchema(['deleted_at'])){
 			return $this->get($fields, $order, $limit, $offset);
 		}
 
 		$this->removehidden($fields);
+
+		$order  = array_merge($this->order, $order);
+		$limit  = $limit  ?? $this->limit  ?? null;
+		$offset = $offset ?? $this->offset ?? 0; 
 
 		if($limit>0 || $order!=NULL){
 			try {
@@ -271,12 +293,16 @@ class Model {
 	 *
 	 * @return array | false
 	 */
-	function get(array $fields = null, array $order = null, int $limit = NULL, int $offset = 0)
+	function get(array $fields = null, array $order = null, int $limit = NULL, int $offset = null)
 	{
 		if (empty($conjunction))
 			$conjunction = 'AND';
 
 		$this->removehidden($fields);	
+
+		$order  = array_merge($this->order, $order);
+		$limit  = $limit  ?? $this->limit  ?? null;
+		$offset = $offset ?? $this->offset ?? 0; 
 
 		if($limit>0 || $order!=NULL){
 			try {

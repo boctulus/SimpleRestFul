@@ -328,10 +328,13 @@
 				table.render($data);
 				//table.hide_first_col();
 			},
-			error: function(data){
+			error: function(data, textStatus, errorThrown){
 				if (data.status == 401){
 					checkpoint(); /////////
 				}
+
+				console.log(textStatus);
+				console.log(errorThrown);
 
 				if (typeof data.responseJSON != 'undefined' && typeof data.responseJSON.error != 'undefined')
 					toastr["error"](data.responseJSON.error, "Error");
