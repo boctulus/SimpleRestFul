@@ -21,10 +21,11 @@ class FacebookController extends Controller
             session_start();
         }
 
+        // Antes 'v3.2'
         $fb = new \Facebook\Facebook([
             'app_id' => $this->config['facebook_auth']['app_id'], 
             'app_secret' => $this->config['facebook_auth']['app_secret'],
-            'default_graph_version' => 'v3.2',
+            'default_graph_version' => 'v4.0', 
         ]);
 
         $this->client = $fb;
