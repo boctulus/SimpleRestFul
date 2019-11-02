@@ -13,32 +13,6 @@ Respuesta es algo como:
     "refresh_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU3MjY0OTk5NiwiZXhwIjoxODg4MDA5OTk2LCJ1aWQiOiI5MCIsInJvbGVzIjpbImJhc2ljIl19.X7ntUCSpd9jaCrllml7lUzOAcyG1-HPtROwuwEj35ns"
 }
 
-En el server de PK
--------------------
-
-# Acceso como Guest
-
-curl -X GET 'https://simplerest.mapapulque.ro/api/products?folder=6'
-
-Respuesta:
-
-{
-    "error": "SQLSTATE[42S22]: Column not found: 1054 Unknown column \u0027q\u0027 in \u0027where clause\u0027"
-}
-
-# Login
-
-curl -d '{ "email": "nano@", "password": "gogogo2k" }' -X POST 'https://simplerest.mapapulque.ro/auth/login'
-
-Respuesta:
-
-{
-    "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU3MjY2MTYzMiwiZXhwIjoxNTcyNzIxNjMyLCJ1aWQiOiI5MCIsInJvbGVzIjpbImJhc2ljIl19.bLJyxLdYe4xrdgZYmTARO87eRBLKasnyesO3m0rKmKQ",
-    "token_type": "bearer",
-    "expires_in": 60000,
-    "refresh_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU3MjY2MTYzMiwiZXhwIjoxODg4MDIxNjMyLCJ1aWQiOiI5MCIsInJvbGVzIjpbImJhc2ljIl19.-353pavPYBb52w26Fzc5wq5DgrGk_FqJFbraHzaQiPk"
-}
-
 
 Más de Curl
 https://hackernoon.com/how-to-easily-use-curl-for-http-requests-db3249c5d4e6

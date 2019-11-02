@@ -64,7 +64,7 @@ class LoginController extends MyController
 	/*
 		Sin terminar
 	*/
-	function fb_callback(){
+	function fb_login(){
 
 		$fb_ctrl = new FacebookController();
 		$fb      = $fb_ctrl->getClient();	

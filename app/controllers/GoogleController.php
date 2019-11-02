@@ -9,11 +9,6 @@ use simplerest\models\UserRoleModel;
 use simplerest\models\RolesModel;
 use simplerest\libs\Debug;
 
-define('GOOGLE_CLIENT_ID', '228180780767-4p8t6nvocukmu44ti57o60n1ck6sokpd.apps.googleusercontent.com');
-define('GOOGLE_CLIENT_SECRET', 'JByioBo6mRiVBkhW3ldylYKD');
-define('GOOGLE_REDIRECT_URL', 'https://simplerest.co/login/google_login');
-
-// fusionar con LoginController
 class GoogleController extends Controller
 {
     protected $client;
@@ -24,9 +19,9 @@ class GoogleController extends Controller
 
         $client = new \Google_Client();
         $client->setApplicationName('App Name');
-        $client->setClientId(GOOGLE_CLIENT_ID);
-        $client->setClientSecret(GOOGLE_CLIENT_SECRET);
-        $client->setRedirectUri(GOOGLE_REDIRECT_URL);
+        $client->setClientId($this->config['google_auth']['client_id']);
+        $client->setClientSecret($this->config['google_auth']['client_secret']);
+        $client->setRedirectUri($this->config['google_auth']['callback']);
 
         $client->setScopes('https://www.googleapis.com/auth/userinfo.email');
         #$client->addScope("https://www.googleapis.com/auth/drive");

@@ -217,10 +217,10 @@ class AuthController extends Controller implements IAuth
             $id = $ur->create([ 'user_id' => $uid, 'role_id' => 1 ]);  // registered
             
             $r = new RolesModel();
-            $registered = $r->getRoleName(1);
+            $role = $this->config['registration_role'];
 
-            $access  = $this->gen_jwt(['uid' => $u->id, 'roles' => [$registered] ], 'access_token');
-            $refresh = $this->gen_jwt(['uid'=> $u->id, 'roles' => [$registered] ], 'refresh_token');
+            $access  = $this->gen_jwt(['uid' => $u->id, 'roles' => [$role] ], 'access_token');
+            $refresh = $this->gen_jwt(['uid' => $u->id, 'roles' => [$role] ], 'refresh_token');
 
             Factory::response()->send([ 
                                         'access_token'=> $access,

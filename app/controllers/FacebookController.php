@@ -9,10 +9,6 @@ use simplerest\models\UserRoleModel;
 use simplerest\models\RolesModel;
 use simplerest\libs\Debug;
 
-define('APP_ID', '533640957216135');
-define('APP_SECRET', '234a9cf42e8710ed813d45ed9e0fb212');
-define('CALLBACK', 'https://simplerest.co/login/fb_callback');
-
 class FacebookController extends Controller
 {
     protected $client;
@@ -22,8 +18,8 @@ class FacebookController extends Controller
         parent::__construct();
 
         $fb = new \Facebook\Facebook([
-            'app_id' => APP_ID, 
-            'app_secret' => APP_SECRET,
+            'app_id' => $this->config['facebook_auth']['app_id'], 
+            'app_secret' => $this->config['facebook_auth']['app_secret'],
             'default_graph_version' => 'v3.2',
         ]);
 

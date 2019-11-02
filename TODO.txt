@@ -2,6 +2,12 @@
 
 - Corregir: al tener `belongs_to` como nullable en el modelo (en Users por ejemplo)... revienta! 
 
+- Agregar transacciones !
+
+- Eventos: 
+ 
+  * al verificar el correo poder por ejemplo agregar el rol usuario 'regular'
+
 - Advertir que se está intentando usar un operador inexistente en la API ejemplo: ne por neq
 
 - Arreglar lo que pasa si un usuario es borrado con soft delete (warnings)

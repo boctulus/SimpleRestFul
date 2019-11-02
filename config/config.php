@@ -29,8 +29,8 @@ return [
 		'encryption' => 'HS256'	
 	],
 
-	// podría haber otro límite que dependa del rol del usuario o algo en su registro
-	'max_records' => 50,
+	// 'registered' or other
+	'registration_role' => 'regular',
 
 	// seconds
 	'email' => [
@@ -39,5 +39,21 @@ return [
 		'encryption' => 'HS256'	
 	],
 
-	'pretty' => true		
+	'pretty' => true,	
+	
+	// absolute LIMIT for queries
+	'max_records' => 50,
+
+	'google_auth'  => [
+		'client_id' => '228180780767-4p8t6nvocukmu44ti57o60n1ck6sokpd.apps.googleusercontent.com',
+		'client_secret' => 'JByioBo6mRiVBkhW3ldylYKD',
+		'callback' => 'https://simplerest.mapapulque.ro/login/google_login'
+	],
+
+	'facebook_auth' => [
+		'app_id' => '533640957216135',
+		'app_secret' => '234a9cf42e8710ed813d45ed9e0fb212', 
+		'callback' => 'https://simplerest.mapapulque.ro/login/fb_login'
+	]
+	
 ];

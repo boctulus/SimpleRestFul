@@ -245,11 +245,11 @@ Se sugiere implementarlo agregando un parámetro en la url:
 	GET /api/products/136/version=2
 
 
-# Nginx web server
+# NGINX web server
 
 Agregar en el bloque lo siguiente:
 
-location /{
-	rewrite ^([^.]*[^/])$ $1/ permanent;
-	try_files $uri $uri/ /index.php?q=$uri&$args;
-}
+	location /{
+		rewrite ^([^.]*[^/])$ $1/ permanent;
+		try_files $uri $uri/ /index.php?q=$uri&$args;
+	}

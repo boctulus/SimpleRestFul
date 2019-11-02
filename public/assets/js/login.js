@@ -16,7 +16,7 @@ function checkpoint()
 		if (localStorage.getItem('refresh_token')){
 			renew();	
 		}else{
-			//window.location = login_page; 
+			window.location = login_page; 
 		} 
 			
 	}		 
