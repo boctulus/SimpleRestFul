@@ -80,7 +80,7 @@ Example:
     
 ### Pretty print 
 
-    GET /api/products?pretty=true
+    GET /api/products?pretty
 
 ## POST <CREATE>
 

@@ -6,7 +6,6 @@ use Exception;
 use simplerest\core\Controller;
 use simplerest\core\interfaces\IAuth;
 use simplerest\libs\Factory;
-use simplerest\libs\Database;
 use simplerest\models\UsersModel;
 use simplerest\models\RolesModel;
 use simplerest\models\UserRoleModel;
@@ -210,7 +209,8 @@ class AuthController extends Controller implements IAuth
                 Factory::response()->sendError("Error in user registration!");
 
             if ($u->inSchema(['belongs_to'])){
-                Database::table('users')->where(['id', $u->id])->update(['belongs_to' => $uid]);
+                $u->where(['id', $u->id]);
+                $u->update(['belongs_to' => $uid]);
             }
 
             $ur = new UserRoleModel($conn);

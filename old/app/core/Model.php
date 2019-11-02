@@ -362,8 +362,8 @@ class Model {
 		//DEBUG::debug($values);
 		
 		//var_dump($q);
-		//var_export($vars);
-		//var_export($values);
+		//var_dump($vars);
+		//var_dump($values);
 
 		$st = $this->conn->prepare($q);
 				

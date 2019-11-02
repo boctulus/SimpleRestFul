@@ -4,7 +4,7 @@ require_once 'constants.php';
 
 return [
 	'BASE_URL' => '/',   
-	'DEFAULT_CONTROLLER' => 'ProductsController',
+	'DEFAULT_CONTROLLER' => 'DumbController',
 
 	'database' => [
 		'host' => 'localhost',
@@ -39,5 +39,6 @@ return [
 		'encryption' => 'HS256'	
 	],
 
-	'pretty' => true		
+	'pretty' => true	
+		
 ];
