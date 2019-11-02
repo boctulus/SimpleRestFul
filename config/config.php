@@ -3,7 +3,11 @@
 require_once 'constants.php';
 
 return [
-	'BASE_URL' => '/',   
+	#
+	# For a sub-foder foo, ...
+	# BASE_URL' => /foo/'
+	#
+	'BASE_URL' => '/simple/',   
 	'DEFAULT_CONTROLLER' => 'ProductsController',
 
 	'database' => [
