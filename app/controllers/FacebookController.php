@@ -17,6 +17,10 @@ class FacebookController extends Controller
     {
         parent::__construct();
 
+        if (!session_id()) {
+            session_start();
+        }
+
         $fb = new \Facebook\Facebook([
             'app_id' => $this->config['facebook_auth']['app_id'], 
             'app_secret' => $this->config['facebook_auth']['app_secret'],
@@ -30,25 +34,6 @@ class FacebookController extends Controller
         return $this->client;
     }
 
-    protected function gen_jwt(array $props, string $token_type){
-        $time = time();
-
-        $payload = [
-            'alg' => $this->config[$token_type]['encryption'],
-            'typ' => 'JWT',
-            'iat' => $time, 
-            'exp' => $time + $this->config[$token_type]['expiration_time']
-        ];
-        
-        $payload = array_merge($payload, $props);
-
-        return \Firebase\JWT\JWT::encode($payload, $this->config[$token_type]['secret_key'],  $this->config[$token_type]['encryption']);
-    }
-    
-    function login_or_register()
-    {
-       // ..
-    }        
 
 	
 }

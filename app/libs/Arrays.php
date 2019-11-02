@@ -37,14 +37,14 @@ class Arrays
         return $out;
     }
  
-    function array_key_first(array $arr) {
+    static function array_key_first(array $arr) {
         foreach($arr as $key => $unused) {
             return $key;
         }
         return NULL;
     }
 
-    function is_assoc(array $arr)
+    static function is_assoc(array $arr)
     {
         foreach(array_keys($arr) as $key)
 		if (!is_int($key)) return TRUE;

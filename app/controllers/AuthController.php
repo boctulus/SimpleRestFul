@@ -213,11 +213,12 @@ class AuthController extends Controller implements IAuth
                 Database::table('users')->where(['id', $u->id])->update(['belongs_to' => $uid]);
             }
 
-            $ur = new UserRoleModel($conn);
-            $id = $ur->create([ 'user_id' => $uid, 'role_id' => 1 ]);  // registered
-            
             $r = new RolesModel();
             $role = $this->config['registration_role'];
+
+            $ur = new UserRoleModel($conn);
+            $id = $ur->create([ 'user_id' => $uid, 'role_id' => $r->get_role_id($role) ]);  // registered or other           
+
 
             $access  = $this->gen_jwt(['uid' => $u->id, 'roles' => [$role] ], 'access_token');
             $refresh = $this->gen_jwt(['uid' => $u->id, 'roles' => [$role] ], 'refresh_token');

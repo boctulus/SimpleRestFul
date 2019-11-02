@@ -20,6 +20,15 @@ class RolesModel {
 		100 => ['name'=> 'admin',     'is_admin' => true]
 	];
 
+	function get_role_id($name){
+		foreach ($this->roles as $ix => $r){
+			if ($r['name'] == $name)
+				return $ix;
+		}
+
+		return null;
+	}
+
 	/**
 	 * is_admin
 	 *
