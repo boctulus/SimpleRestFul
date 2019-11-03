@@ -82,11 +82,11 @@ Example:
 
     GET /api/products?pretty
 
+By default pretty print can be enabled or disabled in config/config.php    
+
 ## POST <CREATE>
 
     POST /api/products
-
-With a request body like:
 
     {
         "name": "Vodka",
@@ -100,12 +100,13 @@ With a request body like:
 
     DELETE /api/products/100
 
+A record can be effectly deleted from database or if soft-delete is enabled then be marked as deleted in which case it will be seen as deleted as well.
+
+When a record is softly deleted then it can be seen at TrashCan where is posible to delete it permanently or be recovered.
 
 ## PUT  <UPDATE>
 
     PUT /api/products/84
-
-With a request body like:
 
     {
         "name": "Vodka",
@@ -118,8 +119,6 @@ With a request body like:
 ## PATCH <PARTIAL UPDATE>
 
     PUT /api/products/84
-
-With a request body like:
 
     {
         "description": "from Mongolia",
