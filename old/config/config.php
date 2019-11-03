@@ -3,12 +3,7 @@
 require_once 'constants.php';
 
 return [
-	#
-	# For a sub-foder in /var/www/html just set as
-	# BASE_URL' => /folder/'
-	#
 	'BASE_URL' => '/',   
-	'HTTPS' => 'Off',
 	'DEFAULT_CONTROLLER' => 'ProductsController',
 
 	'database' => [
@@ -37,6 +32,9 @@ return [
 	// 'registered' or other
 	'registration_role' => 'regular',
 
+	// podría haber otro límite que dependa del rol del usuario o algo en su registro
+	'max_records' => 50,
+
 	// seconds
 	'email' => [
 		'secret_key' => 'TbD:||:"%;(]]I{Q[*Q"[}=J`.~z#j*.-Vt"]*!~>#k}`!~^^%[?>.T_}] }@:<|=/{]y~[^ @)?WV^)+c$"l+&@.\?Nx~$_Gx=%_=Lu:&?!~\{{?%*?}IV~@:d:|][:/;luvS"*h{"n^\]/?[:@(:SM+~~)$vh\%_Q:[[M(~xx.)%|}),c,{$gw#{~h>:@-B|_`(L~\%:[r]$=`+:]St#!}%#@|?{[m@;("[^!Y_TbSNl-k{.}.vO:)"`}:|%G:/+P$fG(W>G[\|="z`||~fC+kLe[~+E~}}#`B>: }d"\Z)R}f@Y&X..d{/px~~_zc]+{d]##|a$M@,P>~U`A!CR*:!`~?)|\mVB!|+ uQ*l*\;|*_zc"*d}+q;s{@C()V$vIv*=B[{$ `S!&+`_t;{u:&_ `DU|BD@|;"NS.)>+^&@ssm\^%#h+\{{&fnN@![%#@/[F.>),PT\i~n|^$~$&I\;=;U}"N.(LI&{m&o&S >X`$-<|td~-Kyx].h?/O]',
@@ -44,12 +42,7 @@ return [
 		'encryption' => 'HS256'	
 	],
 
-	'pretty' => true,	
-	
-	// absolute LIMIT for queries
-	'max_records' => 50,
-
-	'google_auth'  => [
+    'google_auth'  => [
 		'client_id' => '228180780767-4p8t6nvocukmu44ti57o60n1ck6sokpd.apps.googleusercontent.com',
 		'client_secret' => 'JByioBo6mRiVBkhW3ldylYKD',
 		'callback' => 'https://simplerest.mapapulque.ro/login/google_login'
@@ -59,6 +52,8 @@ return [
 		'app_id' => '533640957216135',
 		'app_secret' => '234a9cf42e8710ed813d45ed9e0fb212', 
 		'callback' => 'https://simplerest.mapapulque.ro/login/fb_login'
-	]
-	
+	],
+
+	'pretty' => true	
+		
 ];

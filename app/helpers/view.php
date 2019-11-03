@@ -10,8 +10,15 @@ function assets($resource){
     */
 
     $config = include CONFIG_PATH . 'config.php';
+    
+    if ($config['HTTPS'] == 1 || strtolower($config['HTTPS']) == 'on'){
+        $protocol = 'https:';
+    } else {
+        $protocol = 'http:';
+    }
+    
     $public =  $config['BASE_URL'] == '/' ? '' : 'public';
-    return '//' . $_SERVER['HTTP_HOST'].$config['BASE_URL']."$public/assets/".$resource;
+    return $protocol . '//' . $_SERVER['HTTP_HOST'].$config['BASE_URL']."$public/assets/".$resource;
 }
 
 function section($view){
