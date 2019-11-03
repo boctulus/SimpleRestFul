@@ -19,7 +19,7 @@ class DumbController extends Controller
     }
 
     function index(){
-        echo "<img src='mail.png' />";
+        return 'INDEX';
     }
 
     function sum($a, $b){

@@ -51,12 +51,11 @@ Si el modelo posee un campo llamado "modified_at" automáticamente será utiliza
 Como los modelos heredan de la clase Model adquieren funcionalidad de métodos como:
 
 create()
-delte()
+delete()
 update()
-exists()
 fetch()
 fetchAll()
-filter()
+get()
 etc.
 
 
@@ -71,6 +70,10 @@ Nota:
 El framework maneja varias tablas para implementar el ACL, entre ellas `group_permissions` se encarga de mantener los permisos de lectura y escritura concedidos por el usuario (owner del recurso) a cierto grupo de usuarios "miembros" del grupo.
 
 También existen permisos para "otros" o sea para cualquier otro usuario sin necesidad de especificarlo. Los permisos para "otros" pueden ser para invitados ("guest") o sea visitantes que no han entregado credenciales.
+
+Los usuarios no registrados o "invitados" (guest) solo pueden visualizar registros pertenecientes a carpetas compartidas con "otros" especificando acceso para invitados.
+
+Es posible hacer que un invitado visualice todos los registros (que no pertenezcan a carpetas que de por si son privadas excepto se expongan con permisos para grupo y otros) espeficando en la api $guest_root_access = true
 
 
 ### Roles

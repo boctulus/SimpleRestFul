@@ -34,7 +34,7 @@ return [
 		'encryption' => 'HS256'	
 	],
 
-	// 'registered' or other
+	// 'registered' or other role
 	'registration_role' => 'regular',
 
 	// seconds

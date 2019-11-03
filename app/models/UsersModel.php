@@ -65,27 +65,6 @@ class UsersModel extends Model
 	}
 
 	/*
-		Usar password_hash / password_verify en su lugar
-	*/
-	function checkUserAndPass()
-	{
-		$q  = "SELECT * FROM ".$this->table_name." WHERE email=? AND password=?";
-		$st = $this->conn->prepare($q);
-		$st->execute([$this->email, sha1($this->password)]);
-	
-		$row = $st->fetch(\PDO::FETCH_OBJ);
-		
-		if ($row){
-			foreach ($row as $k => $field){
-				$this->{$k} = $row->$k;
-			}
-			return true;
-		}
-		
-		return false;
-	}
-	
-	/*
 		@return array of all available roles for the user
 	*/
 	function fetchRoles($id)
