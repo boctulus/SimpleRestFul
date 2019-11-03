@@ -13,8 +13,9 @@ class FrontController
         $config = include '../config/config.php';
 
         $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+        $path = preg_replace('/(.*)\/index.php/', '/', $path);
 
-        if (strpos($path, $config['BASE_URL']) === 0) {
+        if ($config['BASE_URL'] != '/' && strpos($path, $config['BASE_URL']) === 0) {
             $path = substr($path, strlen($config['BASE_URL']));
         }   
 

@@ -13,7 +13,9 @@ class Url {
         */
 
         $config = include CONFIG_PATH . 'config.php';
-        return  HTTP_PROTOCOL. '//'. $_SERVER['HTTP_HOST'].'/'.$config['BASE_URL'].'assets/'.$resource;
+
+        $public = $config['BASE_URL'] == '/' ? '' : 'public/';
+        return  HTTP_PROTOCOL. '//'. $_SERVER['HTTP_HOST'].'/'.$config['BASE_URL']. $public. 'assets/'.$resource;
     }
     
     static function section($view){

@@ -10,7 +10,8 @@ function assets($resource){
     */
 
     $config = include CONFIG_PATH . 'config.php';
-    return '//' . $_SERVER['HTTP_HOST'].$config['BASE_URL'].'assets/'.$resource;
+    $public =  $config['BASE_URL'] == '/' ? '' : 'public';
+    return '//' . $_SERVER['HTTP_HOST'].$config['BASE_URL']."$public/assets/".$resource;
 }
 
 function section($view){

@@ -10,7 +10,7 @@
 
 
 <script type="text/javascript">
-	const endpoint = '/api/users';
+	const endpoint = 'api/users';
 	const minutes_for_refresh = 2 // 2
 
 	let $data = [];

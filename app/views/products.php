@@ -102,7 +102,7 @@
 	
 </div>		
 <script type="text/javascript">
-	const endpoint = '/api/products';
+	const endpoint = 'api/products';
 
 	if (localStorage.getItem('expires_in') == null)
 		localStorage.setItem('expires_in', 59);  
