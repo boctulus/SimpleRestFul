@@ -100,9 +100,9 @@ By default pretty print can be enabled or disabled in config/config.php
 
     DELETE /api/products/100
 
-A record can be effectly deleted from database or if soft-delete is enabled then be marked as deleted in which case it will be seen as deleted as well.
+A record can be effectly deleted in one shot from database or if soft-delete is enabled then be marked as deleted in which case it will be seen as deleted as well.
 
-When a record is softly deleted then it can be seen at TrashCan where is posible to delete it permanently or be recovered.
+When a record is softly deleted then it can be seen at TrashCan where is posible to delete it permanently or to be recovered.
 
 ## PUT  <UPDATE>
 

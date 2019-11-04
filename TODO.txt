@@ -1,7 +1,5 @@
 # TODO
 
-- Corregir: al tener `belongs_to` como nullable en el modelo (en Users por ejemplo)... revienta! 
-
 - Agregar transacciones !
 
 - Eventos: 
@@ -12,13 +10,7 @@
 
 - Arreglar lo que pasa si un usuario es borrado con soft delete (warnings)
 
-- Convertir automáticamente condiciones simples de tipo clave => valor en [clave, valor] para filter
-
 - Terminar conector de Facebook que requiere SSL
-
-- Intentar atajar el error al buscar un campo que no existe:
-
-http://simplerest.lan/api/products?campo=valor
 
 - Usar un envelope como en Instagram
 

@@ -233,8 +233,19 @@ abstract class ApiController extends Controller
             $fields  = Arrays::shift($_get,'fields');
             $fields  = $fields != NULL ? explode(',',$fields) : NULL;
 
+            $properties = $instance->getProperties();
+            foreach ((array) $fields as $field){
+                if (!in_array($field,$properties))
+                    Factory::response()->sendError("Unknown field '$field'", 400);
+            }
+
             $exclude = Arrays::shift($_get,'exclude');
             $exclude = $exclude != NULL ? explode(',',$exclude) : NULL;
+
+            foreach ((array) $exclude as $field){
+                if (!in_array($field,$properties))
+                    Factory::response()->sendError("Unknown field '$field' in exclude", 400);
+            }
 
             if ($exclude != null)
                 $instance->hide($exclude);
@@ -382,6 +393,12 @@ abstract class ApiController extends Controller
                     }                           
                 }
           
+                 // Si se pide algo que involucra un campo no está en el schema lanzar error
+                 foreach ($_get as $arr){
+                     if (!in_array($arr[0],$properties))
+                         Factory::response()->sendError("Unknown field '$arr[0]'", 400);
+                 }
+                  
                 if (empty($folder)){
                     // root, sin especificar folder ni id (lista)
                     if ($this->is_guest()){
@@ -403,9 +420,7 @@ abstract class ApiController extends Controller
                     $_get[] = [$this->folder_field, $f->value];
                     $_get[] = ['belongs_to', $f->belongs_to];
                 }
-
-                //var_dump($_get); ////
-             
+           
                 if (strtolower($pretty) == 'false' || $pretty === 0)
                     $pretty = false;
                 else

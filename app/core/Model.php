@@ -11,7 +11,7 @@ class Model {
 	protected $id_name = 'id';
 	protected $schema;
 	protected $nullable = [];
-	protected $fillable = [];
+	protected $fillable;
 	protected $hidden;
 	protected $properties = [];
 	protected $joins = [];
@@ -38,6 +38,11 @@ class Model {
 			throw new \Exception ("Schema is empty!");
 
 		$this->properties = array_keys($this->schema);
+
+		if ($this->fillable == NULL){
+			$this->fillable = $this->properties;
+			$this->unfill([$this->id_name, 'created_at', 'modified_at']);
+		}
 	}
 
 	public function setTableAlias($tb_alias){
@@ -679,7 +684,7 @@ class Model {
 	/**
 	 * Get schema 
 	 */ 
-	public function getSchema()
+	public function getProperties()
 	{
 		return $this->properties;
 	}
@@ -688,6 +693,9 @@ class Model {
 		return in_array($field, $this->nullable);
 	}
 
+	public function getFillables(){
+		return $this->fillable;
+	}
 
 	/**
 	 * Set the value of conn

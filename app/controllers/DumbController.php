@@ -232,9 +232,25 @@ class DumbController extends Controller
         Debug::debug($id);
     }
 
+    function fillables(){
+        $str = '';
+        for ($i=0;$i<20;$i++)
+            $str .= chr(rand(97,122));
+
+        $p = Database::table('products');
+        $affected = $p->where(['id' => 121])->update([
+            'id' => 500,
+            'description' => $str
+        ]);
+
+        // Show result
+        $rows = Database::table('products')->where(['id' => 500])->get();
+        Debug::debug($rows);
+    }
+
     function update_products() {
         $p = Database::table('products');
-        $count = $p->where(['cost', 100, '<'])->update(['belongs_to' => 90]);
+        $count = $p->where(['cost', 150, '<'])->update(['belongs_to' => 90]);
         
         Debug::debug($count);
     }

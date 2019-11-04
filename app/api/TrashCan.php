@@ -38,11 +38,22 @@ class TrashCan extends MyApiController
             $instance = new $model($conn); 
             ////////////////////////////////////////////////////
             
-            $fields = Arrays::shift($_get,'fields');
-            $fields = $fields != NULL ? explode(',',$fields) : NULL;
+            $fields  = Arrays::shift($_get,'fields');
+            $fields  = $fields != NULL ? explode(',',$fields) : NULL;
+
+            $properties = $instance->getProperties();
+            foreach ((array) $fields as $field){
+                if (!in_array($field,$properties))
+                    Factory::response()->sendError("Unknown field '$field'", 400);
+            }
 
             $exclude = Arrays::shift($_get,'exclude');
             $exclude = $exclude != NULL ? explode(',',$exclude) : NULL;
+
+            foreach ((array) $exclude as $field){
+                if (!in_array($field,$properties))
+                    Factory::response()->sendError("Unknown field '$field' in exclude", 400);
+            }
 
             if ($exclude != null)
                 $instance->hide($exclude);
@@ -63,7 +74,7 @@ class TrashCan extends MyApiController
                 ];  
 
                 if (!$this->is_admin)
-                        $_get[] = ['belongs_to', $this->uid];
+                    $_get[] = ['belongs_to', $this->uid];
 
                 $rows = $instance->where($_get)->get($fields); 
                 if (empty($rows))
@@ -165,7 +176,12 @@ class TrashCan extends MyApiController
                         
                     }                           
                 }
-          
+
+                // Si se pide algo que involucra un campo no está en el schema lanzar error
+                foreach ($_get as $arr){
+                    if (!in_array($arr[0],$properties))
+                        Factory::response()->sendError("Unknown field '$arr[0]'", 400);
+                }
                 
                 // root, sin especificar folder ni id (lista)
                 if ($this->is_guest()){
@@ -236,7 +252,7 @@ class TrashCan extends MyApiController
         ///
 
         $instance->showDeleted(); //
-         $missing = $instance->diffWithSchema($data, ['id', 'belongs_to']);
+        $missing = $instance->diffWithSchema($data, ['id', 'belongs_to']);
 
         if (!empty($missing))
             Factory::response()->sendError('Lack some properties in your request: '.implode(',',$missing), 400);
@@ -255,7 +271,7 @@ class TrashCan extends MyApiController
             }
 
             if (!$this->is_admin)
-                    $_get[] = ['belongs_to', $this->uid];
+                $_get[] = ['belongs_to', $this->uid];
             
             if (!$this->is_admin && $rows[0]['belongs_to'] != $this->uid){
                 Factory::response()->sendCode(403);

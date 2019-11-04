@@ -9,6 +9,7 @@ class UsersModel extends Model
  { 
 	protected $table_name = "users";
 	protected $id_name = 'id';
+	/*
 	protected $fillable = [
 							'email',
 							'password',
@@ -18,6 +19,7 @@ class UsersModel extends Model
 							'deleted_at',
 							'belongs_to'
 	];
+	*/
 	protected $nullable = ['id', 'firstname', 'lastname', 'deleted_at', 'belongs_to', 'confirmed_email'];
 	protected $hidden   = ['password', /* 'belongs_to', */ 'confirmed_email'];
 
