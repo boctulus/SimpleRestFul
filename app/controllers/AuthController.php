@@ -209,8 +209,9 @@ class AuthController extends Controller implements IAuth
             if (empty($uid))
                 Factory::response()->sendError("Error in user registration!");
 
+            $u = Database::table('users');    
             if ($u->inSchema(['belongs_to'])){
-                Database::table('users')->where(['id', $u->id])->update(['belongs_to' => $uid]);
+                $affected = $u->where(['id', $uid])->update(['belongs_to' => $uid]);
             }
 
             $r = new RolesModel();
@@ -220,8 +221,8 @@ class AuthController extends Controller implements IAuth
             $id = $ur->create([ 'user_id' => $uid, 'role_id' => $r->get_role_id($role) ]);  // registered or other           
 
 
-            $access  = $this->gen_jwt(['uid' => $u->id, 'roles' => [$role] ], 'access_token');
-            $refresh = $this->gen_jwt(['uid' => $u->id, 'roles' => [$role] ], 'refresh_token');
+            $access  = $this->gen_jwt(['uid' => $uid, 'roles' => [$role] ], 'access_token');
+            $refresh = $this->gen_jwt(['uid' => $uid, 'roles' => [$role] ], 'refresh_token');
 
             Factory::response()->send([ 
                                         'access_token'=> $access,

@@ -693,6 +693,10 @@ class Model {
 		return in_array($field, $this->nullable);
 	}
 
+	public function isFillable(string $field){
+		return in_array($field, $this->fillable);
+	}
+
 	public function getFillables(){
 		return $this->fillable;
 	}

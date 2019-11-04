@@ -39,7 +39,7 @@ function signup(){
 
 	$.ajax({
 		type : "POST",
-		url: "auth/signup",
+		url: "/auth/signup",
 		data : JSON.stringify(obj),
 		dataType: 'json',
 		success : function(data) {
@@ -76,7 +76,7 @@ function login(){
 
 	$.ajax({
 		type: "POST",
-		url: 'auth/login',
+		url: '/auth/login',
 		data: JSON.stringify(obj),
 		dataType: 'json',
 		success: function(data){
@@ -113,7 +113,7 @@ function renew(){
 
 	$.ajax({
 		type: "POST",
-		url: 'auth/token',
+		url: '/auth/token',
 		dataType: 'json',
 		headers: {"Authorization": 'Bearer ' + localStorage.getItem('refresh_token')}, 
 		success: function(data){
@@ -148,7 +148,7 @@ function rememberme(){
 
 	$.ajax({
 		type: "POST",
-		url: 'login/rememberme_process',
+		url: '/login/rememberme_process',
 		data: JSON.stringify(obj),
 		dataType: 'json', 
 		success: function(data){
@@ -185,7 +185,7 @@ function update_pass()
 
 	$.ajax({
 		type : "PATCH",
-		url: "login/change_email_process",
+		url: "/login/change_email_process",
 		headers: {"Authorization": 'Bearer ' + token},
 		data : JSON.stringify(obj),
 		dataType: 'json',
