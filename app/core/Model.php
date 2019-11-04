@@ -41,8 +41,10 @@ class Model {
 
 		if ($this->fillable == NULL){
 			$this->fillable = $this->properties;
-			$this->unfill([$this->id_name, 'created_at', 'modified_at', 'deleted_at']);
+			$this->unfill([$this->id_name, 'created_at', 'modified_at', 'deleted_at', 'locked']);
 		}
+
+		$this->nullable[] = 'locked';
 	}
 
 	public function setTableAlias($tb_alias){

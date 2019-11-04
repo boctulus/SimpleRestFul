@@ -73,8 +73,13 @@ class TrashCan extends MyApiController
                     ['deleted_at', NULL, 'IS NOT']
                 ];  
 
-                if (!$this->is_admin)
+                if (!$this->is_admin){  
                     $_get[] = ['belongs_to', $this->uid];
+
+                    if ($instance->inSchema(['locked'])){
+                        $_get[] = ['locked', 1, '!='];
+                    }    
+                } 
 
                 $rows = $instance->where($_get)->get($fields); 
                 if (empty($rows))
@@ -152,25 +157,29 @@ class TrashCan extends MyApiController
                                         $op = array_keys($val[1])[0];
                                         $v  = array_values($val[1])[0];
 
+                                        $found = false;
                                         foreach ($allops as $ko => $oo){
                                             if ($op == $oo){
                                                 $op = $eqops[$ko];
-                                                unset($_get[$key]);
-                                                $_get[] = [$campo, $v, $op];                             
+                                                $_get[$key] = [$campo, $v, $op]; 
+                                                $found = true;                            
                                                 break;                                    
                                             }                                    
                                         }
+
+                                        if (!$found)
+                                            Factory::response()->sendError("Invalid operator '$op'", 400);
                                     break;
                                 }
                             }
                             
                         }else{
+                            
                             // IN
                             $v = $val[1];
                             if (strpos($v, ',')!== false){    
                                 $vals = explode(',', $v);
-                                unset($_get[$key]);
-                                $_get[] = [$campo, $vals];                                
+                                $_get[$key] = [$campo, $vals];                             
                             } 
                         }   
                         
@@ -194,6 +203,13 @@ class TrashCan extends MyApiController
             
 
                 $_get[] = ['deleted_at', NULL, 'IS NOT'];
+
+        
+                if (!$this->is_admin){                  
+                    if ($instance->inSchema(['locked'])){
+                        $_get[] = ['locked', 1, '!='];
+                    }    
+                } 
 
                 //var_dump($_get); ////
                 //var_export($_get); 
@@ -252,6 +268,7 @@ class TrashCan extends MyApiController
         ///
 
         $instance->showDeleted(); //
+        $instance->fill(['deleted_at']);
         $missing = $instance->diffWithSchema($data, ['id', 'belongs_to']);
 
         if (!empty($missing))
@@ -268,6 +285,10 @@ class TrashCan extends MyApiController
 
             if (count($rows) == 0){
                 Factory::response()->code(404)->sendError("Register for id=$id does not exists in trash can");
+            }
+
+            if (isset($rows[0]['locked']) && $rows[0]['locked'] == 1){
+                Factory::response()->sendError("Locked by Admin", 403);
             }
 
             if (!$this->is_admin)
@@ -344,6 +365,7 @@ class TrashCan extends MyApiController
             ///
 
             $instance->showDeleted(); //
+            $instance->fill(['deleted_at']);
 
             $rows = $instance->where([
                 ['id', $id],
@@ -352,6 +374,10 @@ class TrashCan extends MyApiController
             
             if (count($rows) == 0){
                 Factory::response()->code(404)->sendError("Register for id=$id does not exists in trash can");
+            }
+
+            if (isset($rows[0]['locked']) && $rows[0]['locked'] == 1){
+                Factory::response()->sendError("Locked by Admin", 403);
             }
 
             if (!$this->is_admin)
@@ -427,14 +453,18 @@ class TrashCan extends MyApiController
                 ['id', $id],
                 ['deleted_at', NULL, 'IS NOT']
             ])->get();
-            
+
             if (count($rows) == 0){
                 Factory::response()->code(404)->sendError("Register for id=$id does not exists in trash");
             }
             
             if (!$this->is_admin && $rows[0]['belongs_to'] != $this->uid){
                 Factory::response()->sendCode(403);
-            }               
+            }         
+                        
+            if (isset($rows[0]['locked']) && $rows[0]['locked'] == 1){
+                Factory::response()->sendError("Locked by Admin", 403);
+            }
 
             if($instance->delete(false)){
                 Factory::response()->sendJson("OK");

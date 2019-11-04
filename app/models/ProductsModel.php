@@ -24,11 +24,12 @@ class ProductsModel extends Model
 		'description' => 'STR',
 		'size' => 'STR',
 		'cost' => 'INT',
+		'workspace' => 'STR',
 		'created_at' => 'STR',
 		'modified_at' => 'STR',
 		'deleted_at' => 'STR',
-		'workspace' => 'STR', 
-		'belongs_to' => 'INT'  // 
+		'locked' => 'INT',		 
+		'belongs_to' => 'INT' 
 	];
 
     public function __construct($db = NULL){

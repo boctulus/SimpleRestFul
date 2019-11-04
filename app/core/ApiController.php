@@ -324,8 +324,7 @@ abstract class ApiController extends Controller
                 foreach ($_get as $key => $val){
                     if (is_array($val)){
 
-                        $campo = $val[0];
-                        //var_dump($val[1]); exit; //                         
+                        $campo = $val[0];                       
 
                         if (is_array($val[1])){                             
 
@@ -369,20 +368,25 @@ abstract class ApiController extends Controller
                                         $op = array_keys($val[1])[0];
                                         $v  = array_values($val[1])[0];
 
+                                        $found = false;
                                         foreach ($allops as $ko => $oo){
                                             if ($op == $oo){
                                                 $op = $eqops[$ko];
-                                                $_get[$key] = [$campo, $v, $op];                             
+                                                $_get[$key] = [$campo, $v, $op]; 
+                                                $found = true;                            
                                                 break;                                    
                                             }                                    
                                         }
+
+                                        if (!$found)
+                                            Factory::response()->sendError("Invalid operator '$op'", 400);
                                     break;
                                 }
                             }
                             
-                        }else{
-                            // IN
+                        }else{                           
 
+                            // IN
                             $v = $val[1];
                             if (strpos($v, ',')!== false){    
                                 $vals = explode(',', $v);
@@ -390,6 +394,8 @@ abstract class ApiController extends Controller
                             } 
                         }   
                         
+                    }else {
+                        // ???
                     }                           
                 }
           
@@ -724,6 +730,10 @@ abstract class ApiController extends Controller
                 }
             }   
 
+            if (isset($rows[0]['locked']) && $rows[0]['locked'] == 1){
+                Factory::response()->sendError("Locked by Admin", 403);
+            }
+            
             if($instance->delete($this->soft_delete && $instance->inSchema(['deleted_at']) )){
                 Factory::response()->sendJson("OK");
             }	

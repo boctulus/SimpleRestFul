@@ -243,7 +243,22 @@ Para eliminar *permanentemente* un recurso se realiza un DELETE sobre el element
 	{
     	"entity": "Products"
 	}
-	
+
+
+### Registros bloqueados
+
+El admin puede colocar un "lock" sobre registros impidiendo que:
+
+- Puedan ser modificados por el propietario. Le arrojará un código 403. -- OK
+- No puedan ser borrados. Le arrojará un código 403. -- OK
+- No puedan ser vistos en la papelera por el propietario. Le arrojará un codigo 404. --OK
+- No puedan ser recuperados por el propietario. Le arrojará un código 403. -- OK
+- No puedan ser borrados permanentemente por el propietario cuando se hayan en la papelera. -- OK
+
+La idea es que un registro borrado por el Admin sea automáticamente bloqueado para el usuario propietario evitando así que pueda modificarlo, recuperarlo o borrarlo permanentemente.
+
+Una entidad correspondiente a un endpoint si contiene un campo 'locked' de tipo "bool" entonces queda habilitada para el mecanismo de "bloqueo".
+
 
 ### Versionado
 

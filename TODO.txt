@@ -6,11 +6,9 @@
  
   * al verificar el correo poder por ejemplo agregar el rol usuario 'regular'
 
-- Advertir que se está intentando usar un operador inexistente en la API ejemplo: ne por neq
-
 - Arreglar lo que pasa si un usuario es borrado con soft delete (warnings)
 
-- Terminar conector de Facebook que requiere SSL
+- Terminar conector de Facebook
 
 - Usar un envelope como en Instagram
 
@@ -198,7 +196,6 @@ https://doc.nuxeo.com/nxdoc/batch-upload-endpoint
 * "additional details embedded"
 * Overriding the HTTP method
 * Rate limiting (quotas)
-* Caching
 * Errors
 
 - Securitizar almacenamiento de tokens -- en cookies?
