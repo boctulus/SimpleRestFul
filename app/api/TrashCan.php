@@ -75,17 +75,18 @@ class TrashCan extends MyApiController
 
                 if (!$this->is_admin){  
                     $_get[] = ['belongs_to', $this->uid];
-
-                    if ($instance->inSchema(['locked'])){
-                        $_get[] = ['locked', 1, '!='];
-                    }    
                 } 
 
                 $rows = $instance->where($_get)->get($fields); 
                 if (empty($rows))
                     Factory::response()->sendError('Not found in trash can', 404);
-                else
-                    Factory::response()->send($rows[0]);
+                
+                if (isset($rows[0]['locked']) && $rows[0]['locked'] == 1){
+                    Factory::response()->sendError("Locked by Admin", 403);
+                }
+                
+                Factory::response()->send($rows[0]);
+
             }else{    
                 // "list
 

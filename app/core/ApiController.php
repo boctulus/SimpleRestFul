@@ -728,12 +728,18 @@ abstract class ApiController extends Controller
                 if (!$this->is_admin && $rows[0]['belongs_to'] != $this->uid){
                     Factory::response()->sendCode(403);
                 }
-            }   
+            }  
 
-            if (isset($rows[0]['locked']) && $rows[0]['locked'] == 1){
-                Factory::response()->sendError("Locked by Admin", 403);
+            if ($this->is_admin){
+                if ($instance->inSchema(['locked'])){
+                    $instance->fill(['locked'])->update(['locked' => 1]);
+                }   
+            }else {
+                if (isset($rows[0]['locked']) && $rows[0]['locked'] == 1){
+                    Factory::response()->sendError("Locked by Admin", 403);
+                }
             }
-            
+       
             if($instance->delete($this->soft_delete && $instance->inSchema(['deleted_at']) )){
                 Factory::response()->sendJson("OK");
             }	

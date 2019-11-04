@@ -95,6 +95,7 @@ class Model {
 				unset($this->hidden[$k]);
 			}
 		}
+		return $this;
 	}
 
 	
@@ -109,6 +110,8 @@ class Model {
 	function hide(array $fields){
 		foreach ($fields as $f)
 			$this->hidden[] = $f;
+
+		return $this;	
 	}
 
 	
@@ -123,6 +126,8 @@ class Model {
 	function fill(array $fields){
 		foreach ($fields as $f)
 			$this->fillable[] = $f;
+
+		return $this;	
 	}
 
 	
@@ -141,6 +146,8 @@ class Model {
 				unset($this->fillable[$k]);
 			}
 		}
+
+		return $this;
 	}
 
 	// INNER JOIN
