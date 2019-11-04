@@ -250,7 +250,7 @@ class DumbController extends Controller
 
     function update_products() {
         $p = Database::table('products');
-        $count = $p->where(['cost', 150, '<'])->update(['belongs_to' => 90]);
+        $count = $p->where([['cost', 100, '<'], ['belongs_to', 90]])->update(['cost' => 100]);
         
         Debug::debug($count);
     }

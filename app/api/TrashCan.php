@@ -406,7 +406,10 @@ class TrashCan extends MyApiController
             /////////////////////////////////////////////////////
             $_get  = Factory::request()->getQuery();
 
-            $entity = Arrays::shift($_get,'entity'); 
+            if (!isset($data['entity']))
+                Factory::response()->sendError('Entity is needed in request body', 400);
+
+            $entity = $data['entity'];    
            
             $this->modelName = ucfirst($entity) . 'Model';
             $this->model_table = strtolower($entity);
@@ -417,7 +420,7 @@ class TrashCan extends MyApiController
             $instance = new $model($conn); 
             ////////////////////////////////////////////////////
 
-            $instance->id = $id;
+            $instance->fill(['deleted_at']); //
 
             $instance->showDeleted(); //
             $rows = $instance->where([

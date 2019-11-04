@@ -691,7 +691,7 @@ abstract class ApiController extends Controller
         
             $model    = 'simplerest\\models\\'.$this->modelName;
             $instance = new $model($conn);
-            #$instance->showDeleted(); //
+            $instance->fill(['deleted_at']); //
 
             $rows = $instance->where(['id', $id])->get();
             

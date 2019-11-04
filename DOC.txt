@@ -238,8 +238,12 @@ Para hacer un "undelete" de un recurso se hace un PATCH o PUT sobre el TrashCan
 
 Para eliminar *permanentemente* un recurso se realiza un DELETE sobre el elemento en la papelera:
 
-	DELETE /api/TrashCan/157?entity=products		
+	DELETE /api/TrashCan/157
 
+	{
+    	"entity": "Products"
+	}
+	
 
 ### Versionado
 
