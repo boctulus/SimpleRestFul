@@ -255,6 +255,10 @@ class DumbController extends Controller
         Debug::debug($count);
     }
 
+    function respuesta(){
+        Factory::response()->sendError('Acceso no autorizado', 401, 'Header vacio');
+    }
+
 
    
 }

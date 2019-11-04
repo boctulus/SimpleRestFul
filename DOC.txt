@@ -42,13 +42,11 @@ Como puede observarse cada campo en el schema es de un tipo, el nombre de la tab
 
 Todas las tablas deben tener un único id inclusive si son "tablas intermedias" (conocidas también como "tablas puente") y se especifica en la propiedad $id_name.
 
-Los campos que pueden ser rellenados al hacer un INSERT o un UPDATE deben especificarse dentro del array $fillable. 
+Los campos que pueden ser rellenados al hacer un INSERT o un UPDATE pueden especificarse dentro del array $fillable. 
 
 Si un campo puede ser NULL, debe incluirse en el array $nullable.
 
-Si el modelo posee un campo llamado "modified_at" automáticamente será utilizado al llamar al método update()
-
-Como los modelos heredan de la clase Model adquieren funcionalidad de métodos como:
+Los modelos heredan de la clase Model y adquieren así funcionalidad de métodos como:
 
 create()
 delete()
@@ -249,18 +247,51 @@ Para eliminar *permanentemente* un recurso se realiza un DELETE sobre el element
 
 El admin puede colocar un "lock" sobre registros impidiendo que:
 
-- Puedan ser modificados por el propietario. Le arrojará un código 403. -- OK
-- No puedan ser borrados. Le arrojará un código 403. -- OK
-- No puedan ser vistos en la papelera por el propietario. Le arrojará un codigo 403. --OK
-- No puedan ser recuperados por el propietario. Le arrojará un código 403. -- OK
-- No puedan ser borrados permanentemente por el propietario cuando se hayan en la papelera. -- OK
+- Puedan ser modificados por el propietario. Le arrojará un código 403. 
+- No puedan ser borrados. Le arrojará un código 403. 
+- No puedan ser vistos en la papelera por el propietario. Le arrojará un codigo 403. 
+- No puedan ser recuperados por el propietario. Le arrojará un código 403. 
+- No puedan ser borrados permanentemente por el propietario cuando se hayan en la papelera. 
 
 Cuando un registro es borrado por el Admin éste es bloqueado para el usuario propietario evitando así que pueda modificarlo, recuperarlo o borrarlo permanentemente.
+
+Implementación:
 
 Una entidad correspondiente a un endpoint si contiene un campo 'locked' de tipo "bool" entonces queda habilitada para el mecanismo de "bloqueo".
 
 
-### Versionado
+# La API
+
+### Las respuestas de la API
+
+Una respuesta exitosa a un GET presenta un campo 'data' en la respuesta:
+
+{
+    "data": {
+        "id": "185",
+        "name": "ABC",
+        "description": "",
+        "size": "",
+        "cost": "0",
+        "created_at": "2019-11-03 23:55:18",
+        "modified_at": null,
+        "deleted_at": null,
+        "locked": "0",
+        "workspace": null,
+        "belongs_to": "132"
+    },
+    "error": "",
+    "error_detail": ""
+}
+
+En cambio una respuesta que contiene un error, puede o no poseer cuerpo pudiendo ser solo el código de estaus http o bien incluir también un cuerpo con los campos "error" y "error_detail"
+
+{
+    "error": "Not found",
+    "error_detail": "Register for id=1850 does not exists"
+}
+
+# Versionado
 
 Se sugiere implementarlo agregando un parámetro en la url:
 

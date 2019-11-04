@@ -102,7 +102,7 @@
 	
 </div>		
 <script type="text/javascript">
-	const endpoint = 'api/products';
+	const endpoint = '/api/products';
 
 	if (localStorage.getItem('expires_in') == null)
 		localStorage.setItem('expires_in', 59);  
@@ -177,8 +177,11 @@
 			data: encoded,
 			dataType: 'json',
 			headers: {"Authorization": 'Bearer ' + localStorage.getItem('access_token')},
-			success: function(data){
+			success: function(res){
+				var data = res.data;
+				
 				console.log(data);
+				
 				if (!data.error){
 					$('#productModalEdit').modal('hide');
 
@@ -204,8 +207,9 @@
 			url: endpoint+'/'+id.toString(),
 			dataType: 'json',
 			headers: {"Authorization": 'Bearer ' + localStorage.getItem('access_token')},
-			success: function(data){
-				// console.log('data for id= '+id.toString(),data);
+			success: function(res){
+				var data = res.data;
+
 				$('#eid').val(data.id);
 				$('#ename').val(data.name);	
 				$('#edescription').val(data.description);	
@@ -242,8 +246,9 @@
 			data: encoded,
 			dataType: 'json',
 			headers: {"Authorization": 'Bearer ' + localStorage.getItem('access_token')},
-			success: function(data){
-				//console.log(data);
+			success: function(res){
+				var data = res.data;
+
 				if (!data.error){
 					$('#productModalAdd').modal('hide');
 
@@ -274,7 +279,9 @@
 						url: endpoint + '/' + id.toString(),
 						dataType: 'json',
 						headers: {"Authorization": 'Bearer ' + localStorage.getItem('access_token')},
-						success: function(data){
+						success: function(res){
+							var data = res.data;
+
 							$('#tr'+id.toString()).remove();
 							toastr["warning"]("Product deleted!", "Success");
 
@@ -303,7 +310,8 @@
 			url: endpoint,
 			dataType: 'json',
 			headers: {"Authorization": 'Bearer ' + localStorage.getItem('access_token')},
-			success: function(data){
+			success: function(res){
+				var data = res.data;
 				
 				// unhide				
 				$('#dvTable').removeClass('hidden');

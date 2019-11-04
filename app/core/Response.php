@@ -77,7 +77,7 @@ class Response
             header(trim('HTTP/'.static::$version.' '.$http_code.' '.static::$http_code_msg));
         
         if (is_array($data) || is_object($data))
-            $data = $this->encode($data);
+            $data = $this->encode([ 'data' => $data, 'error' => '', 'error_detail' => '' ]);
 
         echo $data . "\n"; 
         exit;  	
@@ -95,22 +95,22 @@ class Response
         if ($http_code != NULL)
             header(trim('HTTP/'.static::$version.' '.$http_code.' '.static::$http_code_msg));
        
-        echo $this->encode($data). "\n"; 
+        echo $this->encode([ 'data' => $data, 'error' => '', 'error_detail' => '' ]). "\n"; 
         exit;  	
     }
 
     // send error
-    function sendError(string $msg_error, int $http_code = NULL){
+    function sendError(string $msg_error, int $http_code = NULL, string $error_detail= NULL){
         if ($http_code == NULL)
             if (static::$http_code != NULL)
                 $http_code = static::$http_code;
             else
                 $http_code = 500;
-
+  
         if ($http_code != NULL)
             header(trim('HTTP/'.static::$version.' '.$http_code.' '.static::$http_code_msg));
 
-        echo json_encode(['error' => $msg_error], $http_code) . "\n";
+        echo $this->encode(['error' => $msg_error, 'error_detail' => $error_detail], $http_code) . "\n";
         exit;
     }
 }

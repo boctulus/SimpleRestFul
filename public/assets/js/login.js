@@ -42,7 +42,10 @@ function signup(){
 		url: "/auth/signup",
 		data : JSON.stringify(obj),
 		dataType: 'json',
-		success : function(data) {
+		success : function(res) {
+
+			var data = res.data;
+
 			if (typeof data.access_token != 'undefined'){
 				console.log('Token recibido');
 				localStorage.setItem('access_token',data.access_token);
@@ -79,7 +82,10 @@ function login(){
 		url: '/auth/login',
 		data: JSON.stringify(obj),
 		dataType: 'json',
-		success: function(data){
+		success: function(res){
+
+			var data = res.data;
+
 			if (typeof data.access_token != 'undefined' && typeof data.refresh_token != 'undefined'){
 				localStorage.setItem('access_token',data.access_token);
 				localStorage.setItem('refresh_token',data.refresh_token);
@@ -92,8 +98,8 @@ function login(){
 				$('#loginError').text(data.responseJSON.error);
 			}
 		},
-		error: function(data){
-			console.log('Error (error)',data);
+		error: function(xhr){
+			console.log('Error (error)',xhr);
 			$('#loginError').text('Error de autenticación!!!');
 		}
 	});		
@@ -116,7 +122,9 @@ function renew(){
 		url: '/auth/token',
 		dataType: 'json',
 		headers: {"Authorization": 'Bearer ' + localStorage.getItem('refresh_token')}, 
-		success: function(data){
+		success: function(res){
+			var data = res.data;
+
 			if (typeof data.access_token != 'undefined'){
 				localStorage.setItem('access_token',data.access_token);
 				localStorage.setItem('expires_in',data.expires_in);
@@ -151,7 +159,9 @@ function rememberme(){
 		url: '/login/rememberme_process',
 		data: JSON.stringify(obj),
 		dataType: 'json', 
-		success: function(data){
+		success: function(res){
+			var data = res.data;
+
 			if (typeof data.success != 'undefined'){
 				window.location.replace('/login/rememeberme_mail_sent/' + window.btoa(obj.email));
 			}
@@ -189,7 +199,10 @@ function update_pass()
 		headers: {"Authorization": 'Bearer ' + token},
 		data : JSON.stringify(obj),
 		dataType: 'json',
-		success : function(data) {
+		success : function(res) {
+
+			var data = res.data;
+
 			if (typeof data.access_token != 'undefined'){
 				console.log('Token recibido');
 				localStorage.setItem('access_token',data.access_token);
