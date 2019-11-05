@@ -23,6 +23,9 @@ class LoginController extends MyController
 		$this->view('signup.php', ['title'=>'Registro', 'hidenav'=> true]);
 	}
 
+	/*
+		callback
+	*/
 	function google_login()
 	{
 		$google_ctrl = new GoogleController();

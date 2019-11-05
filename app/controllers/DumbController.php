@@ -129,23 +129,35 @@ class DumbController extends Controller
         ])->orderBy(['size' => 'DESC'])->groupBy(['size'])->get(['size', 'AVG(cost)']));
     }
 
-    /*
-        Sin implementar
+    /*       
+        En caso de tener múltiples condiciones se debe enviar un 
+        array de arrays pero para una sola condición basta con enviar un simple array
 
-        https://www.w3schools.com/sql/sql_having.asp
-        https://laravel.com/docs/5.8/queries
-        https://stackoverflow.com/questions/14756222/multiple-aggregate-functions-in-having-clause
-        https://codeigniter.com/userguide3/database/query_builder.html
+        Cuando la condición es por igualdad (ejemplo: HAVING cost = 100), no es necesario
+        enviar el operador "=" ya que es implícito y en este caso se puede usar un array asociativo:
 
-        Va después de GROUP BY y se concatenan con AND u OR igual que las
-        condiciones de WHERE
+            ->having(['cost' => 100])
+
+        en vez de
+
+            ->having(['cost', 100])
+
+        En el caso de múltiples condiciones estas se concatenan implícitamente con "AND" excepto 
+        se espcifique "OR" como segundo parámetro de having()    
     */     
     function having(){
+        
         Debug::debug(Database::table('products')
-            ->groupBy(['cost'])
-            ->having(['cost', 100, '>='])
-            ->get()
-        );    
+            ->groupBy(['cost', 'size'])
+            ->having(['cost', 100])
+            ->get(['cost', 'size']));   
+
+        Debug::debug(Database::table('products')
+            ->groupBy(['cost', 'size'])
+            ->having([  ['cost', 100, '>='],
+                        ['size' => '1L'] ], 'OR')
+            ->get(['cost', 'size']));    
+    
     }
 
     function joins(){

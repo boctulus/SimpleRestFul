@@ -18,13 +18,16 @@ class Model {
 	protected $show_deleted = false;
 	protected $conn;
 	protected $where;
-	protected $vars = [];
-	protected $values = [];
+	protected $group  = [];
+	protected $having = [];
+	protected $w_vars = [];
+	protected $h_vars = [];
+	protected $w_vals = [];
+	protected $h_vals = [];
 	protected $order = [];
 	protected $limit;
 	protected $offset;
-	protected $group = [];
-	protected $having = [];
+	
 
 	/*
 		Chequear en cada método si hay una conexión 
@@ -351,8 +354,8 @@ class Model {
 
 		////////////////////////
 		$where  = $this->where;
-		$values = $this->values;
-		$vars   = $this->vars;
+		$values = array_merge($this->w_vals, $this->h_vals);
+		$vars   = array_merge($this->w_vars, $this->h_vars);
 		////////////////////////
 
 		$shift = substr_count($where, '?');
@@ -377,6 +380,9 @@ class Model {
 
 		$group = (!empty($this->group)) ? 'GROUP BY '.implode(',', $this->group) : '';
 		$q  .= " $group";
+
+		$having = (!empty($this->having)) ? 'HAVING '.$this->having : '';
+		$q  .= " $having";
 
 		if($paginator!==null){
 			$q .= $paginator->getQuery();
@@ -457,7 +463,7 @@ class Model {
 						$_where[] = "$cond[0] $op ($in_val) ";	
 					}else{
 						$vars[]   = $cond[0];
-						$this->values[] = $cond[1];
+						$this->w_vals[] = $cond[1];
 
 						if ($cond[1] === NULL && (empty($cond[2]) || $cond[2]=='='))
 							$ops[] = 'IS';
@@ -467,7 +473,7 @@ class Model {
 				}
 			}else{
 				$vars[]   = $conditions[0];
-				$this->values[] = $conditions[1];
+				$this->w_vals[] = $conditions[1];
 		
 				if ($conditions[1] === NULL && (empty($conditions[2]) || $conditions[2]== '='))
 					$ops[] = 'IS';
@@ -480,18 +486,48 @@ class Model {
 			$_where[] = "$var $ops[$ix] ?";
 		}
 
-		$this->vars = $vars;
+		$this->w_vars = $vars;
 
 		$this->where = implode(" $conjunction ", $_where);
 		return $this;
 	}
 
-	function filter(array $fields = null, array $conditions, $conjunction = null, array $order = null, int $limit = NULL, int $offset = 0)
-	{
-		if (!empty($conditions))
-			$this->where($conditions, $conjunction);
+	function having(array $conditions, $conjunction = 'AND')
+	{	
+		if (Arrays::is_assoc($conditions)){
+            $conditions = Arrays::nonassoc($conditions);
+        }
 
-		return $this->get($order, $limit, $offset);
+		if ((count($conditions) == 3 || count($conditions) == 2) && !is_array($conditions[1]))
+			$conditions = [$conditions];
+	
+		//Debug::debug($conditions, 'COND:');
+
+		$_having = [];
+		foreach ((array) $conditions as $cond) {		
+		
+			if (Arrays::is_assoc($cond)){
+				//Debug::debug($cond, 'COND PRE-CAMBIO');
+				$cond[0] = Arrays::array_key_first($cond);
+				$cond[1] = $cond[$cond[0]];
+
+				//Debug::debug([$cond[0], $cond[1]], 'COND POST-CAMBIO');
+			}
+			
+			$op = $cond[2] ?? '=';	
+			
+			$_having[] = "$cond[0] $op ?";
+			$this->h_vars[] = $cond[0];
+			$this->h_vals[] = $cond[1];
+		}
+
+		$this->having = implode(" $conjunction ", $_having);
+
+		//Debug::debug($this->having, 'HAVING:');
+		//Debug::debug($this->h_vars, 'VARS');
+		//Debug::debug($this->h_vals, 'VALUES');
+
+		return $this;
 	}
 
 	/**
@@ -506,7 +542,7 @@ class Model {
 	function update(array $data)
 	{
 		$vars   = array_keys($data);
-		$values = array_values($data);
+		$values = array_vals($data);
 
 		if(!empty($this->fillable) && is_array($this->fillable)){
 			foreach($vars as $var){
@@ -610,7 +646,7 @@ class Model {
 	function create(array $data)
 	{
 		$vars   = array_keys($data);
-		$vals = array_values($data);
+		$vals = array_vals($data);
 
 		if(!empty($this->fillable) && is_array($this->fillable)){
 			foreach($vars as $var){

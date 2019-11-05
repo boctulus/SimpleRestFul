@@ -6,7 +6,6 @@ use simplerest\libs\Database;
 
 abstract class Controller
 {
-    protected $allowed  = [];
     protected $callable = [];
 
     function __construct() {
