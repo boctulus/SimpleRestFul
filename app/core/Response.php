@@ -99,7 +99,16 @@ class Response
         exit;  	
     }
 
-    // send error
+   
+    /**
+     * sendError
+     *
+     * @param  string $msg_error
+     * @param  int $http_code
+     * @param  string $error_detail
+     *
+     * @return void
+     */
     function sendError(string $msg_error, int $http_code = NULL, string $error_detail= NULL){
         if ($http_code == NULL)
             if (static::$http_code != NULL)

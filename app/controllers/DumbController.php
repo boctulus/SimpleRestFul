@@ -66,15 +66,15 @@ class DumbController extends Controller
         $conn    = Database::getConnection();
         $p = new ProductsModel($conn);
     
-        Debug::debug($p->order(['cost'=>'ASC', 'id'=>'DESC'])->take(4)->offset(1)->fetchAll());
+        Debug::debug($p->orderBy(['cost'=>'ASC', 'id'=>'DESC'])->take(4)->offset(1)->fetchAll());
 
-        //Debug::debug($p->order(['cost'=>'ASC'])->order(['id'=>'DESC'])->take(4)->offset(1)->fetchAll());
+        Debug::debug($p->orderBy(['cost'=>'ASC'])->orderBy(['id'=>'DESC'])->take(4)->offset(1)->fetchAll());
 
-        //Debug::debug($p->order(['cost'=>'ASC'])->take(4)->offset(1)->fetchAll(null, ['id'=>'DESC']));
+        Debug::debug($p->orderBy(['cost'=>'ASC'])->take(4)->offset(1)->fetchAll(null, ['id'=>'DESC']));
 
-        //Debug::debug($p->order(['cost'=>'ASC'])->order(['id'=>'DESC'])->take(4)->offset(1)->fetchAll());
+        Debug::debug($p->orderBy(['cost'=>'ASC'])->order(['id'=>'DESC'])->take(4)->offset(1)->fetchAll());
 
-        //Debug::debug($p->take(4)->offset(1)->fetchAll(null, ['cost'=>'ASC', 'id'=>'DESC']));
+        Debug::debug($p->take(4)->offset(1)->fetchAll(null, ['cost'=>'ASC', 'id'=>'DESC']));
     }
 
     function get_product($id){
@@ -121,6 +121,21 @@ class DumbController extends Controller
             ['cost', 200, '>='],
             ['cost', 270, '<=']
         ])->get());            
+    }
+
+    function grouping(){
+        Debug::debug(Database::table('products')->where([ 
+            ['cost', 100, '>=']
+        ])->orderBy(['size' => 'DESC'])->groupBy(['size'])->get(['size', 'AVG(cost)']));
+    }
+
+    // Sin implementar
+    function having(){
+        Debug::debug(Database::table('products')
+            ->groupBy(['cost'])
+            ->having(['cost', 100, '>='])
+            ->get()
+        );    
     }
 
     function joins(){
@@ -258,7 +273,5 @@ class DumbController extends Controller
     function respuesta(){
         Factory::response()->sendError('Acceso no autorizado', 401, 'Header vacio');
     }
-
-
    
 }

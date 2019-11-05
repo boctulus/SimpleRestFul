@@ -23,19 +23,11 @@ class LoginController extends MyController
 		$gl_auth_url = $gl_client->createAuthUrl();
 
 		// fb
+		$facebook_ctrl = new FacebookController();
+		$fb   = $facebook_ctrl->getClient();
 
-		if (!session_id()) {
-			session_start();
-		}
-		
-		$fb = new \Facebook\Facebook([
-            'app_id' => $this->config['facebook_auth']['app_id'], 
-            'app_secret' => $this->config['facebook_auth']['app_secret'],
-            'default_graph_version' => 'v3.2',
-        ]);
-		
 		$helper = $fb->getRedirectLoginHelper();
-
+		
 		$permissions = ['email'];
 		$loginUrl = $helper->getLoginUrl($this->config['facebook_auth']['callback'], $permissions);
 		
@@ -78,41 +70,26 @@ class LoginController extends MyController
 	function fb_login(){
 
 		$fb_ctrl = new FacebookController();
-		$fb      = $fb_ctrl->getClient();	
-		$helper  = $fb->getRedirectLoginHelper();
+		$res = $fb_ctrl->login_or_register();
 
-		//$_SESSION['FBRLH_state'] = $_GET['state'];
+		session_destroy();
+
+		if (isset($res['data'])){
+			$this->view('generic.php', [
+				'title'=>'Facebook login', 
+				'hidenav'=> true,
+				'access_token' => $res['data']['access_token'],
+				'expires_in' => $res['data']['expires_in'],
+				'refresh_token' => $res['data']['refresh_token']
+			]);
+		}else {
+			$this->view('generic.php', [
+				'title'=>'Facebook login', 
+				'hidenav'=> false,
+				'error' => $res['error']
+			]);
+		}		
 		
-		try {
-			$oAccessToken = $helper->getAccessToken();
-		} catch(Facebook\Exceptions\FacebookResponseException $e) {
-			// When Graph returns an error
-			echo 'Graph returned an error: ' . $e->getMessage();
-			exit;
-		} catch(Facebook\Exceptions\FacebookSDKException $e) {
-			// When validation fails or other local issues
-			echo 'Facebook SDK returned an error: ' . $e->getMessage();
-			exit;
-		}
-			
-		if (isset($oAccessToken)) {
-			$oResponse = $fb->get('/me?fields=id,name,email', $oAccessToken);
-			print_r($oResponse->getGraphUser());
-
-			// session_destroy();
-		} else {
-			if ($helper->getError()) {
-				header('HTTP/1.0 401 Unauthorized');
-				echo "Error: " . $helper->getError() . "\n";
-				echo "Error Code: " . $helper->getErrorCode() . "\n";
-				echo "Error Reason: " . $helper->getErrorReason() . "\n";
-				echo "Error Description: " . $helper->getErrorDescription() . "\n";
-			} else {
-				header('HTTP/1.0 400 Bad Request');
-				echo 'Bad request';
-			}
-			exit;
-		}
 	}
 
 	/*

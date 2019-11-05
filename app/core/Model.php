@@ -23,6 +23,8 @@ class Model {
 	protected $order = [];
 	protected $limit;
 	protected $offset;
+	protected $group = [];
+	protected $having = [];
 
 	/*
 		Chequear en cada método si hay una conexión 
@@ -166,7 +168,7 @@ class Model {
 		return $this;
 	}
 	
-	function order(array $o){
+	function orderBy(array $o){
 		$this->order = array_merge($this->order, $o);
 		return $this;
 	}
@@ -180,6 +182,12 @@ class Model {
 		$this->offset = $n;
 		return $this;
 	}
+
+	function groupBy(array $g){
+		$this->group = array_merge($this->group, $g);
+		return $this;
+	}
+
 
 	/**
 	 * fetch
@@ -367,13 +375,16 @@ class Model {
 				$q  .= (empty(trim($where)) ? '' : ' AND') . " deleted_at IS NULL";	
 		}
 
+		$group = (!empty($this->group)) ? 'GROUP BY '.implode(',', $this->group) : '';
+		$q  .= " $group";
+
 		if($paginator!==null){
 			$q .= $paginator->getQuery();
 		}
 		
-		//DEBUG::debug($q);
-		//DEBUG::debug($vars);
-		//DEBUG::debug($values);
+		//DEBUG::debug($q, 'Query:');
+		//DEBUG::debug($vars, 'Vars:');
+		//DEBUG::debug($values, 'Vals:');
 		
 		//var_dump($q);
 		//var_export($vars);
