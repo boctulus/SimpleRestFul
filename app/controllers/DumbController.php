@@ -129,7 +129,17 @@ class DumbController extends Controller
         ])->orderBy(['size' => 'DESC'])->groupBy(['size'])->get(['size', 'AVG(cost)']));
     }
 
-    // Sin implementar
+    /*
+        Sin implementar
+
+        https://www.w3schools.com/sql/sql_having.asp
+        https://laravel.com/docs/5.8/queries
+        https://stackoverflow.com/questions/14756222/multiple-aggregate-functions-in-having-clause
+        https://codeigniter.com/userguide3/database/query_builder.html
+
+        Va después de GROUP BY y se concatenan con AND u OR igual que las
+        condiciones de WHERE
+    */     
     function having(){
         Debug::debug(Database::table('products')
             ->groupBy(['cost'])
