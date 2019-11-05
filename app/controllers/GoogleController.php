@@ -94,7 +94,7 @@ class GoogleController extends Controller
                 [created] => 1571713360)
         */
 
-        $payload = $this->client->verifyIdToken($auth['id_token'], GOOGLE_CLIENT_ID);
+        $payload = $this->client->verifyIdToken($auth['id_token'], $this->config['google_auth']['client_id']);
         /*
         array(14) { 
             ["iss"]=> string(27) "https://accounts.google.com" 
@@ -183,7 +183,16 @@ class GoogleController extends Controller
             return ['error' => $e->getMessage(), 'code' => 500];
         }	
 
-    }        
+    }       
+    
+    ///////////////////////////////////////////////
+
+    function login(){
+        $client   = $this->getClient();
+        $auth_url = $client->createAuthUrl();
+        
+        header("Location: $auth_url");
+    }
 
 	
 }

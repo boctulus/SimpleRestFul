@@ -15,27 +15,8 @@ class LoginController extends MyController
 		$this->login();
 	}
 	
-	function login()
-	{
-		// google
-		$google_ctrl = new GoogleController();
-		$gl_client   = $google_ctrl->getClient();
-		$gl_auth_url = $gl_client->createAuthUrl();
-
-		// fb
-		$facebook_ctrl = new FacebookController();
-		$fb   = $facebook_ctrl->getClient();
-
-		$helper = $fb->getRedirectLoginHelper();
-		
-		$permissions = ['email'];
-		$loginUrl = $helper->getLoginUrl($this->config['facebook_auth']['callback'], $permissions);
-		
-		$this->view('login.php', [	'title'=>'Ingreso', 
-									'hidenav'=> true, 
-									'gl_auth_url' => $gl_auth_url,
-									'fb_auth_url' => htmlspecialchars($loginUrl)
-		]);
+	function login(){	
+		$this->view('login.php', [ 'title'=>'Ingreso', 'hidenav'=> true ]);
 	}
 	
 	function signup(){
