@@ -8,4 +8,4 @@ config/_en_server_/
 logs/
 user.txt
 DATOS.txt
-
+phpmyadmin/
