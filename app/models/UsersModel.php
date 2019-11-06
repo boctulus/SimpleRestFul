@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace simplerest\models;
 
 use simplerest\core\Model;
+use simplerest\libs\Factory;
 
 class UsersModel extends Model
  { 
@@ -52,6 +53,9 @@ class UsersModel extends Model
 	
 		$row = $st->fetch(\PDO::FETCH_OBJ);
 		
+		if (empty($row->password))
+			Factory::response()->SendError('Not authorized', 401, 'Password is undefined');
+
 		if ($row){
 			$hash = $row->password;
 
@@ -71,7 +75,7 @@ class UsersModel extends Model
 	*/
 	function fetchRoles($id)
 	{
-		$this->table_alias = ' as u';
+		$this->table_alias = 'u';
 		$this->join('user_role as ur', 'ur.user_id', '=', 'u.id');
 		$rows = $this->where(['u.id', $id])->get(['ur.role_id as role']);	
 

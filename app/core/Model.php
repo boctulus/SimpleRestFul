@@ -211,7 +211,7 @@ class Model {
 			$q  = "SELECT ".implode(", ", $select_fields_array);
 		}
 
-		$q  .= " FROM ".$this->table_name. ' '.$this->table_alias." WHERE ".$this->id_name." = :id";
+		$q  .= " FROM ".(empty($this->table_name) ? '' : 'as '.$this->table_alias.' ')." WHERE ".$this->id_name." = :id";
 
 		if ($this->inSchema(['deleted_at'])){
 			if (!$this->show_deleted)
@@ -277,7 +277,7 @@ class Model {
 			$q  = "SELECT ".implode(", ", $select_fields_array);
 		}
 
-		$q  .= ' FROM '.$this->table_name. ' '.$this->table_alias;
+		$q  .= ' FROM '.$this->table_name. ' '.(!empty($this->table_alias) ? 'as '.$this->table_alias : '');
 
 		/// start pagination
 		if($paginator!==null)
@@ -350,7 +350,7 @@ class Model {
 			$q  = "SELECT ".implode(", ", $fields);
 		}
 
-		$q  .= ' FROM '.$this->table_name. ' '.$this->table_alias;
+		$q  .= ' FROM '.$this->table_name. ' '.(!empty($this->table_alias) ? 'as '.$this->table_alias : '');
 
 		////////////////////////
 		$where  = $this->where;
@@ -542,7 +542,7 @@ class Model {
 	function update(array $data)
 	{
 		$vars   = array_keys($data);
-		$values = array_vals($data);
+		$values = array_values($data);
 
 		if(!empty($this->fillable) && is_array($this->fillable)){
 			foreach($vars as $var){
@@ -567,8 +567,8 @@ class Model {
 
 		$st = $this->conn->prepare($q);
 
-		$values = array_merge($values, $this->values);
-		$vars   = array_merge($vars, $this->vars);
+		$values = array_merge($values, $this->w_vals);
+		$vars   = array_merge($vars, $this->w_vars);
 
 		foreach($values as $ix => $val){			
 			if(is_null($val)){
@@ -646,7 +646,7 @@ class Model {
 	function create(array $data)
 	{
 		$vars   = array_keys($data);
-		$vals = array_vals($data);
+		$vals = array_values($data);
 
 		if(!empty($this->fillable) && is_array($this->fillable)){
 			foreach($vars as $var){

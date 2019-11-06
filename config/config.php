@@ -52,7 +52,8 @@ return [
 	'google_auth'  => [
 		'client_id' => '228180780767-4p8t6nvocukmu44ti57o60n1ck6sokpd.apps.googleusercontent.com',
 		'client_secret' => 'JByioBo6mRiVBkhW3ldylYKD',
-		'callback' => 'https://simplerest.mapapulque.ro/login/google_login'
+		// https://simplerest.mapapulque.ro/login/google_login
+		'callback' => 'http://simplerest.co/login/google_login'
 	],
 
 	'facebook_auth' => [

@@ -296,4 +296,12 @@ class DumbController extends Controller
         Factory::response()->sendError('Acceso no autorizado', 401, 'Header vacio');
     }
    
+    function test() {
+        $conn    = Database::getConnection();
+
+        $u = new UsersModel($conn);
+        $count = $u->where([ 'email' => 'boctulus@gmail.com' ])->update(['email'=>'boctulus1@gmail.com']);
+        
+        Debug::debug($count);
+    }
 }

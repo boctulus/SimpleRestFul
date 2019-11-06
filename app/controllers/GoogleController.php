@@ -4,6 +4,7 @@ namespace simplerest\controllers;
 
 use Exception;
 use simplerest\core\Controller;
+use simplerest\libs\Database;
 use simplerest\models\UsersModel;
 use simplerest\models\UserRoleModel;
 use simplerest\models\RolesModel;
@@ -147,16 +148,21 @@ class GoogleController extends Controller
                     return ['error' => 'Error in user registration!', 'code' => 500];
     
                 if ($u->inSchema(['belongs_to'])){
-                    $u->where(['id', $u->id]);
-                    $u->update(['belongs_to' => $uid]);
+                    Database::table('users')
+                    ->where(['id', $uid])
+                    ->update(['belongs_to' => $uid]);
                 }
-    
-                $ur = new UserRoleModel($conn);
-                $id = $ur->create([ 'user_id' => $uid, 'role_id' => 1 ]);  // registered     
-                
+
                 $r = new RolesModel();
-                $registered = $r->getRoleName(1);
-                $roles = [$registered];
+                $role = $this->config['registration_role'];
+
+                //var_dump($role);
+                //Debug::debug([ 'user_id' => $uid, 'role_id' => $r->get_role_id($role) ]);
+
+                $ur = new UserRoleModel($conn);
+                $id = $ur->create([ 'user_id' => $uid, 'role_id' => $r->get_role_id($role) ]);  // registered or other            
+        
+                $roles = [$role];
             }  
             
 

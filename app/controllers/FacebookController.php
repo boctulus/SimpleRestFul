@@ -115,7 +115,7 @@ class FacebookController extends Controller
         
                     if ($u->inSchema(['belongs_to'])){
                         Database::table('users')
-                        ->where(['id', $u->id])
+                        ->where(['id', $uid])
                         ->update(['belongs_to' => $uid]);
                     }
 
