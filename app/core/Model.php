@@ -53,7 +53,7 @@ class Model {
 	}
 
 	public function setTableAlias($tb_alias){
-		$this->table_alias = " as $tb_alias";
+		$this->table_alias = $tb_alias;
 		return $this;
 	}
 
