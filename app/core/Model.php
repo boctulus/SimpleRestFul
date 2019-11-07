@@ -50,6 +50,9 @@ class Model {
 			$this->unfill([$this->id_name, 'created_at', 'modified_at', 'deleted_at', 'locked']);
 		}
 
+		$this->nullable[] = 'id';
+		$this->nullable[] = 'locked';
+
 		// Validations
 		if (!empty($this->rules)){
 			foreach ($this->rules as $field => $rule){
@@ -60,12 +63,17 @@ class Model {
 		}
 		
 		foreach ($this->schema as $field => $type){
-			if (!isset($this->rules[$field]) || empty($this->rules[$field])){
-				$this->rules[$field] = ['type' => strtolower($type)];
+			if (!isset($this->rules[$field])){
+				$this->rules[$field]['type'] = strtolower($type);
+			}
+
+			if (!$this->isNullable($field)){
+				$this->rules[$field]['required'] = true;
 			}
 		}
-				
-		$this->nullable[] = 'locked';
+		
+		//var_export($this->rules);
+		
 	}
 
 	public function setTableAlias($tb_alias){

@@ -272,8 +272,8 @@ class TrashCan extends MyApiController
         $instance->fill(['deleted_at']);
         $missing = $instance->diffWithSchema($data, ['id', 'belongs_to']);
 
-        if (!empty($missing))
-            Factory::response()->sendError('Lack some properties in your request: '.implode(',',$missing), 400);
+        //if (!empty($missing))
+        //    Factory::response()->sendError('Lack some properties in your request: '.implode(',',$missing), 400);
        
         try {
             $conn = Database::getConnection();
@@ -314,6 +314,11 @@ class TrashCan extends MyApiController
                 $data['deleted_at'] = NULL;
             }
             //////////////////////////////////
+
+            $validado = Validator::validate($instance->getRules(), $data);
+            if ($validado !== true){
+                Factory::response()->sendError('Data validation error', 400, $validado);
+            }
 
             if($instance->update($data)!==false)
                 Factory::response()->sendJson("OK");
@@ -403,7 +408,11 @@ class TrashCan extends MyApiController
                 $data['deleted_at'] = NULL;
             }
             //////////////////////////////////
-              
+             
+            $validado = Validator::validate($instance->getRules(), $data);
+            if ($validado !== true){
+                Factory::response()->sendError('Data validation error', 400, $validado);
+            }
 
             if($instance->update($data)!==false)
                 Factory::response()->sendJson("OK");

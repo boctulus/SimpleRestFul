@@ -466,9 +466,14 @@ abstract class ApiController extends Controller
         $instance = new $model();
         $missing = $instance->diffWithSchema($data, ['id', 'belongs_to']);
 
-        if (!empty($missing))
-            Factory::response()->sendError('Lack some properties in your request: '.implode(',',$missing), 400);
-    
+        //if (!empty($missing))
+        //    Factory::response()->sendError('Lack some properties in your request: '.implode(',',$missing), 400);
+
+        $validado = Validator::validate($instance->getRules(), $data);
+        if ($validado !== true){
+            Factory::response()->sendError('Data validation error', 400, $validado);
+        }    
+
         $folder = $data['folder'] ?? null;
 
         try {
@@ -497,6 +502,8 @@ abstract class ApiController extends Controller
                 $data[$this->folder_field] = $f->value;
                 $data['belongs_to'] = $f->belongs_to;    
             }    
+
+            //
 
             if ($instance->create($data)!==false){
                 Factory::response()->send(['id' => $instance->id], 201);
@@ -532,8 +539,13 @@ abstract class ApiController extends Controller
         $instance->showDeleted(); //
         $missing = $instance->diffWithSchema($data, ['id', 'password', 'belongs_to']);
 
-        if (!empty($missing))
-            Factory::response()->sendError('Lack some properties in your request: '.implode(',',$missing), 400);
+        //if (!empty($missing))
+        //   Factory::response()->sendError('Lack some properties in your request: '.implode(',',$missing), 400);
+
+        $validado = Validator::validate($instance->getRules(), $data);
+        if ($validado !== true){
+            Factory::response()->sendError('Data validation error', 400, $validado);
+        } 
 
         $folder = $data['folder'] ?? null;    
 
@@ -587,10 +599,7 @@ abstract class ApiController extends Controller
                     $data[$k] = NULL;
             }
 
-            $validado = Validator::validate($instance->getRules(), $data);
-            if ($validado !== true){
-                Factory::response()->sendError('Data validation error', 400, $validado);
-            }
+            //
 
             if($instance->where(['id', $id])->update($data)!==false)
                 Factory::response()->sendJson("OK");
@@ -629,6 +638,11 @@ abstract class ApiController extends Controller
 
             $instance = new $model($conn);
             $instance->showDeleted(); //
+
+            $validado = Validator::validate($instance->getRules(), $data);
+            if ($validado !== true){
+                Factory::response()->sendError('Data validation error', 400, $validado);
+            }
 
             $rows = $instance->get();
             
@@ -676,10 +690,7 @@ abstract class ApiController extends Controller
                     $data[$k] = NULL;
             }
 
-            $validado = Validator::validate($instance->getRules(), $data);
-            if ($validado !== true){
-                Factory::response()->sendError('Data validation error', 400, $validado);
-            }
+            //
 
             if ($instance->where(['id', $id])->update($data) !== false)
                 Factory::response()->sendJson("OK");

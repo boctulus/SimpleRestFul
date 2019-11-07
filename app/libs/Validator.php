@@ -99,12 +99,18 @@ class Validator
 			
 		foreach($rules as $field => $rule){
 
+			//var_export($data[$field]);
 			//var_export($rule);
+			//echo "\n";
 			
-			// Esto permite que un campo pueda no estar presente pero 
-			// lamentablemente puede silenciar errores
-			if (!isset($data[$field]))
+			if (!isset($data[$field])){
+				if (isset($rule['required']) && $rule['required']){
+					$push_error($field,['data'=> null, 'error'=>'required', 'error_detail' =>$field.' es requerido'],$errores);
+				}
+
 				continue;
+			}
+				
 			
 			$dato = $data[$field];
 			
