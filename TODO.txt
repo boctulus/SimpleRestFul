@@ -1,5 +1,7 @@
 # TODO
 
+- No tiene sentido que un usuario pueda registrarse sin correo *excepto* venga de Facebook en cuyo caso me guardo el fb_id
+
 - Agregar transacciones !
 
 - Eventos: 

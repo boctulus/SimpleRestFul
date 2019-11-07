@@ -676,7 +676,7 @@ abstract class ApiController extends Controller
                     Factory::response()->sendCode(403);
                 }
             }        
-     
+
             foreach ($data as $k => $v){
                 if (strtoupper($v) == 'NULL' && $instance->isNullable($k)) 
                     $data[$k] = NULL;

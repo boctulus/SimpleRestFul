@@ -50,7 +50,7 @@ class Model {
 			$this->unfill([$this->id_name, 'created_at', 'modified_at', 'deleted_at', 'locked']);
 		}
 
-		$this->nullable[] = 'id';
+		$this->nullable[] = $this->id_name;
 		$this->nullable[] = 'locked';
 		$this->nullable[] = 'belongs_to';
 
