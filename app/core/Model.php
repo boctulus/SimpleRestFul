@@ -52,6 +52,7 @@ class Model {
 
 		$this->nullable[] = 'id';
 		$this->nullable[] = 'locked';
+		$this->nullable[] = 'belongs_to';
 
 		// Validations
 		if (!empty($this->rules)){
