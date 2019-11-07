@@ -6,6 +6,7 @@ use simplerest\controllers\MyApiController;
 use simplerest\libs\Factory;
 use simplerest\libs\Arrays;
 use simplerest\libs\Database;
+use simplerest\libs\Validator;
 
 class TrashCan extends MyApiController
 {   
@@ -81,7 +82,7 @@ class TrashCan extends MyApiController
                 if (empty($rows))
                     Factory::response()->sendError('Not found in trash can', 404);
                 
-                if (isset($rows[0]['locked']) && $rows[0]['locked'] == 1){
+                if (!$this->is_admin && isset($rows[0]['locked']) && $rows[0]['locked'] == 1){
                     Factory::response()->sendError("Locked by Admin", 403);
                 }
                 
@@ -270,7 +271,7 @@ class TrashCan extends MyApiController
 
         $instance->showDeleted(); //
         $instance->fill(['deleted_at']);
-        $missing = $instance->diffWithSchema($data, ['id', 'belongs_to']);
+        //$missing = $instance->diffWithSchema($data, ['id', 'belongs_to']);
 
         //if (!empty($missing))
         //    Factory::response()->sendError('Lack some properties in your request: '.implode(',',$missing), 400);
@@ -287,13 +288,16 @@ class TrashCan extends MyApiController
             if (count($rows) == 0){
                 Factory::response()->code(404)->sendError("Register for id=$id does not exists in trash can");
             }
+         
 
-            if (isset($rows[0]['locked']) && $rows[0]['locked'] == 1){
-                Factory::response()->sendError("Locked by Admin", 403);
-            }
-
-            if (!$this->is_admin)
+            if (!$this->is_admin){
                 $_get[] = ['belongs_to', $this->uid];
+
+                if (isset($rows[0]['locked']) && $rows[0]['locked'] == 1){
+                    Factory::response()->sendError("Locked by Admin", 403);
+                }
+            }
+                
             
             if (!$this->is_admin && $rows[0]['belongs_to'] != $this->uid){
                 Factory::response()->sendCode(403);
@@ -315,7 +319,7 @@ class TrashCan extends MyApiController
             }
             //////////////////////////////////
 
-            $validado = Validator::validate($instance->getRules(), $data);
+            $validado = Validator::validate($instance->getRules(), $data, null, true);
             if ($validado !== true){
                 Factory::response()->sendError('Data validation error', 400, $validado);
             }

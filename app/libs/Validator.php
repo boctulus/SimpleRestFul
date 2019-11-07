@@ -75,7 +75,7 @@ class Validator
 		
 		$rules es un array de arrays con las keys: dato,'tipo?,requerido?
 	*/
-	static function validate(array $rules, array $data, array $ignored_fields = []){
+	static function validate(array $rules, array $data, array $ignored_fields = NULL, $ignore_required = false){
 		if (empty($rules))
 			throw new InvalidArgumentException('No validations!');
 		
@@ -104,7 +104,7 @@ class Validator
 			//echo "\n";
 			
 			if (!isset($data[$field])){
-				if (isset($rule['required']) && $rule['required']){
+				if (!$ignore_required && isset($rule['required']) && $rule['required']){
 					$push_error($field,['data'=> null, 'error'=>'required', 'error_detail' =>$field.' es requerido'],$errores);
 				}
 
@@ -114,10 +114,10 @@ class Validator
 			
 			$dato = $data[$field];
 			
-			if(in_array($field,$ignored_fields))
+			if(in_array($field, (array) $ignored_fields))
 				continue;
 			
-			if (!isset($rule['required']))
+			if (!isset($rule['required']) || !$ignore_required)
 				$rule['required'] = false;
 
 			$avoid_type_check = false;

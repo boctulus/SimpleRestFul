@@ -464,15 +464,10 @@ abstract class ApiController extends Controller
         
         $model    = '\\simplerest\\models\\'.$this->modelName;
         $instance = new $model();
-        $missing = $instance->diffWithSchema($data, ['id', 'belongs_to']);
+        //$missing = $instance->diffWithSchema($data, ['id', 'belongs_to']);
 
         //if (!empty($missing))
         //    Factory::response()->sendError('Lack some properties in your request: '.implode(',',$missing), 400);
-
-        $validado = Validator::validate($instance->getRules(), $data);
-        if ($validado !== true){
-            Factory::response()->sendError('Data validation error', 400, $validado);
-        }    
 
         $folder = $data['folder'] ?? null;
 
@@ -503,7 +498,10 @@ abstract class ApiController extends Controller
                 $data['belongs_to'] = $f->belongs_to;    
             }    
 
-            //
+            $validado = Validator::validate($instance->getRules(), $data);
+            if ($validado !== true){
+                Factory::response()->sendError('Data validation error', 400, $validado);
+            }  
 
             if ($instance->create($data)!==false){
                 Factory::response()->send(['id' => $instance->id], 201);
@@ -537,15 +535,10 @@ abstract class ApiController extends Controller
         $model    = 'simplerest\\models\\'.$this->modelName;
         $instance = new $model();
         $instance->showDeleted(); //
-        $missing = $instance->diffWithSchema($data, ['id', 'password', 'belongs_to']);
+        //$missing = $instance->diffWithSchema($data, ['id', 'password', 'belongs_to']);
 
         //if (!empty($missing))
         //   Factory::response()->sendError('Lack some properties in your request: '.implode(',',$missing), 400);
-
-        $validado = Validator::validate($instance->getRules(), $data);
-        if ($validado !== true){
-            Factory::response()->sendError('Data validation error', 400, $validado);
-        } 
 
         $folder = $data['folder'] ?? null;    
 
@@ -599,7 +592,10 @@ abstract class ApiController extends Controller
                     $data[$k] = NULL;
             }
 
-            //
+            $validado = Validator::validate($instance->getRules(), $data);
+            if ($validado !== true){
+                Factory::response()->sendError('Data validation error', 400, $validado);
+            } 
 
             if($instance->where(['id', $id])->update($data)!==false)
                 Factory::response()->sendJson("OK");
@@ -632,17 +628,13 @@ abstract class ApiController extends Controller
         
         $folder = $data['folder'] ?? null; 
 
+        $model    = 'simplerest\\models\\'.$this->modelName;
+        $instance = new $model();
+
         try {
             $conn = Database::getConnection();
-            $model    = 'simplerest\\models\\'.$this->modelName;
-
-            $instance = new $model($conn);
-            $instance->showDeleted(); //
-
-            $validado = Validator::validate($instance->getRules(), $data);
-            if ($validado !== true){
-                Factory::response()->sendError('Data validation error', 400, $validado);
-            }
+            $instance->setConn($conn);
+            $instance->showDeleted(); //   
 
             $rows = $instance->get();
             
@@ -690,8 +682,11 @@ abstract class ApiController extends Controller
                     $data[$k] = NULL;
             }
 
-            //
-
+            $validado = Validator::validate($instance->getRules(), $data, null, true);
+            if ($validado !== true){
+                Factory::response()->sendError('Data validation error', 400, $validado);
+            }
+    
             if ($instance->where(['id', $id])->update($data) !== false)
                 Factory::response()->sendJson("OK");
             else

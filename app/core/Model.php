@@ -742,7 +742,8 @@ class Model {
 		return array_diff($diff, $this->nullable);
 	}
 
-	// dejar de utilizar
+	// dejar de utilizar (remover)
+	/*
 	function diffWithSchema($props, array $excluded = []){
 		if (is_object($props))
 			$props = (array) $props;
@@ -764,6 +765,7 @@ class Model {
 
 		return $missing_properties;
 	}
+	*/
 	
 	/**
 	 * Get schema 
