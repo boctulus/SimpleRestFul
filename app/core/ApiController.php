@@ -515,108 +515,7 @@ abstract class ApiController extends Controller
 
     } // 
     
-        
-    /**
-     * put
-     *
-     * @param  int $id
-     *
-     * @return void
-     */
-    function put(int $id = null){
-        if ($id == null)
-            Factory::response()->code(400)->sendError("Lacks id in request");
-
-        $data = Factory::request()->getBody();
-
-        if (empty($data))
-            Factory::response()->sendError('Invalid JSON',400);
-        
-        $model    = 'simplerest\\models\\'.$this->modelName;
-        $instance = new $model();
-        $instance->showDeleted(); //
-        //$missing = $instance->diffWithSchema($data, ['id', 'password', 'belongs_to']);
-
-        //if (!empty($missing))
-        //   Factory::response()->sendError('Lack some properties in your request: '.implode(',',$missing), 400);
-
-        $folder = $data['folder'] ?? null;    
-
-        try {
-            $conn = Database::getConnection();
-            $instance->setConn($conn);
-
-            $rows = $instance->get();
-
-            if (count($rows) == 0){
-                Factory::response()->code(404)->sendError("Register for id=$id does not exists");
-            }
-
-            if (!$this->is_admin){
-                if (isset($data['belongs_to']))
-                    unset($data['belongs_to']);
-
-                if (isset($data['deleted_at']))
-                    unset($data['deleted_at']);
-            }else{
-                $instance->fill(['deleted_at']);
-            }
-
-            if ($folder !== null)
-            {
-                if (empty($this->folder_field))
-                    Factory::response()->sendError("'folder_field' is undefined", 403);
-
-                $f = new FoldersModel($conn);
-                $f->id = $folder;    
-                $ok = $f->fetch();
-        
-                if (!$ok || $f->resource_table!=$this->model_table)
-                    Factory::response()->sendError('Folder not found', 404); 
-        
-                if (!$this->hasPerm($folder, $conn, 'w'))
-                    Factory::response()->sendError("You have not permission for the folder $folder", 403);
-
-                unset($data['folder']);    
-                $data[$this->folder_field] = $f->value;
-                $data['belongs_to'] = $f->belongs_to;    
-
-            }else{
-                if (!$this->is_admin && $rows[0]['belongs_to'] != $this->uid){
-                    Factory::response()->sendCode(403);
-                }
-            }       
-            
-            foreach ($data as $k => $v){
-                if (strtoupper($v) == 'NULL' && $instance->isNullable($k)) 
-                    $data[$k] = NULL;
-            }
-
-            $validado = Validator::validate($instance->getRules(), $data);
-            if ($validado !== true){
-                Factory::response()->sendError('Data validation error', 400, $validado);
-            } 
-
-            if($instance->where(['id', $id])->update($data)!==false)
-                Factory::response()->sendJson("OK");
-            else
-                Factory::response()->sendError("Error in UPDATE");
-
-        } catch (\Exception $e) {
-            Factory::response()->sendError("Error during update for id=$id with message: {$e->getMessage()}");
-        }
-
-    } // 
-    
-
-    /**
-     * patch
-     *
-     * @param  mixed $id
-     *
-     * @return void
-     */
-    function patch($id = NULL)
+    protected function modify($id = NULL, bool $put_mode = false)
     { 
         if ($id == null)
             Factory::response()->sendError("Lacks id in request",400);
@@ -682,7 +581,7 @@ abstract class ApiController extends Controller
                     $data[$k] = NULL;
             }
 
-            $validado = Validator::validate($instance->getRules(), $data, null, true);
+            $validado = (new Validator())->setRequired($put_mode)->validate($instance->getRules(), $data, null);
             if ($validado !== true){
                 Factory::response()->sendError('Data validation error', 400, $validado);
             }
@@ -695,6 +594,31 @@ abstract class ApiController extends Controller
         } catch (\Exception $e) {
             Factory::response()->sendError("Error during PATCH for id=$id with message: {$e->getMessage()}");
         }
+    } //
+
+        
+    /**
+     * put
+     *
+     * @param  int $id
+     *
+     * @return void
+     */
+    function put(int $id = null){
+        $this->modify($id, true);
+    } // 
+    
+
+    /**
+     * patch
+     *
+     * @param  mixed $id
+     *
+     * @return void
+     */
+    function patch($id = NULL)
+    { 
+        $this->modify($id);
     } //
 
         
@@ -716,6 +640,7 @@ abstract class ApiController extends Controller
             $conn = Database::getConnection();
         
             $model    = 'simplerest\\models\\'.$this->modelName;
+            
             $instance = new $model($conn);
             $instance->fill(['deleted_at']); //
 

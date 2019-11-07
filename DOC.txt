@@ -242,6 +242,10 @@ Para eliminar *permanentemente* un recurso se realiza un DELETE sobre el element
     	"entity": "Products"
 	}
 
+La papelera acepta los mismos filtros y los resultados se pueden ordenar igual que con cualquier entidad:
+
+	GET /api/TrashCan?entity=Products&order[deleted_at]=DESC
+
 
 ### Registros bloqueados
 

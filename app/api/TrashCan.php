@@ -35,6 +35,9 @@ class TrashCan extends MyApiController
 
             $model    = 'simplerest\\models\\'. $this->modelName;
             
+            if (!class_exists($model))
+                Factory::response()->sendError("Entity $entity does not exists", 400);
+
             $conn = Database::getConnection();
             $instance = new $model($conn); 
             ////////////////////////////////////////////////////
@@ -239,7 +242,8 @@ class TrashCan extends MyApiController
      *
      * @return void
      */
-    function put(int $id = null){
+    protected function modify($id = NULL, bool $put_mode = false)
+    {
         if ($id == null)
             Factory::response()->code(400)->sendError("Lacks id in request");
 
@@ -260,6 +264,9 @@ class TrashCan extends MyApiController
         $this->model_table = strtolower($entity);
 
         $model    = 'simplerest\\models\\'. $this->modelName;
+
+        if (!class_exists($model))
+            Factory::response()->sendError("Entity $entity does not exists", 400);
         
         $conn = Database::getConnection();
         $instance = new $model($conn); 
@@ -319,7 +326,7 @@ class TrashCan extends MyApiController
             }
             //////////////////////////////////
 
-            $validado = Validator::validate($instance->getRules(), $data, null, true);
+            $validado = (new Validator)->setRequired($put_mode)->validate($instance->getRules(), $data);
             if ($validado !== true){
                 Factory::response()->sendError('Data validation error', 400, $validado);
             }
@@ -335,6 +342,18 @@ class TrashCan extends MyApiController
     } //  
 
     /**
+     * put
+     *
+     * @param  int $id
+     *
+     * @return void
+     */
+    function put(int $id = null){
+        $this->modify($id, true);
+    } // 
+    
+
+    /**
      * patch
      *
      * @param  mixed $id
@@ -343,90 +362,9 @@ class TrashCan extends MyApiController
      */
     function patch($id = NULL)
     { 
-        if ($id == null)
-            Factory::response()->sendError("Lacks id in request",400);
-
-        $data = Factory::request()->getBody();
-
-        if (empty($data))
-            Factory::response()->sendError('Invalid JSON',400);
-        
-        try {
-
-            /////////////////////////////////////////////////////
-            $_get  = Factory::request()->getQuery();
-
-            if (!isset($data['entity']))
-                Factory::response()->sendError('Entity is needed in request body', 400);
-
-            $entity = $data['entity']; 
-        
-            $this->modelName = ucfirst($entity) . 'Model';
-            $this->model_table = strtolower($entity);
-
-            $model    = 'simplerest\\models\\'. $this->modelName;
-            
-            $conn = Database::getConnection();
-            $instance = new $model($conn); 
-            ////////////////////////////////////////////////////
-
-            ///
-            $trashed = $data['trashed'] ?? true;                  
-            ///
-
-            $instance->showDeleted(); //
-            $instance->fill(['deleted_at']);
-
-            $rows = $instance->where([
-                ['id', $id],
-                ['deleted_at', NULL, 'IS NOT']
-            ])->get();
-            
-            if (count($rows) == 0){
-                Factory::response()->code(404)->sendError("Register for id=$id does not exists in trash can");
-            }
-
-            if (isset($rows[0]['locked']) && $rows[0]['locked'] == 1){
-                Factory::response()->sendError("Locked by Admin", 403);
-            }
-
-            if (!$this->is_admin)
-                $_get[] = ['belongs_to', $this->uid];
-            
-            if (!$this->is_admin && $rows[0]['belongs_to'] != $this->uid){
-                Factory::response()->sendCode(403);
-            }                
-     
-            foreach ($data as $k => $v){
-                if (strtoupper($v) == 'NULL' && $instance->isNullable($k)) 
-                    $data[$k] = NULL;
-            }
-
-            //////////////////////////////////
-            if (isset($data['trashed']))
-                unset($data['trashed']);
-
-            unset($data['entity']);     
-
-            if (strtolower($trashed) === "false" || $trashed === 0){
-                $data['deleted_at'] = NULL;
-            }
-            //////////////////////////////////
-             
-            $validado = Validator::validate($instance->getRules(), $data);
-            if ($validado !== true){
-                Factory::response()->sendError('Data validation error', 400, $validado);
-            }
-
-            if($instance->update($data)!==false)
-                Factory::response()->sendJson("OK");
-            else
-                Factory::response()->sendError("Error in PATCH",404);	
-
-        } catch (\Exception $e) {
-            Factory::response()->sendError("Error during PATCH for id=$id with message: {$e->getMessage()}");
-        }
+        $this->modify($id);
     } //
+
 
     /**
      * delete
@@ -455,6 +393,9 @@ class TrashCan extends MyApiController
             $this->model_table = strtolower($entity);
 
             $model    = 'simplerest\\models\\'. $this->modelName;
+
+            if (!class_exists($model))
+                Factory::response()->sendError("Entity $entity does not exists", 400);
             
             $conn = Database::getConnection();
             $instance = new $model($conn); 
