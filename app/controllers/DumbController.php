@@ -10,6 +10,7 @@ use simplerest\libs\Factory;
 use simplerest\libs\Debug;
 use simplerest\core\Controller;
 use simplerest\models\UserRoleModel;
+use PHPMailer\PHPMailer\PHPMailer;
 
 class DumbController extends Controller
 {
@@ -296,12 +297,45 @@ class DumbController extends Controller
         Factory::response()->sendError('Acceso no autorizado', 401, 'Header vacio');
     }
    
+    /*
+        https://simplerest.mapapulque.ro/dumb/test?from_email=boctulus@gmail.com&from_name=Pablo&to_email=pablo.bit@outlook.com&to_name=%27Boctulus%27&subject=Prueba&msg=Cuerpo%20del%20mensaje
+    */
     function test() {
-        $conn    = Database::getConnection();
+                
+        $mail = new PHPMailer();
+        $mail->isSMTP();
 
-        $u = new UsersModel($conn);
-        $count = $u->where([ 'email' => 'boctulus@gmail.com' ])->update(['email'=>'boctulus1@gmail.com']);
+        foreach ($this->config['email']['mailer'] as $k => $prop){
+			$mail->{$k} = $prop;
+		}	
+
+        /* 
+        From:
+        */
+        $mail->setFrom($_REQUEST['from_email'], $_REQUEST['from_name']);
+        //$mail->addReplyTo('replyto@example.com', 'First Last');
+
+        /*
+        To:
+        */
+        $mail->addAddress($_REQUEST['to_email'], $_REQUEST['to_name']);
+
+        /*
+        Mensaje
+        */
+
+        $mail->Subject = $_REQUEST['subject'];
+        //$mail->msgHTML(file_get_contents('contents.html'), dirname(__FILE__));
+        $mail->msgHTML($_REQUEST['msg']); 
+        //$mail->AltBody = 'Mensaje de prueba tipo plain-text';
+        //$mail->addAttachment('images/phpmailer_mini.png');
         
-        Debug::debug($count);
+
+        if (!$mail->send())
+        {	
+        echo "Mailer Error: " . $mail->ErrorInfo;
+        }else
+        echo 'Mail enviado a '.$_REQUEST['to_email'];
+
     }
 }

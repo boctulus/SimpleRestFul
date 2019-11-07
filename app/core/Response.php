@@ -109,7 +109,7 @@ class Response
      *
      * @return void
      */
-    function sendError(string $msg_error, int $http_code = NULL, string $error_detail= NULL){
+    function sendError(string $msg_error, int $http_code = NULL, $error_detail= NULL){
         if ($http_code == NULL)
             if (static::$http_code != NULL)
                 $http_code = static::$http_code;

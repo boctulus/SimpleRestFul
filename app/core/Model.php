@@ -27,6 +27,7 @@ class Model {
 	protected $order = [];
 	protected $limit;
 	protected $offset;
+	protected $roles;
 	
 
 	/*
@@ -49,6 +50,21 @@ class Model {
 			$this->unfill([$this->id_name, 'created_at', 'modified_at', 'deleted_at', 'locked']);
 		}
 
+		// Validations
+		if (!empty($this->rules)){
+			foreach ($this->rules as $field => $rule){
+				if (!isset($rule[$field]['type']) || empty($rule[$field]['type'])){
+					$this->rules[$field]['type'] = strtolower($this->schema[$field]);
+				}
+			}
+		}
+		
+		foreach ($this->schema as $field => $type){
+			if (!isset($this->rules[$field]) || empty($this->rules[$field])){
+				$this->rules[$field] = ['type' => strtolower($type)];
+			}
+		}
+				
 		$this->nullable[] = 'locked';
 	}
 
@@ -564,11 +580,15 @@ class Model {
 
 		$q = "UPDATE ".$this->table_name .
 				" SET $set WHERE " . $this->where;		
-
+	
 		$st = $this->conn->prepare($q);
 
 		$values = array_merge($values, $this->w_vals);
 		$vars   = array_merge($vars, $this->w_vars);
+
+		//var_export($q);
+		//var_export($vars);
+		//var_export($values);
 
 		foreach($values as $ix => $val){			
 			if(is_null($val)){
@@ -755,6 +775,10 @@ class Model {
 
 	public function getFillables(){
 		return $this->fillable;
+	}
+
+	public function getRules(){
+		return $this->rules;
 	}
 
 	/**

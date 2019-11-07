@@ -32,6 +32,16 @@ class ProductsModel extends Model
 		'belongs_to' => 'INT' 
 	];
 
+	protected $rules = [
+        'name' 			=> ['min'=>3, 'max'=>40],
+		'description' 	=> ['max'=>50],
+		'size' 			=> ['max'=>20],
+        'workspace'		=> ['max'=>20],
+		'created_at' 	=> ['type'=>'sql_date'],
+		'modified_at' 	=> ['type'=>'sql_date'],
+		'deleted_at' 	=> ['type'=>'sql_date'],
+	];
+
     public function __construct($db = NULL){
 		parent::__construct($db);
 	}

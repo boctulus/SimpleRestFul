@@ -10,6 +10,7 @@ use simplerest\models\GroupPermissionsModel;
 use simplerest\models\OtherPermissionsModel;
 use simplerest\models\FoldersModel;
 use simplerest\models\RolesModel;
+use simplerest\libs\Validator;
 
 abstract class ApiController extends Controller
 {
@@ -540,7 +541,6 @@ abstract class ApiController extends Controller
             $conn = Database::getConnection();
             $instance->setConn($conn);
 
-            $instance->where(['id', $id]);
             $rows = $instance->get();
 
             if (count($rows) == 0){
@@ -553,6 +553,8 @@ abstract class ApiController extends Controller
 
                 if (isset($data['deleted_at']))
                     unset($data['deleted_at']);
+            }else{
+                $instance->fill(['deleted_at']);
             }
 
             if ($folder !== null)
@@ -585,7 +587,12 @@ abstract class ApiController extends Controller
                     $data[$k] = NULL;
             }
 
-            if($instance->update($data)!==false)
+            $validado = Validator::validate($instance->getRules(), $data);
+            if ($validado !== true){
+                Factory::response()->sendError('Data validation error', 400, $validado);
+            }
+
+            if($instance->where(['id', $id])->update($data)!==false)
                 Factory::response()->sendJson("OK");
             else
                 Factory::response()->sendError("Error in UPDATE");
@@ -635,6 +642,8 @@ abstract class ApiController extends Controller
 
                 if (isset($data['deleted_at']))
                     unset($data['deleted_at']);
+            }else{
+                $instance->fill(['deleted_at']);
             }
 
             if ($folder !== null)
@@ -667,7 +676,12 @@ abstract class ApiController extends Controller
                     $data[$k] = NULL;
             }
 
-            if($instance->update($data)!==false)
+            $validado = Validator::validate($instance->getRules(), $data);
+            if ($validado !== true){
+                Factory::response()->sendError('Data validation error', 400, $validado);
+            }
+
+            if ($instance->where(['id', $id])->update($data) !== false)
                 Factory::response()->sendJson("OK");
             else
                 Factory::response()->sendError("Error in PATCH",404);	
