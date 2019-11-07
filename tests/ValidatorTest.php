@@ -1,21 +1,20 @@
 <?php
 
-use PHPUnit\Framework\TestCase;
-use simplerest\libs\Validator;
+namespace simplerest\tests;
 
-require_once 'vendor/autoload.php';
+use PHPUnit\Framework\TestCase;
 
 final class ValidatorTest extends TestCase
 {   
 	public function testvalidateEmptyRuleException()
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(\InvalidArgumentException::class);
         Validator::validate([],['username'=>'admin','correo'=>'admin@serviya.com']);
     }
 
 	public function testvalidateEmptyDataException()
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(\InvalidArgumentException::class);
         Validator::validate([['field'=>'username','required'=>true],
 							['field'=>'correo','required'=>false]],[]);
     }
@@ -52,8 +51,8 @@ final class ValidatorTest extends TestCase
 		$this->assertInternalType('array',
             Validator::validate(
 			[
-				['field'=>'username','required'=>true], // vacio
-				['field'=>'correo','required'=>false],
+				'username' => ['required'=>true], // vacio
+				'correo'   => ['required'=>false],
 			],
 			[
 				'username'=>'',
@@ -63,8 +62,8 @@ final class ValidatorTest extends TestCase
 		
 		$this->assertInternalType('array',Validator::validate(
 			[
-				['field'=>'username'],
-				['field'=>'correo','type'=>'string','max'=>'30'],
+				'username' => [],
+				'correo'   => ['type'=>'string','max'=>'30'],
 			],
 			[
 				'username'=>'admin',
@@ -73,7 +72,7 @@ final class ValidatorTest extends TestCase
 		
 		$this->assertInternalType('array',Validator::validate(
 			[
-				['field'=>'nombre','type'=>'notnum']
+				'nombre' => ['type'=>'notnum']
 			],
 			
 				[
@@ -83,7 +82,7 @@ final class ValidatorTest extends TestCase
 			
 		$this->assertInternalType('array',Validator::validate(
 			[
-				['field'=>'fuerza','type'=>'integer','min'=>'30']
+				'fuerza' => ['type'=>'integer','min'=>'30']
 			],
 			
 				[
@@ -95,7 +94,7 @@ final class ValidatorTest extends TestCase
 		// (hay otras formas de validatelas, es solo un ejemplo de uso)
 		$this->assertTrue(Validator::validate(
 			[
-				['field'=>'IPv4','type'=>'regex:/^((2[0-4]|1\d|[1-9])?\d|25[0-5])(\.(?1)){3}\z/']
+				'IPv4' => ['type'=>'regex:/^((2[0-4]|1\d|[1-9])?\d|25[0-5])(\.(?1)){3}\z/']
 			],
 				[
 				'IPv4'=>'192.168.0.27'	
@@ -104,7 +103,7 @@ final class ValidatorTest extends TestCase
 			
 		$this->assertInternalType('array',Validator::validate(
 			[
-				['field'=>'IPv4','type'=>'regex:/^((2[0-4]|1\d|[1-9])?\d|25[0-5])(\.(?1)){3}\z/']
+				'IPv4' =>  ['type'=>'regex:/^((2[0-4]|1\d|[1-9])?\d|25[0-5])(\.(?1)){3}\z/']
 			],
 				[
 					'IPv4'=>'192.168.0.300'
@@ -113,7 +112,7 @@ final class ValidatorTest extends TestCase
 	
 		$this->assertInternalType('array',Validator::validate(
 			[
-				['field'=>'frutas_favoritas','type'=>'array','min'=>3]
+				'frutas_favoritas' => ['type'=>'array','min'=>3]
 			],
 				[
 					'frutas_favoritas'=>['bananas','manzanas']
@@ -122,7 +121,7 @@ final class ValidatorTest extends TestCase
 			
 			$this->assertTrue(Validator::validate(
 			[
-				['field'=>'frutas_favoritas','type'=>'array','min'=>3]
+				'frutas_favoritas' => ['type'=>'array','min'=>3]
 			],
 				[
 					'frutas_favoritas'=>['bananas','manzanas','peras']
@@ -133,25 +132,25 @@ final class ValidatorTest extends TestCase
 	
 	public function testisTypeExceptionPorTipoEmpty()
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(\InvalidArgumentException::class);
         Validator::isType('Brayan','');
     }
 	
 	public function testisTypeExceptionPorTipoDesconocido()
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(\InvalidArgumentException::class);
         Validator::isType('Brayan','entero');
     }
 	
 	public function testisTypeExceptionPorDatoNull()
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(\InvalidArgumentException::class);
         Validator::isType(NULL,'int');
     }
 	
 	public function testisTypeExceptionPorRegexInvalida()
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(\InvalidArgumentException::class);
         Validator::isType('190-200-200','regex:/(.*/');
     }
 	

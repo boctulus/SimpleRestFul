@@ -1,4 +1,5 @@
 <?php
+
 namespace simplerest\models;
 
 use simplerest\core\Model;
