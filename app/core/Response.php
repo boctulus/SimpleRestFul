@@ -12,6 +12,7 @@ class Response
     static protected $config;
     static protected $pretty;
     static protected $quit = true;
+    static protected $options = JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES;
 
 
     protected function __construct() { 
@@ -65,10 +66,8 @@ class Response
     }
 
     public function encode($data){
-        $options = 0;
-
         if (static::$pretty)
-            $options = $options | JSON_PRETTY_PRINT;
+            $options = static::$options | JSON_PRETTY_PRINT;
             
         return json_encode($data, $options);  
     }

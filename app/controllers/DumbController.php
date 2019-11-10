@@ -12,6 +12,8 @@ use simplerest\core\Controller;
 use simplerest\models\UserRolesModel;
 use PHPMailer\PHPMailer\PHPMailer;
 use simplerest\libs\Utils;
+use simplerest\libs\Validator;
+
 
 class DumbController extends Controller
 {
@@ -296,12 +298,13 @@ class DumbController extends Controller
         Factory::response()->sendError('Acceso no autorizado', 401, 'Header vacio');
     }
    
-    // ok
+      // ok
     function sender(){
         Debug::debug(Utils::send_mail('boctulus@gmail.com', 'Pablo ZZ', 'Pruebita', 'Hola!<p/>Esto es una <b>prueba</b><p/>Chau'));     
     }
 
     function test(){
+        /*
         $ok = (bool) Database::table('messages')->create([
                 'from_email' => '@',
                 'from_name' => '',
@@ -312,5 +315,42 @@ class DumbController extends Controller
         ]);
         
         var_dump($ok);
+        */
+
+        $email = 'nano@';
+
+        $u = Database::table('users')->setValidator(new Validator());
+        //$rows = $u->where(['email', $email])->get(['id']);
+        
+        $affected = $u->where(['email' => $email])->update(['firstname' => 'NA']);
+
+
+        Debug::debug($affected);
+
     }
+
+    function validacion1(){
+        $u = Database::table('users')->setValidator(new Validator());
+        $affected = $u->where(['email' => 'nano@'])->update(['firstname' => 'NA']);
+    }
+
+    function validacion2(){
+        $u = Database::table('users')->setValidator(new Validator());
+        $affected = $u->where(['email' => 'nano@'])->update(['firstname' => 'NA']);
+    }
+
+    function validacion3(){
+        $u = Database::table('products')->setValidator(new Validator());
+        $rows = $u->where(['cost' => '100X', 'belongs_to' => 90])->get();
+
+        Debug::debug($rows);
+    }
+
+    function validacion4(){
+        $u = Database::table('products')->setValidator(new Validator());
+        $affected = $u->where(['cost' => '100X', 'belongs_to' => 90])->delete();
+
+        Debug::debug($affected);
+    }
+
 }

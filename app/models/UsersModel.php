@@ -38,6 +38,11 @@ class UsersModel extends Model
 		'belongs_to' => 'INT'
 	];
 
+	protected $rules = [
+        'firstname' => ['min'=>3, 'max'=>40],
+		'email' 	=> ['type'=>'email'],
+	];
+
     public function __construct($db = NULL){
         parent::__construct($db);
     }

@@ -158,22 +158,23 @@ function rememberme(){
 		type: "POST",
 		url: '/login/rememberme_process',
 		data: JSON.stringify(obj),
-		dataType: 'json', 
+		dataType: 'text', 
 		success: function(res){
-			var data = res.data;
-
-			if (typeof data.success != 'undefined'){
-				window.location.replace('/login/rememeberme_mail_sent/' + window.btoa(obj.email));
-			}
+			window.location.replace('/login/rememeberme_mail_sent/' + window.btoa(obj.email));
 		},
 		error: function(xhr, status, error){
 			console.log('ERROR');
 			console.log(xhr.responseJSON);
 
-			if ((typeof xhr.responseJSON != 'undefined') && (typeof xhr.responseJSON.error != 'undefined'))
+			if (xhr.responseJSON && xhr.responseJSON.error)
 				$('#remembermeError').text(xhr.responseJSON.error);
-			else	
+			else{
 				$('#remembermeError').text('Error - intente más tarde');
+				console.log(xhr);
+				console.log(status);
+				console.log(error);
+			}	
+				
 		}
 	});		
 
@@ -194,16 +195,15 @@ function update_pass()
 	var token = window.location.pathname.split('/')[3];
 
 	$.ajax({
-		type : "PATCH",
-		url: "/login/change_email_process",
+		type : "POST",
+		url: "/login/change_pass_process",
 		headers: {"Authorization": 'Bearer ' + token},
 		data : JSON.stringify(obj),
 		dataType: 'json',
 		success : function(res) {
-
 			var data = res.data;
 
-			if (typeof data.access_token != 'undefined'){
+			if (data && data.access_token){
 				console.log('Token recibido');
 				localStorage.setItem('access_token',data.access_token);
 				localStorage.setItem('refresh_token',data.refresh_token);
@@ -213,11 +213,13 @@ function update_pass()
 				window.location = base_url; 
 			}else{		
 				$('#passChangeError').text('Error desconcido');
-				console.log(data);
+				console.log(res);
 			}
 		},
 		error: function(xhr, status, error){
-			console.log(JSON.parse(xhr.responseText));
+			console.log(xhr);
+			console.log(status);
+			console.log(error);
 			$('#passChangeError').text(JSON.parse(xhr.responseText).error);
 		}
 	});

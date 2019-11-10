@@ -4,6 +4,7 @@ namespace simplerest\core;
 use simplerest\libs\Debug;
 use simplerest\libs\Arrays;
 use simplerest\libs\Validator;
+use simplerest\core\interfaces\IValidator;
 
 class Model {
 
@@ -29,6 +30,7 @@ class Model {
 	protected $limit;
 	protected $offset;
 	protected $roles;
+	protected $validator;
 	
 
 	/*
@@ -87,6 +89,11 @@ class Model {
 			
 		//var_export($this->rules);
 		
+	}
+
+	public function setValidator(IValidator $validator){
+		$this->validator = $validator;
+		return $this;
 	}
 
 	public function setTableAlias($tb_alias){
@@ -395,6 +402,14 @@ class Model {
 		$vars   = array_merge($this->w_vars, $this->h_vars);
 		////////////////////////
 
+		// Validación
+		if (!empty($this->validator)){
+			$validado = $this->validator->validate($this->getRules(), array_combine($vars, $values), null, true);
+			if ($validado !== true){
+				throw new \InvalidArgumentException('Data validation error: '. $validado);
+			} 
+		}
+
 		$shift = substr_count($where, '?');
 		
 		// JOINS
@@ -436,7 +451,7 @@ class Model {
 		$st = $this->conn->prepare($q);
 				
 		foreach($values as $ix => $val){
-			
+				
 			if(is_null($val)){
 				$type = \PDO::PARAM_NULL;
 			}elseif(isset($vars[$ix]) && isset($this->schema[$vars[$ix]])){
@@ -591,21 +606,13 @@ class Model {
 			}
 		}
 
-		$validado = (new Validator)->validate($this->getRules(), $data);
-		if ($validado !== true){
-			//Debug::debug($validado);
-			
-			$e = [];
-			foreach ($validado as $field => $errors){
-				$fe = [];
-				foreach ($errors as $error){
-					$fe[] = $error['error_detail'];
-				}
-				$e[] = "$field => ". implode(' & ', $fe);
-			}	
-
-			throw new \InvalidArgumentException('Data validation error '. implode ('; ', $e));
-		}  
+		// Validación
+		if (!empty($this->validator)){
+			$validado = $this->validator->validate($this->getRules(), $data, null, true);
+			if ($validado !== true){
+				throw new \InvalidArgumentException('Data validation error: '. $validado);
+			} 
+		}
 		
 		$set = '';
 		foreach($vars as $ix => $var){
@@ -661,6 +668,14 @@ class Model {
 	 */
 	function delete($soft_delete = true)
 	{
+		// Validación
+		if (!empty($this->validator)){
+			$validado = $this->validator->validate($this->getRules(), array_combine($this->w_vars, $this->w_vals), null, true);
+			if ($validado !== true){
+				throw new \InvalidArgumentException('Data validation error: '. $validado);
+			} 
+		}
+
 		if ($soft_delete){
 			if (!$this->inSchema(['deleted_at'])){
 				throw new \Exception("There is no 'deleted_at' for ".$this->table_name. ' schema');
@@ -676,7 +691,7 @@ class Model {
 		
 		$st = $this->conn->prepare($q);
 		
-		$vars = $this->vars;
+		$vars = $this->vars;		
 		foreach($this->values as $ix => $val){			
 			if(is_null($val)){
 				$type = \PDO::PARAM_NULL;
@@ -718,21 +733,13 @@ class Model {
 			}
 		}
 
-		$validado = (new Validator)->validate($this->getRules(), $data);
-		if ($validado !== true){
-			//Debug::debug($validado);
-
-			$e = [];
-			foreach ($validado as $field => $errors){
-				$fe = [];
-				foreach ($errors as $error){
-					$fe[] = $error['error_detail'];
-				}
-				$e[] = "$field => ". implode(' & ', $fe);
-			}	
-
-			throw new \InvalidArgumentException('Data validation error '. implode ('; ', $e));
-		}  
+		// Validación
+		if (!empty($this->validator)){
+			$validado = $this->validator->validate($this->getRules(), $data, null, true);
+			if ($validado !== true){
+				throw new \InvalidArgumentException('Data validation error: '. $validado);
+			} 
+		}
 
 		$str_vars = implode(', ',$vars);
 

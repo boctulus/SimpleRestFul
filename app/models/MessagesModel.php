@@ -18,7 +18,6 @@ class MessagesModel extends Model
 		'subject' => 'STR',
 		'body'=> 'STR',
 		'created_at' => 'STR',
-		'attempts' => 'INT',
 		'sent_at' => 'INT'
 	];
 

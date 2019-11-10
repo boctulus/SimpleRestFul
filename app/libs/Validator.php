@@ -2,6 +2,8 @@
 
 namespace simplerest\libs;
 
+use simplerest\core\interfaces\IValidator;
+
 /*
 	Validador de campos de formulario
 	Ver 2.0 Beta
@@ -10,7 +12,7 @@ namespace simplerest\libs;
 	
 	Novedad: el desacople de reglas y datos
 */
-class Validator
+class Validator implements IValidator
 {
 	protected $required = true;
 
@@ -81,14 +83,16 @@ class Validator
 		@return mixed
 
 	*/
-	function validate(array $rules, array $data, array $ignored_fields = NULL){
+	function validate(array $rules, array $data, array $ignored_fields = null, bool $as_string = false){
+
+		//Debug::debug($data, 'DATA:');
+
 		if (empty($rules))
 			throw new InvalidArgumentException('No validations!');
 		
 		if (empty($data))
 			throw new InvalidArgumentException('No data!');
 	
-
 		$errores = [];
 		
 		/*
@@ -105,10 +109,11 @@ class Validator
 			
 		foreach($rules as $field => $rule){
 
+			//Debug::debug($rule, "RULE $field :");
+			
 			if (!isset($data[$field]))
 				continue;
-
-			//Debug::debug($rule, "RULE $field :");
+			
 			//Debug::debug($data[$field], 'VALOR:');			
 			//echo "\n";
 			
@@ -212,7 +217,26 @@ class Validator
 			}	
 				
 		}
-		return empty($errores) ? true : get_class()::humanizeErrors($errores);
+
+		$validated = empty($errores) ? true : get_class()::humanizeErrors($errores);
+
+		if ($as_string){
+			if ($validated !== true){
+				
+				$e = [];
+				foreach ($validated as $field => $errors){
+					$fe = [];
+					foreach ($errors as $error){
+						$fe[] = $error['error_detail'];
+					}
+					$e[] = "$field => ". implode(' & ', $fe);
+				}	
+	
+				return implode ('; ', $e);
+			}  
+		}
+
+		return $validated;
 	}
 	
 	

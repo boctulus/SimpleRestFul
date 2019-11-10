@@ -116,11 +116,13 @@ class AuthController extends Controller implements IAuth
 
         if (!password_verify($password, $hash))
             Factory::response()->sendError('Incorrect email or password', 401);
- 
-        $uid = $rows[0]['id'];
-        $confirmed_email = $rows[0]['confirmed_email'];
-        $rows = Database::table('user_roles')->where(['user_id', $uid])->get(['role_id as role']);	
 
+        $confirmed_email = $rows[0]['confirmed_email'];
+
+        // Fetch roles
+        $uid = $rows[0]['id'];
+        $rows = Database::table('user_roles')->where(['user_id', $uid])->get(['role_id as role']);	
+        
         $r = new RolesModel();
 
         $roles = [];
@@ -327,6 +329,10 @@ class AuthController extends Controller implements IAuth
 
                 if ($payload->exp < time())
                     Factory::response()->sendError('Token expired',401);
+
+                // Overwrite
+                if (!$payload->confirmed_email)
+                    $payload->roles = ['registered'];
                 
                 return ($payload);
 

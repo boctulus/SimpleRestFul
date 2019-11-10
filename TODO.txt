@@ -1,15 +1,23 @@
 # TODO
 
-- Encontré la solución y es que cuando el usuario se registra que adquiera el rol "registered" y posiblemente otro u otros.
 
-Al momento de registrar el correo en la base de datos cambia "confirmed_email" a "1" y mete ese valor dentro del Payload en el token JWT.
+- Terminar rememberme() Y change_pass()
 
-Cuando el AuthController chequea si el usuario está autorizado y determina su rol me fijo el valor de "verfied" en el Payload y si es "0" no le dejo usar ningún rol superior a "registered" :D
+- Revisar los conectores de fb y google
 
-Con este diseño separo lo que es el otorgamiento de roles del proceso puramente de confirmación.
+- El rowCount() del Model->update() no funciona ??? devuelve siempre cero (0)
 
+- Permitir configurar el validator dentro del Modelo, ejemplo:
 
-- Continuar con confirm_email() en LoginController
+  $ok = (bool) Database::table('messages')->validator(['ignore'=> ['to_name']])->create([
+        'from_email' => $this->config['email']['mailer']['from'][0],
+        'from_name' => $this->config['email']['mailer']['from'][1],
+        'to_email' => $email, 
+        'to_name' => '', 
+        'subject' => 'Cambio de contraseña', 
+        'body' => "Para cambiar la contraseña siga el enlace:<br/><a href='$url'>$url</a>"
+      ]);
+
 
 - Máscara de campos y valores accesibles por un usuario según su rol o... hidden y filled con roles 
 a nivel de API

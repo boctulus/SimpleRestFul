@@ -133,31 +133,41 @@ class LoginController extends MyController
 		if ($email == null)
 			Factory::response()->sendError('Empty email', 400);
 
-		$u = Database::table('users');
-		$rows = $u->where(['email', $email])->get(['id']);
+		try {	
 
-		if (count($rows) === 0)
-			Factory::response()->send('Email not found'); // no enviar este mensaje
-		
-		$exp = time() + $this->config['email']['expires_in'];	
+			$u = Database::table('users');
+			$rows = $u->where(['email', $email])->get(['id']);
 
-		$base_url =  HTTP_PROTOCOL . '//' . $_SERVER['HTTP_HOST'];
+			if (count($rows) === 0)
+				Factory::response()->send('Email not found'); // no enviar este mensaje
+			
+			$exp = time() + $this->config['email']['expires_in'];	
 
-		$token = $this->gen_jwt2($email, $this->config['email']['secret_key'], $this->config['email']['encryption'], $this->config['email']['expires_in'] );
-		$url = $base_url . '/login/change_pass/' . $token . '/' . $exp; 
+			$base_url =  HTTP_PROTOCOL . '://' . $_SERVER['HTTP_HOST'];
 
-		/*
-			mail -->
-				title: Recuperación de contraseña 
-				to: $email
-				body: $url
-		*/
-	
-		/*
-			El OK debería ser al terminar el proceso incluido el envio del correo
-		*/
-		$ok = (bool) Utils::logger($url);
-		Factory::response()->send(['success' => $ok ]);
+			$token = $this->gen_jwt2($email, $this->config['email']['secret_key'], $this->config['email']['encryption'], $this->config['email']['expires_in'] );
+			$url = $base_url . '/login/change_pass/' . $token . '/' . $exp; 
+
+			
+			// Queue email
+			$ok = (bool) Database::table('messages')->create([
+				'from_email' => $this->config['email']['mailer']['from'][0],
+				'from_name' => $this->config['email']['mailer']['from'][1],
+				'to_email' => $email, 
+				'to_name' => '', 
+				'subject' => 'Cambio de contraseña', 
+				'body' => "Para cambiar la contraseña siga el enlace:<br/><a href='$url'>$url</a>"
+			]);
+
+		} catch (\Exception $e){
+			Factory::response()->sendError($e->getMessage(), 500);
+		}
+
+
+		if (!$ok)
+			Factory::response()->sendError("Error in user registration!", 500, 'Error during registration of email confirmation');
+
+		Factory::response()->send('OK');
 	}
 
 	function rememeberme_mail_sent(){
@@ -208,27 +218,31 @@ class LoginController extends MyController
 		}	
 
 		if (!isset($error)){
-			$rows = Database::table('user_roles')->where(['email', $payload->email])->get(['role_id']);
+
+			$rows = Database::table('users')->where(['email', $payload->email])->get(['id']);
+			$uid  = $rows[0]['id'];
+
+			$affected_rows = Database::table('users')->where(['id' => $uid])->update(['confirmed_email' => 1]);
 			
-			// .... seguir
+			if ($affected_rows === false)
+				Factory::response()->sendError('Error', 500);
+
+			$rows = Database::table('user_roles')->where(['user_id', $uid])->get(['role_id as role']);	
+
+			$r = new RolesModel();
 
 			$roles = [];
-
-			if (count($role_ids) != 0){
-				$r = new RolesModel();
-				foreach ($role_ids as $role_id){
-					$roles[] = $r->getRoleName($role_id);
+			if (count($rows) != 0){            
+				foreach ($rows as $row){
+					$roles[] = $r->getRoleName($row['role']);
 				}
-			}
+			}else
+				$roles[] = 'registered';
+
+			$access  = $this->gen_jwt(['uid' => $uid, 'roles' => $roles, 'confirmed_email' => 1], 'access_token');
+			$refresh = $this->gen_jwt(['uid' => $uid, 'roles' => $roles, 'confirmed_email' => 1], 'access_token');
+
 			
-			$access  = $this->gen_jwt(['uid' => $u->id, 'roles' => $roles], 'access_token');
-			$refresh = $this->gen_jwt(['uid'=> $u->id, 'roles' => $roles], 'refresh_token');
-
-			//
-			// Cargar vista 
-			// donde poder setear una nueva contraseña
-			//
-
 			$this->view('generic.php', [
 				'title'=>'Confirmación de correo', 
 				'hidenav'=> true,
@@ -306,8 +320,8 @@ class LoginController extends MyController
 	}
 
 	function change_pass_process(){
-		if($_SERVER['REQUEST_METHOD']!='PATCH')
-			exit;
+		if($_SERVER['REQUEST_METHOD']!='POST')
+			Factory::response()->sendError('Incorrect verb ('.$_SERVER['REQUEST_METHOD'].'), expecting POST',405);
 		
 		$headers = Factory::request()->headers();
 		$auth = $headers['Authorization'] ?? $headers['authorization'] ?? null;
@@ -321,7 +335,7 @@ class LoginController extends MyController
 			Factory::response()->sendError('Empty email',400);
 		
 		if (empty($auth))
-			return false;			
+			Factory::response()->sendError('No auth', 400);			
 			
 		list($jwt) = sscanf($auth, 'Bearer %s');
 
@@ -341,26 +355,30 @@ class LoginController extends MyController
 
                 if ($payload->exp < time())
                     Factory::response()->sendError('Token expired',401);
-		
+			
 				
 				$rows = Database::table('users')->where(['email', $payload->email])->get(['id']);
+				$uid = $rows[0]['id'];
 
 				$affected = Database::table('users')->where(['id', $rows[0]['id']])->update(['password' => password_hash($data['password'], PASSWORD_DEFAULT)]);
 
-				//Factory::response()->send(['success' => $ok]);				
+				// Fetch roles
+				$uid = $rows[0]['id'];
+				$rows = Database::table('user_roles')->where(['user_id', $uid])->get(['role_id as role']);	
 				
-				$role_ids = Database::table('users')->fetchRoles($rows[0]['id']);
+				$r = new RolesModel();
 
 				$roles = [];
-				if (count($role_ids) != 0){
-					$r = new RolesModel();
-					foreach ($role_ids as $role_id){
-						$roles[] = $r->getRoleName($role_id);
+				if (count($rows) != 0){            
+					foreach ($rows as $row){
+						$roles[] = $r->getRoleName($row['role']);
 					}
-				}
+				}else
+					$roles[] = 'registered';
+
 				
-				$access  = $this->gen_jwt(['uid' => $rows[0]['id'], 'roles' => $roles], 'access_token');
-				$refresh = $this->gen_jwt(['uid'=> $rows[0]['id'], 'roles' => $roles], 'refresh_token');
+				$access  = $this->gen_jwt(['uid' => $uid, 'roles' => $roles, 'confirmed_email' => 1], 'access_token');
+				$refresh = $this->gen_jwt(['uid' => $uid, 'roles' => $roles, 'confirmed_email' => 1], 'refresh_token');
  
 				Factory::response()->send([
 					'access_token' => $access,

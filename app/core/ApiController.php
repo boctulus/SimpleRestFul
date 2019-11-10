@@ -55,20 +55,15 @@ abstract class ApiController extends Controller
             if (!empty($this->auth_payload)){
                 $this->uid = $this->auth_payload->uid; 
 
-                if ($this->auth_payload->confirmed_email == 1){
-                    $r = new RolesModel();
-                    $this->roles  = $this->auth_payload->roles;              
+                $r = new RolesModel();
+                $this->roles  = $this->auth_payload->roles;              
 
-                    foreach ($this->roles as $role){
-                        if ($r->is_admin($role)){
-                            $this->is_admin = true;
-                            break;
-                        }
+                foreach ($this->roles as $role){
+                    if ($r->is_admin($role)){
+                        $this->is_admin = true;
+                        break;
                     }
-                }else{
-                    $this->is_admin = false;
-                    $this->roles = ['registered'];
-                }                
+                }
             }else{
                 $this->uid = null;
                 $this->is_admin = false;
@@ -76,7 +71,7 @@ abstract class ApiController extends Controller
             }
 
             //var_export($this->roles);
-           // exit;
+            //exit;
 
             // y si ya se que es admin....
             if ($this->is_admin){
@@ -508,7 +503,7 @@ abstract class ApiController extends Controller
 
             $validado = (new Validator)->validate($instance->getRules(), $data);
             if ($validado !== true){
-                Factory::response()->sendError('Data validation error', 400, $validado);
+                Factory::response()->sendError('Data validation error:', 400, $validado);
             }  
 
             if ($instance->create($data)!==false){
@@ -591,7 +586,7 @@ abstract class ApiController extends Controller
 
             $validado = (new Validator())->setRequired($put_mode)->validate($instance->getRules(), $data, null);
             if ($validado !== true){
-                Factory::response()->sendError('Data validation error', 400, $validado);
+                Factory::response()->sendError('Data validation error:', 400, $validado);
             }
     
             if ($instance->where(['id', $id])->update($data) !== false)
