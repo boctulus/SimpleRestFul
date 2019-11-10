@@ -28,6 +28,7 @@ class ProductsModel extends Model
 		'created_at' => 'STR',
 		'modified_at' => 'STR',
 		'deleted_at' => 'STR',
+		'active' => 'INT',
 		'locked' => 'INT',		 
 		'belongs_to' => 'INT' 
 	];
@@ -37,9 +38,9 @@ class ProductsModel extends Model
 		'description' 	=> ['max'=>50],
 		'size' 			=> ['max'=>20],
         'workspace'		=> ['max'=>20],
-		'created_at' 	=> ['type'=>'sql_date'],
-		'modified_at' 	=> ['type'=>'sql_date'],
-		'deleted_at' 	=> ['type'=>'sql_date'],
+		'created_at' 	=> ['type'=>'datetime'],
+		'modified_at' 	=> ['type'=>'datetime'],
+		'deleted_at' 	=> ['type'=>'datetime'],
 	];
 
     public function __construct($db = NULL){

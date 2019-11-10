@@ -5,11 +5,11 @@ namespace simplerest\models;
 
 use simplerest\core\Model;
 
-class UserRoleModel extends Model
+class UserRolesModel extends Model
  {
-	protected $table_name = "user_role";
+	protected $table_name = "user_roles";
 	protected $id_name = 'id';
-	protected $fillable = [ 'user_id', 'role_id', 'creation_date', 'modification_date'];
+	//protected $fillable = [ 'user_id', 'role_id', 'creation_date', 'modification_date'];
 	protected $hidden = [ ];
 	protected $nullable = ['creation_date', 'modification_date'];
 

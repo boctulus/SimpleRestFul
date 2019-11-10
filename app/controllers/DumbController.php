@@ -9,8 +9,9 @@ use simplerest\models\ProductsModel;
 use simplerest\libs\Factory;
 use simplerest\libs\Debug;
 use simplerest\core\Controller;
-use simplerest\models\UserRoleModel;
+use simplerest\models\UserRolesModel;
 use PHPMailer\PHPMailer\PHPMailer;
+use simplerest\libs\Utils;
 
 class DumbController extends Controller
 {
@@ -198,10 +199,8 @@ class DumbController extends Controller
         $u = new UsersModel($conn);
         $u->unhide(['password']);
         $u->hide(['firstname','lastname']);
-        $u->id = $id;
-        $u->fetch();
-
-        Debug::debug($u);
+        
+        Debug::debug($u->where(['id'=>$id])->get());
     }
 
     function del_user($id){
@@ -297,45 +296,21 @@ class DumbController extends Controller
         Factory::response()->sendError('Acceso no autorizado', 401, 'Header vacio');
     }
    
-    /*
-        https://simplerest.mapapulque.ro/dumb/test?from_email=boctulus@gmail.com&from_name=Pablo&to_email=pablo.bit@outlook.com&to_name=%27Boctulus%27&subject=Prueba&msg=Cuerpo%20del%20mensaje
-    */
-    function test() {
-                
-        $mail = new PHPMailer();
-        $mail->isSMTP();
+    // ok
+    function sender(){
+        Debug::debug(Utils::send_mail('boctulus@gmail.com', 'Pablo ZZ', 'Pruebita', 'Hola!<p/>Esto es una <b>prueba</b><p/>Chau'));     
+    }
 
-        foreach ($this->config['email']['mailer'] as $k => $prop){
-			$mail->{$k} = $prop;
-		}	
-
-        /* 
-        From:
-        */
-        $mail->setFrom($_REQUEST['from_email'], $_REQUEST['from_name']);
-        //$mail->addReplyTo('replyto@example.com', 'First Last');
-
-        /*
-        To:
-        */
-        $mail->addAddress($_REQUEST['to_email'], $_REQUEST['to_name']);
-
-        /*
-        Mensaje
-        */
-
-        $mail->Subject = $_REQUEST['subject'];
-        //$mail->msgHTML(file_get_contents('contents.html'), dirname(__FILE__));
-        $mail->msgHTML($_REQUEST['msg']); 
-        //$mail->AltBody = 'Mensaje de prueba tipo plain-text';
-        //$mail->addAttachment('images/phpmailer_mini.png');
+    function test(){
+        $ok = (bool) Database::table('messages')->create([
+                'from_email' => '@',
+                'from_name' => '',
+                'to_email' => 'boctulus@gmail.com', 
+                'to_name' => 'Pablo ZZ', 
+                'subject' => 'Pruebita', 
+                'body' => 'Hola!<p/>Esto es una <b>prueba</b><p/>Chau'
+        ]);
         
-
-        if (!$mail->send())
-        {	
-        echo "Mailer Error: " . $mail->ErrorInfo;
-        }else
-        echo 'Mail enviado a '.$_REQUEST['to_email'];
-
+        var_dump($ok);
     }
 }

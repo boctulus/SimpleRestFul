@@ -52,11 +52,11 @@ class Validator
 			return (preg_match('/^[\pL\pM\p{Zs}.-]+$/u',$dato) == 1); 		
 		}elseif($tipo == 'notnum' || $tipo == 'not-numeric str'){
 			return preg_match('/[0-9]+/',$dato) == 0;
-		}elseif($tipo == 'email' || $tipo == 'correo'){
+		}elseif($tipo == 'email'){
 				return filter_var($dato, FILTER_VALIDATE_EMAIL);
 		}elseif($tipo == 'date'){
 				return get_class()::isValidDate($dato);
-		}elseif($tipo == 'sql_date'){
+		}elseif($tipo == 'datetime'){
 				return preg_match('/[1-2][0-9]{3}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-5][0-9]/',$dato)== 1;		
 		}elseif($tipo == 'time'){
 				return get_class()::isValidDate($dato,'H:i:s');	
@@ -79,8 +79,7 @@ class Validator
 		@param array $data
 		@param array $ignored_fields
 		@return mixed
-		
-		$rules es un array de arrays con las keys: dato,'tipo?,requerido?
+
 	*/
 	function validate(array $rules, array $data, array $ignored_fields = NULL){
 		if (empty($rules))
@@ -106,8 +105,11 @@ class Validator
 			
 		foreach($rules as $field => $rule){
 
-			//var_export($data[$field]);
-			//var_export($rule);
+			if (!isset($data[$field]))
+				continue;
+
+			//Debug::debug($rule, "RULE $field :");
+			//Debug::debug($data[$field], 'VALOR:');			
 			//echo "\n";
 			
 			if (!isset($data[$field])){

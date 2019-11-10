@@ -34,7 +34,8 @@ return [
 		'encryption' => 'HS256'	
 	],
 
-	// 'registered' or other role
+	// aditional role to 'registered' after being registered
+	// leave empty for none
 	'registration_role' => 'regular',
 
 	// seconds
@@ -42,16 +43,20 @@ return [
 		'secret_key' => 'TbD:||:"%;(]]I{Q[*Q"[}=J`.~z#j*.-Vt"]*!~>#k}`!~^^%[?>.T_}] }@:<|=/{]y~[^ @)?WV^)+c$"l+&@.\?Nx~$_Gx=%_=Lu:&?!~\{{?%*?}IV~@:d:|][:/;luvS"*h{"n^\]/?[:@(:SM+~~)$vh\%_Q:[[M(~xx.)%|}),c,{$gw#{~h>:@-B|_`(L~\%:[r]$=`+:]St#!}%#@|?{[m@;("[^!Y_TbSNl-k{.}.vO:)"`}:|%G:/+P$fG(W>G[\|="z`||~fC+kLe[~+E~}}#`B>: }d"\Z)R}f@Y&X..d{/px~~_zc]+{d]##|a$M@,P>~U`A!CR*:!`~?)|\mVB!|+ uQ*l*\;|*_zc"*d}+q;s{@C()V$vIv*=B[{$ `S!&+`_t;{u:&_ `DU|BD@|;"NS.)>+^&@ssm\^%#h+\{{&fnN@![%#@/[F.>),PT\i~n|^$~$&I\;=;U}"N.(LI&{m&o&S >X`$-<|td~-Kyx].h?/O]',
 		'expires_in' => 7 * 24 * 3600,
 		'encryption' => 'HS256',
-		'mailer' => [
-			'host' => 'smtp.easyname.com',
-			'username' => '162997mail6',
-			'password' => 'Hvr0tf9Is#',
-			'port' => 465,
-			'secure' => 'ssl',
-			'dkim_domain' => '127.0.0.1',
-			'SMTPDebug' => 0,
-			'CharSet' => 'UTF-8',
-			'Debugoutput' => 'html'
+		'mailer' =>  [	
+			'from'	 => ['no_responder@simplerest.mapapulque.ro', 'No responder'],	
+			'object' => [
+				'Host' => 'smtp.easyname.com',
+				'Username' => '162997mail6',
+				'Password' => 'Hvr0tf9Is#',
+				'Port' => 587,
+	            'SMTPAuth' => true,
+				'SMTPSecure' => 'ssl',
+				'SMTPDebug' => 4,
+				'CharSet' => 'UTF-8',
+				'Debugoutput' => 'html',
+				'SMTPSecure' => false
+			]
 		]
 	],
 

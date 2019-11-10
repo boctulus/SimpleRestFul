@@ -3,6 +3,7 @@ namespace simplerest\core;
 
 use simplerest\libs\Debug;
 use simplerest\libs\Arrays;
+use simplerest\libs\Validator;
 
 class Model {
 
@@ -45,6 +46,12 @@ class Model {
 
 		$this->properties = array_keys($this->schema);
 
+		if (empty($this->table_name)){
+			$class_name = get_class($this);
+			$class_name = substr($class_name, strrpos($class_name, '\\')+1);
+			$this->table_name = strtolower(substr($class_name, 0, strlen($class_name)-5));
+		}			
+
 		if ($this->fillable == NULL){
 			$this->fillable = $this->properties;
 			$this->unfill([$this->id_name, 'created_at', 'modified_at', 'deleted_at', 'locked']);
@@ -53,15 +60,20 @@ class Model {
 		$this->nullable[] = $this->id_name;
 		$this->nullable[] = 'locked';
 		$this->nullable[] = 'belongs_to';
+		$this->nullable[] = 'created_at';
+		$this->nullable[] = 'modified_at';
+		$this->nullable[] = 'deleted_at';
 
 		// Validations
+		
 		if (!empty($this->rules)){
 			foreach ($this->rules as $field => $rule){
-				if (!isset($rule[$field]['type']) || empty($rule[$field]['type'])){
+				if (!isset($this->rules[$field]['type']) || empty($this->rules[$field]['type'])){
 					$this->rules[$field]['type'] = strtolower($this->schema[$field]);
 				}
 			}
 		}
+		
 		
 		foreach ($this->schema as $field => $type){
 			if (!isset($this->rules[$field])){
@@ -72,7 +84,7 @@ class Model {
 				$this->rules[$field]['required'] = true;
 			}
 		}
-		
+			
 		//var_export($this->rules);
 		
 	}
@@ -566,6 +578,9 @@ class Model {
 	 */
 	function update(array $data)
 	{
+		if (!Arrays::is_assoc($data))
+			throw new \InvalidArgumentException('Array of data should be associative');
+
 		$vars   = array_keys($data);
 		$values = array_values($data);
 
@@ -575,6 +590,22 @@ class Model {
 					throw new \InvalidArgumentException("update: $var is no fillable");
 			}
 		}
+
+		$validado = (new Validator)->validate($this->getRules(), $data);
+		if ($validado !== true){
+			//Debug::debug($validado);
+			
+			$e = [];
+			foreach ($validado as $field => $errors){
+				$fe = [];
+				foreach ($errors as $error){
+					$fe[] = $error['error_detail'];
+				}
+				$e[] = "$field => ". implode(' & ', $fe);
+			}	
+
+			throw new \InvalidArgumentException('Data validation error '. implode ('; ', $e));
+		}  
 		
 		$set = '';
 		foreach($vars as $ix => $var){
@@ -641,7 +672,7 @@ class Model {
 			return $this->update(['deleted_at' => $at]);
 		}
 
-		$q = "DELETE FROM ".$this->table_name. ' '.$this->table_alias." WHERE ".$this->where;
+		$q = "DELETE FROM ". $this->table_name . " WHERE " . $this->where;
 		
 		$st = $this->conn->prepare($q);
 		
@@ -674,6 +705,9 @@ class Model {
 	*/
 	function create(array $data)
 	{
+		if (!Arrays::is_assoc($data))
+			throw new \InvalidArgumentException('Array of data should be associative');
+
 		$vars   = array_keys($data);
 		$vals = array_values($data);
 
@@ -684,6 +718,22 @@ class Model {
 			}
 		}
 
+		$validado = (new Validator)->validate($this->getRules(), $data);
+		if ($validado !== true){
+			//Debug::debug($validado);
+
+			$e = [];
+			foreach ($validado as $field => $errors){
+				$fe = [];
+				foreach ($errors as $error){
+					$fe[] = $error['error_detail'];
+				}
+				$e[] = "$field => ". implode(' & ', $fe);
+			}	
+
+			throw new \InvalidArgumentException('Data validation error '. implode ('; ', $e));
+		}  
+
 		$str_vars = implode(', ',$vars);
 
 		$symbols = array_map(function($v){ return ":$v";}, $vars);
@@ -693,9 +743,6 @@ class Model {
 		$st = $this->conn->prepare($q);
 		
 		foreach($vals as $ix => $val){
-			//if (!isset($this->schema[$vars[$ix]]))  # posible dupe
-			//	throw new InvalidArgumentException("there is an error near '{$vars[$ix]}'");
-
 			$const = $this->schema[$vars[$ix]];
 			$st->bindValue(":{$vars[$ix]}", $val, constant("PDO::PARAM_{$const}"));
 		}

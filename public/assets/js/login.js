@@ -22,15 +22,15 @@ function checkpoint()
 	}		 
 }
 
-function signup(){
+function register(){
 	//console.log('here');
 
 	var obj ={};
 
 	if ($('#password').val() != $('#password_confirmation').val()){
-		$('#signupError').text('Contraseñas no coinciden');
+		$('#registerError').text('Contraseñas no coinciden');
 		return;
-	}else $('#signupError').text('');
+	}else $('#registerError').text('');
 
 	obj.email = $('#email').val();	
 	obj.password = $('#password').val();
@@ -39,7 +39,7 @@ function signup(){
 
 	$.ajax({
 		type : "POST",
-		url: "/auth/signup",
+		url: "/auth/register",
 		data : JSON.stringify(obj),
 		dataType: 'json',
 		success : function(res) {
@@ -55,13 +55,13 @@ function signup(){
 				console.log('Tokens obtenidos',data);
 				window.location = base_url; 
 			}else{		
-				$('#signupError').text('Error desconcido');
+				$('#registerError').text('Error desconcido');
 				console.log(data);
 			}
 		},
 		error: function(xhr, status, error){
 			console.log(JSON.parse(xhr.responseText));
-			$('#signupError').text(JSON.parse(xhr.responseText).error);
+			$('#registerError').text(JSON.parse(xhr.responseText).error);
 		}
 	});
 

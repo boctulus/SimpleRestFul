@@ -55,20 +55,28 @@ abstract class ApiController extends Controller
             if (!empty($this->auth_payload)){
                 $this->uid = $this->auth_payload->uid; 
 
-                $r = new RolesModel();
-                $this->roles  = $this->auth_payload->roles;
+                if ($this->auth_payload->confirmed_email == 1){
+                    $r = new RolesModel();
+                    $this->roles  = $this->auth_payload->roles;              
 
-                foreach ($this->roles as $role){
-                    if ($r->is_admin($role)){
-                        $this->is_admin = true;
-                        break;
+                    foreach ($this->roles as $role){
+                        if ($r->is_admin($role)){
+                            $this->is_admin = true;
+                            break;
+                        }
                     }
-                }
+                }else{
+                    $this->is_admin = false;
+                    $this->roles = ['registered'];
+                }                
             }else{
                 $this->uid = null;
                 $this->is_admin = false;
                 $this->roles = ['guest'];
             }
+
+            //var_export($this->roles);
+           // exit;
 
             // y si ya se que es admin....
             if ($this->is_admin){
@@ -498,7 +506,7 @@ abstract class ApiController extends Controller
                 $data['belongs_to'] = $f->belongs_to;    
             }    
 
-            $validado = Validator::validate($instance->getRules(), $data);
+            $validado = (new Validator)->validate($instance->getRules(), $data);
             if ($validado !== true){
                 Factory::response()->sendError('Data validation error', 400, $validado);
             }  

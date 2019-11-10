@@ -43,13 +43,13 @@
 					<input type="password" class="form-control" name="passwordconfirmation" id="password_confirmation" placeholder="Password confirmation" required />
 				</div>
 				
-				<div style="color:red; text-align: center;" id="signupError"></div>
+				<div style="color:red; text-align: center;" id="registerError"></div>
 
 			</div>
 		</form>		
 
 		<div class="form-group">
-			<button type="submit" class="btn btn-primary btn-lg btn-block login-btn" onClick="signup()">Registrarse</button>
+			<button type="submit" class="btn btn-primary btn-lg btn-block login-btn" onClick="register()">Registrarse</button>
 		</div>
 
 		Ya posee cuenta? <a href="/login">ingresar</a>

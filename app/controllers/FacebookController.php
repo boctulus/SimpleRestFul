@@ -6,7 +6,7 @@ use Exception;
 use simplerest\core\Controller;
 use simplerest\libs\Database;
 use simplerest\models\UsersModel;
-use simplerest\models\UserRoleModel;
+use simplerest\models\UserRolesModel;
 use simplerest\models\RolesModel;
 use simplerest\libs\Debug;
 
@@ -94,7 +94,7 @@ class FacebookController extends Controller
                     // Email already exists
                     $uid = $rows[0]['id'];
     
-                    $ur = new UserRoleModel($conn);
+                    $ur = new UserRolesModel($conn);
                     $rows = $ur->where(['user_id', $uid])->get(['role_id']);
     
                     $roles = [];
@@ -122,7 +122,7 @@ class FacebookController extends Controller
                     $r = new RolesModel();
                     $role = $this->config['registration_role'];
 
-                    $ur = new UserRoleModel($conn);
+                    $ur = new UserRolesModel($conn);
                     $id = $ur->create([ 'user_id' => $uid, 'role_id' => $r->get_role_id($role) ]);  // registered or other            
             
                     $roles = [$role];
@@ -130,7 +130,8 @@ class FacebookController extends Controller
                 
                 $my_payload = [
                     'uid' => $uid, 
-                    'roles' => $roles
+                    'roles' => $roles,
+                    'confirmed_email' => 1
                 ];
 
                 //Debug::debug($my_payload); ////

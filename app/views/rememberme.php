@@ -83,7 +83,7 @@
 				<button type="submit" class="btn btn-primary btn-lg btn-block login-btn" onClick="rememberme()">Recuérdame</button>
 			</div>
 
-			No registrado? <a href="/login/signup">regístrese</a>
+			No registrado? <a href="/login/register">regístrese</a>
 		</form>		
 		
 	</div>

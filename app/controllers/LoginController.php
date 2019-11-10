@@ -19,8 +19,8 @@ class LoginController extends MyController
 		$this->view('login.php', [ 'title'=>'Ingreso', 'hidenav'=> true ]);
 	}
 	
-	function signup(){
-		$this->view('signup.php', ['title'=>'Registro', 'hidenav'=> true]);
+	function register(){
+		$this->view('register.php', ['title'=>'Registro', 'hidenav'=> true]);
 	}
 
 	/*
@@ -117,9 +117,9 @@ class LoginController extends MyController
 
 		//simplerest.lan/login/confirm_email/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU3MjI2OTE4NiwiZXhwIjoxNTcyODczOTg2LCJlbWFpbCI6InBlcGVAZ21haWwuY29tIn0.fl_jVsAe16ePinDY0QT8GRK_cuk0Ebn3CVNfCgfnM3s/1572873986
 
-		Solo cambia el nombre del "action" por change_email :
+		Solo cambia el nombre del "action" por change_pass :
 
-		//simplerest.lan/login/change_email/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU3MjI2OTE4NiwiZXhwIjoxNTcyODczOTg2LCJlbWFpbCI6InBlcGVAZ21haWwuY29tIn0.fl_jVsAe16ePinDY0QT8GRK_cuk0Ebn3CVNfCgfnM3s/1572873986
+		//simplerest.lan/login/change_pass/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU3MjI2OTE4NiwiZXhwIjoxNTcyODczOTg2LCJlbWFpbCI6InBlcGVAZ21haWwuY29tIn0.fl_jVsAe16ePinDY0QT8GRK_cuk0Ebn3CVNfCgfnM3s/1572873986
 
 	*/
 	function rememberme_process(){
@@ -137,14 +137,14 @@ class LoginController extends MyController
 		$rows = $u->where(['email', $email])->get(['id']);
 
 		if (count($rows) === 0)
-			Factory::response()->send([]);
-
+			Factory::response()->send('Email not found'); // no enviar este mensaje
+		
 		$exp = time() + $this->config['email']['expires_in'];	
 
 		$base_url =  HTTP_PROTOCOL . '//' . $_SERVER['HTTP_HOST'];
 
 		$token = $this->gen_jwt2($email, $this->config['email']['secret_key'], $this->config['email']['encryption'], $this->config['email']['expires_in'] );
-		$url = $base_url . '/login/change_email/' . $token . '/' . $exp; 
+		$url = $base_url . '/login/change_pass/' . $token . '/' . $exp; 
 
 		/*
 			mail -->
@@ -208,11 +208,9 @@ class LoginController extends MyController
 		}	
 
 		if (!isset($error)){
-			$rows = Database::table('users')->where(['email', $payload->email])->get(['id']);
+			$rows = Database::table('user_roles')->where(['email', $payload->email])->get(['role_id']);
 			
-			$u = Database::table('users');
-			$u->id = $rows[0]['id'];
-			$role_ids = $u->fetchRoles();
+			// .... seguir
 
 			$roles = [];
 
@@ -249,7 +247,7 @@ class LoginController extends MyController
 
 	}
 
-	function change_email($jwt, $exp)
+	function change_pass($jwt, $exp)
 	{
 		// Es menos costoso veririficar así en principio
 		if ((int) $exp < time())
@@ -307,7 +305,7 @@ class LoginController extends MyController
 		}
 	}
 
-	function change_email_process(){
+	function change_pass_process(){
 		if($_SERVER['REQUEST_METHOD']!='PATCH')
 			exit;
 		

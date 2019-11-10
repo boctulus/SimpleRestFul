@@ -98,7 +98,7 @@
 			</div>
 			
 			<div style="text-align:right;">
-				No registrado? <a href="/login/signup">regístrese</a>
+				No registrado? <a href="/login/register">regístrese</a>
 			</div>	
 		</form>		
 		

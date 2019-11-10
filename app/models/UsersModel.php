@@ -1,5 +1,4 @@
 <?php
-declare(strict_types=1);
 
 namespace simplerest\models;
 
@@ -22,7 +21,7 @@ class UsersModel extends Model
 	];
 	*/
 	protected $nullable = ['id', 'firstname', 'lastname', 'deleted_at', 'belongs_to', 'confirmed_email'];
-	protected $hidden   = ['password', /* 'belongs_to', */ 'confirmed_email'];
+	protected $hidden   = [	'password' ];
 
 	/*
 		Types are INT, STR and BOOL among others
@@ -42,52 +41,5 @@ class UsersModel extends Model
     public function __construct($db = NULL){
         parent::__construct($db);
     }
-	
-	function checkCredentials()
-	{
-		$pass = $this->password;
-		
-		$q  = "SELECT * FROM ".$this->table_name." WHERE email=?";
-		$st = $this->conn->prepare($q);
-		$st->execute([$this->email]);
-	
-		$row = $st->fetch(\PDO::FETCH_OBJ);
-		
-		if (empty($row->password))
-			Factory::response()->SendError('Not authorized', 401, 'Password is undefined');
-
-		if ($row){
-			$hash = $row->password;
-
-			if (password_verify($pass, $hash)){
-				foreach ($row as $k => $field){
-					$this->{$k} = $row->$k;
-				}
-				return true;
-			}	
-		}
-		
-		return false;
-	}
-
-	/*
-		@return array of all available roles for the user
-	*/
-	function fetchRoles($id)
-	{
-		$this->table_alias = 'u';
-		$this->join('user_role as ur', 'ur.user_id', '=', 'u.id');
-		$rows = $this->where(['u.id', $id])->get(['ur.role_id as role']);	
-
-		if (!empty($rows)){
-			$roles = [];
-			foreach ($rows as $row){
-				$roles[] = $row['role'];	
-			}
-			return $roles;
-		}
-	
-		return [];
-	}
 	
 }

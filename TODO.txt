@@ -1,5 +1,37 @@
 # TODO
 
+- Encontré la solución y es que cuando el usuario se registra que adquiera el rol "registered" y posiblemente otro u otros.
+
+Al momento de registrar el correo en la base de datos cambia "confirmed_email" a "1" y mete ese valor dentro del Payload en el token JWT.
+
+Cuando el AuthController chequea si el usuario está autorizado y determina su rol me fijo el valor de "verfied" en el Payload y si es "0" no le dejo usar ningún rol superior a "registered" :D
+
+Con este diseño separo lo que es el otorgamiento de roles del proceso puramente de confirmación.
+
+
+- Continuar con confirm_email() en LoginController
+
+- Máscara de campos y valores accesibles por un usuario según su rol o... hidden y filled con roles 
+a nivel de API
+
+protected $hidden = [
+                      'password',
+                      'active' => ['guest', 'registered', 'basic'] 
+]
+
+- Restricción de valores 
+
+// UserRole
+protected $constraint = [
+                      'role_id' => [
+                                      'gerente' => [1, 2, 3]
+                                   ] 
+];
+
+<-- de los roles autorizados a acceder a UserRole el gerente posee una restricción que le permite solo crear o actualizar roles dentro del conjunto [1,2,3] no pudiendo así por ejemplo otorgar un permiso de admin (100)
+
+Justificación: un caso de uso sería que un usuario con rol de gerente por ejemplo otorgar roles a usuarios pero nunca pueda ser un rol igual o superior al de gerente. La solución es restringir los valores que puede tomar el rol_id  
+
 - No tiene sentido que un usuario pueda registrarse sin correo *excepto* venga de Facebook en cuyo caso me guardo el fb_id
 
 - Agregar transacciones !
@@ -9,8 +41,6 @@
   * al verificar el correo poder por ejemplo agregar el rol usuario 'regular'
 
 - Arreglar lo que pasa si un usuario es borrado con soft delete (warnings)
-
-- Terminar conector de Facebook
 
 - Usar un envelope como en Instagram
 

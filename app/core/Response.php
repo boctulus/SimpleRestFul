@@ -11,6 +11,7 @@ class Response
     static protected $version = '1.1';
     static protected $config;
     static protected $pretty;
+    static protected $quit = true;
 
 
     protected function __construct() { 
@@ -53,8 +54,13 @@ class Response
         return static::getInstance();
     }
 
-    public function setPretty($state){
+    public function setPretty(bool $state){
         static::$pretty = $state;
+        return static::getInstance();
+    }
+
+    public function setQuit(bool $state){
+        static::$quit = $state;
         return static::getInstance();
     }
 
@@ -80,12 +86,16 @@ class Response
             $data = $this->encode([ 'data' => $data, 'error' => '', 'error_detail' => '' ]);
 
         echo $data . "\n"; 
-        exit;  	
+
+        if (static::$quit)
+            exit;  	
     }
 
     function sendCode(int $http_code){
         http_response_code($http_code);
-        exit;
+
+        if (static::$quit)
+            exit; 
     }
  
     // send as JSON
@@ -96,7 +106,9 @@ class Response
             header(trim('HTTP/'.static::$version.' '.$http_code.' '.static::$http_code_msg));
        
         echo $this->encode([ 'data' => $data, 'error' => '', 'error_detail' => '' ]). "\n"; 
-        exit;  	
+        
+        if (static::$quit)
+            exit; 
     }
 
    
@@ -120,6 +132,8 @@ class Response
             header(trim('HTTP/'.static::$version.' '.$http_code.' '.static::$http_code_msg));
 
         echo $this->encode(['error' => $msg_error, 'error_detail' => $error_detail], $http_code) . "\n";
-        exit;
+        
+        if (static::$quit)
+            exit; 
     }
 }

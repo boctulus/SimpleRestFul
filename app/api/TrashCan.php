@@ -27,9 +27,6 @@ class TrashCan extends MyApiController
             if (empty($entity))
                 Factory::response()->sendError('Entity is required', 400);
 
-            //if (strpos($entity,'?') !== false)
-            //    Factory::response()->sendError("Malformed url (? instead of &)", 400); 
-
             $this->modelName = ucfirst($entity) . 'Model';
             $this->model_table = strtolower($entity);
 
