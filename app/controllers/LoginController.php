@@ -148,7 +148,6 @@ class LoginController extends MyController
 			$token = $this->gen_jwt2($email, $this->config['email']['secret_key'], $this->config['email']['encryption'], $this->config['email']['expires_in'] );
 			$url = $base_url . '/login/change_pass/' . $token . '/' . $exp; 
 
-			
 			// Queue email
 			$ok = (bool) Database::table('messages')->create([
 				'from_email' => $this->config['email']['mailer']['from'][0],

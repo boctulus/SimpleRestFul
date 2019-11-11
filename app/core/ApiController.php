@@ -6,11 +6,13 @@ use simplerest\core\interfaces\IAuth;
 use simplerest\libs\Factory;
 use simplerest\libs\Arrays;
 use simplerest\libs\Database;
+use simplerest\libs\Debug;
 use simplerest\models\GroupPermissionsModel;
 use simplerest\models\OtherPermissionsModel;
 use simplerest\models\FoldersModel;
 use simplerest\models\RolesModel;
 use simplerest\libs\Validator;
+
 
 abstract class ApiController extends Controller
 {
@@ -54,6 +56,7 @@ abstract class ApiController extends Controller
 
             if (!empty($this->auth_payload)){
                 $this->uid = $this->auth_payload->uid; 
+                //Debug::debug($this->uid, 'UID:');
 
                 $r = new RolesModel();
                 $this->roles  = $this->auth_payload->roles;              
@@ -534,11 +537,14 @@ abstract class ApiController extends Controller
 
         try {
             $conn = Database::getConnection();
-            $instance->setConn($conn);
-            $instance->showDeleted(); //   
+            $instance->setConn($conn); 
 
-            $rows = $instance->get();
+            $rows = $instance->where(['id' => $id])->get();
             
+            // Creo otra nueva instancia
+            $instance = new $model();
+            $instance->setConn($conn);
+
             if (count($rows) == 0){
                 Factory::response()->code(404)->sendError("Register for id=$id does not exists");
             }
@@ -574,7 +580,7 @@ abstract class ApiController extends Controller
 
             }else {
                 if (!$this->is_admin && $rows[0]['belongs_to'] != $this->uid){
-                    Factory::response()->sendCode(403);
+                    Factory::response()->send('You are not the owner', 403);
                 }
             }        
 

@@ -90,8 +90,8 @@ class Validator implements IValidator
 		if (empty($rules))
 			throw new InvalidArgumentException('No validations!');
 		
-		if (empty($data))
-			throw new InvalidArgumentException('No data!');
+		//if (empty($data))
+		//	throw new InvalidArgumentException('No data!');
 	
 		$errores = [];
 		

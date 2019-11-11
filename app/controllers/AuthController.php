@@ -7,6 +7,7 @@ use simplerest\core\Controller;
 use simplerest\core\interfaces\IAuth;
 use simplerest\libs\Factory;
 use simplerest\libs\Database;
+use simplerest\libs\Utils;
 use simplerest\models\UsersModel;
 use simplerest\models\RolesModel;
 use simplerest\models\UserRolesModel;
@@ -251,6 +252,8 @@ class AuthController extends Controller implements IAuth
 
                 if (empty($ur_id))
                     Factory::response()->sendError("Error in user registration!", 500, 'Error registrating user role');  
+            }else{
+                $role = ['registered'];
             }
         
             $access  = $this->gen_jwt(['uid' => $uid, 'roles' => [$role], 'confirmed_email' => 0 ], 'access_token');
@@ -264,7 +267,7 @@ class AuthController extends Controller implements IAuth
             $token = $this->gen_jwt2($data['email'], $this->config['email']['secret_key'], $this->config['email']['encryption'], $this->config['email']['expires_in'] );
             $url = $base_url . '/login/confirm_email/' . $token . '/' . $exp; 
     
-            // Queue email
+           
             $ok = (bool) Database::table('messages')->create([
                 'from_email' => $this->config['email']['mailer']['from'][0],
                 'from_name' => $this->config['email']['mailer']['from'][1],
@@ -273,6 +276,7 @@ class AuthController extends Controller implements IAuth
                 'subject' => 'Confirmación de correo', 
                 'body' => "Por favor confirme su correo siguiendo el enlace:<br/><a href='$url'>$url</a>"
             ]);
+            
 
             if (!$ok)
                 Factory::response()->sendError("Error in user registration!", 500, 'Error during registration of email confirmation');

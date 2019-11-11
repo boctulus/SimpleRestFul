@@ -9,9 +9,9 @@ class UserRolesModel extends Model
  {
 	protected $table_name = "user_roles";
 	protected $id_name = 'id';
-	//protected $fillable = [ 'user_id', 'role_id', 'creation_date', 'modification_date'];
+	//protected $fillable = [ 'user_id', 'role_id', 'created_at', 'modification_date'];
 	protected $hidden = [ ];
-	protected $nullable = ['creation_date', 'modification_date'];
+	protected $nullable = ['created_at', 'modification_date'];
 
 	/*
 		Unique constraints
@@ -28,7 +28,7 @@ class UserRolesModel extends Model
 		'id' => 'INT',
 		'user_id' => 'INT',
 		'role_id' => 'INT',
-		'creation_date'  => 'STR',
+		'created_at'  => 'STR',
 		'modification_date'  => 'STR'
 	];
 

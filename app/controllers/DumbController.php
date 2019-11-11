@@ -58,41 +58,29 @@ class DumbController extends Controller
     }
     */
 
+    function create_p(){
+
+        $name = '';
+        for ($i=0;$i<20;$i++)
+            $name .= chr(rand(97,122));
+
+        $id = Database::table('products')->create([ 'name' => $name, 
+                                                    'description' => 'Esto es una prueba', 
+                                                    'size' => '1L',
+                                                    'cost' => 66,
+                                                    'belongs_to' => 90
+        ]);    
+    }
+
     function get_products(){
-        $conn    = Database::getConnection();
-        $p = new ProductsModel($conn);
+        Debug::debug(Database::table('products')->get());
+    }
+
+    function get_product($id){       
+        // Include deleted items
+        Debug::debug(Database::table('products')->where(['id' => $id])->showDeleted()->get());
+    }
     
-        //$p->showDeleted(); 
-        Debug::debug($p->fetchAll());
-    }
-
-    function order(){
-        $conn    = Database::getConnection();
-        $p = new ProductsModel($conn);
-    
-        Debug::debug($p->orderBy(['cost'=>'ASC', 'id'=>'DESC'])->take(4)->offset(1)->fetchAll());
-
-        Debug::debug($p->orderBy(['cost'=>'ASC'])->orderBy(['id'=>'DESC'])->take(4)->offset(1)->fetchAll());
-
-        Debug::debug($p->orderBy(['cost'=>'ASC'])->take(4)->offset(1)->fetchAll(null, ['id'=>'DESC']));
-
-        Debug::debug($p->orderBy(['cost'=>'ASC'])->order(['id'=>'DESC'])->take(4)->offset(1)->fetchAll());
-
-        Debug::debug($p->take(4)->offset(1)->fetchAll(null, ['cost'=>'ASC', 'id'=>'DESC']));
-    }
-
-    function get_product($id){
-        $conn    = Database::getConnection();
-
-        $p = new ProductsModel($conn);        
-        $p->id = $id;
-        $p->showDeleted();  
-        $ok = $p->fetch(null); 
-
-        if ($ok)
-            Debug::debug($p);
-    }
-
     function filter_products(){
         $conn    = Database::getConnection();
         
@@ -125,6 +113,18 @@ class DumbController extends Controller
             ['cost', 200, '>='],
             ['cost', 270, '<=']
         ])->get());            
+    }
+
+    function order(){    
+        Debug::debug(Database::table('products')->orderBy(['cost'=>'ASC', 'id'=>'DESC'])->take(4)->offset(1)->get());
+
+        Debug::debug(Database::table('products')->orderBy(['cost'=>'ASC'])->orderBy(['id'=>'DESC'])->take(4)->offset(1)->get());
+
+        Debug::debug(Database::table('products')->orderBy(['cost'=>'ASC'])->take(4)->offset(1)->get(null, ['id'=>'DESC']));
+
+        Debug::debug(Database::table('products')->orderBy(['cost'=>'ASC'])->orderBy(['id'=>'DESC'])->take(4)->offset(1)->get());
+
+        Debug::debug(Database::table('products')->take(4)->offset(1)->get(null, ['cost'=>'ASC', 'id'=>'DESC']));
     }
 
     function grouping(){
@@ -179,26 +179,24 @@ class DumbController extends Controller
         Debug::debug($rows);
     }
  
-    function get_nulls(){
-        $conn    = Database::getConnection();
-        $p = new ProductsModel($conn);
-    
-        Debug::debug($p->where(['workspace', NULL])->get());   
+    function get_nulls(){    
+        // Get products where workspace IS NULL
+        Debug::debug(Database::table('products')->where(['workspace', null])->get());   
     }
 
+    /*
+        Pretty response 
+    */
     function get_users(){
-        $conn    = Database::getConnection();
-        $u = new UsersModel($conn);
-    
+        $array = Database::table('users')->orderBy(['id'=>'DESC'])->get();
+
         echo '<pre>';
-        Factory::response()->setPretty(true)->send($u->fetchAll(null, ['id'=>'DESC']));
+        Factory::response()->setPretty(true)->send($array);
         echo '</pre>';
     }
 
     function get_user($id){
-        $conn    = Database::getConnection();
-
-        $u = new UsersModel($conn);
+        $u = Database::table('users');
         $u->unhide(['password']);
         $u->hide(['firstname','lastname']);
         
@@ -206,9 +204,7 @@ class DumbController extends Controller
     }
 
     function del_user($id){
-        $conn    = Database::getConnection();
-
-        $u = new UsersModel($conn);
+        $u = Database::table('users');
         $ok = (bool) $u->where(['id' => $id])->delete(false);
         
         Debug::debug($ok);
@@ -216,9 +212,8 @@ class DumbController extends Controller
 
  
     function update_user($id) {
-        $conn    = Database::getConnection();
+        $u = Database::table('users');
 
-        $u = new UsersModel($conn);
         $count = $u->where(['firstname' => 'HHH', 'lastname' => 'AAA', 'id' => 17])->update(['firstname'=>'Nico', 'lastname'=>'Buzzi', 'belongs_to' => 17]);
         
         Debug::debug($count);
@@ -232,12 +227,8 @@ class DumbController extends Controller
 
         $lastname = strtoupper($firstname);    
 
-        ////
-        $conn    = Database::getConnection();
+        $u = Database::table('users');
 
-        $u = new UsersModel($conn);
-
-        // implementar !!!
         $ok = $u->where([ [ 'email', 'nano@'], ['deleted_at', NULL] ])
         ->update([ 
                     'firstname' => $firstname, 
@@ -248,9 +239,7 @@ class DumbController extends Controller
     }
 
     function update_users() {
-        $conn    = Database::getConnection();
-
-        $u = new UsersModel($conn);
+        $u = Database::table('users');
         $count = $u->where([ ['lastname', ['AAA', 'Buzzi']] ])->update(['firstname'=>'Nicos']);
         
         Debug::debug($count);
@@ -261,9 +250,7 @@ class DumbController extends Controller
         for ($i=0;$i<20;$i++)
             $email = chr(rand(97,122)) . $email;
         
-        $conn    = Database::getConnection();
-        
-        $u = new UsersModel($conn);
+        $u = Database::table('users');
         //$u->fill(['email']);
         //$u->unfill(['password']);
         $id = $u->create(['email'=>$email, 'password'=>$password, 'firstname'=>$firstname, 'lastname'=>$lastname]);
@@ -340,17 +327,18 @@ class DumbController extends Controller
     }
 
     function validacion3(){
-        $u = Database::table('products')->setValidator(new Validator());
-        $rows = $u->where(['cost' => '100X', 'belongs_to' => 90])->get();
+        $p = Database::table('products')->setValidator(new Validator());
+        $rows = $p->where(['cost' => '100X', 'belongs_to' => 90])->get();
 
         Debug::debug($rows);
     }
 
     function validacion4(){
-        $u = Database::table('products')->setValidator(new Validator());
-        $affected = $u->where(['cost' => '100X', 'belongs_to' => 90])->delete();
+        $p = Database::table('products')->setValidator(new Validator());
+        $affected = $p->where(['cost' => '100X', 'belongs_to' => 90])->delete();
 
         Debug::debug($affected);
     }
+  
 
 }

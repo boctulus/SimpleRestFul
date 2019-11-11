@@ -1,5 +1,10 @@
 # TODO
 
+- Revisar folders 
+
+  $f = new FoldersModel($conn);
+  $f->id = $folder;    
+  $ok = $f->fetch();
 
 - Revisar los conectores de fb y google
 

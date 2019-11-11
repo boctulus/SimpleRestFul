@@ -724,7 +724,7 @@ class Model {
 			throw new \InvalidArgumentException('Array of data should be associative');
 
 		$vars   = array_keys($data);
-		$vals = array_values($data);
+		$vals = array_values($data);		
 
 		if(!empty($this->fillable) && is_array($this->fillable)){
 			foreach($vars as $var){
@@ -746,14 +746,19 @@ class Model {
 		$symbols = array_map(function($v){ return ":$v";}, $vars);
 		$str_vals = implode(', ',$symbols);
 
-		$q = "INSERT INTO ".$this->table_name. ' '.$this->table_alias." ($str_vars) VALUES ($str_vals)";
+		if ($this->inSchema(['created_at'])){
+			$str_vars .= ', created_at';
+			$str_vals .= ', NOW()';
+		}
+
+		$q = "INSERT INTO ".$this->table_name." ($str_vars) VALUES ($str_vals)";
 		$st = $this->conn->prepare($q);
-		
+
 		foreach($vals as $ix => $val){
 			$const = $this->schema[$vars[$ix]];
 			$st->bindValue(":{$vars[$ix]}", $val, constant("PDO::PARAM_{$const}"));
 		}
-		
+
 		$result = $st->execute();
 		if ($result){
 			return $this->{$this->id_name} = $this->conn->lastInsertId();

@@ -265,7 +265,7 @@ CREATE TABLE `user_role` (
   `id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
   `role_id` int(11) NOT NULL,
-  `creation_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `modification_date` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -273,7 +273,7 @@ CREATE TABLE `user_role` (
 -- Dumping data for table `user_role`
 --
 
-INSERT INTO `user_role` (`id`, `user_id`, `role_id`, `creation_date`, `modification_date`) VALUES
+INSERT INTO `user_role` (`id`, `user_id`, `role_id`, `created_at`, `modification_date`) VALUES
 (1, 5, 2, '2019-10-18 21:58:10', '2019-10-18 21:58:10'),
 (2, 1, 100, '2019-10-18 21:58:10', '2019-10-18 21:58:10'),
 (3, 4, 100, '2019-10-18 21:58:10', '2019-10-18 21:58:10'),
