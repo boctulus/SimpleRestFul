@@ -679,6 +679,15 @@ abstract class ApiController extends Controller
                 if ($f_rows[0]['belongs_to'] != $this->uid  && !$this->hasPerm($folder, $conn, 'w'))
                     Factory::response()->sendError("You have not permission for the folder $folder", 403);
 
+                $folder_name = $f_rows[0]['value'];
+
+                // Creo otra nueva instancia
+                $instance2 = new $model();
+                $instance2->setConn($conn);
+
+                if (count($instance2->where(['id' => $id, $this->folder_field => $folder_name])->get()) == 0)
+                    Factory::response()->code(404)->sendError("Register for id=$id does not exists");
+
                 unset($data['folder']);    
                 $data[$this->folder_field] = $f_rows[0]['value'];
                 $data['belongs_to'] = $f_rows[0]['belongs_to'];    
