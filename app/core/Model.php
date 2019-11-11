@@ -621,9 +621,8 @@ class Model {
 		$set =trim(substr($set, 0, strlen($set)-2));
 
 		if ($this->inSchema(['modified_at'])){
-			$d = new \DateTime();
-			$set .= ', modified_at = "'. $d->format('Y-m-d G:i:s').'"';
-		}   
+			$set .= ', modified_at = NOW()';
+		}
 
 		$q = "UPDATE ".$this->table_name .
 				" SET $set WHERE " . $this->where;		

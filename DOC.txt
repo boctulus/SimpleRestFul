@@ -439,6 +439,8 @@ En el primer caso, si se especifica un folder pero no tenemos acceso recibiremos
 
 En el segundo caso donde especificamos "workspace": "lista10" en vez de "folder": "8", si el folder no existe no habrá advertencia alguna pues solo estamos creando un registro con esa combinación de campos y distintos usuarios pueden tener folders con el mismo nombre así que no hay problema.
 
+Es importante entender que cuando creamos un registro dentro de un folder que no nos pertenece (porque se nos da permiso de escritura), el registro tampoco será de nuestra propiedad aunque podremos leerlo y escribirlo siempre que tengamos los permisos para ello.
+
 Igualmente para modificar un registro de otro usuario que nos ha compartido su folder especificamos el id del folder:
 
 	PUT /api/products/136

@@ -15,12 +15,14 @@
 	<div class="col-xs-12 col-sm-12 col-md-6 col-md-push-3">
         <h1>Correo enviado</h1>
 
-        <img src="<?= assets('img/mail.png') ?>" style="height: 100px;" />
-        <br/>
-        <div>
-            Un correo con el enlace de recuperación de contraseña fue enviado a <span id='mail'>correo</span>
-            <p/><br/>
-            Revíselo cuanto antes, tiene vencimiento.
-        </div>    
+        <center>
+            <img src="<?= assets('img/mail.png') ?>" style="height: 100px;" />
+        </center>
+        
+        <p/><p/>     
+        Si la dirección de correo <span id='mail'>correo</span> es válida, 
+        un correo con el enlace de recuperación de contraseña fue enviado a dicha dirección<br/><p/>
+
+        Revíselo cuanto antes, tiene vencimiento.    
     </div>
 </div>    

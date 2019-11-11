@@ -276,7 +276,7 @@ class DumbController extends Controller
 
     function update_products() {
         $p = Database::table('products');
-        $count = $p->where([['cost', 100, '<'], ['belongs_to', 90]])->update(['cost' => 100]);
+        $count = $p->where([['cost', 100, '<'], ['belongs_to', 90]])->update(['description' => 'x_x']);
         
         Debug::debug($count);
     }
