@@ -438,6 +438,9 @@ abstract class ApiController extends Controller
 
                 Factory::response()->setPretty($pretty);
 
+                // Lo "malo" de delegar la validación al modelo es que devuelve error 500 en vez de 400 si falla
+                $instance->setValidator(new Validator());
+
                 if (!empty($_get)){                    
                     $rows = $instance->where($_get)->get($fields, $order, $limit, $offset);
                     Factory::response()->code(200)->send($rows); 
@@ -467,10 +470,6 @@ abstract class ApiController extends Controller
         
         $model    = '\\simplerest\\models\\'.$this->modelName;
         $instance = new $model();
-        //$missing = $instance->diffWithSchema($data, ['id', 'belongs_to']);
-
-        //if (!empty($missing))
-        //    Factory::response()->sendError('Lack some properties in your request: '.implode(',',$missing), 400);
 
         $folder = $data['folder'] ?? null;
 

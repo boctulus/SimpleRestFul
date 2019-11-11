@@ -1,8 +1,6 @@
 # TODO
 
 
-- Terminar rememberme() Y change_pass()
-
 - Revisar los conectores de fb y google
 
 - El rowCount() del Model->update() no funciona ??? devuelve siempre cero (0)

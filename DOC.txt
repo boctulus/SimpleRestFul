@@ -51,10 +51,30 @@ Los modelos heredan de la clase Model y adquieren así funcionalidad de métodos
 create()
 delete()
 update()
-fetch()
-fetchAll()
 get()
 etc.
+
+
+### Validaciones
+
+El framework incluye un validador que está integrado a nivel de la API Rest y puede también incluirse a nivel de los modelos. 
+
+	$u = Database::table('products')->setValidator(new Validator());
+	$rows = $u->where(['cost' => '100X', 'belongs_to' => 90])->get();
+
+En el ejemplo se incluye la clase validator para poder aprovecharla en la consulta al modelo.
+
+La clase Validator implementa la interfaz IValidator proveyendo un método validate() que recibe un array de reglas a validar, un array asociativo con los datos y opcionalmente un array de campos sobre los que se deben saltear las validaciones.
+
+	mixed : validate(array $rules, array $data, array $ignored_fields = null, bool $as_string = false)
+
+El método validate() devuelve TRUE si no detectó reglas rotas y caso contrario devolverá un array con los errores: 
+
+
+( )
+
+
+Es posible desactivar el chequeo de campos requeridos para todos los campos llamando al método setRequired(false).
 
 
 # ACL
