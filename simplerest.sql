@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Nov 11, 2019 at 12:44 PM
+-- Generation Time: Nov 11, 2019 at 05:54 PM
 -- Server version: 5.7.27-0ubuntu0.18.04.1
 -- PHP Version: 7.2.24-0ubuntu0.18.04.1
 
@@ -72,7 +72,8 @@ CREATE TABLE `group_permissions` (
 
 INSERT INTO `group_permissions` (`id`, `folder_id`, `belongs_to`, `member`, `r`, `w`) VALUES
 (1, 1, 1, 4, 1, 1),
-(2, 2, 72, 79, 1, 1);
+(2, 2, 72, 79, 1, 1),
+(3, 4, 90, 87, 1, 1);
 
 -- --------------------------------------------------------
 
@@ -97,19 +98,7 @@ CREATE TABLE `messages` (
 --
 
 INSERT INTO `messages` (`id`, `from_email`, `from_name`, `to_email`, `to_name`, `subject`, `body`, `created_at`, `sent_at`) VALUES
-(24, 'no_responder@simplerest.mapapulque.ro', 'No responder', 'pbozzolo@gmail.com', '   ', 'Cambio de contraseña', 'Para cambiar la contraseña siga el enlace:<br/><a href=\'http//simplerest.co/login/change_pass/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU3MzM1OTg5NywiZXhwIjoxNTczOTY0Njk3LCJlbWFpbCI6InBib3p6b2xvQGdtYWlsLmNvbSJ9.Qn9M-1oOVg-h7gpo_X1PKulV__alHca6JqhDkIWgVzs/1573964697\'>http//simplerest.co/login/change_pass/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU3MzM1OTg5NywiZXhwIjoxNTczOTY0Njk3LCJlbWFpbCI6InBib3p6b2xvQGdtYWlsLmNvbSJ9.Qn9M-1oOVg-h7gpo_X1PKulV__alHca6JqhDkIWgVzs/1573964697</a>', '2019-11-10 01:24:57', NULL),
-(25, 'no_responder@simplerest.mapapulque.ro', 'No responder', 'pbozzolo@gmail.com', '   ', 'Cambio de contraseña', 'Para cambiar la contraseña siga el enlace:<br/><a href=\'http//simplerest.co/login/change_pass/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU3MzM2MDQxOSwiZXhwIjoxNTczOTY1MjE5LCJlbWFpbCI6InBib3p6b2xvQGdtYWlsLmNvbSJ9.ZK1vC0MCC46FYZtMDAJzejdpZLOdbZMrELrwdeRZutI/1573965219\'>http//simplerest.co/login/change_pass/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU3MzM2MDQxOSwiZXhwIjoxNTczOTY1MjE5LCJlbWFpbCI6InBib3p6b2xvQGdtYWlsLmNvbSJ9.ZK1vC0MCC46FYZtMDAJzejdpZLOdbZMrELrwdeRZutI/1573965219</a>', '2019-11-10 01:33:39', NULL),
-(26, 'no_responder@simplerest.mapapulque.ro', 'No responder', 'pbozzolo@gmail.com', '   ', 'Cambio de contraseña', 'Para cambiar la contraseña siga el enlace:<br/><a href=\'http//simplerest.co/login/change_pass/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU3MzM2MDQyMiwiZXhwIjoxNTczOTY1MjIyLCJlbWFpbCI6InBib3p6b2xvQGdtYWlsLmNvbSJ9.xGUPWMR_cdnVOQhjZDfzVwnYJbALWFm53BXe-3l6ES8/1573965222\'>http//simplerest.co/login/change_pass/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU3MzM2MDQyMiwiZXhwIjoxNTczOTY1MjIyLCJlbWFpbCI6InBib3p6b2xvQGdtYWlsLmNvbSJ9.xGUPWMR_cdnVOQhjZDfzVwnYJbALWFm53BXe-3l6ES8/1573965222</a>', '2019-11-10 01:33:42', NULL),
-(27, 'no_responder@simplerest.mapapulque.ro', 'No responder', 'pbozzolo@gmail.com', '   ', 'Cambio de contraseña', 'Para cambiar la contraseña siga el enlace:<br/><a href=\'http//simplerest.co/login/change_pass/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU3MzM2MDQ3NiwiZXhwIjoxNTczOTY1Mjc2LCJlbWFpbCI6InBib3p6b2xvQGdtYWlsLmNvbSJ9.nUmhdDsRUy2cr_kesmSOS_08ppv37M106MajsYXuPDo/1573965276\'>http//simplerest.co/login/change_pass/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU3MzM2MDQ3NiwiZXhwIjoxNTczOTY1Mjc2LCJlbWFpbCI6InBib3p6b2xvQGdtYWlsLmNvbSJ9.nUmhdDsRUy2cr_kesmSOS_08ppv37M106MajsYXuPDo/1573965276</a>', '2019-11-10 01:34:36', NULL),
-(28, 'no_responder@simplerest.mapapulque.ro', 'No responder', 'Y@PEPE.COM', '   ', 'Cambio de contraseña', 'Para cambiar la contraseña siga el enlace:<br/><a href=\'http//simplerest.lan/login/change_pass/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU3MzM5MDY3NywiZXhwIjoxNTczOTk1NDc3LCJlbWFpbCI6IllAUEVQRS5DT00ifQ.W4Lsw0Pq8g_3Erm1NcgOmAcqIL4jla_uuAkTAvpItxo/1573995477\'>http//simplerest.lan/login/change_pass/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU3MzM5MDY3NywiZXhwIjoxNTczOTk1NDc3LCJlbWFpbCI6IllAUEVQRS5DT00ifQ.W4Lsw0Pq8g_3Erm1NcgOmAcqIL4jla_uuAkTAvpItxo/1573995477</a>', '2019-11-10 09:57:57', NULL),
-(29, 'no_responder@simplerest.mapapulque.ro', 'No responder', 'Y@PEPE.COM', '   ', 'Cambio de contraseña', 'Para cambiar la contraseña siga el enlace:<br/><a href=\'http//simplerest.lan/login/change_pass/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU3MzM5MDc5NiwiZXhwIjoxNTczOTk1NTk2LCJlbWFpbCI6IllAUEVQRS5DT00ifQ.cZ38A0zXJrqykkCUUPIgDXMCIG8nx9lk40cr1IcIgLE/1573995596\'>http//simplerest.lan/login/change_pass/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU3MzM5MDc5NiwiZXhwIjoxNTczOTk1NTk2LCJlbWFpbCI6IllAUEVQRS5DT00ifQ.cZ38A0zXJrqykkCUUPIgDXMCIG8nx9lk40cr1IcIgLE/1573995596</a>', '2019-11-10 09:59:56', NULL),
-(30, 'no_responder@simplerest.mapapulque.ro', 'No responder', 'Y@PEPE.COM', '   ', 'Cambio de contraseña', 'Para cambiar la contraseña siga el enlace:<br/><a href=\'http//simplerest.lan/login/change_pass/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU3MzM5MDg0NywiZXhwIjoxNTczOTk1NjQ3LCJlbWFpbCI6IllAUEVQRS5DT00ifQ.UWlpjpACiKQmtaNnNxyROyvlDhLdhXFHV-joPQOe1AI/1573995647\'>http//simplerest.lan/login/change_pass/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU3MzM5MDg0NywiZXhwIjoxNTczOTk1NjQ3LCJlbWFpbCI6IllAUEVQRS5DT00ifQ.UWlpjpACiKQmtaNnNxyROyvlDhLdhXFHV-joPQOe1AI/1573995647</a>', '2019-11-10 10:00:47', NULL),
-(31, 'no_responder@simplerest.mapapulque.ro', 'No responder', 'Y@PEPE.COM', '   ', 'Cambio de contraseña', 'Para cambiar la contraseña siga el enlace:<br/><a href=\'http//simplerest.lan/login/change_pass/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU3MzM5MTUzNywiZXhwIjoxNTczOTk2MzM3LCJlbWFpbCI6IllAUEVQRS5DT00ifQ.zYtd94XaIEHFVrFLvWRK4v1Jhy2iePmQWIe_mMX4lho/1573996337\'>http//simplerest.lan/login/change_pass/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU3MzM5MTUzNywiZXhwIjoxNTczOTk2MzM3LCJlbWFpbCI6IllAUEVQRS5DT00ifQ.zYtd94XaIEHFVrFLvWRK4v1Jhy2iePmQWIe_mMX4lho/1573996337</a>', '2019-11-10 10:12:17', NULL),
-(33, 'no_responder@simplerest.mapapulque.ro', 'No responder', 'nano@', '', 'Cambio de contraseña', 'Para cambiar la contraseña siga el enlace:<br/><a href=\'http//simplerest.co/login/change_pass/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU3MzM5MjQwMywiZXhwIjoxNTczOTk3MjAzLCJlbWFpbCI6Im5hbm9AIn0.80a1dBv5FjD9mj9q73G0x7TKjAvvrLRbnKVBgos_H44/1573997203\'>http//simplerest.co/login/change_pass/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU3MzM5MjQwMywiZXhwIjoxNTczOTk3MjAzLCJlbWFpbCI6Im5hbm9AIn0.80a1dBv5FjD9mj9q73G0x7TKjAvvrLRbnKVBgos_H44/1573997203</a>', '2019-11-10 10:26:43', NULL),
-(34, 'no_responder@simplerest.mapapulque.ro', 'No responder', 'nano@', '', 'Cambio de contraseña', 'Para cambiar la contraseña siga el enlace:<br/><a href=\'http://simplerest.lan/login/change_pass/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU3MzM5MjQ3MiwiZXhwIjoxNTczOTk3MjcyLCJlbWFpbCI6Im5hbm9AIn0.5lDll9HUDGWIyXM3bKvCYl5Dt2yufQlHwFb9WPSm1-I/1573997272\'>http://simplerest.lan/login/change_pass/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU3MzM5MjQ3MiwiZXhwIjoxNTczOTk3MjcyLCJlbWFpbCI6Im5hbm9AIn0.5lDll9HUDGWIyXM3bKvCYl5Dt2yufQlHwFb9WPSm1-I/1573997272</a>', '2019-11-10 10:27:52', NULL),
-(35, 'no_responder@simplerest.mapapulque.ro', 'No responder', 'GG@PEPE.COM', 'A AB', 'Confirmación de correo', 'Por favor confirme su correo siguiendo el enlace:<br/><a href=\'http://simplerest.lan/login/confirm_email/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU3MzQzNDUwOSwiZXhwIjoxNTc0MDM5MzA5LCJlbWFpbCI6IkdHQFBFUEUuQ09NIn0.O-2RVbZR3YG5KONtE5IuFoaQaWiNFeyr-j4BHJbA8yA/1574039309\'>http://simplerest.lan/login/confirm_email/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU3MzQzNDUwOSwiZXhwIjoxNTc0MDM5MzA5LCJlbWFpbCI6IkdHQFBFUEUuQ09NIn0.O-2RVbZR3YG5KONtE5IuFoaQaWiNFeyr-j4BHJbA8yA/1574039309</a>', '2019-11-10 22:08:29', NULL),
-(36, 'no_responder@simplerest.mapapulque.ro', 'No responder', 'GGG@PEPE.COM', 'A AB', 'Confirmación de correo', 'Por favor confirme su correo siguiendo el enlace:<br/><a href=\'http://simplerest.lan/login/confirm_email/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU3MzQzNDUyMSwiZXhwIjoxNTc0MDM5MzIxLCJlbWFpbCI6IkdHR0BQRVBFLkNPTSJ9.Q5_KkbXyG4bk-EGZ0mpLAuH2FiRX5BppB_OO5nXojiI/1574039321\'>http://simplerest.lan/login/confirm_email/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU3MzQzNDUyMSwiZXhwIjoxNTc0MDM5MzIxLCJlbWFpbCI6IkdHR0BQRVBFLkNPTSJ9.Q5_KkbXyG4bk-EGZ0mpLAuH2FiRX5BppB_OO5nXojiI/1574039321</a>', '2019-11-10 22:08:41', NULL),
-(37, 'no_responder@simplerest.mapapulque.ro', 'No responder', 'elpiojo2@', 'Ojo ', 'Confirmación de correo', 'Por favor confirme su correo siguiendo el enlace:<br/><a href=\'http://simplerest.lan/login/confirm_email/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU3MzQ4MzMzNywiZXhwIjoxNTc0MDg4MTM3LCJlbWFpbCI6ImVscGlvam8yQCJ9.VU330VhU0IF8AaM8vdoryRZ3PSt16q8IID4eQnc0cME/1574088137\'>http://simplerest.lan/login/confirm_email/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU3MzQ4MzMzNywiZXhwIjoxNTc0MDg4MTM3LCJlbWFpbCI6ImVscGlvam8yQCJ9.VU330VhU0IF8AaM8vdoryRZ3PSt16q8IID4eQnc0cME/1574088137</a>', '2019-11-11 11:42:17', NULL);
+(38, 'no_responder@simplerest.mapapulque.ro', 'No responder', 'san@', '', 'Cambio de contraseña', 'Para cambiar la contraseña siga el enlace:<br/><a href=\'http://simplerest.lan/login/change_pass/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU3MzQ4ODI3MSwiZXhwIjoxNTc0MDkzMDcxLCJlbWFpbCI6InNhbkAifQ.hgMVBC9M2CDsSCtOivQnPtx7sVRpfEYm6NrscdBri-0/1574093071\'>http://simplerest.lan/login/change_pass/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU3MzQ4ODI3MSwiZXhwIjoxNTc0MDkzMDcxLCJlbWFpbCI6InNhbkAifQ.hgMVBC9M2CDsSCtOivQnPtx7sVRpfEYm6NrscdBri-0/1574093071</a>', '2019-11-11 13:04:31', NULL);
 
 -- --------------------------------------------------------
 
@@ -162,39 +151,39 @@ CREATE TABLE `products` (
 --
 
 INSERT INTO `products` (`id`, `name`, `description`, `size`, `cost`, `created_at`, `modified_at`, `deleted_at`, `active`, `locked`, `workspace`, `belongs_to`) VALUES
-(100, 'Vodka', 'chino', '2 1/4 L', 137, '2019-07-04 00:00:00', '2019-11-04 16:45:10', '2019-11-04 16:45:10', 1, 1, '', 90),
-(103, 'Juguito ric0', 'Delicious juic333333', '1 Litros', 150, '2019-09-13 00:00:00', '2019-11-07 00:19:19', '5019-12-05 21:30:01', 1, 0, NULL, 90),
-(105, 'Agua mineral', 'De Córdoba', '1L', 525, '2019-03-15 00:00:00', '2019-10-22 22:01:58', '2019-10-23 19:30:16', 1, 0, 'lista publica', 90),
+(100, 'Vodka', 'chino', '2 1/4 L', 137, '2019-07-04 00:00:00', '2019-11-04 16:45:10', NULL, 1, 1, '', 90),
+(103, 'Juguito ric0', 'Delicious juic333333', '1 Litros', 150, '2019-09-13 00:00:00', '2019-11-07 00:19:19', NULL, 1, 0, NULL, 90),
+(105, 'Agua mineral', 'De Córdoba', '1L', 525, '2019-03-15 00:00:00', '2019-10-22 22:01:58', NULL, 1, 0, 'lista publica', 90),
 (106, 'Vodka', 'Rusiaaaaaa', '1L', 400, '2019-02-16 00:00:00', '2019-11-07 00:51:15', NULL, 1, 0, NULL, 4),
-(113, 'Vodkaaaa', 'URU', '1L', 550, '2019-03-31 00:00:00', '2019-10-29 17:33:39', '2019-10-29 17:33:39', 1, 0, NULL, 86),
-(114, 'AAABBBCCCcccD', 'cccccC', '29', 200, '2019-01-23 00:00:00', '2019-10-29 18:40:30', '2019-10-29 18:35:39', 1, 0, NULL, 4),
-(119, 'CocaCola', 'gaseosa', '1L', 44, '2018-10-15 00:00:00', '2019-11-10 22:26:00', NULL, 1, 0, NULL, 90),
-(120, 'MiBebida', 'Rica Rica', '1L', 100, '2018-12-23 00:00:00', '2019-11-03 21:37:48', '2019-10-16 21:44:17', 1, 0, NULL, 90),
-(121, 'OtraBebida', 'wibjrbpklhbbkcshtqxd', '1L', 25, '2019-09-28 00:00:00', '2019-11-10 00:27:24', NULL, 1, 0, NULL, 90),
-(122, 'Cerveza de malta', 'Pichu', '1L', 100, '2018-12-29 00:00:00', '2019-11-03 21:37:48', '2019-10-19 16:32:00', 1, 0, NULL, 90),
-(123, 'PesiLoca', 'bebida cola', '2L', 30, '2018-12-16 00:00:00', '2019-11-10 20:47:37', '2019-11-10 20:47:37', 1, 0, 'mylist', 90),
-(125, 'Vodka', 'Genial', '3L', 250, '2017-01-10 00:00:00', '2019-11-07 11:22:48', '2019-11-07 11:22:48', 1, 0, 'lista publica', 90),
-(126, 'Uvas fermentadas', 'Espectacular', '5L', 300, '2019-06-24 00:00:00', '2019-10-14 22:39:51', '2019-10-16 21:43:47', 1, 0, 'lista publica', 90),
-(127, 'Vodka venezolanoooooooooooo', 'del caribe', '1L', 100, '2019-07-12 00:00:00', '2019-11-04 12:08:36', '2019-11-04 12:02:20', 1, 1, NULL, 90),
+(113, 'Vodkaaaa', 'URU', '1L', 550, '2019-03-31 00:00:00', '2019-10-29 17:33:39', NULL, 1, 0, NULL, 86),
+(114, 'AAABBBCCCcccD', 'cccccC', '29', 200, '2019-01-23 00:00:00', '2019-10-29 18:40:30', NULL, 1, 0, NULL, 4),
+(119, 'CocaCola', 'gaseosa', '1L', 44, '2018-10-15 00:00:00', '2019-11-11 13:22:24', NULL, 1, 0, 'lista2', 90),
+(120, 'MiBebida', 'Rica Rica', '1L', 100, '2018-12-23 00:00:00', '2019-11-03 21:37:48', NULL, 1, 0, NULL, 90),
+(121, 'OtraBebida', 'gaseosa', '1L', 25, '2019-09-28 00:00:00', '2019-11-11 13:58:21', NULL, 1, 0, 'lista2', 90),
+(122, 'Cerveza de malta', 'Pichu', '1L', 100, '2018-12-29 00:00:00', '2019-11-03 21:37:48', NULL, 1, 0, NULL, 90),
+(123, 'PesiLoca', 'x_x', '2L', 30, '2018-12-16 00:00:00', '2019-11-11 13:15:58', NULL, 1, 0, 'mylist', 90),
+(125, 'Vodka', 'Genial', '3L', 250, '2017-01-10 00:00:00', '2019-11-07 11:22:48', NULL, 1, 0, 'lista publica', 90),
+(126, 'Uvas fermentadas', 'Espectacular', '5L', 300, '2019-06-24 00:00:00', '2019-10-14 22:39:51', NULL, 1, 0, 'lista publica', 90),
+(127, 'Vodka venezolanoooooooooooo', 'del caribe', '1L', 100, '2019-07-12 00:00:00', '2019-11-04 12:08:36', NULL, 1, 1, NULL, 90),
 (131, 'Vodkaaaabc', 'Rusia', '1L', 550, '2019-06-04 00:00:00', NULL, NULL, 1, 0, 'secreto', 4),
 (132, 'Ron venezolano', 'Rico', '1L', 100, '2019-10-03 00:00:00', '2019-11-03 21:37:48', NULL, 1, 0, NULL, 90),
 (133, 'Vodka venezolano', 'de Vzla', '1L', 100, '2019-09-19 00:00:00', '2019-11-03 21:37:48', NULL, 1, 0, NULL, 90),
-(137, 'Agua ardiente', 'Si que arde!', '1L', 120, '2019-07-16 00:00:00', '2019-11-03 20:46:12', '2019-10-16 19:36:57', 1, 0, 'lista', 90),
-(143, 'Agua ', '--', '1L', 100, '2019-06-03 00:00:00', '2019-11-03 21:37:48', '2019-10-16 21:44:20', 1, 0, NULL, 90),
-(145, 'Juguito XII', 'de manzanas exprimidas', '1L', 350, '2019-02-09 00:00:00', NULL, '2019-10-23 15:58:37', 1, 0, 'lista24', 90),
-(146, 'Wisky', NULL, '2L', 255, '2019-08-31 00:00:00', '2019-10-16 10:28:20', '2019-10-16 21:43:50', 1, 0, 'lista24', 90),
-(147, 'Aqua fresh', 'Rico', '1L', 100, '2019-03-20 00:00:00', '2019-11-04 11:53:06', '2019-11-04 11:53:06', 1, 0, 'comparto', 90),
-(148, 'Alcohol etílico', '', '1L', 100, '2019-04-21 00:00:00', '2019-11-03 21:37:48', '2019-10-16 21:44:24', 1, 0, 'comparto', 90),
-(151, 'Juguito XIII', 'Rico', '1L', 355, '2019-10-03 00:00:00', '2019-10-15 17:00:58', '2019-10-23 14:42:24', 1, 0, 'lista24', 90),
-(155, 'Super-jugo', 'BBB', '12', 100, '2019-09-22 00:00:00', '2019-11-04 17:00:18', '2019-11-04 17:00:18', 1, 0, NULL, 90),
-(159, 'Agua minerale', 'De Cba', '2L', 90, '2019-10-14 18:08:45', '2019-11-07 11:22:03', NULL, 1, 0, NULL, 90),
-(160, 'Limonada', 'Rica', '500ML', 100, '2019-10-23 14:05:30', '2019-11-04 13:19:08', '2019-11-04 13:19:08', 1, 0, NULL, 90),
+(137, 'Agua ardiente', 'Si que arde!', '1L', 120, '2019-07-16 00:00:00', '2019-11-03 20:46:12', NULL, 1, 0, 'lista', 90),
+(143, 'Agua ', '--', '1L', 100, '2019-06-03 00:00:00', '2019-11-03 21:37:48', NULL, 1, 0, NULL, 90),
+(145, 'Juguito XII', 'de manzanas exprimidas', '1L', 350, '2019-02-09 00:00:00', NULL, NULL, 1, 0, 'lista24', 90),
+(146, 'Wisky', NULL, '2L', 255, '2019-08-31 00:00:00', '2019-10-16 10:28:20', NULL, 1, 0, 'lista24', 90),
+(147, 'Aqua fresh', 'Rico', '1L', 100, '2019-03-20 00:00:00', '2019-11-04 11:53:06', NULL, 1, 0, 'comparto', 90),
+(148, 'Alcohol etílico', '', '1L', 100, '2019-04-21 00:00:00', '2019-11-03 21:37:48', NULL, 1, 0, 'comparto', 90),
+(151, 'Juguito XIII', 'Rico', '1L', 355, '2019-10-03 00:00:00', '2019-10-15 17:00:58', NULL, 1, 0, 'lista24', 90),
+(155, 'Super-jugo', 'BBB', '12', 100, '2019-09-22 00:00:00', '2019-11-04 17:00:18', NULL, 1, 0, NULL, 90),
+(159, 'Agua minerale', 'x_x', '2L', 90, '2019-10-14 18:08:45', '2019-11-11 13:15:58', NULL, 1, 0, NULL, 90),
+(160, 'Limonada', 'Rica', '500ML', 100, '2019-10-23 14:05:30', '2019-11-04 13:19:08', NULL, 1, 0, NULL, 90),
 (162, 'Juguito de Mabelita', 'de manzanas exprimidas', '2L', 150, '2019-10-25 08:36:26', '2019-11-05 21:36:25', NULL, 1, 0, NULL, 113),
-(163, 'ABC', 'XYZ', '6L', 600, '2019-10-26 10:05:00', '2019-11-07 00:29:25', '2019-11-07 00:22:27', 1, 1, NULL, 1),
+(163, 'ABC', 'XYZ', '6L', 600, '2019-10-26 10:05:00', '2019-11-07 00:29:25', NULL, 1, 1, NULL, 1),
 (164, 'AAA', 'BBB', '33L', 333, '2019-10-26 19:48:26', '2019-10-29 18:33:57', NULL, 1, 0, NULL, 112),
-(165, 'ZZZ', 'zzz', '0.5L', 100, '2019-10-26 22:38:39', '2019-11-04 13:04:26', '2019-11-04 13:04:26', 1, 0, NULL, 90),
-(166, 'UUU', 'uuu uuu uu u', '0.5L', 100, '2019-10-26 22:38:39', '2019-11-04 12:57:49', '2019-11-04 12:57:49', 1, 1, NULL, 90),
-(167, 'JA JA', 'diverttido', '10L', 100, '2019-11-02 08:14:46', '2019-11-03 23:16:17', '2019-11-03 23:16:17', 1, 1, NULL, 90),
+(165, 'ZZZ', 'zzz', '0.5L', 100, '2019-10-26 22:38:39', '2019-11-04 13:04:26', NULL, 1, 0, NULL, 90),
+(166, 'UUU', 'uuu uuu uu u', '0.5L', 100, '2019-10-26 22:38:39', '2019-11-04 12:57:49', NULL, 1, 1, NULL, 90),
+(167, 'JA JA', 'diverttido', '10L', 100, '2019-11-02 08:14:46', '2019-11-03 23:16:17', NULL, 1, 1, NULL, 90),
 (169, 'Clavos de techo', 'largos', '12 cm', 25, '2019-11-02 16:06:31', '2019-11-03 20:46:12', NULL, 1, 0, NULL, 125),
 (170, 'Escalera', 'para electricista', '2 metros', 200, '2019-11-02 16:07:10', NULL, NULL, 1, 0, NULL, 125),
 (171, 'Ruedas', 'cochecito', '', 50, '2019-11-02 16:07:51', '2019-11-03 20:46:12', NULL, 1, 0, NULL, 125),
@@ -213,22 +202,28 @@ INSERT INTO `products` (`id`, `name`, `description`, `size`, `cost`, `created_at
 (184, 'AA', 'BB', '2L', 23, '2019-11-03 23:54:40', NULL, NULL, 1, 0, NULL, 131),
 (185, 'ABC', '', '', 0, '2019-11-03 23:55:18', NULL, NULL, 1, 0, NULL, 132),
 (186, 'Toma-corrientes hembra pared', 'color: blanco', '', 20, '2019-11-04 09:26:55', NULL, NULL, 1, 0, 'electricos', 125),
-(187, 'Crush', '', '1L', 20, '2019-11-04 13:06:04', '2019-11-04 13:18:30', '2019-11-04 13:18:30', 1, 1, NULL, 90),
-(188, 'AA', 'cv', '', 0, '2019-11-04 17:03:42', '2019-11-09 22:00:49', '2019-11-09 22:00:49', 1, 1, NULL, 48),
-(189, 'AAAAAAAAAAAAAaaaaa', '', '', 0, '2019-11-04 17:04:51', '2019-11-04 17:05:00', '2019-11-04 17:05:00', 1, 0, NULL, 87),
+(187, 'Crush', 'x_x', '1L', 20, '2019-11-04 13:06:04', '2019-11-11 13:15:58', NULL, 1, 1, NULL, 90),
+(188, 'AA', 'cv', '', 0, '2019-11-04 17:03:42', '2019-11-09 22:00:49', NULL, 1, 1, NULL, 48),
+(189, 'AAAAAAAAAAAAAaaaaa', '', '', 0, '2019-11-04 17:04:51', '2019-11-04 17:05:00', NULL, 1, 0, NULL, 87),
 (190, 'AA', 'BB', '', 0, '2019-11-05 21:04:15', NULL, NULL, 1, 0, NULL, 135),
-(191, 'Wisky', '', '1L', 100, '2019-11-05 21:36:40', '2019-11-10 11:54:03', '2019-11-10 11:54:03', 1, 0, NULL, 113),
+(191, 'Wisky', '', '1L', 100, '2019-11-05 21:36:40', '2019-11-10 11:54:03', NULL, 1, 0, NULL, 113),
 (192, 'Jugo Naranjin', 'Delicious juicEEEE', '1 L', 350, '2019-11-06 23:45:29', NULL, NULL, 1, 0, NULL, 4),
 (193, 'Re-Jugo', 'Delicious juicEEEEXXX', '1 L', 350, '2019-11-07 00:18:25', NULL, NULL, 1, 0, NULL, 4),
 (194, 'Re-Jugo', 'Delicious juicEEEEXXXYZ', '1 L', 350, '2019-11-07 00:20:53', NULL, NULL, 1, 0, NULL, 4),
 (195, 'Boo', 'Delicious juicEEEEXXXYZ4444444444444444444444444', '1 L', 350, '2019-11-07 01:31:43', NULL, NULL, 1, 0, NULL, 4),
 (196, 'AAAAAAA', 'TTTTTTT', '', 0, '2019-11-07 22:58:51', NULL, NULL, 1, 0, NULL, 137),
 (197, 'HEYYYYYY', '', '', 0, '2019-11-10 00:57:51', NULL, NULL, 1, 0, NULL, 150),
-(198, 'AAAAA', NULL, '', 22, '2019-11-11 10:38:19', NULL, NULL, 1, 0, NULL, 90),
-(199, 'cuzbgmbhiudjqvrmzwqf', 'Esto es una prueba', '1L', 66, '2019-11-11 10:42:57', NULL, NULL, 1, 0, NULL, 90),
+(198, 'AAAAA', 'x_x', '', 22, '2019-11-11 10:38:19', '2019-11-11 13:15:58', NULL, 1, 0, NULL, 90),
+(199, 'cuzbgmbhiudjqvrmzwqf', 'x_x', '1L', 66, '2019-11-11 10:42:57', '2019-11-11 13:15:58', NULL, 1, 0, 'lista publica', 90),
 (200, 'AAA', '', '', 0, '2019-11-11 11:44:51', NULL, NULL, 1, 0, NULL, 156),
-(201, 'vzukvnjjhzintijexhjd', 'Esto es una prueba', '1L', 66, '2019-11-11 11:48:37', NULL, NULL, 1, 0, NULL, 90),
-(202, 'VVVBBBC', '', '', 0, '2019-11-11 11:59:23', '2019-11-11 12:39:24', NULL, 1, 0, NULL, 148);
+(201, 'vzukvnjjhzintijexhjd', 'x_x', '1L', 66, '2019-11-11 11:48:37', '2019-11-11 13:15:58', NULL, 1, 0, NULL, 90),
+(202, 'VVVBBB', '', '', 0, '2019-11-11 11:59:23', '2019-11-11 13:10:30', NULL, 1, 0, NULL, 148),
+(203, 'Super-gas', '', '2L', 50, '2019-11-11 14:00:47', NULL, NULL, 1, 0, NULL, 87),
+(204, 'Gas2', '', '', 0, '2019-11-11 14:01:49', NULL, NULL, 1, 0, 'lista', 87),
+(205, 'Supreme jugooo', 'de manzanas exprimidas', '1L', 250, '2019-11-11 14:09:52', NULL, NULL, 1, 0, 'lista', 87),
+(206, 'Juguito de tomate de árbol', 'Ecuador', '1L', 200, '2019-11-11 15:14:36', '2019-11-11 16:26:34', NULL, 1, 0, 'lista publica', 90),
+(207, 'Juguito de tomate papaya', NULL, '1L', 150, '2019-11-11 15:15:05', '2019-11-11 15:41:32', NULL, 1, 0, 'lista', 87),
+(208, 'Juguito de tomate pitaya', NULL, '1L', 450, '2019-11-11 15:15:16', NULL, NULL, 1, 0, 'lista', 87);
 
 -- --------------------------------------------------------
 
@@ -508,13 +503,13 @@ ALTER TABLE `folders`
 -- AUTO_INCREMENT for table `group_permissions`
 --
 ALTER TABLE `group_permissions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `messages`
 --
 ALTER TABLE `messages`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
 
 --
 -- AUTO_INCREMENT for table `other_permissions`
@@ -526,7 +521,7 @@ ALTER TABLE `other_permissions`
 -- AUTO_INCREMENT for table `products`
 --
 ALTER TABLE `products`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=203;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=209;
 
 --
 -- AUTO_INCREMENT for table `users`

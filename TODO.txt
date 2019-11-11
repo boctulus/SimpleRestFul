@@ -1,10 +1,13 @@
 # TODO
 
-- Revisar folders 
+- Usar un folder_id en cada entidad en la que pretendo utilizar folders y usar éste en vez de la combinación entre el user_ud y el nombre del "workspace" como identificador de carpeta.
 
-  $f = new FoldersModel($conn);
-  $f->id = $folder;    
-  $ok = $f->fetch();
+Objetivo: poder crear recursos de nuestra propiedad en carpetas ajenas donde lógicamente poseemos permiso de lectura.
+
+- Chequear:
+
+SI está en un folder y no es de mi propiedad ni soy el admin ni tengo permiso de escritura =>
+NO debebería poder restaurar el registro.***
 
 - Usar templates para los correos 
 
@@ -194,7 +197,6 @@ https://lumen.laravel.com/docs/6.x/database
 - Form de registro (front)
 - Paginador (front)
 - Controles más complejos como checkbox, radio, combobox
-- Routers como en Laravel 
 - Middlewares
 - Migrations, seeders,...
 - Sanitización a nivel de urls, FILTER_SANITIZE_URL
@@ -269,7 +271,7 @@ https://hackernoon.com/designing-rest-api-with-open-api-specification-oas-v2-0-v
 
 https://stackoverflow.com/questions/36514344/how-to-make-use-of-session-in-rest-api/36515140
 
-- Multiples roles simultaneos?
+- Incluir displayName y username en el Payload:
 
 {
     "iss": "stackoverflow",
