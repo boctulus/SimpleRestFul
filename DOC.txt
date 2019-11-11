@@ -453,7 +453,7 @@ Igualmente para modificar un registro de otro usuario que nos ha compartido su f
 	    "folder": "1"
 	}
 
-Mismo para borrar un registro perteneciente a un folder:
+Mismo para borrar un registro perteneciente a un folder es necesario estar "dentro" haciendo referencia al folder en cuestión:
 
 	DELETE /api/products/136
 

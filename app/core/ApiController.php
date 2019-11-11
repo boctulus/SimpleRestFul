@@ -300,8 +300,8 @@ abstract class ApiController extends Controller
                     if ($this->is_guest() && !$folder_access)
                         Factory::response()->send([]);    
                         
-                    $_get[] = [$this->folder_field, $f->value];
-                    $_get[] = ['belongs_to', $f->belongs_to];
+                    $_get[] = [$this->folder_field, $f_rows[0]['value']];
+                    $_get[] = ['belongs_to', $f_rows[0]['belongs_to']];
                 }
 
                 $rows = $instance->where($_get)->get($fields); 
@@ -493,7 +493,7 @@ abstract class ApiController extends Controller
                 if (count($f_rows) == 0 || $f_rows[0]['resource_table'] != $this->model_table)
                     Factory::response()->sendError('Folder not found', 404); 
         
-                if (!$this->hasPerm($folder, $conn, 'w'))
+                if ($f_rows[0]['belongs_to'] != $this->uid  && !$this->hasPerm($folder, $conn, 'w'))
                     Factory::response()->sendError("You have not permission for the folder $folder", 403);
 
                 unset($data['folder']);    
@@ -530,10 +530,10 @@ abstract class ApiController extends Controller
         
         $folder = $data['folder'] ?? null; 
 
-        $model    = 'simplerest\\models\\'.$this->modelName;
-        $instance = new $model();
-
         try {
+            $model    = 'simplerest\\models\\'.$this->modelName;
+            $instance = new $model();
+
             $conn = Database::getConnection();
             $instance->setConn($conn); 
 
@@ -562,21 +562,28 @@ abstract class ApiController extends Controller
                 if (empty($this->folder_field))
                     Factory::response()->sendError("'folder_field' is undefined", 403);
 
-                $f = new FoldersModel($conn);
-                $f->id = $folder;    
-                $ok = $f->fetch();
-        
-                if (!$ok || $f->resource_table!=$this->model_table)
+                $f = Database::table('folders');
+                $f_rows = $f->where(['id' => $folder])->get();
+                      
+                if (count($f_rows) == 0 || $f_rows[0]['resource_table'] != $this->model_table)
                     Factory::response()->sendError('Folder not found', 404); 
         
-                if (!$this->hasPerm($folder, $conn, 'w'))
+                if ($f_rows[0]['belongs_to'] != $this->uid  && !$this->hasPerm($folder, $conn, 'w'))
                     Factory::response()->sendError("You have not permission for the folder $folder", 403);
 
-                unset($data['folder']);    
-                $data[$this->folder_field] = $f->value;
-                $data['belongs_to'] = $f->belongs_to;    
+                $folder_name = $f_rows[0]['value'];
 
-            }else {
+                // Creo otra nueva instancia
+                $instance2 = new $model();
+                $instance2->setConn($conn);
+
+                if (count($instance2->where(['id' => $id, $this->folder_field => $folder_name])->get()) == 0)
+                    Factory::response()->code(404)->sendError("Register for id=$id does not exists");
+
+                unset($data['folder']);    
+                $data[$this->folder_field] = $f_rows[0]['value'];
+                $data['belongs_to'] = $f_rows[0]['belongs_to'];    
+            } else {
                 if (!$this->is_admin && $rows[0]['belongs_to'] != $this->uid){
                     Factory::response()->send('You are not the owner', 403);
                 }
@@ -661,21 +668,19 @@ abstract class ApiController extends Controller
                 if (empty($this->folder_field))
                     Factory::response()->sendError("'folder_field' is undefined", 403);
 
-                $f = new FoldersModel($conn);
-                $f->id = $folder;    
-                $ok = $f->fetch();
-        
-                if (!$ok || $f->resource_table!=$this->model_table)
+                $f = Database::table('folders');
+                $f_rows = $f->where(['id' => $folder])->get();
+                      
+                if (count($f_rows) == 0 || $f_rows[0]['resource_table'] != $this->model_table)
                     Factory::response()->sendError('Folder not found', 404); 
         
-                if (!$this->hasPerm($folder, $conn, 'w'))
+                if ($f_rows[0]['belongs_to'] != $this->uid  && !$this->hasPerm($folder, $conn, 'w'))
                     Factory::response()->sendError("You have not permission for the folder $folder", 403);
 
                 unset($data['folder']);    
-                $data[$this->folder_field] = $f->value;
-                $data['belongs_to'] = $f->belongs_to;    
-
-            }else {
+                $data[$this->folder_field] = $f_rows[0]['value'];
+                $data['belongs_to'] = $f_rows[0]['belongs_to'];    
+            } else {
                 if (!$this->is_admin && $rows[0]['belongs_to'] != $this->uid){
                     Factory::response()->sendCode(403);
                 }
