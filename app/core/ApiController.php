@@ -532,20 +532,12 @@ abstract class ApiController extends Controller
 
         try {
             $model    = 'simplerest\\models\\'.$this->modelName;
-            $instance = new $model();
-
-            $conn = Database::getConnection();
-            $instance->setConn($conn); 
-
-            $rows = $instance->where(['id' => $id])->get();
             
-            // Creo otra nueva instancia
+            $conn = Database::getConnection();            
+
+            // Creo una instancia
             $instance = new $model();
             $instance->setConn($conn);
-
-            if (count($rows) == 0){
-                Factory::response()->code(404)->sendError("Register for id=$id does not exists");
-            }
 
             if (!$this->is_admin){
                 if (isset($data['belongs_to']))
@@ -584,6 +576,16 @@ abstract class ApiController extends Controller
                 $data[$this->folder_field] = $f_rows[0]['value'];
                 $data['belongs_to'] = $f_rows[0]['belongs_to'];    
             } else {
+
+                $instance2 = new $model();
+                $instance2->setConn($conn); 
+
+                $rows = $instance2->where(['id' => $id])->get();
+
+                if (count($rows) == 0){
+                    Factory::response()->code(404)->sendError("Register for id=$id does not exists");
+                }
+
                 if (!$this->is_admin && $rows[0]['belongs_to'] != $this->uid){
                     Factory::response()->send('You are not the owner', 403);
                 }
