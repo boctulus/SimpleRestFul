@@ -107,7 +107,7 @@ class DumbController extends Controller
             ['cost', 200, '>='],
             ['cost', 270, '<='],
             ['belongs_to',  90]
-        ])->first()); 
+        ])->first(['name', 'size', 'cost'])); 
     }
 
     function oldest(){
@@ -118,6 +118,12 @@ class DumbController extends Controller
     function newest(){
         // newest, first result
         Debug::debug(Database::table('products')->newest()->first());
+    }
+
+    function random(){
+       // Debug::debug(Database::table('products')->random()->limit(5)->get(['id', 'name']));
+
+        Debug::debug(Database::table('products')->random()->first(['id', 'name']));
     }
 
     function filter_products(){

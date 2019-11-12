@@ -27,7 +27,8 @@ class Model {
 	protected $h_vars = [];
 	protected $w_vals = [];
 	protected $h_vals = [];
-	protected $order = [];
+	protected $order  = [];
+	protected $randomize = false;
 	protected $limit;
 	protected $offset;
 	protected $roles;
@@ -249,6 +250,15 @@ class Model {
 		return $this;
 	}
 
+	function random(){
+		$this->randomize = true;
+
+		if (!empty($this->order))
+			throw new \Exception("Random order is not compatible with OrderBy clausule");
+
+		return $this;
+	}
+
 	protected function _get(array $fields = null, array $order = null, int $limit = NULL, int $offset = null, bool $existance = false)
 	{
 		if (!$existance){
@@ -257,7 +267,7 @@ class Model {
 
 			$this->removehidden($fields);	
 
-			$order  = !empty($order) ? array_merge($this->order, $order) : $this->order;
+			$order  = (!empty($order) && !$this->randomize) ? array_merge($this->order, $order) : $this->order;
 			$limit  = $limit  ?? $this->limit  ?? null;
 			$offset = $offset ?? $this->offset ?? 0; 
 
@@ -331,6 +341,9 @@ class Model {
 		$having = (!empty($this->having)) ? 'HAVING '.$having_str : '';
 		$q  .= " $having";
 
+		if ($this->randomize)
+			$q .= ' ORDER BY RAND() ';
+		
 		if (!$existance && $paginator!==null){
 			$q .= $paginator->getQuery();
 		}
@@ -338,9 +351,9 @@ class Model {
 		if ($existance)
 			$q .= ')';
 
-		//DEBUG::debug($q, 'Query:');
-		//DEBUG::debug($vars, 'Vars:');
-		//DEBUG::debug($values, 'Vals:');
+		DEBUG::debug($q, 'Query:');
+		DEBUG::debug($vars, 'Vars:');
+		DEBUG::debug($values, 'Vals:');
 		
 		//var_dump($q);
 		//var_export($vars);
