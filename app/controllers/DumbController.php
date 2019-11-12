@@ -110,6 +110,16 @@ class DumbController extends Controller
         ])->first()); 
     }
 
+    function oldest(){
+        // oldest first
+        Debug::debug(Database::table('products')->oldest()->get());
+    }
+
+    function newest(){
+        // newest, first result
+        Debug::debug(Database::table('products')->newest()->first());
+    }
+
     function filter_products(){
         $conn    = Database::getConnection();
         

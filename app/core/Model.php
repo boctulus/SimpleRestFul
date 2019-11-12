@@ -468,6 +468,21 @@ class Model {
 		return $this;
 	}
 
+	function oldest(){
+		$this->orderBy(['created_at' => 'DESC']);
+		return $this;
+	}
+
+	function latest(){
+		$this->orderBy(['created_at' => 'DESC']);
+		return $this;
+	}
+
+	function newest(){
+		$this->orderBy(['created_at' => 'ASC']);
+		return $this;
+	}
+
 	function having(array $conditions, $conjunction = 'AND')
 	{	
 		if (Arrays::is_assoc($conditions)){
