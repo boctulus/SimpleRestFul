@@ -351,9 +351,9 @@ class Model {
 		if ($existance)
 			$q .= ')';
 
-		DEBUG::debug($q, 'Query:');
-		DEBUG::debug($vars, 'Vars:');
-		DEBUG::debug($values, 'Vals:');
+		//DEBUG::debug($q, 'Query:');
+		//DEBUG::debug($vars, 'Vars:');
+		//DEBUG::debug($values, 'Vals:');
 		
 		//var_dump($q);
 		//var_export($vars);
