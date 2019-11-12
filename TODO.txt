@@ -9,9 +9,41 @@ Objetivo: poder crear recursos de nuestra propiedad en carpetas ajenas donde ló
 SI está en un folder y no es de mi propiedad ni soy el admin ni tengo permiso de escritura =>
 NO debebería poder restaurar el registro.***
 
+- Usar archivos .env 
+
+  'mysql' => [
+      'driver'    => 'mysql',
+      'host'      => env('DB_HOST', 'localhost'),
+      'database'  => env('DB_DATABASE', 'forge'),
+      'username'  => env('DB_USERNAME', 'forge'),
+      'password'  => env('DB_PASSWORD', ''),
+      'charset'   => 'utf8',
+      'collation' => 'utf8_unicode_ci',
+      'prefix'    => '',
+      'strict'    => false,
+  ],
+
+Más
+https://scotch.io/tutorials/understanding-laravel-environment-variables
+https://medium.com/@hfally/how-to-create-an-environment-variable-file-like-laravel-symphonys-env-37c20fc23e72
+https://laravel.com/docs/5.7/configuration
+https://github.com/vlucas/phpdotenv
+
+- Implementar un paginador con enlaces a nivel de API Rest como:
+
+https://laravel.com/docs/5.8/pagination
+
+- Contemplar aceptar una función para el caso de where() y having() como en Laravel 
+
+https://stackoverflow.com/questions/45359615/laravel-query-builder-where-and-or-where
+
 - Usar templates para los correos 
 
 - Revisar los conectores de fb y google
+
+- Intentar habilitar el ACL para Controllers != ApiController
+
+- Implementar control de nullables a nivel de Modelo !
 
 - Máscara de campos y valores accesibles por un usuario según su rol o... hidden y filled con roles 
 a nivel de API

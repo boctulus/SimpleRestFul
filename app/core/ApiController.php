@@ -12,6 +12,7 @@ use simplerest\models\OtherPermissionsModel;
 use simplerest\models\FoldersModel;
 use simplerest\models\RolesModel;
 use simplerest\libs\Validator;
+use simplerest\core\exceptions\InvalidValidationException;
 
 
 abstract class ApiController extends Controller
@@ -185,7 +186,7 @@ abstract class ApiController extends Controller
         if ($operation != 'r' && $operation != 'w')
             throw new \InvalidArgumentException("Permissions are 'r' or 'w' but not '$operation'");
 
-        $o = new OtherPermissionsModel($conn);
+        $o = (new OtherPermissionsModel($conn))->setFetchMode('ASSOC');
 
         $rows = $o->where(['folder_id', $folder])->get();
 
@@ -201,7 +202,7 @@ abstract class ApiController extends Controller
             return true;
         }
         
-        $g = new GroupPermissionsModel($conn);
+        $g = (new GroupPermissionsModel($conn))->setFetchMode('ASSOC');
         $rows = $g->where([
                                     ['folder_id', $folder], 
                                     ['member', $this->uid]
@@ -230,7 +231,7 @@ abstract class ApiController extends Controller
             $conn = Database::getConnection();
 
             $model    = 'simplerest\\models\\'.$this->modelName;
-            $instance = new $model($conn); 
+            $instance = (new $model($conn))->setFetchMode('ASSOC'); 
             
             $_get    = Factory::request()->getQuery();
 
@@ -271,7 +272,7 @@ abstract class ApiController extends Controller
         
             if ($folder !== null)
             {
-                $f = Database::table('folders');
+                $f = Database::table('folders')->setFetchMode('ASSOC');
                 $f_rows = $f->where(['id' => $folder])->get();
         
                 if (count($f_rows) == 0 || $f_rows[0]['resource_table'] != $this->model_table)
@@ -300,7 +301,7 @@ abstract class ApiController extends Controller
                     if ($this->is_guest() && !$folder_access)
                         Factory::response()->send([]);    
                         
-                    $_get[] = [$this->folder_field, $f_rows[0]['value']];
+                    $_get[] = [$this->folder_field, $f_rows[0]['name']];
                     $_get[] = ['belongs_to', $f_rows[0]['belongs_to']];
                 }
 
@@ -429,7 +430,7 @@ abstract class ApiController extends Controller
                     if ($this->is_guest() && !$folder_access)
                         Factory::response()->send([]); 
 
-                    $_get[] = [$this->folder_field, $f_rows[0]['value']];
+                    $_get[] = [$this->folder_field, $f_rows[0]['name']];
                     $_get[] = ['belongs_to', $f_rows[0]['belongs_to']];
                 }
            
@@ -438,22 +439,17 @@ abstract class ApiController extends Controller
                 else
                     $pretty = true;   
 
-                Factory::response()->setPretty($pretty);
+        
+                $instance->setValidator(new Validator());                                 
+                $rows = $instance->where($_get)->get($fields, $order, $limit, $offset);
 
-                // Lo "malo" de delegar la validación al modelo es que devuelve error 500 en vez de 400 si falla
-                $instance->setValidator(new Validator());
-
-                if (!empty($_get)){                    
-                    $rows = $instance->where($_get)->get($fields, $order, $limit, $offset);
-                    Factory::response()->code(200)->send($rows); 
-                }else {
-                    $rows = $instance->fetchAll($fields, $order, $limit, $offset);
-                    Factory::response()->code(200)->send($rows); 
-                }	
+                Factory::response()->setPretty($pretty)->code(200)->send($rows);
         
             }
 
-        } catch (\Exception $e) {
+        } catch (InvalidValidationException $e) { 
+            Factory::response()->sendError($e->getMessage(), 400);
+        } catch (\Exception $e) {            
             Factory::response()->sendError($e->getMessage());
         }	    
     } // 
@@ -471,7 +467,7 @@ abstract class ApiController extends Controller
             Factory::response()->sendError('Invalid JSON',400);
         
         $model    = '\\simplerest\\models\\'.$this->modelName;
-        $instance = new $model();
+        $instance = (new $model())->setFetchMode('ASSOC');
 
         $folder = $data['folder'] ?? null;
 
@@ -497,7 +493,7 @@ abstract class ApiController extends Controller
                     Factory::response()->sendError("You have not permission for the folder $folder", 403);
 
                 unset($data['folder']);    
-                $data[$this->folder_field] = $f_rows[0]['value'];
+                $data[$this->folder_field] = $f_rows[0]['name'];
                 $data['belongs_to'] = $f_rows[0]['belongs_to'];    
             }    
 
@@ -537,7 +533,7 @@ abstract class ApiController extends Controller
 
             // Creo una instancia
             $instance = new $model();
-            $instance->setConn($conn);
+            $instance->setConn($conn)->setFetchMode('ASSOC');
 
             if (!$this->is_admin){
                 if (isset($data['belongs_to']))
@@ -554,7 +550,7 @@ abstract class ApiController extends Controller
                 if (empty($this->folder_field))
                     Factory::response()->sendError("'folder_field' is undefined", 403);
 
-                $f = Database::table('folders');
+                $f = Database::table('folders')->setFetchMode('ASSOC');
                 $f_rows = $f->where(['id' => $folder])->get();
                       
                 if (count($f_rows) == 0 || $f_rows[0]['resource_table'] != $this->model_table)
@@ -563,22 +559,22 @@ abstract class ApiController extends Controller
                 if ($f_rows[0]['belongs_to'] != $this->uid  && !$this->hasPerm($folder, $conn, 'w'))
                     Factory::response()->sendError("You have not permission for the folder $folder", 403);
 
-                $folder_name = $f_rows[0]['value'];
+                $folder_name = $f_rows[0]['name'];
 
                 // Creo otra nueva instancia
                 $instance2 = new $model();
-                $instance2->setConn($conn);
+                $instance2->setConn($conn)->setFetchMode('ASSOC');
 
                 if (count($instance2->where(['id' => $id, $this->folder_field => $folder_name])->get()) == 0)
                     Factory::response()->code(404)->sendError("Register for id=$id does not exists");
 
                 unset($data['folder']);    
-                $data[$this->folder_field] = $f_rows[0]['value'];
+                $data[$this->folder_field] = $f_rows[0]['name'];
                 $data['belongs_to'] = $f_rows[0]['belongs_to'];    
             } else {
 
                 $instance2 = new $model();
-                $instance2->setConn($conn); 
+                $instance2->setConn($conn)->setFetchMode('ASSOC'); 
 
                 $rows = $instance2->where(['id' => $id])->get();
 
@@ -656,7 +652,7 @@ abstract class ApiController extends Controller
         
             $model    = 'simplerest\\models\\'.$this->modelName;
             
-            $instance = new $model($conn);
+            $instance = (new $model($conn))->setFetchMode('ASSOC');
             $instance->fill(['deleted_at']); //
 
             $rows = $instance->where(['id', $id])->get();
@@ -670,7 +666,7 @@ abstract class ApiController extends Controller
                 if (empty($this->folder_field))
                     Factory::response()->sendError("'folder_field' is undefined", 403);
 
-                $f = Database::table('folders');
+                $f = Database::table('folders')->setFetchMode('ASSOC');
                 $f_rows = $f->where(['id' => $folder])->get();
                       
                 if (count($f_rows) == 0 || $f_rows[0]['resource_table'] != $this->model_table)
@@ -679,17 +675,17 @@ abstract class ApiController extends Controller
                 if ($f_rows[0]['belongs_to'] != $this->uid  && !$this->hasPerm($folder, $conn, 'w'))
                     Factory::response()->sendError("You have not permission for the folder $folder", 403);
 
-                $folder_name = $f_rows[0]['value'];
+                $folder_name = $f_rows[0]['name'];
 
                 // Creo otra nueva instancia
                 $instance2 = new $model();
-                $instance2->setConn($conn);
+                $instance2->setConn($conn)->setFetchMode('ASSOC');
 
                 if (count($instance2->where(['id' => $id, $this->folder_field => $folder_name])->get()) == 0)
                     Factory::response()->code(404)->sendError("Register for id=$id does not exists");
 
                 unset($data['folder']);    
-                $data[$this->folder_field] = $f_rows[0]['value'];
+                $data[$this->folder_field] = $f_rows[0]['name'];
                 $data['belongs_to'] = $f_rows[0]['belongs_to'];    
             } else {
                 if (!$this->is_admin && $rows[0]['belongs_to'] != $this->uid){

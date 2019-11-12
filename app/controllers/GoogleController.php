@@ -123,12 +123,12 @@ class GoogleController extends Controller
             $u = new UsersModel($conn);
 
             // exits	
-            $rows = $u->where(['email', $payload['email']])->get(['id']);
+            $rows = $u->where(['email', $payload['email']])->setFetchMode('ASSOC')->get(['id']);
             if (count($rows)>0){
                 // Email already exists
                 $uid = $rows[0]['id'];
 
-                $ur = new UserRolesModel($conn);
+                $ur = (new UserRolesModel($conn))->setFetchMode('ASSOC');
                 $rows = $ur->where(['user_id', $uid])->get(['role_id']);
 
                 $roles = [];

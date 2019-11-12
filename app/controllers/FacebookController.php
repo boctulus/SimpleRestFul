@@ -85,7 +85,7 @@ class FacebookController extends Controller
             try 
             {        
                 $conn = $this->getConnection();	
-                $u = new UsersModel($conn);
+                $u = (new UsersModel($conn))->setFetchMode('ASSOC');
     
                 // exits	
                 $rows = $u->where(['email', $email])->get(['id']);
@@ -94,7 +94,7 @@ class FacebookController extends Controller
                     // Email already exists
                     $uid = $rows[0]['id'];
     
-                    $ur = new UserRolesModel($conn);
+                    $ur = (new UserRolesModel($conn))->setFetchMode('ASSOC');
                     $rows = $ur->where(['user_id', $uid])->get(['role_id']);
     
                     $roles = [];

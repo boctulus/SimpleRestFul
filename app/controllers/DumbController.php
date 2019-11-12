@@ -74,6 +74,7 @@ class DumbController extends Controller
 
     function get_products(){
         Debug::debug(Database::table('products')->get());
+        //Debug::debug(Database::table('products')->setFetchMode('ASSOC')->get());
     }
 
     function get_product($id){       
@@ -81,6 +82,14 @@ class DumbController extends Controller
         Debug::debug(Database::table('products')->where(['id' => $id])->showDeleted()->get());
     }
     
+    function first(){
+        Debug::debug(Database::table('products')->where([ 
+            ['cost', 200, '>='],
+            ['cost', 270, '<='],
+            ['belongs_to',  90]
+        ])->first()); 
+    }
+
     function filter_products(){
         $conn    = Database::getConnection();
         
@@ -131,6 +140,34 @@ class DumbController extends Controller
         Debug::debug(Database::table('products')->where([ 
             ['cost', 100, '>=']
         ])->orderBy(['size' => 'DESC'])->groupBy(['size'])->get(['size', 'AVG(cost)']));
+    }
+
+    function where(){        
+
+        // Ok
+        Debug::debug(Database::table('products')->where([ 
+            ['cost', 200, '>='],
+            ['cost', 270, '<='],
+            ['belongs_to',  90]
+        ])->get());  
+        
+
+        /*    
+        // No es posible mezclar arrays asociativos y no-asociativos 
+        Debug::debug(Database::table('products')->where([ 
+            ['cost', 200, '>='],
+            ['cost', 270, '<='],
+            ['belongs_to' =>  90]
+        ])->get());
+        */        
+
+        // Ok
+        Debug::debug(Database::table('products')
+        ->where([ 
+                ['cost', 150, '>='],
+                ['cost', 270, '<=']            
+            ])
+        ->where(['belongs_to' =>  90])->get());         
     }
 
     /*       
@@ -290,32 +327,6 @@ class DumbController extends Controller
         Debug::debug(Utils::send_mail('boctulus@gmail.com', 'Pablo ZZ', 'Pruebita', 'Hola!<p/>Esto es una <b>prueba</b><p/>Chau'));     
     }
 
-    function test(){
-        /*
-        $ok = (bool) Database::table('messages')->create([
-                'from_email' => '@',
-                'from_name' => '',
-                'to_email' => 'boctulus@gmail.com', 
-                'to_name' => 'Pablo ZZ', 
-                'subject' => 'Pruebita', 
-                'body' => 'Hola!<p/>Esto es una <b>prueba</b><p/>Chau'
-        ]);
-        
-        var_dump($ok);
-        */
-
-        $email = 'nano@';
-
-        $u = Database::table('users')->setValidator(new Validator());
-        //$rows = $u->where(['email', $email])->get(['id']);
-        
-        $affected = $u->where(['email' => $email])->update(['firstname' => 'NA']);
-
-
-        Debug::debug($affected);
-
-    }
-
     function validacion1(){
         $u = Database::table('users')->setValidator(new Validator());
         $affected = $u->where(['email' => 'nano@'])->update(['firstname' => 'NA']);
@@ -341,4 +352,5 @@ class DumbController extends Controller
     }
   
 
+   
 }

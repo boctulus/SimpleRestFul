@@ -107,7 +107,7 @@ class AuthController extends Controller implements IAuth
               
         $conn = $this->getConnection();
         
-        $u = new UsersModel($conn);
+        $u = (new UsersModel($conn))->setFetchMode('ASSOC');
         $rows = $u->unhide(['password'])->where(['email'=> $email])->get();
 
         if (count($rows) ==0)    
@@ -122,7 +122,7 @@ class AuthController extends Controller implements IAuth
 
         // Fetch roles
         $uid = $rows[0]['id'];
-        $rows = Database::table('user_roles')->where(['user_id', $uid])->get(['role_id as role']);	
+        $rows = Database::table('user_roles')->setFetchMode('ASSOC')->where(['user_id', $uid])->get(['role_id as role']);	
         
         $r = new RolesModel();
 
@@ -221,7 +221,7 @@ class AuthController extends Controller implements IAuth
                 Factory::response()->sendError('Email must be provided', 400);
 
             $conn = $this->getConnection();	
-            $u = new UsersModel($conn);
+            $u = (new UsersModel($conn))->setFetchMode('ASSOC');
 
             // exits
             if (count($u->where(['email', $data['email']])->get(['id']))>0)

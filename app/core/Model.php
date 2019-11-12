@@ -5,6 +5,7 @@ use simplerest\libs\Debug;
 use simplerest\libs\Arrays;
 use simplerest\libs\Validator;
 use simplerest\core\interfaces\IValidator;
+use simplerest\core\exceptions\InvalidValidationException;
 
 class Model {
 
@@ -31,6 +32,7 @@ class Model {
 	protected $offset;
 	protected $roles;
 	protected $validator;
+	protected $fetch_mode = \PDO::FETCH_OBJ;
 	
 
 	/*
@@ -85,10 +87,12 @@ class Model {
 			if (!$this->isNullable($field)){
 				$this->rules[$field]['required'] = true;
 			}
-		}
-			
-		//var_export($this->rules);
-		
+		}		
+	}
+
+	public function setFetchMode($mode){
+		$this->fetch_mode = constant("PDO::FETCH_{$mode}");
+		return $this;
 	}
 
 	public function setValidator(IValidator $validator){
@@ -225,7 +229,17 @@ class Model {
 		return $this;
 	}
 
+	function limit(int $limit){
+		$this->limit = $limit;
+		return $this;
+	}
+
 	function offset(int $n){
+		$this->offset = $n;
+		return $this;
+	}
+
+	function skip(int $n){
 		$this->offset = $n;
 		return $this;
 	}
@@ -235,134 +249,7 @@ class Model {
 		return $this;
 	}
 
-
-	/**
-	 * fetch
-	 *
-	 * @param  array $fields
-	 *
-	 * @return bool
-	 */
-	function fetch(array $fields = null)
-	{
-		$this->removehidden($fields);
-
-		if ($fields == null){
-			$q  = 'SELECT *';
-			$select_fields_array = $this->properties;
-		} else {
-			$select_fields_array = array_intersect($fields, $this->properties);
-			$q  = "SELECT ".implode(", ", $select_fields_array);
-		}
-
-		$q  .= " FROM ".(empty($this->table_name) ? '' : 'as '.$this->table_alias.' ')." WHERE ".$this->id_name." = :id";
-
-		if ($this->inSchema(['deleted_at'])){
-			if (!$this->show_deleted)
-				$q  .= " AND deleted_at IS NULL";	
-		}
-
-		$st = $this->conn->prepare($q);
-		$st->bindParam(":id", $this->{$this->id_name}, constant('PDO::PARAM_'.$this->schema[$this->id_name]));
-		$st->execute();
-		
-		$row = $st->fetch(\PDO::FETCH_OBJ);
-
-		if ($row === false)
-			return false;
-	 
-		foreach ($select_fields_array as $prop){
-			$this->{$prop} = $row->{$prop};
-		}	
-
-		return true;
-	}
-	
-	/**
-	 * fetchAll
-	 *
-	 * @param  array $fields
-	 * @param  array $order
-	 * @param  int $limit
-	 * @param  int $offset
-	 *
-	 * @return mixed
-	 */
-	function fetchAll(array $fields = null, array $order = NULL, int $limit = NULL, int $offset = null)
-	{
-		if ($this->inSchema(['deleted_at'])){
-			return $this->get($fields, $order, $limit, $offset);
-		}
-
-		$this->removehidden($fields);
-
-		$order  = !empty($order) ? array_merge($this->order, $order) : $this->order;
-		$limit  = $limit  ?? $this->limit  ?? null;
-		$offset = $offset ?? $this->offset ?? 0; 
-
-		if($limit>0 || $order!=NULL){
-			try {
-				$paginator = new Paginator();
-				$paginator->limit  = $limit;
-				$paginator->offset = $offset;
-				$paginator->orders = $order;
-				$paginator->properties = $this->properties;
-				$paginator->compile();
-			}catch (\Exception $e){
-				throw new \Exception("Pagination error: {$e->getMessage()}");
-			}
-		}else
-			$paginator = null;	
-
-		if ($fields == null)
-			$q  = 'SELECT *';
-		else {
-			$select_fields_array = array_intersect($fields, $this->properties);
-			$q  = "SELECT ".implode(", ", $select_fields_array);
-		}
-
-		$q  .= ' FROM '.$this->table_name. ' '.(!empty($this->table_alias) ? 'as '.$this->table_alias : '');
-
-		/// start pagination
-		if($paginator!==null)
-			$q .= $paginator->getQuery();
-
-		// JOINS
-		$joins = '';
-		foreach ($this->joins as $j){
-			$joins .= "$j[4] $j[0] ON $j[1]$j[2]$j[3] ";
-		}
-
-		$q  .= " $joins";
-
-		//var_dump($q);
-
-		$st = $this->conn->prepare($q);
-
-		if($paginator!=null){	
-			$bindings = $paginator->getBinding();
-			foreach($bindings as $ix => $binding){
-				$st->bindValue($ix +1, $binding[1], $binding[2]);
-			}
-		} 
-
-		if ($st->execute())
-			return $st->fetchAll(\PDO::FETCH_ASSOC);
-		else
-			return false;	
-	}
-
-	/**
-	 * get
-	 *
-	 * @param  array $fields
-	 * @param  array $order
-	 * @param  int $limit
-	 * @param  int $offset
-	 *
-	 * @return array | false
-	 */
-	function get(array $fields = null, array $order = null, int $limit = NULL, int $offset = null)
+	protected function _get(array $fields = null, array $order = null, int $limit = NULL, int $offset = null)
 	{
 		if (empty($conjunction))
 			$conjunction = 'AND';
@@ -390,14 +277,12 @@ class Model {
 		if (empty($fields))
 			$q  = 'SELECT *';
 		else {
-			//$fields = array_intersect($fields, $this->properties);
 			$q  = "SELECT ".implode(", ", $fields);
 		}
 
 		$q  .= ' FROM '.$this->table_name. ' '.(!empty($this->table_alias) ? 'as '.$this->table_alias : '');
 
 		////////////////////////
-		$where  = $this->where;
 		$values = array_merge($this->w_vals, $this->h_vals);
 		$vars   = array_merge($this->w_vars, $this->h_vars);
 		////////////////////////
@@ -406,11 +291,9 @@ class Model {
 		if (!empty($this->validator)){
 			$validado = $this->validator->validate($this->getRules(), array_combine($vars, $values), null, true);
 			if ($validado !== true){
-				throw new \InvalidArgumentException('Data validation error: '. $validado);
+				throw new InvalidValidationException($validado);
 			} 
 		}
-
-		$shift = substr_count($where, '?');
 		
 		// JOINS
 		$joins = '';
@@ -420,8 +303,12 @@ class Model {
 
 		$q  .= $joins;
 		
-		if (empty($where))
+		if (empty($this->where))
 			$where = 1;
+		else
+			$where = implode(' AND ', $this->where);
+
+		$shift = substr_count($where, '?');	
 		
 		$q  .= "WHERE $where";
 
@@ -433,7 +320,9 @@ class Model {
 		$group = (!empty($this->group)) ? 'GROUP BY '.implode(',', $this->group) : '';
 		$q  .= " $group";
 
-		$having = (!empty($this->having)) ? 'HAVING '.$this->having : '';
+		$having_str = implode(' AND ', $this->having);
+
+		$having = (!empty($this->having)) ? 'HAVING '.$having_str : '';
 		$q  .= " $having";
 
 		if($paginator!==null){
@@ -477,8 +366,23 @@ class Model {
 			}	
 		}			
 
+		return $st;		
+	}
+
+	function get(array $fields = null, array $order = null, int $limit = NULL, int $offset = null){
+		$st = $this->_get($fields, $order, $limit, $offset);
+
 		if ($st->execute())
-			return $st->fetchAll(\PDO::FETCH_ASSOC);
+			return $st->fetchAll($this->fetch_mode);
+		else
+			return false;	
+	}
+
+	function first(array $fields = null, array $order = null, int $limit = NULL, int $offset = null){
+		$st = $this->_get($fields, $order, $limit, $offset);
+
+		if ($st->execute())
+			return $st->fetch($this->fetch_mode);
 		else
 			return false;	
 	}
@@ -540,7 +444,9 @@ class Model {
 
 		$this->w_vars = $vars;
 
-		$this->where = implode(" $conjunction ", $_where);
+		$this->where[] = implode(" $conjunction ", $_where);
+		//Debug::debug($this->where);		
+
 		return $this;
 	}
 
@@ -573,7 +479,7 @@ class Model {
 			$this->h_vals[] = $cond[1];
 		}
 
-		$this->having = implode(" $conjunction ", $_having);
+		$this->having[] = implode(" $conjunction ", $_having);
 
 		//Debug::debug($this->having, 'HAVING:');
 		//Debug::debug($this->h_vars, 'VARS');
@@ -610,7 +516,7 @@ class Model {
 		if (!empty($this->validator)){
 			$validado = $this->validator->validate($this->getRules(), $data, null, true);
 			if ($validado !== true){
-				throw new \InvalidArgumentException('Data validation error: '. $validado);
+				throw new InvalidValidationException($validado);
 			} 
 		}
 		
@@ -624,8 +530,10 @@ class Model {
 			$set .= ', modified_at = NOW()';
 		}
 
+		$where = implode(' AND ', $this->where);
+
 		$q = "UPDATE ".$this->table_name .
-				" SET $set WHERE " . $this->where;		
+				" SET $set WHERE " . $where;		
 	
 		$st = $this->conn->prepare($q);
 
@@ -671,7 +579,7 @@ class Model {
 		if (!empty($this->validator)){
 			$validado = $this->validator->validate($this->getRules(), array_combine($this->w_vars, $this->w_vals), null, true);
 			if ($validado !== true){
-				throw new \InvalidArgumentException('Data validation error: '. $validado);
+				throw new InvalidValidationException($validado);
 			} 
 		}
 
@@ -686,7 +594,9 @@ class Model {
 			return $this->update(['deleted_at' => $at]);
 		}
 
-		$q = "DELETE FROM ". $this->table_name . " WHERE " . $this->where;
+		$where = implode(' AND ', $this->where);
+
+		$q = "DELETE FROM ". $this->table_name . " WHERE " . $where;
 		
 		$st = $this->conn->prepare($q);
 		
@@ -736,7 +646,7 @@ class Model {
 		if (!empty($this->validator)){
 			$validado = $this->validator->validate($this->getRules(), $data, null, true);
 			if ($validado !== true){
-				throw new \InvalidArgumentException('Data validation error: '. $validado);
+				throw new InvalidValidationException($validado);
 			} 
 		}
 

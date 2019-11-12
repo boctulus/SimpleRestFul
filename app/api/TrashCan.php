@@ -36,7 +36,7 @@ class TrashCan extends MyApiController
                 Factory::response()->sendError("Entity $entity does not exists", 400);
 
             $conn = Database::getConnection();
-            $instance = new $model($conn); 
+            $instance = (new $model($conn))->setFetchMode('ASSOC'); 
             ////////////////////////////////////////////////////
             
             $fields  = Arrays::shift($_get,'fields');
@@ -266,7 +266,7 @@ class TrashCan extends MyApiController
             Factory::response()->sendError("Entity $entity does not exists", 400);
         
         $conn = Database::getConnection();
-        $instance = new $model($conn); 
+        $instance = (new $model($conn))->setFetchMode('ASSOC'); 
         ////////////////////////////////////////////////////
 
         ///
@@ -395,7 +395,7 @@ class TrashCan extends MyApiController
                 Factory::response()->sendError("Entity $entity does not exists", 400);
             
             $conn = Database::getConnection();
-            $instance = new $model($conn); 
+            $instance = (new $model($conn))->setFetchMode('ASSOC'); 
             ////////////////////////////////////////////////////
 
             $instance->fill(['deleted_at']); //
