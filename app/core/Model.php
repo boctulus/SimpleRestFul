@@ -249,36 +249,42 @@ class Model {
 		return $this;
 	}
 
-	protected function _get(array $fields = null, array $order = null, int $limit = NULL, int $offset = null)
+	protected function _get(array $fields = null, array $order = null, int $limit = NULL, int $offset = null, bool $existance = false)
 	{
-		if (empty($conjunction))
-			$conjunction = 'AND';
+		if (!$existance){
+			if (empty($conjunction))
+				$conjunction = 'AND';
 
-		$this->removehidden($fields);	
+			$this->removehidden($fields);	
 
-		$order  = !empty($order) ? array_merge($this->order, $order) : $this->order;
-		$limit  = $limit  ?? $this->limit  ?? null;
-		$offset = $offset ?? $this->offset ?? 0; 
+			$order  = !empty($order) ? array_merge($this->order, $order) : $this->order;
+			$limit  = $limit  ?? $this->limit  ?? null;
+			$offset = $offset ?? $this->offset ?? 0; 
 
-		if($limit>0 || $order!=NULL){
-			try {
-				$paginator = new Paginator();
-				$paginator->limit  = $limit;
-				$paginator->offset = $offset;
-				$paginator->orders = $order;
-				$paginator->properties = $this->properties;
-				$paginator->compile();
-			}catch (\Exception $e){
-				throw new \Exception("Pagination error: {$e->getMessage()}");
+			if($limit>0 || $order!=NULL){
+				try {
+					$paginator = new Paginator();
+					$paginator->limit  = $limit;
+					$paginator->offset = $offset;
+					$paginator->orders = $order;
+					$paginator->properties = $this->properties;
+					$paginator->compile();
+				}catch (\Exception $e){
+					throw new \Exception("Pagination error: {$e->getMessage()}");
+				}
+			}else
+				$paginator = null;	
+		}			
+
+		if (!$existance){
+			if (empty($fields))
+				$q  = 'SELECT *';
+			else {
+				$q  = "SELECT ".implode(", ", $fields);
 			}
-		}else
-			$paginator = null;	
-
-		if (empty($fields))
-			$q  = 'SELECT *';
-		else {
-			$q  = "SELECT ".implode(", ", $fields);
-		}
+		} else {
+			$q  = 'SELECT EXISTS (SELECT 1';
+		}	
 
 		$q  .= ' FROM '.$this->table_name. ' '.(!empty($this->table_alias) ? 'as '.$this->table_alias : '');
 
@@ -325,10 +331,13 @@ class Model {
 		$having = (!empty($this->having)) ? 'HAVING '.$having_str : '';
 		$q  .= " $having";
 
-		if($paginator!==null){
+		if (!$existance && $paginator!==null){
 			$q .= $paginator->getQuery();
 		}
 		
+		if ($existance)
+			$q .= ')';
+
 		//DEBUG::debug($q, 'Query:');
 		//DEBUG::debug($vars, 'Vars:');
 		//DEBUG::debug($values, 'Vals:');
@@ -358,7 +367,7 @@ class Model {
 		}
 
 			
-		if ($paginator !== null){
+		if (!$existance && $paginator !== null){
 			$bindings = $paginator->getBinding();
 			foreach($bindings as $ix => $binding){
 				$st->bindValue($shift +$ix +1, $binding[1], $binding[2]);
@@ -387,6 +396,15 @@ class Model {
 			return false;	
 	}
 	
+	function exists(){
+		$st = $this->_get(null, null, null, null, true);
+
+		if ($st->execute())
+			return (bool) $st->fetch(\PDO::FETCH_NUM)[0];
+		else
+			return false;	
+	}
+
 	/**
 	 * where
 	 *

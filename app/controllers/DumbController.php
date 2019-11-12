@@ -82,6 +82,26 @@ class DumbController extends Controller
         Debug::debug(Database::table('products')->where(['id' => $id])->showDeleted()->get());
     }
     
+    function exists($uid){ 
+        Debug::debug(Database::table('products')->where(['belongs_to' => $uid])->exists());
+
+        Debug::debug(Database::table('products')->where([ 
+            ['cost', 200, '<'],
+            ['name', 'CocaCola'] 
+        ])->exists());
+
+        $o = Database::table('other_permissions', 'op');
+        Debug::debug($o->join('folders', 'op.folder_id', '=',  'folders.id')
+                        ->join('users', 'folders.belongs_to', '=', 'users.id')
+                        ->join('user_roles', 'users.id', '=', 'user_roles.user_id')
+                        //->join('roles', 'user_role.role_id', '=', 'roles.id') 
+                        ->where([
+                            ['guest', 1],
+                            ['resource_table', 'products'],
+                            ['r', 1]
+                        ])->exists());
+    }
+           
     function first(){
         Debug::debug(Database::table('products')->where([ 
             ['cost', 200, '>='],
