@@ -121,9 +121,9 @@ class DumbController extends Controller
     }
 
     function random(){
-       // Debug::debug(Database::table('products')->random()->limit(5)->get(['id', 'name']));
+        Debug::debug(Database::table('products')->random()->limit(5)->get(['id', 'name']));
 
-        Debug::debug(Database::table('products')->random()->first(['id', 'name']));
+        Debug::debug(Database::table('products')->random()->select(['id', 'name'])->first());
     }
 
     function filter_products(){

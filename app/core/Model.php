@@ -20,6 +20,7 @@ class Model {
 	protected $joins = [];
 	protected $show_deleted = false;
 	protected $conn;
+	protected $fields = [];
 	protected $where;
 	protected $group  = [];
 	protected $having = [];
@@ -259,8 +260,18 @@ class Model {
 		return $this;
 	}
 
+	function select(array $fields){
+		$this->fields = $fields;
+		return $this;
+	}
+
 	protected function _get(array $fields = null, array $order = null, int $limit = NULL, int $offset = null, bool $existance = false)
 	{
+		if (!empty($fields))
+			$fields = array_merge($this->fields, $fields);
+		else
+			$fields = $this->fields;
+
 		if (!$existance){
 			if (empty($conjunction))
 				$conjunction = 'AND';
