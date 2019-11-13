@@ -42,7 +42,8 @@ class Model {
 		Chequear en cada método si hay una conexión 
 	*/
 
-	public function __construct(object $conn = null){
+	public function __construct(\PDO $conn = null){
+
 		if($conn){
 			$this->conn = $conn;
 			$this->conn->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
@@ -285,8 +286,12 @@ class Model {
 		return $this;
 	}
 
-	protected function _get(array $fields = null, array $order = null, int $limit = NULL, int $offset = null, bool $existance = false)
+	protected function _get(array $fields = null, array $order = null, int $limit = NULL, int $offset = null, bool $existance = false, $aggregate_func = null, $aggregate_field = null)
 	{
+		// Validar que la funcion agregada no puede estar vacia si viene un campo de agregación y viceversea *excepto* que la función sea COUNT. Además no tiene que haber $fields ni puede haber valores en $offset, $limit, $order
+
+		// Agregar otras validaciones !
+
 		if (!empty($fields))
 			$fields = array_merge($this->fields, $fields);
 		else
@@ -338,11 +343,24 @@ class Model {
 		}			
 
 		if (!$existance){
-			if (empty($fields))
-				$q  = 'SELECT *';
-			else {
-				$distinct = ($this->distinct == true) ? 'DISTINCT' : '';
-				$q  = "SELECT $distinct ".implode(", ", $fields);
+			if ($aggregate_func != null){
+				if (strtoupper($aggregate_func) == 'COUNT'){
+					if ($aggregate_field == null)
+						$aggregate_field = '*';
+
+					if ($this->distinct)
+						$q  = "SELECT $aggregate_func(DISTINCT $aggregate_field)";
+					else
+						$q  = "SELECT $aggregate_func($aggregate_field)";
+				}else
+					$q  = "SELECT $aggregate_func($aggregate_field)";
+			}else{
+				if (empty($fields))
+					$q  = 'SELECT *';
+				else {
+					$distinct = ($this->distinct == true) ? 'DISTINCT' : '';
+					$q  = "SELECT $distinct ".implode(", ", $fields);
+				}
 			}
 		} else {
 			$q  = 'SELECT EXISTS (SELECT 1';
@@ -466,6 +484,53 @@ class Model {
 
 		if ($st->execute())
 			return (bool) $st->fetch(\PDO::FETCH_NUM)[0];
+		else
+			return false;	
+	}
+
+	// ok
+	function avg($field = null){
+		$st = $this->_get(null, null, null, null, false, 'AVG', $field);
+
+		if ($st->execute())
+			return $st->fetch(\PDO::FETCH_NUM)[0];
+		else
+			return false;	
+	}
+
+	// ok
+	function sum($field = null){
+		$st = $this->_get(null, null, null, null, false, 'SUM', $field);
+
+		if ($st->execute())
+			return $st->fetch(\PDO::FETCH_NUM)[0];
+		else
+			return false;	
+	}
+
+	function min($field = null){
+		$st = $this->_get(null, null, null, null, false, 'MIN', $field);
+
+		if ($st->execute())
+			return $st->fetch(\PDO::FETCH_NUM)[0];
+		else
+			return false;	
+	}
+
+	function max($field = null){
+		$st = $this->_get(null, null, null, null, false, 'MAX', $field);
+
+		if ($st->execute())
+			return $st->fetch(\PDO::FETCH_NUM)[0];
+		else
+			return false;	
+	}
+
+	function count($field = null){
+		$st = $this->_get(null, null, null, null, false, 'COUNT', $field);
+
+		if ($st->execute())
+			return $st->fetch(\PDO::FETCH_NUM)[0];
 		else
 			return false;	
 	}
@@ -867,7 +932,7 @@ class Model {
 	 *
 	 * @return  self
 	 */ 
-	function setConn($conn)
+	function setConn(\PDO $conn)
 	{
 		$this->conn = $conn;
 		return $this;
