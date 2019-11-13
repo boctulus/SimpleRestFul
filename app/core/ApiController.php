@@ -328,6 +328,8 @@ abstract class ApiController extends Controller
                 $allops = ['eq', 'gt', 'gteq', 'lteq', 'lt', 'neq'];
                 $eqops  = ['=',  '>' , '>=',   '<=',   '<',  '!=' ];
 
+                //var_export($_get);
+
                 foreach ($_get as $key => $val){
                     if (is_array($val)){
 
@@ -335,7 +337,12 @@ abstract class ApiController extends Controller
 
                         if (is_array($val[1])){                             
 
+                            #var_export($val[1]); ///
+
                             foreach ($val[1] as $op => $v){
+
+                                #var_export([$op, $v]); ///
+                                 
                                 switch ($op) {
                                     case 'contains':
                                         $_get[$key] = [$campo, '%'.$v.'%', 'like'];
@@ -372,14 +379,13 @@ abstract class ApiController extends Controller
                                     break;
                                     default:
                                         // 'eq', 'gt', ...
-                                        $op = array_keys($val[1])[0];
-                                        $v  = array_values($val[1])[0];
 
                                         $found = false;
                                         foreach ($allops as $ko => $oo){
                                             if ($op == $oo){
                                                 $op = $eqops[$ko];
-                                                $_get[$key] = [$campo, $v, $op]; 
+                                                unset($_get[$key]);
+                                                $_get[] = [$campo, $v, $op]; 
                                                 $found = true;                            
                                                 break;                                    
                                             }                                    
@@ -401,9 +407,7 @@ abstract class ApiController extends Controller
                             } 
                         }   
                         
-                    }else {
-                        // ???
-                    }                           
+                    }                         
                 }
           
                  // Si se pide algo que involucra un campo no está en el schema lanzar error
@@ -439,6 +443,8 @@ abstract class ApiController extends Controller
                 else
                     $pretty = true;   
 
+
+                #var_export($_get); ////
         
                 $instance->setValidator(new Validator());                                 
                 $rows = $instance->where($_get)->get($fields, $order, $limit, $offset);

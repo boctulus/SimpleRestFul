@@ -486,7 +486,12 @@ class DumbController extends Controller
         Debug::debug($affected);
     }
   
-    
+    function test(){
+        Debug::debug(Database::table('products')->where([ 
+            ['cost', 200, '>'],
+            ['cost', 350, '<=']
+        ])->get(['name', 'cost']));
+    }
 
    
 }

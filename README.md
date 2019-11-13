@@ -44,7 +44,7 @@ Example:
 ### BETWEEN
 
     GET /api/products?order[cost]=ASC&cost[between]=200,300
-    GET /api/products?creation_time[between]=2019-10-15,2019-09-01
+    GET /api/products?created_at[between]=2019-10-15 00:00:00,2019-09-01 23:59:59
 
 ### List of fields to include
 
