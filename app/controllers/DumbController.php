@@ -225,6 +225,16 @@ class DumbController extends Controller
         ->groupBy(['size'])->select(['size'])->count());
     }
 
+    /*
+        SELECT size, AVG(cost) FROM products WHERE 1 GROUP BY size
+    */
+    function select_group_avg(){
+        Debug::debug(Database::table('products')->showDeleted()
+        ->groupBy(['size'])->select(['size'])
+        ->avg('cost'));
+    
+    }
+
     function filter_products(){
         $conn    = Database::getConnection();
         
@@ -487,10 +497,10 @@ class DumbController extends Controller
     }
   
     function test(){
-        Debug::debug(Database::table('products')->where([ 
-            ['cost', 200, '>'],
-            ['cost', 350, '<=']
-        ])->get(['name', 'cost']));
+        Debug::debug(Database::table('products')
+        ->groupBy(['size'])->select(['size'])
+        ->avg('cost'));
+    
     }
 
    

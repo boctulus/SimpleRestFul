@@ -365,8 +365,15 @@ class Model {
 						$q  = "SELECT $_f $aggregate_func(DISTINCT $aggregate_field)";
 					else
 						$q  = "SELECT $_f $aggregate_func($aggregate_field)";
-				}else
-					$q  = "SELECT $aggregate_func($aggregate_field)";
+				}else{
+					if (!empty($fields))
+						$_f = implode(", ", $fields). ',';
+					else
+						$_f = '';
+
+					$q  = "SELECT $_f $aggregate_func($aggregate_field)";
+				}
+					
 			}else{
 				if (empty($fields))
 					$q  = 'SELECT *';
@@ -403,7 +410,7 @@ class Model {
 		$q  .= $joins;
 		
 		if (empty($this->where))
-			$where = 1;
+			$where = '1 = 1';
 		else
 			$where = implode(' AND ', $this->where);
 
@@ -504,37 +511,65 @@ class Model {
 	function avg($field){
 		$st = $this->_get(null, null, null, null, false, 'AVG', $field);
 
-		if ($st->execute())
-			return $st->fetch(\PDO::FETCH_NUM)[0];
-		else
-			return false;	
+		if (empty($this->group)){
+			if ($st->execute())
+				return $st->fetch(\PDO::FETCH_NUM)[0];
+			else
+				return false;	
+		}else{
+			if ($st->execute())
+				return $st->fetchAll(\PDO::FETCH_NUM);
+			else
+				return false;
+		}	
 	}
 
 	function sum($field){
 		$st = $this->_get(null, null, null, null, false, 'SUM', $field);
 
-		if ($st->execute())
-			return $st->fetch(\PDO::FETCH_NUM)[0];
-		else
-			return false;	
+		if (empty($this->group)){
+			if ($st->execute())
+				return $st->fetch(\PDO::FETCH_NUM)[0];
+			else
+				return false;	
+		}else{
+			if ($st->execute())
+				return $st->fetchAll(\PDO::FETCH_NUM);
+			else
+				return false;
+		}	
 	}
 
 	function min($field){
 		$st = $this->_get(null, null, null, null, false, 'MIN', $field);
 
-		if ($st->execute())
-			return $st->fetch(\PDO::FETCH_NUM)[0];
-		else
-			return false;	
+		if (empty($this->group)){
+			if ($st->execute())
+				return $st->fetch(\PDO::FETCH_NUM)[0];
+			else
+				return false;	
+		}else{
+			if ($st->execute())
+				return $st->fetchAll(\PDO::FETCH_NUM);
+			else
+				return false;
+		}		
 	}
 
 	function max($field){
 		$st = $this->_get(null, null, null, null, false, 'MAX', $field);
 
-		if ($st->execute())
-			return $st->fetch(\PDO::FETCH_NUM)[0];
-		else
-			return false;	
+		if (empty($this->group)){
+			if ($st->execute())
+				return $st->fetch(\PDO::FETCH_NUM)[0];
+			else
+				return false;	
+		}else{
+			if ($st->execute())
+				return $st->fetchAll(\PDO::FETCH_NUM);
+			else
+				return false;
+		}	
 	}
 
 	function count($field = null){
@@ -551,7 +586,6 @@ class Model {
 			else
 				return false;
 		}
-
 		
 	}
 
