@@ -262,6 +262,10 @@ class Model {
 		return $this;
 	}
 
+	function rand(){
+		return $this->random();
+	}
+
 	function select(array $fields){
 		$this->fields = $fields;
 		return $this;
@@ -288,40 +292,38 @@ class Model {
 
 	protected function _get(array $fields = null, array $order = null, int $limit = NULL, int $offset = null, bool $existance = false, $aggregate_func = null, $aggregate_field = null)
 	{
-		// Validar que la funcion agregada no puede estar vacia si viene un campo de agregación y viceversea *excepto* que la función sea COUNT. Además no tiene que haber $fields ni puede haber valores en $offset, $limit, $order
-
-		// Agregar otras validaciones !
+		// Agregar validaciones ?
 
 		if (!empty($fields))
 			$fields = array_merge($this->fields, $fields);
 		else
-			$fields = $this->fields;
+			$fields = $this->fields;	
 
 		if (!$existance){
 			if (empty($conjunction))
 				$conjunction = 'AND';
 
-			$this->removehidden($fields);	
+			$this->removehidden($fields);		
 
-			if ($this->distinct)
+			if ($this->distinct){
 				$remove = [$this->id_name];
-			else
-				$remove = [];
 
-			if ($this->inSchema(['created_at']))
-				$remove[] = 'created_at';
+				if ($this->inSchema(['created_at']))
+					$remove[] = 'created_at';
 
-			if ($this->inSchema(['modified_at']))
-				$remove[] = 'modified_at';
+				if ($this->inSchema(['modified_at']))
+					$remove[] = 'modified_at';
 
-			if ($this->inSchema(['deleted_at']))
-				$remove[] = 'deleted_at';
+				if ($this->inSchema(['deleted_at']))
+					$remove[] = 'deleted_at';
 
-			if (!empty($fields)){
-				$fields = array_diff($fields, $remove);
-			}else{
-				$fields = array_diff($this->getProperties(), $remove);
-			}
+				if (!empty($fields)){
+					$fields = array_diff($fields, $remove);
+				}else{
+					if (empty($aggregate_func))
+						$fields = array_diff($this->getProperties(), $remove);
+				}
+			} 		
 
 			$order  = (!empty($order) && !$this->randomize) ? array_merge($this->order, $order) : $this->order;
 			$limit  = $limit  ?? $this->limit  ?? null;
@@ -342,16 +344,27 @@ class Model {
 				$paginator = null;	
 		}			
 
+
+		//Debug::debug($fields, 'FIELDS:');
+
 		if (!$existance){
 			if ($aggregate_func != null){
-				if (strtoupper($aggregate_func) == 'COUNT'){
+				if (strtoupper($aggregate_func) == 'COUNT'){					
 					if ($aggregate_field == null)
 						$aggregate_field = '*';
 
-					if ($this->distinct)
-						$q  = "SELECT $aggregate_func(DISTINCT $aggregate_field)";
+					//Debug::debug($fields, 'FIELDS:');
+					//Debug::debug([$aggregate_field], 'AGGREGATE FIELD:');
+
+					if (!empty($fields))
+						$_f = implode(", ", $fields). ',';
 					else
-						$q  = "SELECT $aggregate_func($aggregate_field)";
+						$_f = '';
+
+					if ($this->distinct)
+						$q  = "SELECT $_f $aggregate_func(DISTINCT $aggregate_field)";
+					else
+						$q  = "SELECT $_f $aggregate_func($aggregate_field)";
 				}else
 					$q  = "SELECT $aggregate_func($aggregate_field)";
 			}else{
@@ -488,8 +501,7 @@ class Model {
 			return false;	
 	}
 
-	// ok
-	function avg($field = null){
+	function avg($field){
 		$st = $this->_get(null, null, null, null, false, 'AVG', $field);
 
 		if ($st->execute())
@@ -498,8 +510,7 @@ class Model {
 			return false;	
 	}
 
-	// ok
-	function sum($field = null){
+	function sum($field){
 		$st = $this->_get(null, null, null, null, false, 'SUM', $field);
 
 		if ($st->execute())
@@ -508,7 +519,7 @@ class Model {
 			return false;	
 	}
 
-	function min($field = null){
+	function min($field){
 		$st = $this->_get(null, null, null, null, false, 'MIN', $field);
 
 		if ($st->execute())
@@ -517,7 +528,7 @@ class Model {
 			return false;	
 	}
 
-	function max($field = null){
+	function max($field){
 		$st = $this->_get(null, null, null, null, false, 'MAX', $field);
 
 		if ($st->execute())
@@ -529,10 +540,19 @@ class Model {
 	function count($field = null){
 		$st = $this->_get(null, null, null, null, false, 'COUNT', $field);
 
-		if ($st->execute())
-			return $st->fetch(\PDO::FETCH_NUM)[0];
-		else
-			return false;	
+		if (empty($this->group)){
+			if ($st->execute())
+				return $st->fetch(\PDO::FETCH_NUM)[0];
+			else
+				return false;	
+		}else{
+			if ($st->execute())
+				return $st->fetchAll(\PDO::FETCH_NUM);
+			else
+				return false;
+		}
+
+		
 	}
 
 	/**

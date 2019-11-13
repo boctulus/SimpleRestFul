@@ -144,6 +144,7 @@ class DumbController extends Controller
         Debug::debug(Database::table('products')->newest()->first());
     }
     
+    // random or rand
     function random(){
         Debug::debug(Database::table('products')->random()->limit(5)->get(['id', 'name']));
 
@@ -212,6 +213,16 @@ class DumbController extends Controller
     */
     function select() {
         Debug::debug(Database::table('products')->random()->select(['id', 'name'])->addSelect('cost')->first());
+    }
+
+    /*
+        La ventaja de usar select() - por sobre usar get() - es que se ejecuta antes que count() permitiendo combinar selección de campos con COUNT() 
+
+        SELECT size, COUNT(*) FROM products GROUP BY size
+    */
+    function select_group_count(){
+        Debug::debug(Database::table('products')->showDeleted()
+        ->groupBy(['size'])->select(['size'])->count());
     }
 
     function filter_products(){
@@ -475,6 +486,7 @@ class DumbController extends Controller
         Debug::debug($affected);
     }
   
+    
 
    
 }
