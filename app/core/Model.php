@@ -30,6 +30,7 @@ class Model {
 	protected $h_vals = [];
 	protected $order  = [];
 	protected $randomize = false;
+	protected $distinct  = false;
 	protected $limit;
 	protected $offset;
 	protected $roles;
@@ -265,6 +266,19 @@ class Model {
 		return $this;
 	}
 
+	function addSelect(string $field){
+		$this->fields[] = $field;
+		return $this;
+	}
+
+	function distinct(array $fields = null){
+		if ($fields !=  null)
+			$this->fields = $fields;
+		
+		$this->distinct = true;
+		return $this;
+	}
+
 	protected function _get(array $fields = null, array $order = null, int $limit = NULL, int $offset = null, bool $existance = false)
 	{
 		if (!empty($fields))
@@ -277,6 +291,26 @@ class Model {
 				$conjunction = 'AND';
 
 			$this->removehidden($fields);	
+
+			if ($this->distinct)
+				$remove = [$this->id_name];
+			else
+				$remove = [];
+
+			if ($this->inSchema(['created_at']))
+				$remove[] = 'created_at';
+
+			if ($this->inSchema(['modified_at']))
+				$remove[] = 'modified_at';
+
+			if ($this->inSchema(['deleted_at']))
+				$remove[] = 'deleted_at';
+
+			if (!empty($fields)){
+				$fields = array_diff($fields, $remove);
+			}else{
+				$fields = array_diff($this->getProperties(), $remove);
+			}
 
 			$order  = (!empty($order) && !$this->randomize) ? array_merge($this->order, $order) : $this->order;
 			$limit  = $limit  ?? $this->limit  ?? null;
@@ -301,7 +335,8 @@ class Model {
 			if (empty($fields))
 				$q  = 'SELECT *';
 			else {
-				$q  = "SELECT ".implode(", ", $fields);
+				$distinct = ($this->distinct == true) ? 'DISTINCT' : '';
+				$q  = "SELECT $distinct ".implode(", ", $fields);
 			}
 		} else {
 			$q  = 'SELECT EXISTS (SELECT 1';
@@ -799,6 +834,10 @@ class Model {
 	public function getProperties()
 	{
 		return $this->properties;
+	}
+
+	public function getNotHidden(){
+		return array_diff($this->properties, $this->hidden);
 	}
 
 	public function isNullable(string $field){

@@ -77,6 +77,30 @@ class DumbController extends Controller
         //Debug::debug(Database::table('products')->setFetchMode('ASSOC')->get());
     }
 
+    function distinct(){
+        Debug::debug(Database::table('products')->distinct()->get(['size']));
+
+        // Or
+        Debug::debug(Database::table('products')->distinct(['size'])->get());
+    }
+
+    function distinct2(){
+        Debug::debug(Database::table('users')->distinct()->get());
+    }
+
+    function distinct3(){
+        Debug::debug(Database::table('products')->distinct()->get());
+    }
+
+    // implementar
+    function pluck(){
+        $names = Database::table('products')->setFetchMode('COLUMN')->get(['name']);
+
+        foreach ($names as $name) {
+            echo "$name <br/>";
+        }
+    }
+
     function get_product($id){       
         // Include deleted items
         Debug::debug(Database::table('products')->where(['id' => $id])->showDeleted()->get());
@@ -119,11 +143,18 @@ class DumbController extends Controller
         // newest, first result
         Debug::debug(Database::table('products')->newest()->first());
     }
-
+    
     function random(){
         Debug::debug(Database::table('products')->random()->limit(5)->get(['id', 'name']));
 
         Debug::debug(Database::table('products')->random()->select(['id', 'name'])->first());
+    }
+
+    /*
+        select and addSelect
+    */
+    function select() {
+        Debug::debug(Database::table('products')->random()->select(['id', 'name'])->addSelect('cost')->first());
     }
 
     function filter_products(){
