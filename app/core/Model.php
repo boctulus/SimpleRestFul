@@ -279,6 +279,12 @@ class Model {
 		return $this;
 	}
 
+	function pluck(string $field){
+		$this->setFetchMode('COLUMN');
+		$this->fields = [$field];
+		return $this;
+	}
+
 	protected function _get(array $fields = null, array $order = null, int $limit = NULL, int $offset = null, bool $existance = false)
 	{
 		if (!empty($fields))

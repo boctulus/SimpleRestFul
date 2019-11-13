@@ -94,7 +94,7 @@ class DumbController extends Controller
 
     // implementar
     function pluck(){
-        $names = Database::table('products')->setFetchMode('COLUMN')->get(['name']);
+        $names = Database::table('products')->pluck('size')->get();
 
         foreach ($names as $name) {
             echo "$name <br/>";
