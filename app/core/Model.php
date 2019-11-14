@@ -32,6 +32,10 @@ class Model {
 	protected $raw_order = [];
 	protected $select_raw_q;
 	protected $select_raw_vals = [];
+	protected $where_raw_q;
+	protected $where_raw_vals  = [];
+	protected $having_raw_q;
+	protected $having_raw_vals = [];
 	protected $randomize = false;
 	protected $distinct  = false;
 	protected $limit;
@@ -285,12 +289,38 @@ class Model {
 	}
 
 	function selectRaw(string $q, array $vals = null){
-		if (substr_count($q, '?') != count($vals))
+		if (substr_count($q, '?') != count((array) $vals))
 			throw new \InvalidArgumentException("Number of ? are not consitent with the number of passed values");
 		
 		$this->select_raw_q = $q;
-		$this->select_raw_vals = $vals;
-		// ...
+
+		if ($vals != null)
+			$this->select_raw_vals = $vals;
+
+		return $this;
+	}
+
+	function whereRaw(string $q, array $vals = null){
+		if (substr_count($q, '?') != count((array) $vals))
+			throw new \InvalidArgumentException("Number of ? are not consitent with the number of passed values");
+		
+		$this->where_raw_q = $q;
+
+		if ($vals != null)
+			$this->where_raw_vals = $vals;
+			
+		return $this;
+	}
+
+	function havingRaw(string $q, array $vals = null){
+		if (substr_count($q, '?') != count($vals))
+			throw new \InvalidArgumentException("Number of ? are not consitent with the number of passed values");
+		
+		$this->having_raw_q = $q;
+
+		if ($vals != null)
+			$this->having_raw_vals = $vals;
+			
 		return $this;
 	}
 
@@ -299,12 +329,6 @@ class Model {
 			$this->fields = $fields;
 		
 		$this->distinct = true;
-		return $this;
-	}
-
-	function pluck(string $field){
-		$this->setFetchMode('COLUMN');
-		$this->fields = [$field];
 		return $this;
 	}
 
@@ -393,15 +417,21 @@ class Model {
 				}
 					
 			}else{
+				$q = 'SELECT ';
+
+				//Debug::debug($fields);
+				
 				// SELECT RAW
 				if (!empty($this->select_raw_q)){
-					$q  = 'SELECT '. $this->select_raw_q;
+					$distinct = ($this->distinct == true) ? 'DISTINCT' : '';
+					$other_fields = !empty($fields) ? ', '.implode(", ", $fields) : '';
+					$q  .= $distinct .' '.$this->select_raw_q. $other_fields;
 				}else {
 					if (empty($fields))
-						$q  = 'SELECT *';
+						$q  .= '*';
 					else {
 						$distinct = ($this->distinct == true) ? 'DISTINCT' : '';
-						$q  = "SELECT $distinct ".implode(", ", $fields);
+						$q  .= $distinct.' '.implode(", ", $fields);
 					}
 				}					
 			}
@@ -432,10 +462,18 @@ class Model {
 
 		$q  .= $joins;
 		
-		if (empty($this->where))
+		// WHERE
+		$where = '';
+
+		if (!empty($this->where_raw_q))
+			$where = $this->where_raw_q.' ';
+
+		if (!empty($this->where))
+			$where .=( !empty($where) ? ' AND ' : '' ). implode(' AND ', $this->where);
+
+		if (empty($where))
 			$where = '1 = 1';
-		else
-			$where = implode(' AND ', $this->where);
+
 
 		$shift = substr_count($where, '?');	
 		
@@ -449,10 +487,20 @@ class Model {
 		$group = (!empty($this->group)) ? 'GROUP BY '.implode(',', $this->group) : '';
 		$q  .= " $group";
 
-		$having_str = implode(' AND ', $this->having);
+	
+		// HAVING
 
-		$having = (!empty($this->having)) ? 'HAVING '.$having_str : '';
-		$q  .= " $having";
+		$having = ''; 
+		if (!empty($this->having_raw_q)){
+			$having = 'HAVING '.$this->having_raw_q; 
+
+			if (!empty($this->having))
+				$having .= ' AND '.implode(' AND ', $this->having);
+		}else{
+			$having .= 'HAVING '.implode(' AND ', $this->having);
+		}
+
+		$q .= ' '.$having;
 
 
 		if ($this->randomize)
@@ -492,9 +540,29 @@ class Model {
 				$type = \PDO::PARAM_STR;	
 
 			$st->bindValue($ix+1, $val, $type);
+			//echo "Bind: ".($ix+1)." - $val ($type)\n";
 		}
 		
+		$sh2 = count($this->select_raw_vals);	
+
+		foreach($this->where_raw_vals as $ix => $val){
 				
+			if(is_null($val)){
+				$type = \PDO::PARAM_NULL;
+			}elseif(is_int($val))
+				$type = \PDO::PARAM_INT;
+			elseif(is_bool($val))
+				$type = \PDO::PARAM_BOOL;
+			else 
+				$type = \PDO::PARAM_STR;	
+
+			$st->bindValue($ix +1 + $sh2, $val, $type);
+			//echo "Bind: ".($ix+1)." - $val ($type)\n";
+		}
+		
+		$sh3 = count($this->where_raw_vals);	
+
+
 		foreach($values as $ix => $val){
 				
 			if(is_null($val)){
@@ -509,9 +577,27 @@ class Model {
 			elseif(is_string($val))
 				$type = \PDO::PARAM_STR;	
 
-			$st->bindValue($ix+1, $val, $type);
+			$st->bindValue($ix +1 + $sh2 + $sh3, $val, $type);
 			//echo "Bind: ".($ix+1)." - $val ($type)\n";
 		}
+
+
+		foreach($this->having_raw_vals as $ix => $val){
+				
+			if(is_null($val)){
+				$type = \PDO::PARAM_NULL;
+			}elseif(is_int($val))
+				$type = \PDO::PARAM_INT;
+			elseif(is_bool($val))
+				$type = \PDO::PARAM_BOOL;
+			else 
+				$type = \PDO::PARAM_STR;	
+
+			$st->bindValue($ix +1 + $sh2, $val, $type);
+			//echo "Bind: ".($ix+1)." - $val ($type)\n";
+		}
+		
+		$sh3 = count($this->having_raw_vals);	
 
 			
 		if (!$existance && $paginator !== null){
@@ -548,6 +634,18 @@ class Model {
 
 		if ($st->execute())
 			return (bool) $st->fetch(\PDO::FETCH_NUM)[0];
+		else
+			return false;	
+	}
+
+	function pluck(string $field){
+		$this->setFetchMode('COLUMN');
+		$this->fields = [$field];
+
+		$st = $this->_get();
+	
+		if ($st->execute())
+			return $st->fetchAll($this->fetch_mode);
 		else
 			return false;	
 	}

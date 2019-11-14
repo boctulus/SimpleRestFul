@@ -100,7 +100,7 @@ class DumbController extends Controller
     }
 
     function pluck(){
-        $names = Database::table('products')->pluck('size')->get();
+        $names = Database::table('products')->pluck('size');
 
         foreach ($names as $name) {
             echo "$name <br/>";
@@ -224,9 +224,41 @@ class DumbController extends Controller
     /*
         RAW select
 
+        pluck() no se puede usar con selectRaw() si posee un "as" pero la forma de lograr lo mismo
+        es seteando el "fetch mode" en "COLUMN"
+
+        Investigar como funciona el pluck() de Larvel
+        https://stackoverflow.com/a/40964361/980631
     */
     function select2() {
-        Debug::debug(Database::table('products')->selectRaw('cost * ? as cost_after_inc', [1.05])->pluck('cost_after_inc')->get());
+        Debug::debug(Database::table('products')->setFetchMode('COLUMN')
+        ->selectRaw('cost * ? as cost_after_inc', [1.05])->get());
+    }
+
+    function select3() {
+        Debug::debug(Database::table('products')->setFetchMode('COLUMN')
+        ->where([ ['cost', 100, '>='], ['size', '1L'], ['belongs_to', 90] ])
+        ->selectRaw('cost * ? as cost_after_inc', [1.05])->get());
+    }
+
+    function select3a() {
+        Debug::debug(Database::table('products')
+        ->where([ ['cost', 100, '>='], ['size', '1L'], ['belongs_to', 90] ])
+        ->selectRaw('cost * ? as cost_after_inc', [1.05])->distinct()->get());
+    }
+
+    function select3b() {
+        Debug::debug(Database::table('products')->setFetchMode('COLUMN')
+        ->where([ ['cost', 100, '>='], ['size', '1L'], ['belongs_to', 90] ])
+        ->selectRaw('cost * ? as cost_after_inc', [1.05])->distinct()->get());
+    }
+
+    function select4() {
+        Debug::debug(Database::table('products')
+        ->where([ ['cost', 100, '>='], ['size', '1L'], ['belongs_to', 90] ])
+        ->selectRaw('cost * ? as cost_after_inc', [1.05])
+        ->addSelect('name', 'cost')
+        ->get());
     }
 
     /*
@@ -253,7 +285,7 @@ class DumbController extends Controller
         $conn    = Database::getConnection();
         
         Debug::debug((new ProductsModel($conn))->showDeleted()->where([ 
-            ['size', '3L']
+            ['size', '2L']
         ])->get());
     
         Debug::debug((new ProductsModel($conn))->where([ 
@@ -281,6 +313,15 @@ class DumbController extends Controller
             ['cost', 200, '>='],
             ['cost', 270, '<=']
         ])->get());            
+    }
+
+
+    function where_raw(){
+        Debug::debug(Database::table('products')
+        ->where(['belongs_to' => 90])
+        ->whereRaw('cost < IF(size = "1L", ?, 100)', [300])
+        ->orderBy(['cost' => 'ASC'])
+        ->get());
     }
 
     
@@ -358,19 +399,30 @@ class DumbController extends Controller
         En el caso de múltiples condiciones estas se concatenan implícitamente con "AND" excepto 
         se espcifique "OR" como segundo parámetro de having()    
     */     
-    function having(){
-        
+    function having(){        
         Debug::debug(Database::table('products')
             ->groupBy(['cost', 'size'])
             ->having(['cost', 100])
-            ->get(['cost', 'size']));   
+            ->get(['cost', 'size']));
+    }    
 
+    function having2(){
         Debug::debug(Database::table('products')
             ->groupBy(['cost', 'size'])
             ->having([  ['cost', 100, '>='],
                         ['size' => '1L'] ], 'OR')
-            ->get(['cost', 'size']));    
-    
+            ->get(['cost', 'size'])); 
+    }
+
+    /*
+        RAW HAVING
+    */
+    function having3(){
+        Debug::debug(Database::table('products')
+            ->selectRaw('SUM(cost) as total_cost')
+            ->groupBy(['belongs_to']) 
+            ->havingRaw('SUM(cost) > ?', [1000])
+            ->get());
     }
 
     function joins(){
