@@ -430,8 +430,7 @@ class DumbController extends Controller
         $o = Database::table('other_permissions', 'op');
         $rows =   $o->join('folders', 'op.folder_id', '=',  'folders.id')
                     ->join('users', 'folders.belongs_to', '=', 'users.id')
-                    ->join('user_role', 'users.id', '=', 'user_role.user_id')
-                    //->join('roles', 'user_role.role_id', '=', 'roles.id') 
+                    ->join('user_roles', 'users.id', '=', 'user_roles.user_id')
                     ->where([
                         ['guest', 1],
                         ['resource_table', 'products'],
@@ -576,11 +575,35 @@ class DumbController extends Controller
         Debug::debug($affected);
     }
   
+    /*
+        Intento #1 de sub-consultas en el WHERE
+
+        SELECT id, name, size, cost, belongs_to FROM products WHERE belongs_to IN (SELECT id FROM users WHERE password IS NULL);
+
+    */
     function test(){
-        Debug::debug(Database::table('products')
-        ->groupBy(['size'])->select(['size'])
-        ->avg('cost'));
-    
+        $q = Database::table('products')->showDeleted()
+        ->select(['id', 'name', 'size', 'cost', 'belongs_to'])
+        ->whereRaw('belongs_to IN (SELECT id FROM users WHERE password IS NULL)')
+        ->get();
+
+        Debug::debug($q);    
+    }
+
+    function test2(){
+        $sub = Database::table('users')
+        ->where(['password', NULL]);
+
+
+        Debug::debug($sub->toSql());
+        exit; //
+
+        $q = Database::table('products')->showDeleted()
+        ->select(['id', 'name', 'size', 'cost', 'belongs_to'])
+        ->where("belongs_to IN ({$sub->toSql()})")
+        ->get();
+
+        Debug::debug($q);    
     }
 
    

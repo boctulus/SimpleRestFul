@@ -9,6 +9,10 @@ http://simplerest.lan/api/products?name[endsWith]=B
     "error_detail": null
 }
 
+- Debería saltar error ante algo como
+
+&cost[locked]=1
+
 - Usar un folder_id en cada entidad en la que pretendo utilizar folders y usar éste en vez de la combinación entre el user_ud y el nombre del "workspace" como identificador de carpeta.
 
 Objetivo: poder crear recursos de nuestra propiedad en carpetas ajenas donde lógicamente poseemos permiso de lectura.
