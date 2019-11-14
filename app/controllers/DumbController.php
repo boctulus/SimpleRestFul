@@ -112,7 +112,8 @@ class DumbController extends Controller
         Debug::debug(Database::table('products')->where(['id' => $id])->showDeleted()->get());
     }
     
-    function exists($uid){ 
+    function exists(){
+        $uid = 103; 
         Debug::debug(Database::table('products')->where(['belongs_to' => $uid])->exists());
 
         Debug::debug(Database::table('products')->where([ 
@@ -423,6 +424,8 @@ class DumbController extends Controller
             ->where(['size', '1L'])
             ->groupBy(['belongs_to']) 
             ->havingRaw('SUM(cost) > ?', [500])
+            ->limit(3)
+            ->offset(1)
             ->get());
     }
 
@@ -435,7 +438,9 @@ class DumbController extends Controller
                         ['guest', 1],
                         ['resource_table', 'products'],
                         ['r', 1]
-                    ])->get();  
+                    ])
+                    ->orderByRaw('users.id DESC')
+                    ->get();  
         
         Debug::debug($rows);
     }

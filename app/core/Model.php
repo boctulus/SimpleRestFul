@@ -40,6 +40,7 @@ class Model {
 	protected $distinct  = false;
 	protected $limit;
 	protected $offset;
+	protected $pag_vals = [];
 	protected $roles;
 	protected $validator;
 	protected $fetch_mode = \PDO::FETCH_OBJ;
@@ -379,6 +380,8 @@ class Model {
 					$paginator->orders = $order;
 					$paginator->properties = $this->properties;
 					$paginator->compile();
+
+					$this->pag_vals = $paginator->getBinding();
 				}catch (\Exception $e){
 					throw new \Exception("Pagination error: {$e->getMessage()}");
 				}
@@ -475,7 +478,8 @@ class Model {
 			$where = '1 = 1';
 
 
-		$shift = substr_count($where, '?');	
+		//$shift = substr_count($where, '?');	
+
 		
 		$q  .= "WHERE $where";
 
@@ -540,7 +544,7 @@ class Model {
 			else 
 				$type = \PDO::PARAM_STR;	
 
-			$st->bindValue($ix+1, $val, $type);
+			$st->bindValue($ix +1, $val, $type);
 			//echo "Bind: ".($ix+1)." - $val ($type)\n";
 		}
 		
@@ -600,13 +604,12 @@ class Model {
 			//echo "Bind: ".($ix+1)." - $val ($type)\n";
 		}
 
-
+		$sh5 = count($this->having_raw_vals);
 			
 		if (!$existance && $paginator !== null){
-			$bindings = $paginator->getBinding();
+			$bindings = $this->pag_vals;
 			foreach($bindings as $ix => $binding){
-				$st->bindValue($shift +$ix +1, $binding[1], $binding[2]);
-				//echo "Bind: ".($shift +$ix +1)." - $binding[1] ($binding[2])\n";
+				$st->bindValue($ix +1 + $sh2 + $sh3 + $sh4 +$sh5, $binding[1], $binding[2]);
 			}	
 		}			
 
