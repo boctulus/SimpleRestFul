@@ -17,7 +17,7 @@ class Model {
 	protected $fillable;
 	protected $hidden;
 	protected $properties = [];
-	protected $joins = [];
+	protected $joins  = [];
 	protected $show_deleted = false;
 	protected $conn;
 	protected $fields = [];
@@ -29,6 +29,9 @@ class Model {
 	protected $w_vals = [];
 	protected $h_vals = [];
 	protected $order  = [];
+	protected $raw_order = [];
+	protected $select_raw_q;
+	protected $select_raw_vals = [];
 	protected $randomize = false;
 	protected $distinct  = false;
 	protected $limit;
@@ -228,6 +231,11 @@ class Model {
 		return $this;
 	}
 
+	function orderByRaw(string $o){
+		$this->raw_order[] = $o;
+		return $this;
+	}
+
 	function take(int $limit){
 		$this->limit = $limit;
 		return $this;
@@ -273,6 +281,16 @@ class Model {
 
 	function addSelect(string $field){
 		$this->fields[] = $field;
+		return $this;
+	}
+
+	function selectRaw(string $q, array $vals = null){
+		if (substr_count($q, '?') != count($vals))
+			throw new \InvalidArgumentException("Number of ? are not consitent with the number of passed values");
+		
+		$this->select_raw_q = $q;
+		$this->select_raw_vals = $vals;
+		// ...
 		return $this;
 	}
 
@@ -375,12 +393,17 @@ class Model {
 				}
 					
 			}else{
-				if (empty($fields))
-					$q  = 'SELECT *';
-				else {
-					$distinct = ($this->distinct == true) ? 'DISTINCT' : '';
-					$q  = "SELECT $distinct ".implode(", ", $fields);
-				}
+				// SELECT RAW
+				if (!empty($this->select_raw_q)){
+					$q  = 'SELECT '. $this->select_raw_q;
+				}else {
+					if (empty($fields))
+						$q  = 'SELECT *';
+					else {
+						$distinct = ($this->distinct == true) ? 'DISTINCT' : '';
+						$q  = "SELECT $distinct ".implode(", ", $fields);
+					}
+				}					
 			}
 		} else {
 			$q  = 'SELECT EXISTS (SELECT 1';
@@ -389,8 +412,8 @@ class Model {
 		$q  .= ' FROM '.$this->table_name. ' '.(!empty($this->table_alias) ? 'as '.$this->table_alias : '');
 
 		////////////////////////
-		$values = array_merge($this->w_vals, $this->h_vals);
-		$vars   = array_merge($this->w_vars, $this->h_vars);
+		$values = array_merge($this->w_vals, $this->h_vals); 
+		$vars   = array_merge($this->w_vars, $this->h_vars); 
 		////////////////////////
 
 		// Validación
@@ -431,8 +454,13 @@ class Model {
 		$having = (!empty($this->having)) ? 'HAVING '.$having_str : '';
 		$q  .= " $having";
 
+
 		if ($this->randomize)
 			$q .= ' ORDER BY RAND() ';
+		else {
+			if (!empty($this->raw_order))
+				$q .= ' ORDER BY '.implode(', ', $this->raw_order);
+		}
 		
 		if (!$existance && $paginator!==null){
 			$q .= $paginator->getQuery();
@@ -444,12 +472,28 @@ class Model {
 		//DEBUG::debug($q, 'Query:');
 		//DEBUG::debug($vars, 'Vars:');
 		//DEBUG::debug($values, 'Vals:');
-		
+		//exit;
 		//var_dump($q);
 		//var_export($vars);
 		//var_export($values);
 
 		$st = $this->conn->prepare($q);
+
+
+		foreach($this->select_raw_vals as $ix => $val){
+				
+			if(is_null($val)){
+				$type = \PDO::PARAM_NULL;
+			}elseif(is_int($val))
+				$type = \PDO::PARAM_INT;
+			elseif(is_bool($val))
+				$type = \PDO::PARAM_BOOL;
+			else 
+				$type = \PDO::PARAM_STR;	
+
+			$st->bindValue($ix+1, $val, $type);
+		}
+		
 				
 		foreach($values as $ix => $val){
 				

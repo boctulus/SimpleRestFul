@@ -27,6 +27,7 @@ Más
 https://scotch.io/tutorials/understanding-laravel-environment-variables
 https://medium.com/@hfally/how-to-create-an-environment-variable-file-like-laravel-symphonys-env-37c20fc23e72
 https://laravel.com/docs/5.7/configuration
+https://medium.com/@sagarmaheshwary31/laravel-5-8-from-scratch-config-env-migrations-and-todos-crud-7c771bcac802
 https://github.com/vlucas/phpdotenv
 
 - Implementar un paginador con enlaces a nivel de API Rest como:
@@ -41,9 +42,25 @@ https://stackoverflow.com/questions/45359615/laravel-query-builder-where-and-or-
 
 - Revisar los conectores de fb y google
 
+- Mensajes personalizados para el validador como en Laravel
+
+  //validation rules
+    $rules = [
+        'title' => "required|string|unique:todos,title,{$id}|min:2|max:191", //Using double quotes
+        'body'  => 'required|string|min:5|max:1000',
+    ];
+    
+    //custom validation error messages
+    $messages = [
+        'title.unique' => 'Todo title should be unique',
+    ];
+
+
 - Intentar habilitar el ACL para Controllers != ApiController
 
-- Implementar control de nullables a nivel de Modelo !
+- Considerar usar 'seek method' en vez de OFFSET como método de optimización de queries
+
+https://www.eversql.com/faster-pagination-in-mysql-why-order-by-with-limit-and-offset-is-slow/
 
 - Máscara de campos y valores accesibles por un usuario según su rol o... hidden y filled con roles 
 a nivel de API

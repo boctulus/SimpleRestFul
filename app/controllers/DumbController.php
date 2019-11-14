@@ -82,6 +82,13 @@ class DumbController extends Controller
 
         // Or
         Debug::debug(Database::table('products')->distinct(['size'])->get());
+
+        // Or
+        Debug::debug(Database::table('products')->select(['size'])->distinct()->get());
+    }
+
+    function distinct1(){
+        Debug::debug(Database::table('products')->select(['size', 'cost'])->distinct()->get());
     }
 
     function distinct2(){
@@ -92,7 +99,6 @@ class DumbController extends Controller
         Debug::debug(Database::table('products')->distinct()->get());
     }
 
-    // implementar
     function pluck(){
         $names = Database::table('products')->pluck('size')->get();
 
@@ -115,7 +121,7 @@ class DumbController extends Controller
         ])->exists());
 
         $o = Database::table('other_permissions', 'op');
-        Debug::debug($o->join('folders', 'op.folder_id', '=',  'folders.id')
+        Debug::debug($o ->join('folders', 'op.folder_id', '=',  'folders.id')
                         ->join('users', 'folders.belongs_to', '=', 'users.id')
                         ->join('user_roles', 'users.id', '=', 'user_roles.user_id')
                         //->join('roles', 'user_role.role_id', '=', 'roles.id') 
@@ -216,6 +222,14 @@ class DumbController extends Controller
     }
 
     /*
+        RAW select
+
+    */
+    function select2() {
+        Debug::debug(Database::table('products')->selectRaw('cost * ? as cost_after_inc', [1.05])->pluck('cost_after_inc')->get());
+    }
+
+    /*
         La ventaja de usar select() - por sobre usar get() - es que se ejecuta antes que count() permitiendo combinar selección de campos con COUNT() 
 
         SELECT size, COUNT(*) FROM products GROUP BY size
@@ -269,6 +283,10 @@ class DumbController extends Controller
         ])->get());            
     }
 
+    
+    /*
+        SELECT * FROM products WHERE 1 = 1 AND deleted_at IS NULL ORDER BY cost ASC, id DESC LIMIT 1, 4
+    */
     function order(){    
         Debug::debug(Database::table('products')->orderBy(['cost'=>'ASC', 'id'=>'DESC'])->take(4)->offset(1)->get());
 
@@ -281,10 +299,19 @@ class DumbController extends Controller
         Debug::debug(Database::table('products')->take(4)->offset(1)->get(null, ['cost'=>'ASC', 'id'=>'DESC']));
     }
 
+    /*
+        RAW
+        
+        SELECT * FROM products WHERE 1 = 1 AND deleted_at IS NULL ORDER BY locked + active ASC
+    */
+    function order2(){
+        Debug::debug(Database::table('products')->orderByRaw('locked * active DESC')->get()); 
+    }
+
     function grouping(){
         Debug::debug(Database::table('products')->where([ 
             ['cost', 100, '>=']
-        ])->orderBy(['size' => 'DESC'])->groupBy(['size'])->get(['size', 'AVG(cost)']));
+        ])->orderBy(['size' => 'DESC'])->groupBy(['size'])->select(['size'])->avg('cost'));
     }
 
     function where(){        
