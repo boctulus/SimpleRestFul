@@ -420,8 +420,9 @@ class DumbController extends Controller
     function having3(){
         Debug::debug(Database::table('products')
             ->selectRaw('SUM(cost) as total_cost')
+            ->where(['size', '1L'])
             ->groupBy(['belongs_to']) 
-            ->havingRaw('SUM(cost) > ?', [1000])
+            ->havingRaw('SUM(cost) > ?', [500])
             ->get());
     }
 

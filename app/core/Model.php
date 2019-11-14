@@ -497,7 +497,8 @@ class Model {
 			if (!empty($this->having))
 				$having .= ' AND '.implode(' AND ', $this->having);
 		}else{
-			$having .= 'HAVING '.implode(' AND ', $this->having);
+			if (!empty($this->having))
+				$having .= 'HAVING '.implode(' AND ', $this->having);
 		}
 
 		$q .= ' '.$having;
@@ -581,6 +582,8 @@ class Model {
 			//echo "Bind: ".($ix+1)." - $val ($type)\n";
 		}
 
+		$sh4 = count($values);
+
 
 		foreach($this->having_raw_vals as $ix => $val){
 				
@@ -593,11 +596,10 @@ class Model {
 			else 
 				$type = \PDO::PARAM_STR;	
 
-			$st->bindValue($ix +1 + $sh2, $val, $type);
+			$st->bindValue($ix +1 + $sh2 + $sh3 + $sh4, $val, $type);
 			//echo "Bind: ".($ix+1)." - $val ($type)\n";
 		}
-		
-		$sh3 = count($this->having_raw_vals);	
+
 
 			
 		if (!$existance && $paginator !== null){
