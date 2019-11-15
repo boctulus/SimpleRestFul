@@ -12,7 +12,7 @@ class Model {
 	protected $table_name;
 	protected $table_alias = '';
 	protected $id_name = 'id';
-	protected $schema;
+	protected $schema   = [];
 	protected $nullable = [];
 	protected $fillable;
 	protected $hidden;
@@ -36,6 +36,7 @@ class Model {
 	protected $where_raw_vals  = [];
 	protected $having_raw_q;
 	protected $having_raw_vals = [];
+	protected $table_raw_q;
 	protected $randomize = false;
 	protected $distinct  = false;
 	protected $to_merge_bindings = [];
@@ -46,7 +47,7 @@ class Model {
 	protected $validator;
 	protected $fetch_mode = \PDO::FETCH_OBJ;
 	
-
+	
 	/*
 		Chequear en cada método si hay una conexión 
 	*/
@@ -58,8 +59,8 @@ class Model {
 			$this->conn->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 		}
 
-		if (empty($this->schema))
-			throw new \Exception ("Schema is empty!");
+		//if (empty($this->schema))
+		//	throw new \Exception ("Schema is empty!");
 
 		$this->properties = array_keys($this->schema);
 
@@ -123,6 +124,13 @@ class Model {
 		return $this;
 	}
 
+	protected function from(){
+		if (!empty($this->table_raw_q))
+			return $this->table_raw_q;
+
+		return $this->table_name. ' '.(!empty($this->table_alias) ? 'as '.$this->table_alias : '');
+	}
+
 	/**
 	 * removehidden
 	 *
@@ -130,7 +138,7 @@ class Model {
 	 *
 	 * @return void
 	 */
-	private function removehidden(&$fields)
+	protected function removehidden(&$fields)
 	{	
 		if (!empty($this->hidden)){
 			if (empty($fields)) {
@@ -346,6 +354,10 @@ class Model {
 		return $this;
 	}
 
+	function fromRaw(string $q){
+		$this->table_raw_q = q;
+	}
+
 	function toSql(array $fields = null, array $order = null, int $limit = NULL, int $offset = null, bool $existance = false, $aggregate_func = null, $aggregate_field = null)
 	{
 		// Agregar validaciones ?
@@ -462,6 +474,10 @@ class Model {
 
 		$q  .= ' FROM '.$this->table_name. ' '.(!empty($this->table_alias) ? 'as '.$this->table_alias : '');
 
+		////////////////////////
+		$values = array_merge($this->w_vals, $this->h_vals); 
+		$vars   = array_merge($this->w_vars, $this->h_vars); 
+		////////////////////////
 
 		// Validación
 		if (!empty($this->validator)){

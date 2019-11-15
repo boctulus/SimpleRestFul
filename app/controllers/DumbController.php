@@ -586,7 +586,7 @@ class DumbController extends Controller
         SELECT id, name, size, cost, belongs_to FROM products WHERE belongs_to IN (SELECT id FROM users WHERE password IS NULL);
 
     */
-    function test(){
+    function sub(){
         $st = Database::table('products')->showDeleted()
         ->select(['id', 'name', 'size', 'cost', 'belongs_to'])
         ->whereRaw('belongs_to IN (SELECT id FROM users WHERE password IS NULL)')
@@ -601,7 +601,7 @@ class DumbController extends Controller
         SELECT id, name, size, cost, belongs_to FROM products WHERE belongs_to IN (SELECT id FROM users WHERE password IS NULL);
 
     */
-    function test2(){
+    function sub2(){
         $sub = Database::table('users')
         ->select(['id'])
         ->whereRaw('password IS NULL');
@@ -615,9 +615,9 @@ class DumbController extends Controller
     }
 
     /*
-        Subconsultas en el WHERE
+        Subconsultas en el WHERE --ok
     */
-    function test3(){
+    function sub3(){
         $sub = Database::table('users')->showDeleted()
         ->select(['id'])
         ->whereRaw('confirmed_email = 1')
@@ -633,7 +633,7 @@ class DumbController extends Controller
         Debug::debug($res);    
     }
 
-    function test3b(){
+    function sub3b(){
         $sub = Database::table('users')->showDeleted()
         ->selectRaw('users.id')
         ->join('user_roles', 'users.id', '=', 'user_roles.user_id')
@@ -651,7 +651,7 @@ class DumbController extends Controller
         Debug::debug($res);    
     }
 
-    function test3c(){
+    function sub3c(){
         $sub = Database::table('users')->showDeleted()
         ->selectRaw('users.id')
         ->join('user_roles', 'users.id', '=', 'user_roles.user_id')
@@ -668,6 +668,23 @@ class DumbController extends Controller
 
         Debug::debug($res);    
     }
+
+    /*
+        Intento:
+
+        SELECT COUNT(*)  FROM (SELECT size FROM products GROUP BY size) as sub;
+    */
+    function sub4(){
+        $sub = Database::table('products')->showDeleted()
+        ->groupBy(['size']);
+
+
+        $m = new \simplerest\core\Model();
+        $res = $m->fromRaw("({$sub->toSql()}) as sub")->count();
+
+        Debug::debug($res);    
+    }
+    
 
 
 
