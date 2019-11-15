@@ -333,7 +333,7 @@ class Model {
 		return $this;
 	}
 
-	protected function _get(array $fields = null, array $order = null, int $limit = NULL, int $offset = null, bool $existance = false, $aggregate_func = null, $aggregate_field = null)
+	function toSql(array $fields = null, array $order = null, int $limit = NULL, int $offset = null, bool $existance = false, $aggregate_func = null, $aggregate_field = null)
 	{
 		// Agregar validaciones ?
 
@@ -532,14 +532,13 @@ class Model {
 		//var_export($vars);
 		//var_export($values);
 
-		$st = $this->conn->prepare($q);		
-
-		return $st;		
+		return $q;	
 	}
 
-
-	function bind($st)
+	function bind($q)
 	{
+		$st = $this->conn->prepare($q);		
+
 		////////////////////////
 		$values = array_merge($this->w_vals, $this->h_vals); 
 		$vars   = array_merge($this->w_vars, $this->h_vars); 
@@ -622,12 +621,14 @@ class Model {
 		$bindings = $this->pag_vals;
 		foreach($bindings as $ix => $binding){
 			$st->bindValue($ix +1 + $sh2 + $sh3 + $sh4 +$sh5, $binding[1], $binding[2]);
-		}				
+		}		
+		
+		return $st;	
 	}
 
 	function get(array $fields = null, array $order = null, int $limit = NULL, int $offset = null){
-		$st = $this->_get($fields, $order, $limit, $offset);
-		$this->bind($st);
+		$q = $this->toSql($fields, $order, $limit, $offset);
+		$st = $this->bind($q);
 
 		if ($st->execute())
 			return $st->fetchAll($this->fetch_mode);
@@ -636,8 +637,8 @@ class Model {
 	}
 
 	function first(array $fields = null, array $order = null, int $limit = NULL, int $offset = null){
-		$st = $this->_get($fields, $order, $limit, $offset);
-		$this->bind($st);
+		$q = $this->toSql($fields, $order, $limit, $offset);
+		$st = $this->bind($q);
 
 		if ($st->execute())
 			return $st->fetch($this->fetch_mode);
@@ -646,8 +647,8 @@ class Model {
 	}
 	
 	function exists(){
-		$st = $this->_get(null, null, null, null, true);
-		$this->bind($st);
+		$q = $this->toSql(null, null, null, null, true);
+		$st = $this->bind($q);
 
 		if ($st->execute())
 			return (bool) $st->fetch(\PDO::FETCH_NUM)[0];
@@ -659,8 +660,8 @@ class Model {
 		$this->setFetchMode('COLUMN');
 		$this->fields = [$field];
 
-		$st = $this->_get();
-		$this->bind($st);
+		$q = $this->toSql();
+		$st = $this->bind($q);
 	
 		if ($st->execute())
 			return $st->fetchAll($this->fetch_mode);
@@ -669,8 +670,8 @@ class Model {
 	}
 
 	function avg($field){
-		$st = $this->_get(null, null, null, null, false, 'AVG', $field);
-		$this->bind($st);
+		$q = $this->toSql(null, null, null, null, false, 'AVG', $field);
+		$st = $this->bind($q);
 
 		if (empty($this->group)){
 			if ($st->execute())
@@ -686,8 +687,8 @@ class Model {
 	}
 
 	function sum($field){
-		$st = $this->_get(null, null, null, null, false, 'SUM', $field);
-		$this->bind($st);
+		$q = $this->toSql(null, null, null, null, false, 'SUM', $field);
+		$st = $this->bind($q);
 
 		if (empty($this->group)){
 			if ($st->execute())
@@ -703,8 +704,8 @@ class Model {
 	}
 
 	function min($field){
-		$st = $this->_get(null, null, null, null, false, 'MIN', $field);
-		$this->bind($st);
+		$q = $this->toSql(null, null, null, null, false, 'MIN', $field);
+		$st = $this->bind($q);
 
 		if (empty($this->group)){
 			if ($st->execute())
@@ -720,8 +721,8 @@ class Model {
 	}
 
 	function max($field){
-		$st = $this->_get(null, null, null, null, false, 'MAX', $field);
-		$this->bind($st);
+		$q = $this->toSql(null, null, null, null, false, 'MAX', $field);
+		$st = $this->bind($q);
 
 		if (empty($this->group)){
 			if ($st->execute())
@@ -737,8 +738,8 @@ class Model {
 	}
 
 	function count($field = null){
-		$st = $this->_get(null, null, null, null, false, 'COUNT', $field);
-		$this->bind($st);
+		$q = $this->toSql(null, null, null, null, false, 'COUNT', $field);
+		$st = $this->bind($q);
 
 		if (empty($this->group)){
 			if ($st->execute())
