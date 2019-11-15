@@ -37,6 +37,7 @@ class Model {
 	protected $having_raw_q;
 	protected $having_raw_vals = [];
 	protected $table_raw_q;
+	protected $from_raw_vals   = [];
 	protected $randomize = false;
 	protected $distinct  = false;
 	protected $to_merge_bindings = [];
@@ -126,7 +127,7 @@ class Model {
 
 	protected function from(){
 		if (!empty($this->table_raw_q))
-			return $this->table_raw_q;
+			return $this->table_raw_q. ' ';
 
 		return $this->table_name. ' '.(!empty($this->table_alias) ? 'as '.$this->table_alias : '');
 	}
@@ -329,7 +330,6 @@ class Model {
 		}
 		
 		$this->where_raw_q = $q;
-
 	
 		return $this;
 	}
@@ -355,7 +355,8 @@ class Model {
 	}
 
 	function fromRaw(string $q){
-		$this->table_raw_q = q;
+		$this->table_raw_q = $q;
+		return $this;
 	}
 
 	function toSql(array $fields = null, array $order = null, int $limit = NULL, int $offset = null, bool $existance = false, $aggregate_func = null, $aggregate_field = null)
@@ -472,7 +473,7 @@ class Model {
 			$q  = 'SELECT EXISTS (SELECT 1';
 		}	
 
-		$q  .= ' FROM '.$this->table_name. ' '.(!empty($this->table_alias) ? 'as '.$this->table_alias : '');
+		$q  .= ' FROM '.$this->from();
 
 		////////////////////////
 		$values = array_merge($this->w_vals, $this->h_vals); 
@@ -552,9 +553,9 @@ class Model {
 		if ($existance)
 			$q .= ')';
 
-		//DEBUG::debug($q, 'Query:');
-		//DEBUG::debug($vars, 'Vars:');
-		//DEBUG::debug($values, 'Vals:');
+		DEBUG::debug($q, 'Query:');
+		DEBUG::debug($vars, 'Vars:');
+		DEBUG::debug($values, 'Vals:');
 		//exit;
 		//var_dump($q);
 		//var_export($vars);
@@ -578,11 +579,12 @@ class Model {
 
 	//
 	function mergeBindings(object $model){
+		/*
 		$m = get_parent_class($this);
 		
 		if (!($model instanceof $m))
 			throw new \Exception("Injected model should be child of Model");
-
+		*/
 		$this->to_merge_bindings = $model->getBindings();
 
 		return $this;
@@ -993,7 +995,7 @@ class Model {
 
 		$where = implode(' AND ', $this->where);
 
-		$q = "UPDATE ".$this->table_name .
+		$q = "UPDATE ".$this->from() .
 				" SET $set WHERE " . $where;		
 	
 		$st = $this->conn->prepare($q);
@@ -1046,7 +1048,7 @@ class Model {
 
 		if ($soft_delete){
 			if (!$this->inSchema(['deleted_at'])){
-				throw new \Exception("There is no 'deleted_at' for ".$this->table_name. ' schema');
+				throw new \Exception("There is no 'deleted_at' for ".$this->from(). ' schema');
 			} 
 
 			$d = new \DateTime();
@@ -1057,7 +1059,7 @@ class Model {
 
 		$where = implode(' AND ', $this->where);
 
-		$q = "DELETE FROM ". $this->table_name . " WHERE " . $where;
+		$q = "DELETE FROM ". $this->from() . " WHERE " . $where;
 		
 		$st = $this->conn->prepare($q);
 		
@@ -1121,7 +1123,7 @@ class Model {
 			$str_vals .= ', NOW()';
 		}
 
-		$q = "INSERT INTO ".$this->table_name." ($str_vars) VALUES ($str_vals)";
+		$q = "INSERT INTO " . $this->from() . " ($str_vars) VALUES ($str_vals)";
 		$st = $this->conn->prepare($q);
 
 		foreach($vals as $ix => $val){

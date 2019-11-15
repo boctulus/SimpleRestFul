@@ -633,6 +633,10 @@ class DumbController extends Controller
         Debug::debug($res);    
     }
 
+    /*
+        SELECT  id, name, size, cost, belongs_to FROM products WHERE belongs_to IN (SELECT  users.id FROM users  INNER JOIN user_roles ON users.id=user_roles.user_id WHERE confirmed_email = 1  AND password < 100 AND role_id = 2  )  AND size = '1L' ORDER BY id DESC
+
+    */
     function sub3b(){
         $sub = Database::table('users')->showDeleted()
         ->selectRaw('users.id')
@@ -646,6 +650,7 @@ class DumbController extends Controller
         ->select(['id', 'name', 'size', 'cost', 'belongs_to'])
         ->where(['size', '1L'])
         ->whereRaw("belongs_to IN ({$sub->toSql()})")
+        ->orderBy(['id' => 'desc'])
         ->get();
 
         Debug::debug($res);    
@@ -670,23 +675,40 @@ class DumbController extends Controller
     }
 
     /*
-        Intento:
+        RAW select
 
         SELECT COUNT(*)  FROM (SELECT size FROM products GROUP BY size) as sub;
     */
     function sub4(){
         $sub = Database::table('products')->showDeleted()
+        ->select(['size'])
         ->groupBy(['size']);
 
+        $conn = Database::getConnection();
 
-        $m = new \simplerest\core\Model();
+        $m = new \simplerest\core\Model($conn);
         $res = $m->fromRaw("({$sub->toSql()}) as sub")->count();
 
         Debug::debug($res);    
     }
+
+    function sub4a(){
+        $sub = Database::table('products')->showDeleted()
+        ->select(['size'])
+        ->where(['belongs', 90])
+        ->groupBy(['size']);
+
+        $conn = Database::getConnection();
+
+        $m = new \simplerest\core\Model($conn);
+        $res = $m
+        ->fromRaw("({$sub->toSql()}) as sub")
+        ->mergeBindings($sub)
+        ->count();
+
+        Debug::debug($res);    
+    }
     
-
-
 
    
 }
