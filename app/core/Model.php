@@ -359,7 +359,12 @@ class Model {
 			if (empty($conjunction))
 				$conjunction = 'AND';
 
-			$this->removehidden($fields);		
+			/*
+				Remover los campos ocultos siempre es un problema
+				ya que puede agregar campos donde se necesita una sola columna
+			*/
+			if (!empty($this->select_raw_vals))	
+				$this->removehidden($fields);		
 
 			if ($this->distinct){
 				$remove = [$this->id_name];
@@ -456,12 +461,6 @@ class Model {
 		}	
 
 		$q  .= ' FROM '.$this->table_name. ' '.(!empty($this->table_alias) ? 'as '.$this->table_alias : '');
-
-
-		////////////////////////
-		$values = array_merge($this->w_vals, $this->h_vals); 
-		$vars   = array_merge($this->w_vars, $this->h_vars); 
-		////////////////////////
 
 
 		// Validación

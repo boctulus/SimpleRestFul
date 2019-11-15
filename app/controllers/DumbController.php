@@ -273,13 +273,12 @@ class DumbController extends Controller
     }
 
     /*
-        SELECT size, AVG(cost) FROM products WHERE 1 GROUP BY size
+        SELECT size, AVG(cost) FROM products GROUP BY size
     */
     function select_group_avg(){
         Debug::debug(Database::table('products')->showDeleted()
         ->groupBy(['size'])->select(['size'])
-        ->avg('cost'));
-    
+        ->avg('cost'));    
     }
 
     function filter_products(){
@@ -596,6 +595,12 @@ class DumbController extends Controller
         Debug::debug($st);    
     }
 
+    /*
+        Intento #2 de sub-consultas en el WHERE
+
+        SELECT id, name, size, cost, belongs_to FROM products WHERE belongs_to IN (SELECT id FROM users WHERE password IS NULL);
+
+    */
     function test2(){
         $sub = Database::table('users')
         ->select(['id'])
@@ -609,9 +614,13 @@ class DumbController extends Controller
         Debug::debug($st);    
     }
 
+    /*
+        Subconsultas en el WHERE
+    */
     function test3(){
         $sub = Database::table('users')->showDeleted()
         ->select(['id'])
+        ->whereRaw('confirmed_email = 1')
         ->where(['password', 100, '<']);
 
         $res = Database::table('products')->showDeleted()
@@ -623,6 +632,43 @@ class DumbController extends Controller
 
         Debug::debug($res);    
     }
+
+    function test3b(){
+        $sub = Database::table('users')->showDeleted()
+        ->selectRaw('users.id')
+        ->join('user_roles', 'users.id', '=', 'user_roles.user_id')
+        ->whereRaw('confirmed_email = 1')
+        ->where(['password', 100, '<'])
+        ->where(['role_id', 2]);
+
+        $res = Database::table('products')->showDeleted()
+        ->mergeBindings($sub)
+        ->select(['id', 'name', 'size', 'cost', 'belongs_to'])
+        ->where(['size', '1L'])
+        ->whereRaw("belongs_to IN ({$sub->toSql()})")
+        ->get();
+
+        Debug::debug($res);    
+    }
+
+    function test3c(){
+        $sub = Database::table('users')->showDeleted()
+        ->selectRaw('users.id')
+        ->join('user_roles', 'users.id', '=', 'user_roles.user_id')
+        ->whereRaw('confirmed_email = 1')
+        ->where(['password', 100, '<'])
+        ->where(['role_id', 3]);
+
+        $res = Database::table('products')->showDeleted()
+        ->mergeBindings($sub)
+        ->select(['size'])
+        ->whereRaw("belongs_to IN ({$sub->toSql()})")
+        ->groupBy(['size'])
+        ->avg('cost');
+
+        Debug::debug($res);    
+    }
+
 
 
    
