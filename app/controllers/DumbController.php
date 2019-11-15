@@ -113,8 +113,8 @@ class DumbController extends Controller
     }
     
     function exists(){
-        $uid = 103; 
-        Debug::debug(Database::table('products')->where(['belongs_to' => $uid])->exists());
+       
+        Debug::debug(Database::table('products')->where(['belongs_to' => 103])->exists());
 
         Debug::debug(Database::table('products')->where([ 
             ['cost', 200, '<'],

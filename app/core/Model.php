@@ -444,10 +444,12 @@ class Model {
 
 		$q  .= ' FROM '.$this->table_name. ' '.(!empty($this->table_alias) ? 'as '.$this->table_alias : '');
 
+
 		////////////////////////
 		$values = array_merge($this->w_vals, $this->h_vals); 
 		$vars   = array_merge($this->w_vars, $this->h_vars); 
 		////////////////////////
+
 
 		// Validación
 		if (!empty($this->validator)){
@@ -530,8 +532,18 @@ class Model {
 		//var_export($vars);
 		//var_export($values);
 
-		$st = $this->conn->prepare($q);
+		$st = $this->conn->prepare($q);		
 
+		return $st;		
+	}
+
+
+	function bind($st)
+	{
+		////////////////////////
+		$values = array_merge($this->w_vals, $this->h_vals); 
+		$vars   = array_merge($this->w_vars, $this->h_vars); 
+		////////////////////////
 
 		foreach($this->select_raw_vals as $ix => $val){
 				
@@ -605,19 +617,17 @@ class Model {
 		}
 
 		$sh5 = count($this->having_raw_vals);
-			
-		if (!$existance && $paginator !== null){
-			$bindings = $this->pag_vals;
-			foreach($bindings as $ix => $binding){
-				$st->bindValue($ix +1 + $sh2 + $sh3 + $sh4 +$sh5, $binding[1], $binding[2]);
-			}	
-		}			
 
-		return $st;		
+	
+		$bindings = $this->pag_vals;
+		foreach($bindings as $ix => $binding){
+			$st->bindValue($ix +1 + $sh2 + $sh3 + $sh4 +$sh5, $binding[1], $binding[2]);
+		}				
 	}
 
 	function get(array $fields = null, array $order = null, int $limit = NULL, int $offset = null){
 		$st = $this->_get($fields, $order, $limit, $offset);
+		$this->bind($st);
 
 		if ($st->execute())
 			return $st->fetchAll($this->fetch_mode);
@@ -627,6 +637,7 @@ class Model {
 
 	function first(array $fields = null, array $order = null, int $limit = NULL, int $offset = null){
 		$st = $this->_get($fields, $order, $limit, $offset);
+		$this->bind($st);
 
 		if ($st->execute())
 			return $st->fetch($this->fetch_mode);
@@ -636,6 +647,7 @@ class Model {
 	
 	function exists(){
 		$st = $this->_get(null, null, null, null, true);
+		$this->bind($st);
 
 		if ($st->execute())
 			return (bool) $st->fetch(\PDO::FETCH_NUM)[0];
@@ -648,6 +660,7 @@ class Model {
 		$this->fields = [$field];
 
 		$st = $this->_get();
+		$this->bind($st);
 	
 		if ($st->execute())
 			return $st->fetchAll($this->fetch_mode);
@@ -657,6 +670,7 @@ class Model {
 
 	function avg($field){
 		$st = $this->_get(null, null, null, null, false, 'AVG', $field);
+		$this->bind($st);
 
 		if (empty($this->group)){
 			if ($st->execute())
@@ -673,6 +687,7 @@ class Model {
 
 	function sum($field){
 		$st = $this->_get(null, null, null, null, false, 'SUM', $field);
+		$this->bind($st);
 
 		if (empty($this->group)){
 			if ($st->execute())
@@ -689,6 +704,7 @@ class Model {
 
 	function min($field){
 		$st = $this->_get(null, null, null, null, false, 'MIN', $field);
+		$this->bind($st);
 
 		if (empty($this->group)){
 			if ($st->execute())
@@ -705,6 +721,7 @@ class Model {
 
 	function max($field){
 		$st = $this->_get(null, null, null, null, false, 'MAX', $field);
+		$this->bind($st);
 
 		if (empty($this->group)){
 			if ($st->execute())
@@ -721,6 +738,7 @@ class Model {
 
 	function count($field = null){
 		$st = $this->_get(null, null, null, null, false, 'COUNT', $field);
+		$this->bind($st);
 
 		if (empty($this->group)){
 			if ($st->execute())
