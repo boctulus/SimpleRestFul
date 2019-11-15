@@ -553,9 +553,9 @@ class Model {
 		if ($existance)
 			$q .= ')';
 
-		DEBUG::debug($q, 'Query:');
-		DEBUG::debug($vars, 'Vars:');
-		DEBUG::debug($values, 'Vals:');
+		//DEBUG::debug($q, 'Query:');
+		//DEBUG::debug($vars, 'Vars:');
+		//DEBUG::debug($values, 'Vals:');
 		//exit;
 		//var_dump($q);
 		//var_export($vars);
@@ -565,12 +565,15 @@ class Model {
 	}
 
 	function getBindings(){
-		$values = array_merge(	$this->select_raw_vals,
+		$values = array_merge(	
+								$this->select_raw_vals,
+								$this->from_raw_vals,
 								$this->where_raw_vals,
 								$this->w_vals,
 								$this->having_raw_vals,
 								$this->h_vals,
-								$this->pag_vals);
+								$this->pag_vals
+							);
 		
 		//Debug::debug($values);
 
@@ -585,7 +588,12 @@ class Model {
 		if (!($model instanceof $m))
 			throw new \Exception("Injected model should be child of Model");
 		*/
+	
 		$this->to_merge_bindings = $model->getBindings();
+
+		if (!empty($this->table_raw_q)){
+			$this->from_raw_vals = $this->to_merge_bindings;	
+		}
 
 		return $this;
 	}
@@ -609,7 +617,24 @@ class Model {
 			//echo "Bind: ".($ix+1)." - $val ($type)\n";
 		}
 		
-		$sh2 = count($this->select_raw_vals);	
+		$sh1 = count($this->select_raw_vals);	
+
+		foreach($this->from_raw_vals as $ix => $val){
+				
+			if(is_null($val)){
+				$type = \PDO::PARAM_NULL;
+			}elseif(is_int($val))
+				$type = \PDO::PARAM_INT;
+			elseif(is_bool($val))
+				$type = \PDO::PARAM_BOOL;
+			else 
+				$type = \PDO::PARAM_STR;	
+
+			$st->bindValue($ix +1 + $sh1, $val, $type);
+			//echo "Bind: ".($ix+1+$sh1)." - $val ($type) <br/>\n";
+		}
+		
+		$sh2 = count($this->from_raw_vals);	
 
 		foreach($this->where_raw_vals as $ix => $val){
 				
@@ -622,7 +647,7 @@ class Model {
 			else 
 				$type = \PDO::PARAM_STR;	
 
-			$st->bindValue($ix +1 + $sh2, $val, $type);
+			$st->bindValue($ix +1 + $sh1 + $sh2, $val, $type);
 			//echo "Bind: ".($ix+1)." - $val ($type)\n";
 		}
 		
@@ -643,7 +668,7 @@ class Model {
 			elseif(is_string($val))
 				$type = \PDO::PARAM_STR;	
 
-			$st->bindValue($ix +1 + $sh2 + $sh3, $val, $type);
+			$st->bindValue($ix +1 + $sh1 + $sh2 + $sh3, $val, $type);
 			//echo "Bind: ".($ix+1)." - $val ($type)\n";
 		}
 
@@ -661,7 +686,7 @@ class Model {
 			else 
 				$type = \PDO::PARAM_STR;	
 
-			$st->bindValue($ix +1 + $sh2 + $sh3 + $sh4, $val, $type);
+			$st->bindValue($ix +1 + $sh1 + $sh2 + $sh3 + $sh4, $val, $type);
 			//echo "Bind: ".($ix+1)." - $val ($type)\n";
 		}
 
@@ -682,7 +707,7 @@ class Model {
 			elseif(is_string($val))
 				$type = \PDO::PARAM_STR;	
 
-			$st->bindValue($ix +1 + $sh2 + $sh3 + $sh4 +$sh5, $val, $type);
+			$st->bindValue($ix +1 + $sh1 + $sh2 + $sh3 + $sh4 +$sh5, $val, $type);
 			//echo "Bind: ".($ix+1)." - $val ($type)\n";
 		}
 
@@ -690,7 +715,7 @@ class Model {
 	
 		$bindings = $this->pag_vals;
 		foreach($bindings as $ix => $binding){
-			$st->bindValue($ix +1 + $sh2 + $sh3 + $sh4 +$sh5 +$sh6, $binding[1], $binding[2]);
+			$st->bindValue($ix +1 + $sh1 + $sh2 + $sh3 + $sh4 +$sh5 +$sh6, $binding[1], $binding[2]);
 		}		
 		
 		return $st;	

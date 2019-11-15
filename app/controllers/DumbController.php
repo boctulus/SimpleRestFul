@@ -692,10 +692,13 @@ class DumbController extends Controller
         Debug::debug($res);    
     }
 
+    /*
+        SELECT  COUNT(*) FROM (SELECT  size FROM products WHERE belongs_to = 90 GROUP BY size ) as sub WHERE 1 = 1
+    */
     function sub4a(){
         $sub = Database::table('products')->showDeleted()
         ->select(['size'])
-        ->where(['belongs', 90])
+        ->where(['belongs_to', 90])
         ->groupBy(['size']);
 
         $conn = Database::getConnection();
