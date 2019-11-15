@@ -38,6 +38,7 @@ class Model {
 	protected $having_raw_vals = [];
 	protected $randomize = false;
 	protected $distinct  = false;
+	protected $to_merge_bindings = [];
 	protected $limit;
 	protected $offset;
 	protected $pag_vals = [];
@@ -302,14 +303,26 @@ class Model {
 	}
 
 	function whereRaw(string $q, array $vals = null){
-		if (substr_count($q, '?') != count((array) $vals))
-			throw new \InvalidArgumentException("Number of ? are not consitent with the number of passed values");
+		$qm = substr_count($q, '?'); 
+
+		if ($qm !=0){
+			if (!empty($vals)){
+				if ($qm != count((array) $vals))
+					throw new \InvalidArgumentException("Number of ? are not consitent with the number of passed values");
+				
+				$this->where_raw_vals = $vals;
+			}else{
+				if ($qm != count($this->to_merge_bindings))
+					throw new \InvalidArgumentException("Number of ? are not consitent with the number of passed values");
+					
+				$this->where_raw_vals = $this->to_merge_bindings;		
+			}
+
+		}
 		
 		$this->where_raw_q = $q;
 
-		if ($vals != null)
-			$this->where_raw_vals = $vals;
-			
+	
 		return $this;
 	}
 
@@ -535,14 +548,34 @@ class Model {
 		return $q;	
 	}
 
-	function bind($q)
+	function getBindings(){
+		$values = array_merge(	$this->select_raw_vals,
+								$this->where_raw_vals,
+								$this->w_vals,
+								$this->having_raw_vals,
+								$this->h_vals,
+								$this->pag_vals);
+		
+		//Debug::debug($values);
+
+		return $values;
+	}
+
+	//
+	function mergeBindings(object $model){
+		$m = get_parent_class($this);
+		
+		if (!($model instanceof $m))
+			throw new \Exception("Injected model should be child of Model");
+
+		$this->to_merge_bindings = $model->getBindings();
+
+		return $this;
+	}
+
+	protected function bind(string $q)
 	{
 		$st = $this->conn->prepare($q);		
-
-		////////////////////////
-		$values = array_merge($this->w_vals, $this->h_vals); 
-		$vars   = array_merge($this->w_vars, $this->h_vars); 
-		////////////////////////
 
 		foreach($this->select_raw_vals as $ix => $val){
 				
@@ -579,12 +612,12 @@ class Model {
 		$sh3 = count($this->where_raw_vals);	
 
 
-		foreach($values as $ix => $val){
+		foreach($this->w_vals as $ix => $val){
 				
 			if(is_null($val)){
 				$type = \PDO::PARAM_NULL;
-			}elseif(isset($vars[$ix]) && isset($this->schema[$vars[$ix]])){
-				$const = $this->schema[$vars[$ix]];
+			}elseif(isset($this->w_vars[$ix]) && isset($this->schema[$this->w_vars[$ix]])){
+				$const = $this->schema[$this->w_vars[$ix]];
 				$type = constant("PDO::PARAM_{$const}");
 			}elseif(is_int($val))
 				$type = \PDO::PARAM_INT;
@@ -597,7 +630,7 @@ class Model {
 			//echo "Bind: ".($ix+1)." - $val ($type)\n";
 		}
 
-		$sh4 = count($values);
+		$sh4 = count($this->w_vals);
 
 
 		foreach($this->having_raw_vals as $ix => $val){
@@ -617,10 +650,30 @@ class Model {
 
 		$sh5 = count($this->having_raw_vals);
 
+
+		foreach($this->h_vals as $ix => $val){
+				
+			if(is_null($val)){
+				$type = \PDO::PARAM_NULL;
+			}elseif(isset($this->h_vars[$ix]) && isset($this->schema[$this->h_vars[$ix]])){
+				$const = $this->schema[$this->h_vars[$ix]];
+				$type = constant("PDO::PARAM_{$const}");
+			}elseif(is_int($val))
+				$type = \PDO::PARAM_INT;
+			elseif(is_bool($val))
+				$type = \PDO::PARAM_BOOL;
+			elseif(is_string($val))
+				$type = \PDO::PARAM_STR;	
+
+			$st->bindValue($ix +1 + $sh2 + $sh3 + $sh4 +$sh5, $val, $type);
+			//echo "Bind: ".($ix+1)." - $val ($type)\n";
+		}
+
+		$sh6 = count($this->h_vals);
 	
 		$bindings = $this->pag_vals;
 		foreach($bindings as $ix => $binding){
-			$st->bindValue($ix +1 + $sh2 + $sh3 + $sh4 +$sh5, $binding[1], $binding[2]);
+			$st->bindValue($ix +1 + $sh2 + $sh3 + $sh4 +$sh5 +$sh6, $binding[1], $binding[2]);
 		}		
 		
 		return $st;	
@@ -813,7 +866,9 @@ class Model {
 		$this->w_vars = $vars;
 
 		$this->where[] = implode(" $conjunction ", $_where);
-		//Debug::debug($this->where);		
+		//Debug::debug($this->where);
+		//Debug::debug($this->w_vars, 'WHERE VARS');	
+		//Debug::debug($this->w_vals, 'WHERE VALS');	
 
 		return $this;
 	}
@@ -833,6 +888,14 @@ class Model {
 		return $this;
 	}
 
+	/**
+	 * having
+	 *
+	 * @param  array  $conditions
+	 * @param  string $conjunction
+	 *
+	 * @return object
+	 */
 	function having(array $conditions, $conjunction = 'AND')
 	{	
 		if (Arrays::is_assoc($conditions)){

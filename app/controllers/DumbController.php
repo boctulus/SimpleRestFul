@@ -320,7 +320,7 @@ class DumbController extends Controller
     function where_raw(){
         Debug::debug(Database::table('products')
         ->where(['belongs_to' => 90])
-        ->whereRaw('cost < IF(size = "1L", ?, 100)', [300])
+        ->whereRaw('cost < IF(size = "1L", ?, 100) AND size = ?', [300, '1L'])
         ->orderBy(['cost' => 'ASC'])
         ->get());
     }
@@ -412,6 +412,7 @@ class DumbController extends Controller
             ->groupBy(['cost', 'size'])
             ->having([  ['cost', 100, '>='],
                         ['size' => '1L'] ], 'OR')
+            ->orderBy(['size' => 'DESC'])
             ->get(['cost', 'size'])); 
     }
 
@@ -587,29 +588,42 @@ class DumbController extends Controller
 
     */
     function test(){
-        $q = Database::table('products')->showDeleted()
+        $st = Database::table('products')->showDeleted()
         ->select(['id', 'name', 'size', 'cost', 'belongs_to'])
         ->whereRaw('belongs_to IN (SELECT id FROM users WHERE password IS NULL)')
         ->get();
 
-        Debug::debug($q);    
+        Debug::debug($st);    
     }
 
     function test2(){
         $sub = Database::table('users')
-        ->where(['password', NULL]);
+        ->select(['id'])
+        ->whereRaw('password IS NULL');
 
-
-        Debug::debug($sub->toSql());
-        exit; //
-
-        $q = Database::table('products')->showDeleted()
+        $st = Database::table('products')->showDeleted()
         ->select(['id', 'name', 'size', 'cost', 'belongs_to'])
-        ->where("belongs_to IN ({$sub->toSql()})")
+        ->whereRaw("belongs_to IN ({$sub->toSql()})")
         ->get();
 
-        Debug::debug($q);    
+        Debug::debug($st);    
     }
+
+    function test3(){
+        $sub = Database::table('users')->showDeleted()
+        ->select(['id'])
+        ->where(['password', 100, '<']);
+
+        $res = Database::table('products')->showDeleted()
+        ->mergeBindings($sub)
+        ->select(['id', 'name', 'size', 'cost', 'belongs_to'])
+        ->where(['size', '1L'])
+        ->whereRaw("belongs_to IN ({$sub->toSql()})")
+        ->get();
+
+        Debug::debug($res);    
+    }
+
 
    
 }
