@@ -915,6 +915,11 @@ class Model {
 		return $this;
 	}
 
+	function whereNull(string $field){
+		$this->where([$field, NULL]);
+		return $this;
+	}
+
 	function oldest(){
 		$this->orderBy(['created_at' => 'DESC']);
 		return $this;
@@ -1067,7 +1072,7 @@ class Model {
 		if (!empty($this->validator)){
 			$validado = $this->validator->validate($this->getRules(), array_combine($this->w_vars, $this->w_vals), null, true);
 			if ($validado !== true){
-				throw new InvalidValidationException($validado);
+				throw new \InvalidValidationException($validado);
 			} 
 		}
 
@@ -1134,7 +1139,7 @@ class Model {
 		if (!empty($this->validator)){
 			$validado = $this->validator->validate($this->getRules(), $data, null, true);
 			if ($validado !== true){
-				throw new InvalidValidationException($validado);
+				throw new \InvalidValidationException($validado);
 			} 
 		}
 

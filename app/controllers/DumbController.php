@@ -729,6 +729,24 @@ class DumbController extends Controller
         Debug::debug($res);    
     }
     
+    /*
+        UNION
 
+        SELECT id, name, description, belongs_to FROM products WHERE belongs_to = 90 UNION SELECT id, name, description, belongs_to FROM products WHERE belongs_to = 4 ORDER by id DESC LIMIT 5;
+    */
+    function union(){
+        $uno = Database::table('products')->showDeleted()
+        ->select(['id', 'name', 'description', 'belongs_to'])
+        ->where(['belongs', 90]);
+
+        $dos = Database::table('products')->showDeleted()
+        ->select(['id', 'name', 'description', 'belongs_to'])
+        ->where(['belongs', 4])
+        ->union($uno)
+        ->orderBy(['id' => 'DESC'])
+        ->get();
+
+        Debug::debug($dos);
+    }
    
 }
