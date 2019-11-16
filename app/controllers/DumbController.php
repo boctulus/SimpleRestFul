@@ -703,9 +703,26 @@ class DumbController extends Controller
 
         $conn = Database::getConnection();
 
-        $m = new \simplerest\core\Model($conn);
-        $res = $m
+        $res = (new \simplerest\core\Model($conn))
         ->fromRaw("({$sub->toSql()}) as sub")
+        ->mergeBindings($sub)
+        ->count();
+
+        Debug::debug($res);    
+    }
+
+    /*
+        FROM RAW
+
+        SELECT  COUNT(*) FROM (SELECT  size FROM products WHERE belongs_to = 90 GROUP BY size ) as sub WHERE 1 = 1
+    */
+    function sub4b(){
+        $sub = Database::table('products')->showDeleted()
+        ->select(['size'])
+        ->where(['belongs_to', 90])
+        ->groupBy(['size']);
+
+        $res = Database::table("({$sub->toSql()}) as sub")
         ->mergeBindings($sub)
         ->count();
 
