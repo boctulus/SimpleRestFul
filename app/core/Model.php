@@ -38,6 +38,9 @@ class Model {
 	protected $having_raw_vals = [];
 	protected $table_raw_q;
 	protected $from_raw_vals   = [];
+	protected $union_q;
+	protected $union_vals = [];
+	protected $union_type;
 	protected $randomize = false;
 	protected $distinct  = false;
 	protected $to_merge_bindings = [];
@@ -359,6 +362,20 @@ class Model {
 		return $this;
 	}
 
+	function union(Model $m){
+		$this->union_type = 'NORMAL';
+		$this->union_q = $m->toSql();
+		$this->union_vals = $m->getBindings();
+		return $this;
+	}
+
+	function unionAll(Model $m){
+		$this->union_type = 'ALL';
+		$this->union_q = $m->toSql();
+		$this->union_vals = $m->getBindings();
+		return $this;
+	}
+
 	function toSql(array $fields = null, array $order = null, int $limit = NULL, int $offset = null, bool $existance = false, $aggregate_func = null, $aggregate_field = null)
 	{
 		// Agregar validaciones ?
@@ -546,6 +563,12 @@ class Model {
 				$q .= ' ORDER BY '.implode(', ', $this->raw_order);
 		}
 		
+		// UNION
+		if (!empty($this->union_q)){
+			$q .= 'UNION '.($this->union_type == 'ALL' ? 'ALL' : '').' '.$this->union_q.' ';
+		}
+
+		// PAGINATION
 		if (!$existance && $paginator!==null){
 			$q .= $paginator->getQuery();
 		}
@@ -713,9 +736,28 @@ class Model {
 
 		$sh6 = count($this->h_vals);
 	
+
+		foreach($this->union_vals as $ix => $val){
+				
+			if(is_null($val)){
+				$type = \PDO::PARAM_NULL;
+			}elseif(is_int($val))
+				$type = \PDO::PARAM_INT;
+			elseif(is_bool($val))
+				$type = \PDO::PARAM_BOOL;
+			else 
+				$type = \PDO::PARAM_STR;	
+
+			$st->bindValue($ix +1 + $sh1 + $sh2 + $sh3 + $sh4 + $sh5 +$sh6, $val, $type);
+			//echo "Bind: ".($ix+1)." - $val ($type)\n";
+		}
+
+		$sh7 = count($this->union_vals);
+
+
 		$bindings = $this->pag_vals;
 		foreach($bindings as $ix => $binding){
-			$st->bindValue($ix +1 + $sh1 + $sh2 + $sh3 + $sh4 +$sh5 +$sh6, $binding[1], $binding[2]);
+			$st->bindValue($ix +1 +$sh1 +$sh2 +$sh3 +$sh4 +$sh5 +$sh6 +$sh7, $binding[1], $binding[2]);
 		}		
 		
 		return $st;	

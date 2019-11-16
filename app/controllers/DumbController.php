@@ -732,18 +732,38 @@ class DumbController extends Controller
     /*
         UNION
 
-        SELECT id, name, description, belongs_to FROM products WHERE belongs_to = 90 UNION SELECT id, name, description, belongs_to FROM products WHERE belongs_to = 4 ORDER by id DESC LIMIT 5;
+        SELECT id, name, description, belongs_to FROM products WHERE belongs_to = 90 UNION SELECT id, name, description, belongs_to FROM products WHERE belongs_to = 4 ORDER by id ASC LIMIT 5;
     */
     function union(){
         $uno = Database::table('products')->showDeleted()
         ->select(['id', 'name', 'description', 'belongs_to'])
-        ->where(['belongs', 90]);
+        ->where(['belongs_to', 90]);
 
         $dos = Database::table('products')->showDeleted()
         ->select(['id', 'name', 'description', 'belongs_to'])
-        ->where(['belongs', 4])
+        ->where(['belongs_to', 4])
         ->union($uno)
-        ->orderBy(['id' => 'DESC'])
+        ->orderBy(['id' => 'ASC'])
+        ->limit(5)
+        ->get();
+
+        Debug::debug($dos);
+    }
+
+    /*
+        UNION ALL
+    */
+    function union_all(){
+        $uno = Database::table('products')->showDeleted()
+        ->select(['id', 'name', 'description', 'belongs_to'])
+        ->where(['belongs_to', 90]);
+
+        $dos = Database::table('products')->showDeleted()
+        ->select(['id', 'name', 'description', 'belongs_to'])
+        ->where(['cost', 200, '>='])
+        ->unionAll($uno)
+        ->orderBy(['id' => 'ASC'])
+        ->limit(5)
         ->get();
 
         Debug::debug($dos);
