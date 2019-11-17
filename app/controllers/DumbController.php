@@ -289,35 +289,48 @@ class DumbController extends Controller
         ->avg('cost'));    
     }
 
-    function filter_products(){
-        $conn    = Database::getConnection();
-        
-        Debug::debug((new ProductsModel($conn))->showDeleted()->where([ 
+    function filter_products1(){
+        Debug::debug(Database::table('products')->showDeleted()->where([ 
             ['size', '2L']
         ])->get());
+    }
     
-        Debug::debug((new ProductsModel($conn))->where([ 
+    function filter_products2(){
+        Debug::debug(Database::table('products')
+        ->where([ 
             ['name', ['Vodka', 'Wisky', 'Tekila','CocaCola']], // IN 
+            ['locked', 0],
             ['belongs_to', 90]
-        ])->get());
-    
-        // SELECT * FROM products WHERE name IN ('CocaCola', 'PesiLoca') OR cost IN (100, 200)  OR cost >= 550 AND deleted_at IS NULL
+        ])
+        ->whereNotNull('description')
+        ->get());
+    }
+
+    // SELECT * FROM products WHERE name IN ('CocaCola', 'PesiLoca') OR cost IN (100, 200)  OR cost >= 550 AND deleted_at IS NULL
+    function filter_products3(){
+
         Debug::debug(Database::table('products')->where([ 
             ['name', ['CocaCola', 'PesiLoca']], 
             ['cost', 550, '>='],
             ['cost', [100, 200]]
         ], 'OR')->get());    
+    }
 
+    function filter_products4(){    
         Debug::debug(Database::table('products')->where([ 
             ['name', ['CocaCola', 'PesiLoca', 'Wisky', 'Vodka'], 'NOT IN']
         ])->get());
+    }
 
+    function filter_products5(){
         // implicit 'AND'
         Debug::debug(Database::table('products')->where([ 
             ['cost', 200, '<'],
             ['name', 'CocaCola'] 
         ])->get());        
+    }
 
+    function filter_products6(){
         Debug::debug(Database::table('products')->where([ 
             ['cost', 200, '>='],
             ['cost', 270, '<=']
@@ -409,6 +422,23 @@ class DumbController extends Controller
         ->get());
     }
 
+    /* 
+        A OR (B AND C)
+
+        SELECT  name, cost, id FROM products WHERE (1 = 1)  AND belongs_to = ?  OR name IN ('CocaCola', 'PesiLoca') OR (cost <= ? AND cost >= ?)
+    */
+    function or_where(){
+        Debug::debug(Database::table('products')->showDeleted()
+        ->select(['name', 'cost', 'id'])
+        ->where(['belongs_to', 90])
+        ->orWhere(['name', ['CocaCola', 'PesiLoca']])
+        ->orWhere([
+            ['cost', 550, '<='],
+            ['cost', 100, '>=']
+        ])
+        ->get());
+    }
+
     // SELECT  name, cost, id FROM products WHERE belongs_to = '90' AND (name IN ('CocaCola', 'PesiLoca')  OR cost >= 550 OR cost < 100) AND description IS NOT NULL
     function where_or(){
         Debug::debug(Database::table('products')->showDeleted()
@@ -441,6 +471,19 @@ class DumbController extends Controller
         ->get());
     }
 
+    // A OR (B AND C)
+    function where_or3(){
+        Debug::debug(Database::table('products')->showDeleted()
+        ->select(['name', 'cost', 'id'])
+        ->whereNotNull('description')
+        ->orWhere([ 
+                    ['cost', 100, '>='],
+                    ['cost', 500, '<']
+        ])        
+        ->get());
+    }
+
+    // SELECT * FROM products WHERE ((cost < IF(size = "1L", 300, 100) AND size = '1L' ) AND belongs_to = 90) AND deleted_at IS NULL ORDER BY cost ASC
     function where_raw(){
         Debug::debug(Database::table('products')
         ->where(['belongs_to' => 90])
@@ -532,7 +575,7 @@ class DumbController extends Controller
     }    
 
     /*
-        OR HAVING
+        HAVING ... OR ... OR ...
 
         SELECT  cost, size, belongs_to FROM products WHERE deleted_at IS NULL GROUP BY cost,size,belongs_to HAVING belongs_to = 90 AND (cost >= 100 OR size = '1L') ORDER BY size DESC
     */
@@ -544,6 +587,36 @@ class DumbController extends Controller
                         ['cost', 100, '>='],
                         ['size' => '1L'] ], 
             'OR')
+            ->orderBy(['size' => 'DESC'])
+            ->get(['cost', 'size', 'belongs_to'])); 
+    }
+
+    /*
+        OR HAVING
+    
+        SELECT  cost, size, belongs_to FROM products WHERE deleted_at IS NULL GROUP BY cost,size,belongs_to HAVING  belongs_to = 90 OR  cost >= 100 OR  size = '1L'  ORDER BY size DESC
+    */
+    function having2b(){
+        Debug::debug(Database::table('products')
+            ->groupBy(['cost', 'size', 'belongs_to'])
+            ->having(['belongs_to', 90])
+            ->orHaving(['cost', 100, '>='])
+            ->orHaving(['size' => '1L'])
+            ->orderBy(['size' => 'DESC'])
+            ->get(['cost', 'size', 'belongs_to'])); 
+    }
+
+    /*
+        SELECT  cost, size, belongs_to FROM products WHERE deleted_at IS NULL GROUP BY cost,size,belongs_to HAVING  belongs_to = 90 OR  (cost >= 100 AND size = '1L')  ORDER BY size DESC
+    */
+    function having2c(){
+        Debug::debug(Database::table('products')
+            ->groupBy(['cost', 'size', 'belongs_to'])
+            ->having(['belongs_to', 90])
+            ->orHaving([  
+                        ['cost', 100, '>='],
+                        ['size' => '1L'] ] 
+            )
             ->orderBy(['size' => 'DESC'])
             ->get(['cost', 'size', 'belongs_to'])); 
     }

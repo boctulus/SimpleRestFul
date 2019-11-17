@@ -22,6 +22,8 @@ class Model {
 	protected $conn;
 	protected $fields = [];
 	protected $where;
+	protected $where_group_op  = [];
+	protected $where_having_op = [];
 	protected $group  = [];
 	protected $having = [];
 	protected $w_vars = [];
@@ -515,19 +517,32 @@ class Model {
 		
 		// WHERE
 		$where = '';
-
+		
 		if (!empty($this->where_raw_q))
 			$where = $this->where_raw_q.' ';
 
-		if (!empty($this->where))
-			$where .=( !empty($where) ? ' AND ' : '' ). implode(' AND ', $this->where);
+		if (!empty($this->where)){
+			$implode = '';
 
-		if (empty($where))
-			$where = '1 = 1';
+			$cnt = count($this->where);
+
+			if ($cnt>0){
+				$implode .= $this->where[0];
+				for ($ix=1; $ix<$cnt; $ix++){
+					$implode .= ' '.$this->where_group_op[$ix] . ' '.$this->where[$ix];
+				}
+			}			
+
+			if (!empty($where)){
+				$where = "($where) AND ". $implode. ' ';
+			}else{
+				$where = "$implode ";
+			}
+		}			
 
 		if ($this->inSchema(['deleted_at'])){
 			if (!$this->show_deleted){
-				if ($where == '1 = 1')
+				if (empty($where))
 					$where = "deleted_at IS NULL";
 				else
 					$where = "($where) AND deleted_at IS NULL";
@@ -546,13 +561,26 @@ class Model {
 		$having = ''; 
 		if (!empty($this->having_raw_q)){
 			$having = 'HAVING '.$this->having_raw_q; 
-
-			if (!empty($this->having))
-				$having .= ' AND '.implode(' AND ', $this->having);
-		}else{
-			if (!empty($this->having))
-				$having .= 'HAVING '.implode(' AND ', $this->having);
 		}
+
+		if (!empty($this->having)){
+			$implode = '';
+
+			$cnt = count($this->having);
+
+			if ($cnt>0){
+				$implode .= $this->having[0];
+				for ($ix=1; $ix<$cnt; $ix++){
+					$implode .= ' '.$this->having_group_op[$ix] . ' '.$this->having[$ix];
+				}
+			}			
+
+			if (!empty($having)){
+				$having = "($having) AND ". $implode. ' ';
+			}else{
+				$having = "HAVING $implode ";
+			}
+		}	
 
 		$q .= ' '.$having;
 
@@ -896,16 +924,9 @@ class Model {
 		
 	}
 
-	/**
-	 * where
-	 *
-	 * @param  array  $conditions
-	 * @param  string $conjunction
-	 *
-	 * @return object
-	 */
-	function where(array $conditions, $conjunction = 'AND')
-	{		
+
+	function _where($conditions, $group_op = 'AND', $conjunction)
+	{	
 		if (Arrays::is_assoc($conditions)){
 			$conditions = Arrays::nonassoc($conditions);
 		}
@@ -957,18 +978,36 @@ class Model {
 		$this->w_vars = $vars;
 
 		////////////////////////////////////////////
+		// group
 		$ws_str = implode(" $conjunction ", $_where);
 		
 		if (count($conditions)>1)
 			$ws_str = "($ws_str)";
 		
-		$this->where[] = $ws_str;
+		$this->where_group_op[] = $group_op;	
+
+		$this->where[] = ' ' .$ws_str;
 		////////////////////////////////////////////
 
 		//Debug::debug($this->where);
 		//Debug::debug($this->w_vars, 'WHERE VARS');	
 		//Debug::debug($this->w_vals, 'WHERE VALS');	
 
+		return $this;
+	}
+
+	function where($conditions, $conjunction = 'AND'){
+		$this->_where($conditions, 'AND', $conjunction);
+		return $this;
+	}
+
+	function orWhere($conditions, $conjunction = 'AND'){
+		$this->_where($conditions, 'OR', $conjunction);
+		return $this;
+	}
+
+	function orHaving($conditions, $conjunction = 'AND'){
+		$this->_having($conditions, 'OR', $conjunction);
 		return $this;
 	}
 
@@ -1037,15 +1076,8 @@ class Model {
 		return $this;
 	}
 
-	/**
-	 * having
-	 *
-	 * @param  array  $conditions
-	 * @param  string $conjunction
-	 *
-	 * @return object
-	 */
-	function having(array $conditions, $conjunction = 'AND')
+	
+	function _having(array $conditions, $group_op = 'AND', $conjunction)
 	{	
 		if (Arrays::is_assoc($conditions)){
             $conditions = Arrays::nonassoc($conditions);
@@ -1075,18 +1107,26 @@ class Model {
 		}
 
 		////////////////////////////////////////////
+		// group
 		$ws_str = implode(" $conjunction ", $_having);
 		
 		if (count($conditions)>1)
 			$ws_str = "($ws_str)";
 		
-		$this->having[] = $ws_str;
+		$this->having_group_op[] = $group_op;	
+
+		$this->having[] = ' ' .$ws_str;
 		////////////////////////////////////////////
 
 		//Debug::debug($this->having, 'HAVING:');
 		//Debug::debug($this->h_vars, 'VARS');
 		//Debug::debug($this->h_vals, 'VALUES');
 
+		return $this;
+	}
+
+	function having(array $conditions, $conjunction = 'AND'){
+		$this->_having($conditions, 'AND', $conjunction);
 		return $this;
 	}
 
