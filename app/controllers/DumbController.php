@@ -531,13 +531,21 @@ class DumbController extends Controller
             ->get(['cost', 'size']));
     }    
 
+    /*
+        OR HAVING
+
+        SELECT  cost, size, belongs_to FROM products WHERE deleted_at IS NULL GROUP BY cost,size,belongs_to HAVING belongs_to = 90 AND (cost >= 100 OR size = '1L') ORDER BY size DESC
+    */
     function having2(){
         Debug::debug(Database::table('products')
-            ->groupBy(['cost', 'size'])
-            ->having([  ['cost', 100, '>='],
-                        ['size' => '1L'] ], 'OR')
+            ->groupBy(['cost', 'size', 'belongs_to'])
+            ->having(['belongs_to', 90])
+            ->having([  
+                        ['cost', 100, '>='],
+                        ['size' => '1L'] ], 
+            'OR')
             ->orderBy(['size' => 'DESC'])
-            ->get(['cost', 'size'])); 
+            ->get(['cost', 'size', 'belongs_to'])); 
     }
 
     /*

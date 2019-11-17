@@ -525,12 +525,14 @@ class Model {
 		if (empty($where))
 			$where = '1 = 1';
 
-
-		//$shift = substr_count($where, '?');	
-
 		if ($this->inSchema(['deleted_at'])){
-			if (!$this->show_deleted)
-				$where  = ($where == '1 = 1') ? '' : "($where) AND deleted_at IS NULL";	
+			if (!$this->show_deleted){
+				if ($where == '1 = 1')
+					$where = "deleted_at IS NULL";
+				else
+					$where = "($where) AND deleted_at IS NULL";
+
+			}
 		}
 		
 		$q  .= "WHERE $where";
@@ -954,12 +956,15 @@ class Model {
 
 		$this->w_vars = $vars;
 
+		////////////////////////////////////////////
 		$ws_str = implode(" $conjunction ", $_where);
 		
 		if (count($conditions)>1)
 			$ws_str = "($ws_str)";
 		
 		$this->where[] = $ws_str;
+		////////////////////////////////////////////
+
 		//Debug::debug($this->where);
 		//Debug::debug($this->w_vars, 'WHERE VARS');	
 		//Debug::debug($this->w_vals, 'WHERE VALS');	
@@ -1069,7 +1074,14 @@ class Model {
 			$this->h_vals[] = $cond[1];
 		}
 
-		$this->having[] = implode(" $conjunction ", $_having);
+		////////////////////////////////////////////
+		$ws_str = implode(" $conjunction ", $_having);
+		
+		if (count($conditions)>1)
+			$ws_str = "($ws_str)";
+		
+		$this->having[] = $ws_str;
+		////////////////////////////////////////////
 
 		//Debug::debug($this->having, 'HAVING:');
 		//Debug::debug($this->h_vars, 'VARS');
