@@ -135,10 +135,18 @@ class DumbController extends Controller
            
     function first(){
         Debug::debug(Database::table('products')->where([ 
-            ['cost', 200, '>='],
-            ['cost', 270, '<='],
+            ['cost', 50, '>='],
+            ['cost', 500, '<='],
             ['belongs_to',  90]
         ])->first(['name', 'size', 'cost'])); 
+    }
+
+    function value(){
+        Debug::debug(Database::table('products')->where([ 
+            ['cost', 300, '>='],
+            ['cost', 500, '<='],
+            ['belongs_to',  90]
+        ])->value('name')); 
     }
 
     function oldest(){
@@ -293,6 +301,7 @@ class DumbController extends Controller
             ['belongs_to', 90]
         ])->get());
     
+        // SELECT * FROM products WHERE name IN ('CocaCola', 'PesiLoca') OR cost IN (100, 200)  OR cost >= 550 AND deleted_at IS NULL
         Debug::debug(Database::table('products')->where([ 
             ['name', ['CocaCola', 'PesiLoca']], 
             ['cost', 550, '>='],
@@ -374,6 +383,63 @@ class DumbController extends Controller
         ->whereNotBetween('cost', [100, 250])->get());
     }
     
+    function where12(){
+        Debug::debug(Database::table('products')
+        ->find(103));
+    }
+
+    function where13(){
+        Debug::debug(Database::table('products')
+        ->where(['cost', 150])
+        ->value('name'));
+    }
+
+    /*
+        SELECT  name, cost, id FROM products WHERE belongs_to = '90' AND (cost >= 100 AND cost < 500) AND description IS NOT NULL
+    */
+    function where14(){
+        Debug::debug(Database::table('products')->showDeleted()
+        ->select(['name', 'cost', 'id'])
+        ->where(['belongs_to', 90])
+        ->where([ 
+            ['cost', 100, '>='],
+            ['cost', 500, '<']
+        ])
+        ->whereNotNull('description')
+        ->get());
+    }
+
+    // SELECT  name, cost, id FROM products WHERE belongs_to = '90' AND (name IN ('CocaCola', 'PesiLoca')  OR cost >= 550 OR cost < 100) AND description IS NOT NULL
+    function where_or(){
+        Debug::debug(Database::table('products')->showDeleted()
+        ->select(['name', 'cost', 'id'])
+        ->where(['belongs_to', 90])
+        ->where([ 
+            ['name', ['CocaCola', 'PesiLoca']], 
+            ['cost', 550, '>='],
+            ['cost', 100, '<']
+        ], 'OR')
+        ->whereNotNull('description')
+        ->get());
+    }
+
+    /*
+        Showing also deleted records
+
+        SELECT  name, cost, id FROM products WHERE (belongs_to = '90' AND (name IN ('CocaCola', 'PesiLoca')  OR cost >= 550 OR cost < 100) AND description IS NOT NULL) AND deleted_at IS NULL
+    */
+    function where_or2(){
+        Debug::debug(Database::table('products')
+        ->select(['name', 'cost', 'id'])
+        ->where(['belongs_to', 90])
+        ->where([ 
+            ['name', ['CocaCola', 'PesiLoca']], 
+            ['cost', 550, '>='],
+            ['cost', 100, '<']
+        ], 'OR')
+        ->whereNotNull('description')
+        ->get());
+    }
 
     function where_raw(){
         Debug::debug(Database::table('products')

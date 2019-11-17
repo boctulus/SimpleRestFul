@@ -528,13 +528,12 @@ class Model {
 
 		//$shift = substr_count($where, '?');	
 
-		
-		$q  .= "WHERE $where";
-
 		if ($this->inSchema(['deleted_at'])){
 			if (!$this->show_deleted)
-				$q  .= (empty(trim($where)) ? '' : ' AND') . " deleted_at IS NULL";	
+				$where  = ($where == '1 = 1') ? '' : "($where) AND deleted_at IS NULL";	
 		}
+		
+		$q  .= "WHERE $where";
 
 		$group = (!empty($this->group)) ? 'GROUP BY '.implode(',', $this->group) : '';
 		$q  .= " $group";
@@ -766,8 +765,8 @@ class Model {
 			return false;	
 	}
 
-	function first(array $fields = null, array $order = null, int $limit = NULL, int $offset = null){
-		$q = $this->toSql($fields, $order, $limit, $offset);
+	function first(array $fields = null){
+		$q = $this->toSql($fields, NULL, 1);
 		$st = $this->bind($q);
 
 		if ($st->execute())
@@ -776,6 +775,16 @@ class Model {
 			return false;	
 	}
 	
+	function value($field){
+		$q = $this->toSql([$field], NULL, 1);
+		$st = $this->bind($q);
+
+		if ($st->execute())
+			return $st->fetch(\PDO::FETCH_NUM)[0];
+		else
+			return false;	
+	}
+
 	function exists(){
 		$q = $this->toSql(null, null, null, null, true);
 		$st = $this->bind($q);
@@ -945,12 +954,21 @@ class Model {
 
 		$this->w_vars = $vars;
 
-		$this->where[] = implode(" $conjunction ", $_where);
+		$ws_str = implode(" $conjunction ", $_where);
+		
+		if (count($conditions)>1)
+			$ws_str = "($ws_str)";
+		
+		$this->where[] = $ws_str;
 		//Debug::debug($this->where);
 		//Debug::debug($this->w_vars, 'WHERE VARS');	
 		//Debug::debug($this->w_vals, 'WHERE VALS');	
 
 		return $this;
+	}
+
+	function find(int $id){
+		return $this->where([$this->id_name => $id])->get();
 	}
 
 	function whereNull(string $field){

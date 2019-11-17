@@ -1,5 +1,9 @@
 # TODO
 
+- el AND deleted_at IS NULL debe aplicarse con ( )
+
+SELECT  name, cost, id FROM products WHERE (name IN ('CocaCola', 'PesiLoca')  OR cost >= 550 ) AND deleted_at IS NULL;
+
 - Desactivar regla correspondiente para filtros como:
 
 http://simplerest.lan/api/products?name[endsWith]=B
