@@ -76,7 +76,7 @@ class DumbController extends Controller
         Debug::debug(Database::table('products')->get());
         //Debug::debug(Database::table('products')->setFetchMode('ASSOC')->get());
     }
-
+    
     function distinct(){
         Debug::debug(Database::table('products')->distinct()->get(['size']));
 
@@ -315,6 +315,65 @@ class DumbController extends Controller
         ])->get());            
     }
 
+    // WHERE IN
+    function where1(){
+        Debug::debug(Database::table('products')->where(['size', ['0.5L', '3L'], 'IN'])->get());
+    }
+
+    // WHERE IN
+    function where2(){
+        Debug::debug(Database::table('products')->where(['size', ['0.5L', '3L']])->get());
+    }
+
+    // WHERE IN
+    function where3(){
+        Debug::debug(Database::table('products')->whereIn('size', ['0.5L', '3L'])->get());
+    }
+
+    //WHERE NOT IN
+    function where4(){
+        Debug::debug(Database::table('products')->where(['size', ['0.5L', '3L'], 'NOT IN'])->get());
+    }
+
+    //WHERE NOT IN
+    function where5(){
+        Debug::debug(Database::table('products')->whereNotIn('size', ['0.5L', '3L'])->get());
+    }
+
+    // WHERE NULL
+    function where6(){  
+        Debug::debug(Database::table('products')->where(['workspace', null])->get());   
+    }
+
+    // WHERE NULL
+    function where7(){  
+        Debug::debug(Database::table('products')->whereNull('workspace')->get());
+    }
+
+    // WHERE NOT NULL
+    function where8(){  
+        Debug::debug(Database::table('products')->where(['workspace', null, 'IS NOT'])->get());   
+    }
+
+    // WHERE NOT NULL
+    function where9(){  
+        Debug::debug(Database::table('products')->whereNotNull('workspace')->get());
+    }
+
+    // WHERE BETWEEN
+    function where10(){
+        Debug::debug(Database::table('products')
+        ->select(['name', 'cost'])
+        ->whereBetween('cost', [100, 250])->get());
+    }
+
+    // WHERE BETWEEN
+    function where11(){
+        Debug::debug(Database::table('products')
+        ->select(['name', 'cost'])
+        ->whereNotBetween('cost', [100, 250])->get());
+    }
+    
 
     function where_raw(){
         Debug::debug(Database::table('products')
@@ -324,7 +383,7 @@ class DumbController extends Controller
         ->get());
     }
 
-    
+   
     /*
         SELECT * FROM products WHERE 1 = 1 AND deleted_at IS NULL ORDER BY cost ASC, id DESC LIMIT 1, 4
     */
@@ -448,6 +507,9 @@ class DumbController extends Controller
     function get_nulls(){    
         // Get products where workspace IS NULL
         Debug::debug(Database::table('products')->where(['workspace', null])->get());   
+   
+        // Or
+        Debug::debug(Database::table('products')->whereNull('workspace')->get());
     }
 
     /*
@@ -768,5 +830,6 @@ class DumbController extends Controller
 
         Debug::debug($dos);
     }
+
    
 }

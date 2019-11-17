@@ -604,14 +604,7 @@ class Model {
 	}
 
 	//
-	function mergeBindings(object $model){
-		/*
-		$m = get_parent_class($this);
-		
-		if (!($model instanceof $m))
-			throw new \Exception("Injected model should be child of Model");
-		*/
-	
+	function mergeBindings(Model $model){
 		$this->to_merge_bindings = $model->getBindings();
 
 		if (!empty($this->table_raw_q)){
@@ -906,6 +899,9 @@ class Model {
 			$conditions = Arrays::nonassoc($conditions);
 		}
 
+		if (isset($conditions[0]) && is_string($conditions[0]))
+			$conditions = [$conditions];
+
 		$_where = [];
 
 		$vars   = [];
@@ -959,6 +955,47 @@ class Model {
 
 	function whereNull(string $field){
 		$this->where([$field, NULL]);
+		return $this;
+	}
+
+	function whereNotNull(string $field){
+		$this->where([$field, NULL, 'IS NOT']);
+		return $this;
+	}
+
+	function whereIn(string $field, array $vals){
+		$this->where([$field, $vals, 'IN']);
+		return $this;
+	}
+
+	function whereNotIn(string $field, array $vals){
+		$this->where([$field, $vals, 'NOT IN']);
+		return $this;
+	}
+
+	function whereBetween(string $field, array $vals){
+		if (count($vals)!=2)
+			throw new \InvalidArgumentException("whereBetween accepts an array of exactly two items");
+
+		$min = min($vals[0],$vals[1]);
+		$max = max($vals[0],$vals[1]);
+
+		$this->where([$field, $min, '>=']);
+		$this->where([$field, $max, '<=']);
+		return $this;
+	}
+
+	function whereNotBetween(string $field, array $vals){
+		if (count($vals)!=2)
+			throw new \InvalidArgumentException("whereBetween accepts an array of exactly two items");
+
+		$min = min($vals[0],$vals[1]);
+		$max = max($vals[0],$vals[1]);
+
+		$this->where([
+						[$field, $min, '<'],
+						[$field, $max, '>']
+		], 'OR');
 		return $this;
 	}
 
