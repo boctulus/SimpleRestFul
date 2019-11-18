@@ -255,6 +255,8 @@ abstract class ApiController extends Controller
                     Factory::response()->sendError("Unknown field '$field' in exclude", 400);
             }
 
+            $ignored = [];
+
             if ($exclude != null)
                 $instance->hide($exclude);
                        
@@ -346,12 +348,15 @@ abstract class ApiController extends Controller
                                 switch ($op) {
                                     case 'contains':
                                         $_get[$key] = [$campo, '%'.$v.'%', 'like'];
+                                        $ignored[] = $campo;
                                     break;
                                     case 'startsWith':
                                         $_get[$key] = [$campo, $v.'%', 'like'];
+                                        $ignored[] = $campo;
                                     break;
                                     case 'endsWith':
                                         $_get[$key] = [$campo, '%'.$v, 'like'];
+                                        $ignored[] = $campo;
                                     break;
                                     case 'in':                                         
                                         if (strpos($v, ',')!== false){    
@@ -446,7 +451,7 @@ abstract class ApiController extends Controller
 
                 #var_export($_get); ////
         
-                $instance->setValidator(new Validator());                                 
+                $instance->setValidator((new Validator())->ignoreFields($ignored));
                 $rows = $instance->where($_get)->get($fields, $order, $limit, $offset);
 
                 Factory::response()->setPretty($pretty)->code(200)->send($rows);
@@ -598,7 +603,7 @@ abstract class ApiController extends Controller
                     $data[$k] = NULL;
             }
 
-            $validado = (new Validator())->setRequired($put_mode)->validate($instance->getRules(), $data, null);
+            $validado = (new Validator())->setRequired($put_mode)->validate($instance->getRules(), $data);
             if ($validado !== true){
                 Factory::response()->sendError('Data validation error:', 400, $validado);
             }
