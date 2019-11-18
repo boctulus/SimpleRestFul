@@ -14,10 +14,22 @@ use simplerest\core\interfaces\IValidator;
 */
 class Validator implements IValidator
 {
-	protected $required = true;
+	protected $required  = true;
+	protected $as_string = false;
+	protected $ignored_fields = [];
 
 	function setRequired(bool $state){
 		$this->required = $state;
+		return $this;
+	}
+
+	function ignoreFields(array $fields){
+		$this->ignored_fields = $fields;
+		return $this;
+	}
+
+	function asString(){
+		$this->as_string = true; 
 		return $this;
 	}
 
@@ -75,23 +87,22 @@ class Validator implements IValidator
 		}else
 			throw new \InvalidArgumentException("Invalid data type for '$dato'");	
 	}	
-	
+
 	/*
 		@param array $rules
 		@param array $data
-		@param array $ignored_fields
 		@return mixed
 
 	*/
-	function validate(array $rules, array $data, array $ignored_fields = null, bool $as_string = false){
+	function validate(array $rules, array $data){
 
 		//Debug::debug($data, 'DATA:');
 
 		if (empty($rules))
-			throw new InvalidArgumentException('No validations!');
+			throw new \InvalidArgumentException('No validations!');
 		
 		//if (empty($data))
-		//	throw new InvalidArgumentException('No data!');
+		//	throw new \InvalidArgumentException('No data!');
 	
 		$errores = [];
 		
@@ -128,7 +139,7 @@ class Validator implements IValidator
 			
 			$dato = $data[$field];
 			
-			if(in_array($field, (array) $ignored_fields))
+			if(in_array($field, (array) $this->ignored_fields))
 				continue;
 			
 			if (!isset($rule['required']) || $this->required)
@@ -220,7 +231,7 @@ class Validator implements IValidator
 
 		$validated = empty($errores) ? true : get_class()::humanizeErrors($errores);
 
-		if ($as_string){
+		if ($this->as_string){
 			if ($validated !== true){
 				
 				$e = [];

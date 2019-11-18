@@ -506,7 +506,7 @@ class Model {
 
 		// Validación
 		if (!empty($this->validator)){
-			$validado = $this->validator->validate($this->getRules(), array_combine($vars, $values), null, true);
+			$validado = $this->validator->asString()->validate($this->getRules(), array_combine($vars, $values));
 			if ($validado !== true){
 				throw new InvalidValidationException($validado);
 			} 
@@ -1161,7 +1161,7 @@ class Model {
 
 		// Validación
 		if (!empty($this->validator)){
-			$validado = $this->validator->validate($this->getRules(), $data, null, true);
+			$validado = $this->validator->asString()->validate($this->getRules(), $data);
 			if ($validado !== true){
 				throw new InvalidValidationException($validado);
 			} 
@@ -1224,9 +1224,9 @@ class Model {
 	{
 		// Validación
 		if (!empty($this->validator)){
-			$validado = $this->validator->validate($this->getRules(), array_combine($this->w_vars, $this->w_vals), null, true);
+			$validado = $this->validator->asString()->validate($this->getRules(), array_combine($this->w_vars, $this->w_vals));
 			if ($validado !== true){
-				throw new \InvalidValidationException($validado);
+				throw new InvalidValidationException($validado);
 			} 
 		}
 
@@ -1291,9 +1291,9 @@ class Model {
 
 		// Validación
 		if (!empty($this->validator)){
-			$validado = $this->validator->validate($this->getRules(), $data, null, true);
+			$validado = $this->validator->asString()->validate($this->getRules(), $data);
 			if ($validado !== true){
-				throw new \InvalidValidationException($validado);
+				throw new InvalidValidationException($validado);
 			} 
 		}
 
