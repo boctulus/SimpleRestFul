@@ -3,6 +3,29 @@ DOCUMENTACION
 
 SimpleRest utiliza la arquitectura MVC donde modelos y controladores se implementan con clases y las vistas con archivos planos.
 
+### Controlador
+
+
+Para demostrar como ejecutar un controlador desde la linea de comandos ejemplificaremos con un simple controlador:
+
+	<?php
+
+	namespace simplerest\controllers;
+
+	class DumbController extends Controller
+	{
+
+		function add($a, $b){
+			$res = (int) $a + (int) $b;
+			return  "$a + $b = " . $res;
+		}
+
+	}
+
+En la terminal nos cambiamos al directorio "public" y ejecutamos: 
+
+	php index.php dumb add 1 6
+
 
 ### Modelo
 
