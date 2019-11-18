@@ -491,8 +491,28 @@ class DumbController extends Controller
         ->orderBy(['cost' => 'ASC'])
         ->get());
     }
-
    
+    /*
+        SELECT * FROM products WHERE EXISTS (SELECT 1 FROM users WHERE products.belongs_to = users.id AND users.lastname IS NOT NULL);
+    */
+    function where_raw2(){
+        Debug::debug(Database::table('products')->showDeleted()
+        ->whereRaw('EXISTS (SELECT 1 FROM users WHERE products.belongs_to = users.id AND users.lastname = ?  )', ['AB'])
+        ->get());
+    }
+
+
+    /*
+        WHERE EXISTS
+
+        SELECT * FROM products WHERE EXISTS (SELECT 1 FROM users WHERE products.belongs_to = users.id AND users.lastname IS NOT NULL);
+    */
+    function where_exists(){
+        Debug::debug(Database::table('products')->showDeleted()
+        ->whereExists('(SELECT 1 FROM users WHERE products.belongs_to = users.id AND users.lastname = ?)', ['AB'])
+        ->get());
+    }
+
     /*
         SELECT * FROM products WHERE 1 = 1 AND deleted_at IS NULL ORDER BY cost ASC, id DESC LIMIT 1, 4
     */

@@ -1,9 +1,5 @@
 # TODO
 
-- el AND deleted_at IS NULL debe aplicarse con ( )
-
-SELECT  name, cost, id FROM products WHERE (name IN ('CocaCola', 'PesiLoca')  OR cost >= 550 ) AND deleted_at IS NULL;
-
 - Desactivar regla correspondiente para filtros como:
 
 http://simplerest.lan/api/products?name[endsWith]=B
@@ -74,6 +70,15 @@ https://stackoverflow.com/questions/45359615/laravel-query-builder-where-and-or-
 
 
 - Intentar habilitar el ACL para Controllers != ApiController
+
+- Hacer un OR JOIN similar al OR WHERE u OR HAVING
+
+https://stackoverflow.com/a/36074909/980631
+
+<-- eso implicaría mantener una interfaz simular a la de where() que recibe un array de where(s) y opcionalmente una conjunción.
+
+https://laravel.com/docs/5.8/queries#where-exists-clauses
+
 
 - Considerar usar 'seek method' en vez de OFFSET como método de optimización de queries
 

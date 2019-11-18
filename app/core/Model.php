@@ -339,6 +339,11 @@ class Model {
 		return $this;
 	}
 
+	function whereExists(string $q, array $vals = null){
+		$this->whereRaw("EXISTS $q", $vals);
+		return $this;
+	}
+
 	function havingRaw(string $q, array $vals = null){
 		if (substr_count($q, '?') != count($vals))
 			throw new \InvalidArgumentException("Number of ? are not consitent with the number of passed values");
