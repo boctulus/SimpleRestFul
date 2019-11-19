@@ -34,7 +34,7 @@ class DumbController extends Controller
     function mul(){
         $req = Request::getInstance();
         $res = (int) $req[0] * (int) $req[1];
-        return "$req[0] + $req[1] = " . $res;
+        return "$req[0] * $req[1] = " . $res;
     }
 
     function div(){

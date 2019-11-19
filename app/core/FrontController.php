@@ -24,6 +24,12 @@ class FrontController
             if (empty($controller))
                 throw new \Exception("Lacks controller specification");
 
+            //if (empty($action))
+            //    throw new \Exception("Lacks action specification");    
+
+            $req = Request::getInstance();  
+            $req->setParams($params);
+            
             $class_file = $controller;
             $method = !empty($action) ? $action : self::DEFAULT_ACTION;
     
@@ -46,8 +52,7 @@ class FrontController
             if (empty($_params[0]))  
                 array_shift($_params);
 
-            $req = Request::getInstance();  
-            
+            $req = Request::getInstance();            
         
             if ($_params[0]=='api'){
                 @list($controller) = array_slice($_params,1,1);

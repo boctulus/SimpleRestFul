@@ -16,9 +16,11 @@ class Request  implements \ArrayAccess, Arrayable
 
     static function getInstance(){
         if(static::$instance == NULL){
-            parse_str($_SERVER['QUERY_STRING'], static::$query_arr);
-            static::$raw = file_get_contents("php://input");
-            static::$headers = apache_request_headers();
+            if (php_sapi_name() != 'cli'){
+                parse_str($_SERVER['QUERY_STRING'], static::$query_arr);
+                static::$raw = file_get_contents("php://input");
+                static::$headers = apache_request_headers();
+            }
             static::$instance = new static();
         }
         return static::$instance;
