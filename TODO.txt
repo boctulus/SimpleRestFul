@@ -1,5 +1,20 @@
 # TODO
 
+- Generador de modelos, controladores y apis (resource controllers) como en Laravel:
+
+Ejemplo:
+
+  php index.php make -mca Products
+
+-m model
+-c controller 
+-a api controller
+
+https://stackoverflow.com/questions/43187735/laravel-5-4-create-model-controller-and-migration-in-single-artisan-command
+
+
+- Vista de correo enviado para cambio de contraseña o confirmación de correo.
+
 - Usar un folder_id en cada entidad en la que pretendo utilizar folders y usar éste en vez de la combinación entre el user_ud y el nombre del "workspace" como identificador de carpeta.
 
 Objetivo: poder crear recursos de nuestra propiedad en carpetas ajenas donde lógicamente poseemos permiso de lectura.
