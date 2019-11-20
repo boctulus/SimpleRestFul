@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Nov 11, 2019 at 05:54 PM
+-- Generation Time: Nov 20, 2019 at 03:09 PM
 -- Server version: 5.7.27-0ubuntu0.18.04.1
 -- PHP Version: 7.2.24-0ubuntu0.18.04.1
 
@@ -31,7 +31,7 @@ SET time_zone = "+00:00";
 CREATE TABLE `folders` (
   `id` int(11) NOT NULL,
   `resource_table` varchar(40) NOT NULL,
-  `value` varchar(40) NOT NULL,
+  `name` varchar(40) NOT NULL,
   `belongs_to` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -39,7 +39,7 @@ CREATE TABLE `folders` (
 -- Dumping data for table `folders`
 --
 
-INSERT INTO `folders` (`id`, `resource_table`, `value`, `belongs_to`) VALUES
+INSERT INTO `folders` (`id`, `resource_table`, `name`, `belongs_to`) VALUES
 (9, 'products', 'comparto', 4),
 (10, 'products', 'electricos', 125),
 (11, 'products', 'jardineria', 125),
@@ -161,13 +161,13 @@ INSERT INTO `products` (`id`, `name`, `description`, `size`, `cost`, `created_at
 (120, 'MiBebida', 'Rica Rica', '1L', 100, '2018-12-23 00:00:00', '2019-11-03 21:37:48', NULL, 1, 0, NULL, 90),
 (121, 'OtraBebida', 'gaseosa', '1L', 25, '2019-09-28 00:00:00', '2019-11-11 13:58:21', NULL, 1, 0, 'lista2', 90),
 (122, 'Cerveza de malta', 'Pichu', '1L', 100, '2018-12-29 00:00:00', '2019-11-03 21:37:48', NULL, 1, 0, NULL, 90),
-(123, 'PesiLoca', 'x_x', '2L', 30, '2018-12-16 00:00:00', '2019-11-11 13:15:58', NULL, 1, 0, 'mylist', 90),
+(123, 'PesiLoca', 'x_x', '2L', 30, '2018-12-16 00:00:00', '2019-11-17 07:48:25', '2019-11-17 07:48:25', 1, 0, 'mylist', 90),
 (125, 'Vodka', 'Genial', '3L', 250, '2017-01-10 00:00:00', '2019-11-07 11:22:48', NULL, 1, 0, 'lista publica', 90),
 (126, 'Uvas fermentadas', 'Espectacular', '5L', 300, '2019-06-24 00:00:00', '2019-10-14 22:39:51', NULL, 1, 0, 'lista publica', 90),
 (127, 'Vodka venezolanoooooooooooo', 'del caribe', '1L', 100, '2019-07-12 00:00:00', '2019-11-04 12:08:36', NULL, 1, 1, NULL, 90),
 (131, 'Vodkaaaabc', 'Rusia', '1L', 550, '2019-06-04 00:00:00', NULL, NULL, 1, 0, 'secreto', 4),
 (132, 'Ron venezolano', 'Rico', '1L', 100, '2019-10-03 00:00:00', '2019-11-03 21:37:48', NULL, 1, 0, NULL, 90),
-(133, 'Vodka venezolano', 'de Vzla', '1L', 100, '2019-09-19 00:00:00', '2019-11-03 21:37:48', NULL, 1, 0, NULL, 90),
+(133, 'Vodka venezolano', 'de Vzla', '1.5L', 100, '2019-09-19 00:00:00', '2019-11-12 12:48:31', NULL, 1, 0, NULL, 90),
 (137, 'Agua ardiente', 'Si que arde!', '1L', 120, '2019-07-16 00:00:00', '2019-11-03 20:46:12', NULL, 1, 0, 'lista', 90),
 (143, 'Agua ', '--', '1L', 100, '2019-06-03 00:00:00', '2019-11-03 21:37:48', NULL, 1, 0, NULL, 90),
 (145, 'Juguito XII', 'de manzanas exprimidas', '1L', 350, '2019-02-09 00:00:00', NULL, NULL, 1, 0, 'lista24', 90),
@@ -178,7 +178,7 @@ INSERT INTO `products` (`id`, `name`, `description`, `size`, `cost`, `created_at
 (155, 'Super-jugo', 'BBB', '12', 100, '2019-09-22 00:00:00', '2019-11-04 17:00:18', NULL, 1, 0, NULL, 90),
 (159, 'Agua minerale', 'x_x', '2L', 90, '2019-10-14 18:08:45', '2019-11-11 13:15:58', NULL, 1, 0, NULL, 90),
 (160, 'Limonada', 'Rica', '500ML', 100, '2019-10-23 14:05:30', '2019-11-04 13:19:08', NULL, 1, 0, NULL, 90),
-(162, 'Juguito de Mabelita', 'de manzanas exprimidas', '2L', 150, '2019-10-25 08:36:26', '2019-11-05 21:36:25', NULL, 1, 0, NULL, 113),
+(162, 'Juguito de Mabelita', 'de manzanas exprimidas', '2L', 250, '2019-10-25 08:36:26', '2019-11-12 12:49:52', NULL, 1, 0, NULL, 113),
 (163, 'ABC', 'XYZ', '6L', 600, '2019-10-26 10:05:00', '2019-11-07 00:29:25', NULL, 1, 1, NULL, 1),
 (164, 'AAA', 'BBB', '33L', 333, '2019-10-26 19:48:26', '2019-10-29 18:33:57', NULL, 1, 0, NULL, 112),
 (165, 'ZZZ', 'zzz', '0.5L', 100, '2019-10-26 22:38:39', '2019-11-04 13:04:26', NULL, 1, 0, NULL, 90),
@@ -209,7 +209,7 @@ INSERT INTO `products` (`id`, `name`, `description`, `size`, `cost`, `created_at
 (191, 'Wisky', '', '1L', 100, '2019-11-05 21:36:40', '2019-11-10 11:54:03', NULL, 1, 0, NULL, 113),
 (192, 'Jugo Naranjin', 'Delicious juicEEEE', '1 L', 350, '2019-11-06 23:45:29', NULL, NULL, 1, 0, NULL, 4),
 (193, 'Re-Jugo', 'Delicious juicEEEEXXX', '1 L', 350, '2019-11-07 00:18:25', NULL, NULL, 1, 0, NULL, 4),
-(194, 'Re-Jugo', 'Delicious juicEEEEXXXYZ', '1 L', 350, '2019-11-07 00:20:53', NULL, NULL, 1, 0, NULL, 4),
+(194, 'Re-Jugo', 'Delicious juicEEEEXXXYZ', '1 L', 350, '2019-11-07 00:20:53', NULL, NULL, 1, 0, NULL, 135),
 (195, 'Boo', 'Delicious juicEEEEXXXYZ4444444444444444444444444', '1 L', 350, '2019-11-07 01:31:43', NULL, NULL, 1, 0, NULL, 4),
 (196, 'AAAAAAA', 'TTTTTTT', '', 0, '2019-11-07 22:58:51', NULL, NULL, 1, 0, NULL, 137),
 (197, 'HEYYYYYY', '', '', 0, '2019-11-10 00:57:51', NULL, NULL, 1, 0, NULL, 150),
@@ -223,7 +223,9 @@ INSERT INTO `products` (`id`, `name`, `description`, `size`, `cost`, `created_at
 (205, 'Supreme jugooo', 'de manzanas exprimidas', '1L', 250, '2019-11-11 14:09:52', NULL, NULL, 1, 0, 'lista', 87),
 (206, 'Juguito de tomate de árbol', 'Ecuador', '1L', 200, '2019-11-11 15:14:36', '2019-11-11 16:26:34', NULL, 1, 0, 'lista publica', 90),
 (207, 'Juguito de tomate papaya', NULL, '1L', 150, '2019-11-11 15:15:05', '2019-11-11 15:41:32', NULL, 1, 0, 'lista', 87),
-(208, 'Juguito de tomate pitaya', NULL, '1L', 450, '2019-11-11 15:15:16', NULL, NULL, 1, 0, 'lista', 87);
+(208, 'Juguito de tomate pitaya', NULL, '1L', 450, '2019-11-11 15:15:16', NULL, NULL, 1, 0, 'lista', 87),
+(209, 'AAA', '', '', 0, '2019-11-12 12:50:01', '2019-11-12 12:50:04', '2019-11-12 12:50:04', 1, 0, NULL, 113),
+(210, 'GGG', '', '', 0, '2019-11-12 13:02:55', '2019-11-12 13:03:10', '2019-11-12 13:03:10', 1, 0, NULL, 113);
 
 -- --------------------------------------------------------
 
@@ -439,7 +441,7 @@ INSERT INTO `user_roles` (`id`, `user_id`, `role_id`, `created_at`, `modificatio
 --
 ALTER TABLE `folders`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `resource_table` (`resource_table`,`value`,`belongs_to`),
+  ADD UNIQUE KEY `resource_table` (`resource_table`,`name`,`belongs_to`),
   ADD KEY `owner` (`belongs_to`);
 
 --
@@ -521,7 +523,7 @@ ALTER TABLE `other_permissions`
 -- AUTO_INCREMENT for table `products`
 --
 ALTER TABLE `products`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=209;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=211;
 
 --
 -- AUTO_INCREMENT for table `users`
