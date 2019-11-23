@@ -595,3 +595,13 @@ Agregar en el bloque lo siguiente:
 		rewrite ^([^.]*[^/])$ $1/ permanent;
 		try_files $uri $uri/ /index.php?q=$uri&$args;
 	}
+	
+	
+# Opciones para los menús
+
+Se sugiere crear una entidad "Views" que contenga todas las urls de las vistas listadas y otra "RoleViews" asociada a la primera.
+
+Al hacer un GET a Views se listarían todas las urls de vistas para los roles del usuario en particular pero podría filtrarse por un rol específico:
+
+GET /api/views?rol=admin
+  
