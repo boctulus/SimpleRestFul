@@ -7,6 +7,7 @@ use simplerest\libs\Factory;
 use simplerest\libs\Arrays;
 use simplerest\libs\Database;
 use simplerest\libs\Debug;
+use simplerest\libs\Url;
 use simplerest\models\GroupPermissionsModel;
 use simplerest\models\OtherPermissionsModel;
 use simplerest\models\FoldersModel;
@@ -314,15 +315,40 @@ abstract class ApiController extends Controller
                     Factory::response()->send($rows[0]);
             }else{    
                 // "list
-                
-                $limit  = (int) Arrays::shift($_get,'limit');
-                $offset = (int) Arrays::shift($_get,'offset',0);
-                $order  = Arrays::shift($_get,'order');
+             
+                $get_limit = function(&$limit){
+                    if ($limit == NULL)
+                        $limit = min($this->config['max_records'], 10);
+                    else{
+                        if ($limit !=0)
+                            $limit = min($limit, $this->config['max_records']);
+                        else    
+                            $limit = $this->config['max_records'];
+                    } 
+                };
+   
+                $page  = Arrays::shift($_get,'page');
+                $page_size = Arrays::shift($_get,'pageSize');
 
-                if ($limit !=0)
-                    $limit = min($limit, $this->config['max_records']);
-                else    
-                    $limit = $this->config['max_records'];
+                if ($page != NULL || $page_size != NULL){
+                    $get_limit($page_size);
+
+                    if ($page == NULL)
+                        $page = 1;
+
+                    $limit  = $page_size;
+                    $offset = $page_size * ($page -1);
+
+                    //var_export(['limit' =>$limit, 'offset' => $offset]);
+                }else{
+                    $limit  = Arrays::shift($_get,'limit');
+                    $offset = Arrays::shift($_get,'offset',0);                    
+
+                    $get_limit($limit);
+                    $page_size = $limit;
+                }
+
+                $order  = Arrays::shift($_get,'order');
 
                 // Importante:
                 $_get = Arrays::nonassoc($_get);
@@ -450,11 +476,47 @@ abstract class ApiController extends Controller
 
 
                 #var_export($_get); ////
-        
+
+
+                //var_export($_SERVER["QUERY_STRING"]);
+
+                $query = Factory::request()->getQuery();
+                
+                if (isset($query['offset'])) 
+                    unset($query['offset']);
+
+                if (isset($query['limit'])) 
+                    unset($query['limit']);
+
+                if (isset($query['page'])) 
+                    unset($query['page']);
+
+                if (isset($query['pageSize'])) 
+                    unset($query['pageSize']);
+
+                $instance2 = (new $model($conn))->setFetchMode('ASSOC');
+                $count = $instance2->where($_get)->count();
+
+                $page_count = ceil($count / $limit);
+
+                if ($page == NULL)
+                    $page = ceil($offset / $limit) +1;
+                
+                if ($page +1 <= $page_count){
+                    $query['page'] = ($page +1);
+
+                    $next =  Url::protocol() . '//' . $_SERVER['HTTP_HOST'] . '/api/' . $this->model_table . '?' . $query = str_replace(['%5B', '%5D'], ['[', ']'], http_build_query($query));
+                }else{
+                    $next = 'null';
+                }
+
+                $pg = ['pages' => $page_count, 'nextUrl' => $next];
+
+    
                 $instance->setValidator((new Validator())->ignoreFields($ignored));
                 $rows = $instance->where($_get)->get($fields, $order, $limit, $offset);
 
-                Factory::response()->setPretty($pretty)->code(200)->send($rows);
+                Factory::response()->setPretty($pretty)->code(200)->setPaginator($pg)->send($rows);
         
             }
 

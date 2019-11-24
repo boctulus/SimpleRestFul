@@ -12,6 +12,7 @@ class Response
     static protected $config;
     static protected $pretty;
     static protected $quit = true;
+    static protected $paginator;
     static protected $options = JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES;
 
 
@@ -72,6 +73,12 @@ class Response
         return json_encode($data, $options);  
     }
 
+    public function setPaginator(array $p){
+        static::$paginator = $p;
+        return static::getInstance();
+    }
+
+
     public function send($data, int $http_code = NULL){
         $http_code = $http_code != NULL ? $http_code : static::$http_code;
         
@@ -81,8 +88,18 @@ class Response
         if ($http_code != NULL)
             header(trim('HTTP/'.static::$version.' '.$http_code.' '.static::$http_code_msg));
         
-        if (is_array($data) || is_object($data))
-            $data = $this->encode([ 'data' => $data, 'error' => '', 'error_detail' => '' ]);
+        if (is_array($data) || is_object($data)){
+            $arr = ['data' => $data, 
+                    'error' => '', 
+                    'error_detail' => '' 
+            ];
+
+            if (static::$paginator != NULL)
+                $arr['paginator'] = static::$paginator;
+
+            $data = $this->encode($arr);
+        }
+            
 
         echo $data . "\n"; 
 

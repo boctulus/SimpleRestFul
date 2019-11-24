@@ -538,12 +538,16 @@ class Model {
 				}
 			}			
 
+			$where = trim($where);
+
 			if (!empty($where)){
 				$where = "($where) AND ". $implode. ' ';
 			}else{
 				$where = "$implode ";
 			}
 		}			
+
+		$where = trim($where);
 
 		if ($this->inSchema(['deleted_at'])){
 			if (!$this->show_deleted){
@@ -986,7 +990,7 @@ class Model {
 		// group
 		$ws_str = implode(" $conjunction ", $_where);
 		
-		if (count($conditions)>1)
+		if (count($conditions)>1 && !empty($ws_str))
 			$ws_str = "($ws_str)";
 		
 		$this->where_group_op[] = $group_op;	
@@ -1115,7 +1119,7 @@ class Model {
 		// group
 		$ws_str = implode(" $conjunction ", $_having);
 		
-		if (count($conditions)>1)
+		if (count($conditions)>1 && !empty($ws_str))
 			$ws_str = "($ws_str)";
 		
 		$this->having_group_op[] = $group_op;	

@@ -3,6 +3,27 @@
 namespace simplerest\libs;
 
 class Url {
+
+    static function protocol(){
+        /*
+        if (!empty($_SERVER['HTTPS']) && ('on' == $_SERVER['HTTPS'])) {
+            $protocol = 'https:';
+        } else {
+            $protocol = 'http:';
+        }
+        */
+
+        $config = include CONFIG_PATH . 'config.php';
+        
+        if ($config['HTTPS'] == 1 || strtolower($config['HTTPS']) == 'on'){
+            $protocol = 'https:';
+        } else {
+            $protocol = 'http:';
+        }
+
+        return $protocol;
+    }
+
     static function assets($resource){
         /*
         if (!empty($_SERVER['HTTPS']) && ('on' == $_SERVER['HTTPS'])) {

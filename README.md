@@ -61,6 +61,8 @@ Example:
     GET /api/products?description=NULL
     GET /api/products?description[neq]=NULL
 
+# Pagination
+
 ### ORDER BY
 
     GET /api/products?order[cost]=DESC
@@ -72,6 +74,11 @@ Example:
     GET /api/products?limit=10
     GET /api/products?offset=40&limit=10
     GET /api/products?limit=10&order[name]=ASC&order[cost]=DESC&size=2L
+
+Pagination can be done with page and pageSize
+
+    GET /api/products?page=3
+    GET /api/products?pageSize=20&page=2
 
 ### Show soft-deleted items
 
