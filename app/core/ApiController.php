@@ -490,8 +490,8 @@ abstract class ApiController extends Controller
                 if (isset($query['page'])) 
                     unset($query['page']);
 
-                if (isset($query['pageSize'])) 
-                    unset($query['pageSize']);
+                if (!isset($query['pageSize'])) 
+                    $query['pageSize'] = $page_size;
 
                 $instance2 = (new $model($conn))->setFetchMode('ASSOC');
                 $count = $instance2->where($_get)->count();
@@ -504,7 +504,7 @@ abstract class ApiController extends Controller
                 if ($page +1 <= $page_count){
                     $query['page'] = ($page +1);
 
-                    $next =  Url::protocol() . '//' . $_SERVER['HTTP_HOST'] . '/api/' . $this->model_table . '?' . $query = str_replace(['%5B', '%5D'], ['[', ']'], http_build_query($query));
+                    $next =  Url::protocol() . '//' . $_SERVER['HTTP_HOST'] . '/api/' . $this->model_table . '?' . $query = str_replace(['%5B', '%5D', '%2C'], ['[', ']', ','], http_build_query($query));
                 }else{
                     $next = 'null';
                 }
