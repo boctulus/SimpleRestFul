@@ -493,8 +493,7 @@ abstract class ApiController extends Controller
                 if (!isset($query['pageSize'])) 
                     $query['pageSize'] = $page_size;
 
-                $instance2 = (new $model($conn))->setFetchMode('ASSOC');
-                $count = $instance2->where($_get)->count();
+                $count = (new $model($conn))->where($_get)->count();
 
                 $page_count = ceil($count / $limit);
 

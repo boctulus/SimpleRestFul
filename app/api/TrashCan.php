@@ -247,6 +247,8 @@ class TrashCan extends MyApiController
 
                 $query = Factory::request()->getQuery();
             
+                unset($query['entity']);
+
                 if (isset($query['offset'])) 
                     unset($query['offset']);
 
@@ -256,11 +258,10 @@ class TrashCan extends MyApiController
                 if (isset($query['page'])) 
                     unset($query['page']);
 
-                if (isset($query['pageSize'])) 
-                    unset($query['pageSize']);
+                if (!isset($query['pageSize'])) 
+                    $query['pageSize'] = $page_size;
 
-                $instance2 = (new $model($conn))->setFetchMode('ASSOC');
-                $count = $instance2->showDeleted()->where($_get)->count();
+                $count = (new $model($conn))->showDeleted()->where($_get)->count();
 
                 //var_export(['cond' => $_get]);
                 //var_export(['count' => $count]);
@@ -273,7 +274,7 @@ class TrashCan extends MyApiController
                 if ($page +1 <= $page_count){
                     $query['page'] = ($page +1);
 
-                    $next =  Url::protocol() . '//' . $_SERVER['HTTP_HOST'] . '/api/' . $this->model_table . '?' . $query = str_replace(['%5B', '%5D'], ['[', ']'], http_build_query($query));
+                    $next =  Url::protocol() . '//' . $_SERVER['HTTP_HOST'] . '/api/trashCan?entity=' . $this->model_table . '&' . $query = str_replace(['%5B', '%5D'], ['[', ']'], http_build_query($query));
                 }else{
                     $next = 'null';
                 }
