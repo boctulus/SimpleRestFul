@@ -7,6 +7,7 @@ use simplerest\libs\Factory;
 use simplerest\libs\Arrays;
 use simplerest\libs\Database;
 use simplerest\libs\Validator;
+use simplerest\libs\Url;
 
 class TrashCan extends MyApiController
 {   
@@ -91,14 +92,39 @@ class TrashCan extends MyApiController
             }else{    
                 // "list
 
-                $limit  = (int) Arrays::shift($_get,'limit');
-                $offset = (int) Arrays::shift($_get,'offset',0);
-                $order  = Arrays::shift($_get,'order');
+                $get_limit = function(&$limit){
+                    if ($limit == NULL)
+                        $limit = min($this->config['paginator']['max_limit'], $this->config['paginator']['default_limit']);
+                    else{
+                        if ($limit !=0)
+                            $limit = min($limit, $this->config['paginator']['max_limit']);
+                        else    
+                            $limit = $this->config['paginator']['max_limit'];
+                    } 
+                };
+   
+                $page  = Arrays::shift($_get,'page');
+                $page_size = Arrays::shift($_get,'pageSize');
 
-                if ($limit !=0)
-                    $limit = min($limit, $this->config['max_records']);
-                else    
-                    $limit = $this->config['max_records'];
+                if ($page != NULL || $page_size != NULL){
+                    $get_limit($page_size);
+
+                    if ($page == NULL)
+                        $page = 1;
+
+                    $limit  = $page_size;
+                    $offset = $page_size * ($page -1);
+
+                    //var_export(['limit' =>$limit, 'offset' => $offset]);
+                }else{
+                    $limit  = Arrays::shift($_get,'limit');
+                    $offset = Arrays::shift($_get,'offset',0);                    
+
+                    $get_limit($limit);
+                    $page_size = $limit;
+                }
+
+                $order  = Arrays::shift($_get,'order');
 
                 // Importante:
                 $_get = Arrays::nonassoc($_get);
@@ -218,9 +244,44 @@ class TrashCan extends MyApiController
 
                 if (strtolower($pretty) == 'true' || $pretty == 1)
                     Factory::response()->setPretty(true);
+
+                $query = Factory::request()->getQuery();
+            
+                if (isset($query['offset'])) 
+                    unset($query['offset']);
+
+                if (isset($query['limit'])) 
+                    unset($query['limit']);
+
+                if (isset($query['page'])) 
+                    unset($query['page']);
+
+                if (isset($query['pageSize'])) 
+                    unset($query['pageSize']);
+
+                $instance2 = (new $model($conn))->setFetchMode('ASSOC');
+                $count = $instance2->showDeleted()->where($_get)->count();
+
+                //var_export(['cond' => $_get]);
+                //var_export(['count' => $count]);
+
+                $page_count = ceil($count / $limit);
+
+                if ($page == NULL)
+                    $page = ceil($offset / $limit) +1;
+                
+                if ($page +1 <= $page_count){
+                    $query['page'] = ($page +1);
+
+                    $next =  Url::protocol() . '//' . $_SERVER['HTTP_HOST'] . '/api/' . $this->model_table . '?' . $query = str_replace(['%5B', '%5D'], ['[', ']'], http_build_query($query));
+                }else{
+                    $next = 'null';
+                }
+
+                $pg = ['pages' => $page_count, 'nextUrl' => $next];                
                                   
                 $rows = $instance->where($_get)->get($fields, $order, $limit, $offset);
-                Factory::response()->code(200)->send($rows); 
+                Factory::response()->code(200)->setPaginator($pg)->send($rows); 
             }
 
         } catch (\Exception $e) {

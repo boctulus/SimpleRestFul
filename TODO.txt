@@ -113,34 +113,7 @@ Justificación: un caso de uso sería que un usuario con rol de gerente por ejem
 
 - Arreglar lo que pasa si un usuario es borrado con soft delete (warnings)
 
-- Usar un envelope como en Instagram
-
-Every response is contained by an envelope. That is, each response has a predictable set of keys with which you can expect to interact:
-
-  {
-      "meta": {
-          "code": 200
-      },
-      "data": {
-          ...
-      },
-      "pagination": {
-          "next_url": "...",
-          "next_max_id": "13872296"
-      }
-  }
-
-The meta key is used to communicate extra information about the response to the developer. If all goes well, you'll only ever see a code key with value 200. However, sometimes things go wrong, and in that case you might see a response like:
-
-{
-    "meta": {
-        "error_type": "OAuthException",
-        "code": 400,
-        "error_message": "..."
-    }
-}  
-
-Sometimes you just can't get enough. For this reason, we've provided a convenient way to access more data in any request for sequential data. Simply call the url in the next_url parameter and we'll respond with the next set of data.
+- Posiblemente implementar "Seek pagination" como en Instagram
 
 {
     ...
@@ -149,6 +122,11 @@ Sometimes you just can't get enough. For this reason, we've provided a convenien
         "next_max_id": "13872296"
     }
 }
+
+Más
+https://nordicapis.com/everything-you-need-to-know-about-api-pagination/
+https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#
+
 
 - Ante una excepción del modelo imprimir la consulta SQL
 

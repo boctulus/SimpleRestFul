@@ -318,12 +318,12 @@ abstract class ApiController extends Controller
              
                 $get_limit = function(&$limit){
                     if ($limit == NULL)
-                        $limit = min($this->config['max_records'], 10);
+                        $limit = min($this->config['paginator']['max_limit'], $this->config['paginator']['default_limit']);
                     else{
                         if ($limit !=0)
-                            $limit = min($limit, $this->config['max_records']);
+                            $limit = min($limit, $this->config['paginator']['max_limit']);
                         else    
-                            $limit = $this->config['max_records'];
+                            $limit = $this->config['paginator']['max_limit'];
                     } 
                 };
    
@@ -476,7 +476,6 @@ abstract class ApiController extends Controller
 
 
                 #var_export($_get); ////
-
 
                 //var_export($_SERVER["QUERY_STRING"]);
 

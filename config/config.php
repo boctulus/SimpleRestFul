@@ -62,8 +62,9 @@ return [
 
 	'pretty' => true,	
 	
-	// absolute LIMIT for queries
-	'max_records' => 50,
+	'paginator' => ['max_limit' => 50,
+					'default_limit' => 10
+	],
 
 	'google_auth'  => [
 		'client_id' => '228180780767-4p8t6nvocukmu44ti57o60n1ck6sokpd.apps.googleusercontent.com',
