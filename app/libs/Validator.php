@@ -57,14 +57,14 @@ class Validator implements IValidator
 		}elseif($tipo == 'decimal' || $tipo == 'float' || $tipo == 'double'){
 			$dato = trim($dato);
 			return is_numeric($dato);
-		}elseif($tipo == 'numeric' || $tipo == 'number'){
+		}elseif($tipo == 'number'){
 			$dato = trim($dato);
 			return ctype_digit($dato) || is_numeric($dato);
 		}elseif($tipo == 'string' || $tipo == 'str'){
 			return is_string($dato);
 		}elseif($tipo == 'alpha'){                                     
 			return (preg_match('/^[\pL\pM\p{Zs}.-]+$/u',$dato) == 1); 		
-		}elseif($tipo == 'notnum' || $tipo == 'not-numeric str'){
+		}elseif($tipo == 'notnum'){
 			return preg_match('/[0-9]+/',$dato) == 0;
 		}elseif($tipo == 'email'){
 				return filter_var($dato, FILTER_VALIDATE_EMAIL);
@@ -85,7 +85,7 @@ class Validator implements IValidator
 		}elseif($tipo == 'array'){
 				return is_array($dato);			
 		}else
-			throw new \InvalidArgumentException("Invalid data type for '$dato'");	
+			throw new \InvalidArgumentException(sprintf(_('Invalid data type for %s'), $dato));	
 	}	
 
 	/*
@@ -99,7 +99,7 @@ class Validator implements IValidator
 		//Debug::debug($data, 'DATA:');
 
 		if (empty($rules))
-			throw new \InvalidArgumentException('No validations!');
+			throw new \InvalidArgumentException('No validation rules!');
 		
 		//if (empty($data))
 		//	throw new \InvalidArgumentException('No data!');
@@ -130,7 +130,7 @@ class Validator implements IValidator
 			
 			if (!isset($data[$field])){
 				if ($this->required && isset($rule['required']) && $rule['required']){
-					$push_error($field,['data'=> null, 'error'=>'required', 'error_detail' =>$field.' es requerido'],$errores);
+					$push_error($field,['data'=> null, 'error'=> 'required', 'error_detail' =>sprintf(_('%s is required', $field))],$errores);
 				}
 
 				continue;
@@ -148,7 +148,7 @@ class Validator implements IValidator
 			$avoid_type_check = false;
 			if($rule['required']){
 				if(trim($dato)=='')
-					$push_error($field,['data'=>$dato, 'error'=>'required', 'error_detail' =>$field.' es requerido'],$errores);
+					$push_error($field,['data'=>$dato, 'error'=>'required', 'error_detail' => sprintf(_('%s is required'), $field)],$errores);
 			}	
 			
 			if (isset($rule['type']) && in_array($rule['type'],['numeric','number','int','integer','float','double','decimal']) && trim($dato)=='')
@@ -156,22 +156,22 @@ class Validator implements IValidator
 			
 			if (isset($rule['type']) && !$avoid_type_check)
 				if (!get_class()::isType($dato, $rule['type']))
-					$push_error($field,['data'=>$dato, 'error'=>'type', 'error_detail' => "no es {$rule['type']}"],$errores);
+					$push_error($field,['data'=>$dato, 'error'=>'type', 'error_detail' => _("It's not a valid {$rule['type']}")],$errores);
 				
 					
 			if(isset($rule['type'])){	
-				if(in_array($rule['type'],['str','string','notnum','not-numeric str','email'])){
+				if(in_array($rule['type'],['str','string','notnum','email'])){
 						
 						if(isset($rule['min'])){ 
 							$rule['min'] = (int) $rule['min'];
 							if(strlen($dato)<$rule['min'])
-								$push_error($field,['data'=>$dato, 'error'=>'min', 'error_detail' => 'la longitud mínima es de '.$rule['min']],$errores);
+								$push_error($field,['data'=>$dato, 'error'=>'min', 'error_detail' => sprintf(_('Minimum length is %d'),$rule['min'])],$errores);
 						}
 						
 						if(isset($rule['max'])){ 
 							$rule['max'] = (int) $rule['max'];
 							if(strlen($dato)>$rule['max'])
-								$push_error($field,['data'=>$dato, 'error'=>'max', 'error_detail' => 'la longitud maxima es de '.$rule['max']],$errores);
+								$push_error($field,['data'=>$dato, 'error'=>'max', 'error_detail' => sprintf(_('Maximum length is %d'), $rule['max'])],$errores);
 						}
 				}	
 				
@@ -180,13 +180,13 @@ class Validator implements IValidator
 						if(isset($rule['min'])){ 
 							$rule['min'] = (int) $rule['min'];
 							if($dato<$rule['min'])
-								$push_error($field,['data'=>$dato, 'error'=>'min', 'error_detail' => 'el mínimo es de '.$rule['min']],$errores);
+								$push_error($field,['data'=>$dato, 'error'=>'min', 'error_detail' => sprintf(_('Minimum is %d'), $rule['min'])],$errores);
 						}
 						
 						if(isset($rule['max'])){ 
 							$rule['max'] = (int) $rule['max'];
 							if($dato>$rule['max'])
-								$push_error($field,['data'=>$dato, 'error'=>'max', 'error_detail' => 'el maximo es de '.$rule['max']],$errores);
+								$push_error($field,['data'=>$dato, 'error'=>'max', 'error_detail' => sprintf(_('Maximum is %d'), $rule['max'])],$errores);
 						}
 				}	
 				
@@ -202,12 +202,12 @@ class Validator implements IValidator
 
 					if(isset($rule['min'])){ 
 						if($t0<strtotime($rule['min']))
-							$push_error($field,['data'=>$dato, 'error'=>'min', 'error_detail' => 'mínimo '.$rule['min']],$errores);
+							$push_error($field,['data'=>$dato, 'error'=>'min', 'error_detail' => 'Minimum is '.$rule['min']],$errores);
 					}
 					
 					if(isset($rule['max'])){ 
 						if($t0>strtotime($rule['max']))
-							$push_error($field,['data'=>$dato, 'error'=>'max', 'error_detail' => 'maximo '.$rule['max']],$errores);
+							$push_error($field,['data'=>$dato, 'error'=>'max', 'error_detail' => 'Maximum is '.$rule['max']],$errores);
 					}
 				}	
 				
@@ -215,13 +215,13 @@ class Validator implements IValidator
 						$rule['min'] = (int) $rule['min'];
 						if(isset($rule['min'])){ 
 							if(count($dato)<$rule['min'])
-								$push_error($field,['data'=>$dato, 'error'=>'min', 'error_detail' => 'mínimo '.$rule['min'].' opciones'],$errores);
+								$push_error($field,['data'=>$dato, 'error'=>'min', 'error_detail' => 'Minimum is '.$rule['min'].' opciones'],$errores);
 						}
 						
 						if(isset($rule['max'])){ 
 						$rule['max'] = (int) $rule['max'];
 							if(count($dato)>$rule['max'])
-								$push_error($field,['data'=>$dato, 'error'=>'min', 'error_detail' => 'máximo '.$rule['max'].' opciones'],$errores);
+								$push_error($field,['data'=>$dato, 'error'=>'min', 'error_detail' => 'Maximum is '.$rule['max'].' opciones'],$errores);
 						}
 				}
 				
@@ -229,7 +229,7 @@ class Validator implements IValidator
 				
 		}
 
-		$validated = empty($errores) ? true : get_class()::humanizeErrors($errores);
+		$validated = empty($errores) ? true : $errores;
 
 		if ($this->as_string){
 			if ($validated !== true){
@@ -251,36 +251,6 @@ class Validator implements IValidator
 	}
 	
 	
-	private function humanizeErrors(array $errores){
-		$reemplazos = [
-						'no es not-numeric str' => 'no se permiten números',
-						'no es notnum' => 'no se permiten números',
-						'no es email' => 'correo no válido',
-						'no es correo' => 'correo no válido',
-						'no es date' => 'fecha inválida',
-						'no es time' => 'hora inválida',
-						'no es number' => 'no es un número',
-						'no es numeric' => 'no es un número',
-						'no es decimal' => 'no es un número',
-						'no es double' => 'no es un número',
-						'no es float' => 'no es un número',
-						'no es int' => 'no es un número válido'
-					];	
-					
-		
-		foreach($errores as $campo => $rows){
-			foreach($rows as $ix => $row){
-				foreach($reemplazos as $orginal => $reemplazo)
-					if ($row['error_detail'] == $orginal)
-						$errores[$campo][$ix]['error_detail'] = $reemplazo;
-					
-					if (strstr($row['error_detail'],'regex:/'))
-						$errores[$campo][$ix]['error_detail'] = 'invalid';
-			}
-		}
-			
-		return $errores;
-	}
 	
 	private static function isValidDate($date, $format = 'd-m-Y') {
 		$dateObj = \DateTime::createFromFormat($format, $date);

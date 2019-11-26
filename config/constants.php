@@ -45,6 +45,9 @@ if (!defined('LIBS_PATH'))
 if (!defined('HELPERS_PATH'))
     define('HELPERS_PATH', APP_PATH . 'helpers' . DIRECTORY_SEPARATOR);  
 
+if (!defined('LOCALE_PATH'))
+    define('LOCALE_PATH', APP_PATH . 'locale' . DIRECTORY_SEPARATOR);  
+
 
 if (!defined('PUBLIC_PATH'))
     define('PUBLIC_PATH', ROOT_PATH . 'public' . DIRECTORY_SEPARATOR); 
