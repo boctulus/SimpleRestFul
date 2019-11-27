@@ -78,6 +78,12 @@ class FrontController
             }
         }
        
+        /*
+            Considerar usar Accept-Language en los headers en su lugar.
+
+            Accept-Language is the opening bid, offering a set of options; Content-Language is the resolution.
+        */
+
         // i18n
         $lang = $req->shift('lang');
         
