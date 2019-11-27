@@ -12,6 +12,9 @@ function checkpoint()
 
 	const expired = ((localStorage.getItem('exp')!=null) && ((localStorage.getItem('exp')*1000) - (new Date()).getTime())<0);
 	
+	if (expired)
+		console.log('expired');
+
 	if ((localStorage.getItem('access_token') == null) || expired){
 		if (localStorage.getItem('refresh_token')){
 			renew();	
