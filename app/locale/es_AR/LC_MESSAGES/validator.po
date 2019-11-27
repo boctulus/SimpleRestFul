@@ -16,14 +16,18 @@ msgstr  "Project-Id-Version: Codegroove.net Example Translations 0.0.1\n"
         "Content-Transfer-Encoding: 8bit\n"
 
 #, php-format
-msgid   "%s is required"
-msgstr  "%s es requerido"
 
-msgid   "Data can not be null"
+msgid   "Data validation error"
+msgstr  "Error de validación"
+
+msgid   "No data"
 msgstr  "No se recibieron datos"
 
 msgid   "Data type is undefined"
 msgstr  "Tipo de datos indefinido"
+
+msgid   "%s is required"
+msgstr  "%s es requerido"
 
 msgid   "Invalid regular expression!"
 msgstr  "Expresión regilar inválida"
@@ -72,7 +76,6 @@ msgstr  "No es una fecha-hora válida"
 
 msgid   "It's not a valid time"
 msgstr  "No es una hora válida"
-
 
 msgid   "Maximum length is %d"
 msgstr  "La longitud máxima es de %d"

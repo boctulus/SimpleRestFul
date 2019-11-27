@@ -2,6 +2,8 @@
 
 require_once 'constants.php';
 
+setlocale(LC_ALL, 'es_AR.UTF-8');
+
 return [
 	#
 	# For a sub-foder in /var/www/html just set as

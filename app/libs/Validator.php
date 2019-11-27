@@ -47,7 +47,7 @@ class Validator implements IValidator
 	*/
 	static function isType($dato, $tipo){
 		if ($dato === NULL)
-			throw new \InvalidArgumentException('Data can not be null'); 
+			throw new \InvalidArgumentException('No data'); 
 		
 		if (empty($tipo))
 			throw new \InvalidArgumentException('Data type is undefined');
@@ -96,6 +96,10 @@ class Validator implements IValidator
 	*/
 	function validate(array $rules, array $data){
 
+		// i18n
+        bindtextdomain('validator', LOCALE_PATH);
+		textdomain('validator');
+
 		//Debug::debug($data, 'DATA:');
 
 		if (empty($rules))
@@ -122,15 +126,17 @@ class Validator implements IValidator
 
 			//Debug::debug($rule, "RULE $field :");
 			
-			if (!isset($data[$field]))
-				continue;
+			//if (!isset($data[$field]))
+			//	continue;
 			
 			//Debug::debug($data[$field], 'VALOR:');			
 			//echo "\n";
 			
 			if (!isset($data[$field])){
+				//var_export(['field' =>$data[$field], 'required' => $rule['required']]);
+
 				if ($this->required && isset($rule['required']) && $rule['required']){
-					$push_error($field,['data'=> null, 'error'=> 'required', 'error_detail' =>sprintf(_('%s is required', $field))],$errores);
+					$push_error($field,['data'=> null, 'error'=> 'required', 'error_detail' =>sprintf(_('%s is required'), $field)],$errores);
 				}
 
 				continue;

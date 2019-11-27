@@ -76,23 +76,6 @@ class FrontController
                 $class_name = "${namespace}${class_name}Controller";
             }
         }
-
-
-        setlocale(LC_ALL, 'es_AR.UTF-8');
-
-        /**
-         * Because the .po file is named messages.po, the text domain must be named
-         * that as well. The second parameter is the base directory to start
-         * searching in.
-         */
-        bindtextdomain('messages', LOCALE_PATH);
-
-        /**
-         * Tell the application to use this text domain, or messages.mo.
-         */
-        textdomain('messages');
-
-          
        
         if (!class_exists($class_name))
             Response::getInstance()->sendError("Internal error - controller class $class_name not loaded", 500);  

@@ -15,7 +15,7 @@ class InvalidValidationException extends \InvalidArgumentException {
         if (!$message) {
             throw new $this('Unknown '. get_class($this));
         }
-        parent::__construct('Data validation error: '.$message, $code);
+        parent::__construct(_('Data validation error') . ' : '.$message, $code);
     }
 
     public function __toString()

@@ -570,7 +570,7 @@ abstract class ApiController extends Controller
 
             $validado = (new Validator)->validate($instance->getRules(), $data);
             if ($validado !== true){
-                Factory::response()->sendError('Data validation error:', 400, $validado);
+                Factory::response()->sendError(_('Data validation error'), 400, $validado);
             }  
 
             if ($instance->create($data)!==false){
@@ -665,7 +665,7 @@ abstract class ApiController extends Controller
 
             $validado = (new Validator())->setRequired($put_mode)->validate($instance->getRules(), $data);
             if ($validado !== true){
-                Factory::response()->sendError('Data validation error:', 400, $validado);
+                Factory::response()->sendError(_('Data validation error'), 400, $validado);
             }
     
             if ($instance->where(['id', $id])->update($data) !== false)
