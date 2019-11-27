@@ -7,7 +7,9 @@ use simplerest\libs\Factory;
 use simplerest\libs\Arrays;
 use simplerest\libs\Database;
 use simplerest\libs\Validator;
+use simplerest\core\exceptions\InvalidValidationException;
 use simplerest\libs\Url;
+
 
 class TrashCan extends MyApiController
 {   
@@ -56,6 +58,8 @@ class TrashCan extends MyApiController
                 if (!in_array($field,$properties))
                     Factory::response()->sendError("Unknown field '$field' in exclude", 400);
             }
+
+            $ignored = [];
 
             if ($exclude != null)
                 $instance->hide($exclude);
@@ -145,14 +149,17 @@ class TrashCan extends MyApiController
                                     case 'contains':
                                         unset($_get[$key]);
                                         $_get[] = [$campo, '%'.$v.'%', 'like'];
+                                        $ignored[] = $campo;
                                     break;
                                     case 'startsWith':
                                         unset($_get[$key]);
                                         $_get[] = [$campo, $v.'%', 'like'];
+                                        $ignored[] = $campo;
                                     break;
                                     case 'endsWith':
                                         unset($_get[$key]);
                                         $_get[] = [$campo, '%'.$v, 'like'];
+                                        $ignored[] = $campo;
                                     break;
                                     case 'in':                                         
                                         if (strpos($v, ',')!== false){    
@@ -280,11 +287,15 @@ class TrashCan extends MyApiController
                 }
 
                 $pg = ['pages' => $page_count, 'nextUrl' => $next];                
-                                  
+                    
+                $instance->setValidator((new Validator())->setRequired(false)->ignoreFields($ignored));
                 $rows = $instance->where($_get)->get($fields, $order, $limit, $offset);
+
                 Factory::response()->code(200)->setPaginator($pg)->send($rows); 
             }
 
+        } catch (InvalidValidationException $e) { 
+            Factory::response()->sendError('Validation Error', 400, json_decode($e->getMessage()));    
         } catch (\Exception $e) {
             Factory::response()->sendError($e->getMessage());
         }	    
@@ -387,13 +398,16 @@ class TrashCan extends MyApiController
 
             $validado = (new Validator())->setRequired($put_mode)->validate($instance->getRules(), $data);
             if ($validado !== true){
-                Factory::response()->sendError(_('Data validation error'), 400, $validado);
+                Factory::response()->send($validado, 400);
             }
 
             if($instance->update($data)!==false)
                 Factory::response()->sendJson("OK");
             else
                 Factory::response()->sendError("Error in UPDATE");
+
+        } catch (InvalidValidationException $e) { 
+            Factory::response()->sendError('Validation Error', 400, json_decode($e->getMessage()));
         } catch (\Exception $e) {
             Factory::response()->sendError("Error during update for id=$id with message: {$e->getMessage()}");
         }

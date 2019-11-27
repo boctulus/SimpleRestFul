@@ -506,9 +506,9 @@ class Model {
 
 		// Validación
 		if (!empty($this->validator)){
-			$validado = $this->validator->asString()->validate($this->getRules(), array_combine($vars, $values));
+			$validado = $this->validator->validate($this->getRules(), array_combine($vars, $values));
 			if ($validado !== true){
-				throw new InvalidValidationException($validado);
+				throw new InvalidValidationException(json_encode($validado));
 			} 
 		}
 		
@@ -1165,9 +1165,9 @@ class Model {
 
 		// Validación
 		if (!empty($this->validator)){
-			$validado = $this->validator->asString()->validate($this->getRules(), $data);
+			$validado = $this->validator->validate($this->getRules(), $data);
 			if ($validado !== true){
-				throw new InvalidValidationException($validado);
+				throw new InvalidValidationException(json_encode($validado));
 			} 
 		}
 		
@@ -1228,9 +1228,9 @@ class Model {
 	{
 		// Validación
 		if (!empty($this->validator)){
-			$validado = $this->validator->asString()->validate($this->getRules(), array_combine($this->w_vars, $this->w_vals));
+			$validado = $this->validator->validate($this->getRules(), array_combine($this->w_vars, $this->w_vals));
 			if ($validado !== true){
-				throw new InvalidValidationException($validado);
+				throw new InvalidValidationException(json_encode($validado));
 			} 
 		}
 
@@ -1295,9 +1295,9 @@ class Model {
 
 		// Validación
 		if (!empty($this->validator)){
-			$validado = $this->validator->asString()->validate($this->getRules(), $data);
+			$validado = $this->validator->validate($this->getRules(), $data);
 			if ($validado !== true){
-				throw new InvalidValidationException($validado);
+				throw new InvalidValidationException(json_encode($validado));
 			} 
 		}
 
@@ -1361,31 +1361,6 @@ class Model {
 		$diff =  array_diff($this->properties, array_keys($fields));
 		return array_diff($diff, $this->nullable);
 	}
-
-	// dejar de utilizar (remover)
-	/*
-	function diffWithSchema($props, array $excluded = []){
-		if (is_object($props))
-			$props = (array) $props;
-		
-		$props = array_keys($props);
-		
-		if (empty($props))
-			throw new \InvalidArgumentException("Properties not found!");
-		
-		$missing_properties = [];
-
-		$excluded = array_merge($this->nullable, $excluded);
-		
-		foreach ($this->properties as $ix => $exp){
-			if (!in_array($exp, $props) && !in_array($exp, $excluded)){
-				$missing_properties[] = $exp; 
-			}	
-		}
-
-		return $missing_properties;
-	}
-	*/
 	
 	/**
 	 * Get schema 

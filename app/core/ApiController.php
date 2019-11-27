@@ -509,7 +509,6 @@ abstract class ApiController extends Controller
                 }
 
                 $pg = ['pages' => $page_count, 'nextUrl' => $next];
-
     
                 $instance->setValidator((new Validator())->setRequired(false)->ignoreFields($ignored));
                 $rows = $instance->where($_get)->get($fields, $order, $limit, $offset);
@@ -519,7 +518,7 @@ abstract class ApiController extends Controller
             }
 
         } catch (InvalidValidationException $e) { 
-            Factory::response()->sendError($e->getMessage(), 400);
+            Factory::response()->sendError('Validation Error', 400, json_decode($e->getMessage()));
         } catch (\Exception $e) {            
             Factory::response()->sendError($e->getMessage());
         }	    
@@ -570,7 +569,7 @@ abstract class ApiController extends Controller
 
             $validado = (new Validator)->validate($instance->getRules(), $data);
             if ($validado !== true){
-                Factory::response()->sendError(_('Data validation error'), 400, $validado);
+                Factory::response()->sendError('Data validation error', 400, $validado);
             }  
 
             if ($instance->create($data)!==false){
@@ -665,7 +664,7 @@ abstract class ApiController extends Controller
 
             $validado = (new Validator())->setRequired($put_mode)->validate($instance->getRules(), $data);
             if ($validado !== true){
-                Factory::response()->sendError(_('Data validation error'), 400, $validado);
+                Factory::response()->sendError('Data validation error', 400, $validado);
             }
     
             if ($instance->where(['id', $id])->update($data) !== false)
