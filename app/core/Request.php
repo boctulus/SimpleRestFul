@@ -14,6 +14,27 @@ class Request  implements \ArrayAccess, Arrayable
 
     protected function __construct() { }
 
+    // @author limalopex.eisfux.de
+    static function apache_request_headers() {
+        $arh = array();
+        $rx_http = '/\AHTTP_/';
+        foreach($_SERVER as $key => $val) {
+          if( preg_match($rx_http, $key) ) {
+            $arh_key = preg_replace($rx_http, '', $key);
+            $rx_matches = array();
+            // do some nasty string manipulations to restore the original letter case
+            // this should work in most cases
+            $rx_matches = explode('_', $arh_key);
+            if( count($rx_matches) > 0 and strlen($arh_key) > 2 ) {
+              foreach($rx_matches as $ak_key => $ak_val) $rx_matches[$ak_key] = ucfirst($ak_val);
+              $arh_key = implode('-', $rx_matches);
+            }
+            $arh[$arh_key] = $val;
+          }
+        }
+        return( $arh );
+    }
+
     static function getInstance(){
         if(static::$instance == NULL){
             if (php_sapi_name() != 'cli'){
@@ -21,7 +42,11 @@ class Request  implements \ArrayAccess, Arrayable
 					parse_str($_SERVER['QUERY_STRING'], static::$query_arr);
 				
                 static::$raw = file_get_contents("php://input");
-                static::$headers = apache_request_headers();
+
+                if (function_exists('apache_request_headers'))
+                    static::$headers = apache_request_headers();
+                else
+                    static::$headers = static::apache_request_headers();
             }
             static::$instance = new static();
         }
