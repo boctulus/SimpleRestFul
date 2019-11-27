@@ -3,6 +3,7 @@
 namespace simplerest\core;
 
 use simplerest\libs\Url;
+use simplerest\libs\Arrays;
 
 class FrontController
 {
@@ -77,6 +78,13 @@ class FrontController
             }
         }
        
+        // i18n
+        $lang = $req->shift('lang');
+        
+        if ($lang != NULL)
+            setlocale(LC_ALL, "$lang.UTF-8");
+
+
         if (!class_exists($class_name))
             Response::getInstance()->sendError("Internal error - controller class $class_name not loaded", 500);  
 
@@ -85,6 +93,7 @@ class FrontController
                 
         $controller_obj = new $class_name();
 
+       
         // Only for API Rest
         if ($config['enabled_auth'] && $_params[0]=='api'){
             if (!in_array($method, $controller_obj->getCallable())){

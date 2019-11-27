@@ -47,7 +47,7 @@ class Request  implements \ArrayAccess, Arrayable
             return static::$query_arr;
         else 
              return static::$query_arr[$key];   
-    }
+    }    
 
     // getter destructivo sobre $query_arr
     public function shift($key, $default_value = NULL)

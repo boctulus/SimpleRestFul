@@ -511,7 +511,7 @@ abstract class ApiController extends Controller
                 $pg = ['pages' => $page_count, 'nextUrl' => $next];
 
     
-                $instance->setValidator((new Validator())->ignoreFields($ignored));
+                $instance->setValidator((new Validator())->setRequired(false)->ignoreFields($ignored));
                 $rows = $instance->where($_get)->get($fields, $order, $limit, $offset);
 
                 Factory::response()->setPretty($pretty)->code(200)->setPaginator($pg)->send($rows);
