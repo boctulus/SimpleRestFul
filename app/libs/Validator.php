@@ -15,7 +15,6 @@ use simplerest\core\interfaces\IValidator;
 class Validator implements IValidator
 {
 	protected $required  = true;
-	protected $as_string = false;
 	protected $ignored_fields = [];
 
 	function setRequired(bool $state){
@@ -25,11 +24,6 @@ class Validator implements IValidator
 
 	function ignoreFields(array $fields){
 		$this->ignored_fields = $fields;
-		return $this;
-	}
-
-	function asString(){
-		$this->as_string = true; 
 		return $this;
 	}
 
@@ -236,22 +230,6 @@ class Validator implements IValidator
 		}
 
 		$validated = empty($errores) ? true : $errores;
-
-		if ($this->as_string){
-			if ($validated !== true){
-				
-				$e = [];
-				foreach ($validated as $field => $errors){
-					$fe = [];
-					foreach ($errors as $error){
-						$fe[] = $error['error_detail'];
-					}
-					$e[] = "$field => ". implode(' & ', $fe);
-				}	
-	
-				return implode ('; ', $e);
-			}  
-		}
 
 		return $validated;
 	}
