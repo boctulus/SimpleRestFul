@@ -1150,6 +1150,9 @@ class Model {
 	 */
 	function update(array $data)
 	{
+		if ($this->conn == null)
+			throw new \Exception('No conection');
+			
 		if (!Arrays::is_assoc($data))
 			throw new \InvalidArgumentException('Array of data should be associative');
 
@@ -1226,6 +1229,9 @@ class Model {
 	 */
 	function delete($soft_delete = true)
 	{
+		if ($this->conn == null)
+			throw new \Exception('No conection');
+
 		// Validación
 		if (!empty($this->validator)){
 			$validado = $this->validator->validate($this->getRules(), array_combine($this->w_vars, $this->w_vals));
@@ -1280,6 +1286,9 @@ class Model {
 	*/
 	function create(array $data)
 	{
+		if ($this->conn == null)
+			throw new \Exception('No conection');
+
 		if (!Arrays::is_assoc($data))
 			throw new \InvalidArgumentException('Array of data should be associative');
 

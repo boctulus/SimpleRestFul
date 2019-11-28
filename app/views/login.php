@@ -75,7 +75,7 @@
 					<span class="input-group-addon">
 					<i class="glyphicon glyphicon-envelope"></i>
 					</span>
-					<input type="email" class="form-control" id="email" placeholder="email" required="required">
+					<input type="text" class="form-control" id="email_username" placeholder="email o username" required="required">
 				</div>
 
 				<div class="input-group" style="margin-bottom:1em;">

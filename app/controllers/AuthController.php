@@ -91,6 +91,7 @@ class AuthController extends Controller implements IAuth
                     Factory::response()->sendError('Invalid JSON',400);
                 
                 $email = $data->email ?? null;
+                $username = $data->username ?? null;  
                 $password = $data->password ?? null;
             break;
 
@@ -99,8 +100,8 @@ class AuthController extends Controller implements IAuth
             break;	
         }	
         
-        if (empty($email)){
-            Factory::response()->sendError('email is required',400);
+        if (empty($email) && empty($username) ){
+            Factory::response()->sendError('email or username are required',400);
         }else if (empty($password)){
             Factory::response()->sendError('password is required',400);
         }
@@ -108,15 +109,18 @@ class AuthController extends Controller implements IAuth
         $conn = $this->getConnection();
         
         $u = (new UsersModel($conn))->setFetchMode('ASSOC');
-        $rows = $u->unhide(['password'])->where(['email'=> $email])->get();
+        $rows = $u->unhide(['password'])
+        ->where(['email'=> $email])
+        ->orWhere(['username' => $username])
+        ->get();
 
         if (count($rows) ==0)    
-            Factory::response()->sendError('Incorrect email or password', 401);
+            Factory::response()->sendError('Incorrect username / email or password', 401);
  
         $hash = $rows[0]['password'];
 
         if (!password_verify($password, $hash))
-            Factory::response()->sendError('Incorrect email or password', 401);
+            Factory::response()->sendError('Incorrect username / email or password', 401);
 
         $confirmed_email = $rows[0]['confirmed_email'];
 
@@ -217,25 +221,24 @@ class AuthController extends Controller implements IAuth
             if ($data == null)
                 Factory::response()->sendError('Invalid JSON',400);
 
-            if (!isset($data['email']) || empty($data['email']))
-                Factory::response()->sendError('Email must be provided', 400);
-
-            $conn = $this->getConnection();	
-            $u = (new UsersModel($conn))->setFetchMode('ASSOC');
-
-            // exits
-            if (count($u->where(['email', $data['email']])->get(['id']))>0)
-                Factory::response()->sendError('Email already exists');                    
+            $u = new UsersModel();
 
             $missing = $u->getMissing($data);
             if (!empty($missing))
-                Factory::response()->sendError('Lack some properties in your request: '.implode(',',$missing), 400);
+                Factory::response()->sendError('There are missing properties in your request: '.implode(',',$missing), 400);
+
+            // exits
+            if (Database::table('users')->where(['email', $data['email']])->exists())
+                Factory::response()->sendError('Email already exists');  
+                
+            if (Database::table('users')->where(['username', $data['username']])->exists())
+                Factory::response()->sendError('Username already exists');
 
             $data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
 
-            $uid = $u->create($data);
+            $uid = Database::table('users')->create($data);
             if (empty($uid))
-                Factory::response()->sendError("Error in user registration!", 500, 'Error creating user');
+                Factory::response()->sendError("Error in user registration", 500, 'Error creating user');
 
             $u = Database::table('users');    
             if ($u->inSchema(['belongs_to'])){
@@ -246,12 +249,12 @@ class AuthController extends Controller implements IAuth
                 $role = $this->config['registration_role'];
 
                 $r  = new RolesModel();
-                $ur = new UserRolesModel($conn);
+                $ur = Database::table('userRoles');
 
                 $ur_id = $ur->create([ 'user_id' => $uid, 'role_id' => $r->get_role_id($role) ]);  
 
                 if (empty($ur_id))
-                    Factory::response()->sendError("Error in user registration!", 500, 'Error registrating user role');  
+                    Factory::response()->sendError("Error in user registration", 500, 'Error registrating user role');  
             }else{
                 $role = ['registered'];
             }
@@ -268,13 +271,17 @@ class AuthController extends Controller implements IAuth
             $url = $base_url . '/login/confirm_email/' . $token . '/' . $exp; 
     
            
+            $firstname = $data['firstname'] ?? null;
+            $lastname  = $data['lastname']  ?? null;
+            $email  = $data['email']  ?? null;
+
             $ok = (bool) Database::table('messages')->create([
                 'from_email' => $this->config['email']['mailer']['from'][0],
                 'from_name' => $this->config['email']['mailer']['from'][1],
-                'to_email' => $data['email'], 
-                'to_name' => $data['firstname'].' '.$data['lastname'], 
-                'subject' => 'Confirmación de correo', 
-                'body' => "Por favor confirme su correo siguiendo el enlace:<br/><a href='$url'>$url</a>"
+                'to_email' => $email, 
+                'to_name' => $firstname.' '.$lastname, 
+                'subject' => 'Email confirmation', 
+                'body' => "Please confirm your account by following the link bellow:<br/><a href='$url'>$url</a>"
             ]);
             
 
@@ -282,16 +289,13 @@ class AuthController extends Controller implements IAuth
                 Factory::response()->sendError("Error in user registration!", 500, 'Error during registration of email confirmation');
             
 
-            Factory::response()->setQuit(false)->send([ 
+            Factory::response()->send([ 
                                         'access_token'=> $access,
                                         'token_type' => 'bearer', 
                                         'expires_in' => $this->config['access_token']['expiration_time'],
-                                        'refresh_token' => $refresh,
-                                        'email_confirmation' => ['url' => $url]
+                                        'refresh_token' => $refresh
                                         // 'scope' => 'read write'
                                       ]);
-
-            $this->afterRegister();
 
         }catch(\Exception $e){
             Factory::response()->sendError($e->getMessage());

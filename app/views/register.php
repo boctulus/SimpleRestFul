@@ -8,6 +8,7 @@
 		<form action="#" onsubmit="return false;">
 			<div class="form-group">
 
+			<!--
 				<div class="input-group" style="margin-bottom:1em;">
 					<span class="input-group-addon">
 					<i class="glyphicon glyphicon-user"></i>
@@ -21,12 +22,20 @@
 					</span>
 					<input type="text" class="form-control" name="lastname" id="lastname" placeholder="Last name" required />
 				</div>
+			-->
 
 				<div class="input-group" style="margin-bottom:1em;">
 					<span class="input-group-addon">
 					<i class="glyphicon glyphicon-envelope"></i>
 					</span>
 					<input type="email" class="form-control" id="email" placeholder="E-mail" required="required">
+				</div>
+
+				<div class="input-group" style="margin-bottom:1em;">
+					<span class="input-group-addon">
+					<i class="glyphicon glyphicon-envelope"></i>
+					</span>
+					<input type="text" class="form-control" id="username" placeholder="Username" required="required">
 				</div>
 
 				<div class="input-group" style="margin-bottom:1em;">

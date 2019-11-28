@@ -35,6 +35,7 @@ function register(){
 		return;
 	}else $('#registerError').text('');
 
+	obj.username = $('#username').val();
 	obj.email = $('#email').val();	
 	obj.password = $('#password').val();
 	obj.firstname = $('#firstname').val();	
@@ -74,7 +75,11 @@ function register(){
 function login(){
 	var obj ={};
 	
-	obj.email = $('#email').val();	
+	if ($('#email_username').val().match(/@/) != null)
+		obj.email    = $('#email_username').val();	
+	else
+		obj.username = $('#email_username').val();
+	
 	obj.password = $('#password').val();
 	
 	// get form data

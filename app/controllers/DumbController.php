@@ -998,5 +998,24 @@ class DumbController extends Controller
         Debug::debug($dos);
     }
 
+    /*
+    function test(){
+        $emails = Database::table('users')->pluck('email');
+        
+        foreach ($emails as $email){
+            preg_match('/[^@]+/', $email, $matches);
+            $username = substr($matches[0], 0, 11);
+
+            $existe = Database::table('users')->where(['username', $username])->exists();
+            
+            while($existe){
+                $username .= chr(rand(48,57));
+                $existe = Database::table('users')->where(['username', $username])->exists();
+            }
+
+            $affected = Database::table('users')->where(['email' => $email])->update(['username' => $username]);
+        }
+    }
+    */
    
 }
