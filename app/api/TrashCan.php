@@ -147,18 +147,27 @@ class TrashCan extends MyApiController
                             foreach ($val[1] as $op => $v){
                                 switch ($op) {
                                     case 'contains':
-                                        unset($_get[$key]);
-                                        $_get[] = [$campo, '%'.$v.'%', 'like'];
+                                        $_get[$key] = [$campo, '%'.$v.'%', 'like'];
+                                        $ignored[] = $campo;
+                                    break;
+                                    case 'notContains':
+                                        $_get[$key] = [$campo, '%'.$v.'%', 'not like'];
                                         $ignored[] = $campo;
                                     break;
                                     case 'startsWith':
-                                        unset($_get[$key]);
-                                        $_get[] = [$campo, $v.'%', 'like'];
+                                        $_get[$key] = [$campo, $v.'%', 'like'];
+                                        $ignored[] = $campo;
+                                    break;
+                                    case 'notStartsWith':
+                                        $_get[$key] = [$campo, $v.'%', 'not like'];
                                         $ignored[] = $campo;
                                     break;
                                     case 'endsWith':
-                                        unset($_get[$key]);
-                                        $_get[] = [$campo, '%'.$v, 'like'];
+                                        $_get[$key] = [$campo, '%'.$v, 'like'];
+                                        $ignored[] = $campo;
+                                    break;
+                                    case 'notEndsWith':
+                                        $_get[$key] = [$campo, '%'.$v, 'not like'];
                                         $ignored[] = $campo;
                                     break;
                                     case 'in':                                         

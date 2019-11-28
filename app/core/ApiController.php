@@ -376,12 +376,24 @@ abstract class ApiController extends Controller
                                         $_get[$key] = [$campo, '%'.$v.'%', 'like'];
                                         $ignored[] = $campo;
                                     break;
+                                    case 'notContains':
+                                        $_get[$key] = [$campo, '%'.$v.'%', 'not like'];
+                                        $ignored[] = $campo;
+                                    break;
                                     case 'startsWith':
                                         $_get[$key] = [$campo, $v.'%', 'like'];
                                         $ignored[] = $campo;
                                     break;
+                                    case 'notStartsWith':
+                                        $_get[$key] = [$campo, $v.'%', 'not like'];
+                                        $ignored[] = $campo;
+                                    break;
                                     case 'endsWith':
                                         $_get[$key] = [$campo, '%'.$v, 'like'];
+                                        $ignored[] = $campo;
+                                    break;
+                                    case 'notEndsWith':
+                                        $_get[$key] = [$campo, '%'.$v, 'not like'];
                                         $ignored[] = $campo;
                                     break;
                                     case 'in':                                         

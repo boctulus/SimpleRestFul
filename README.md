@@ -21,9 +21,12 @@ IN / NOT IN
 ### String comparisons   
 
     contains
+    notContains
     startsWith
-    endsWith
-
+    notStartsWith
+    endsWith   
+    notEndsWith
+    
 Example
 
     GET /api/products?name[contains]=jugo 

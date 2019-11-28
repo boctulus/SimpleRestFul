@@ -29,6 +29,7 @@ class UsersModel extends Model
 	*/
 	protected $schema = [
 		'id' => 'INT',
+		'username' => 'STR',
 		'email' => 'STR',
 		'confirmed_email' => 'INT',
 		'password' => 'STR',
@@ -39,7 +40,7 @@ class UsersModel extends Model
 	];
 
 	protected $rules = [
-        'firstname' => ['min'=>3, 'max'=>40],
+		'username' => ['min'=>2, 'max'=>15],
 		'email' 	=> ['type'=>'email'],
 	];
 
