@@ -122,9 +122,8 @@ class GoogleController extends Controller
             $conn = $this->getConnection();	
             $u = new UsersModel($conn);
 
-            // exits	
-            $rows = $u->where(['email', $payload['email']])->setFetchMode('ASSOC')->get(['id']);
-            if (count($rows)>0){
+            // exits
+            if ($u->where(['email', $payload['email']])->exists()){
                 // Email already exists
                 $uid = $rows[0]['id'];
 
@@ -142,6 +141,7 @@ class GoogleController extends Controller
                 $data['email'] = $payload['email'];
                 $data['firstname'] = $payload['given_name'] ?? NULL;
                 $data['lastname'] = $payload['family_name'] ?? NULL;
+                //$data['username'] = ... 
                 
                 $uid = $u->create($data);
                 if (empty($uid))

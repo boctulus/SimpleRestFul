@@ -422,6 +422,20 @@ class DumbController extends Controller
         ->get());
     }
 
+    // SELECT  name, cost, id FROM products WHERE belongs_to = '90' AND (name IN ('CocaCola', 'PesiLoca')  OR cost >= 550 OR cost < 100) AND description IS NOT NULL
+    function where_or(){
+        Debug::debug(Database::table('products')->showDeleted()
+        ->select(['name', 'cost', 'id'])
+        ->where(['belongs_to', 90])
+        ->where([ 
+            ['name', ['CocaCola', 'PesiLoca']], 
+            ['cost', 550, '>='],
+            ['cost', 100, '<']
+        ], 'OR')
+        ->whereNotNull('description')
+        ->get());
+    }
+    
     /* 
         A OR (B AND C)
 
@@ -438,18 +452,16 @@ class DumbController extends Controller
         ])
         ->get());
     }
-
-    // SELECT  name, cost, id FROM products WHERE belongs_to = '90' AND (name IN ('CocaCola', 'PesiLoca')  OR cost >= 550 OR cost < 100) AND description IS NOT NULL
-    function where_or(){
+    
+    // A OR (B AND C)
+    function or_where2(){
         Debug::debug(Database::table('products')->showDeleted()
-        ->select(['name', 'cost', 'id'])
-        ->where(['belongs_to', 90])
-        ->where([ 
-            ['name', ['CocaCola', 'PesiLoca']], 
-            ['cost', 550, '>='],
-            ['cost', 100, '<']
-        ], 'OR')
+        ->select(['name', 'cost', 'id', 'description'])
         ->whereNotNull('description')
+        ->orWhere([ 
+                    ['cost', 100, '>='],
+                    ['cost', 500, '<']
+        ])        
         ->get());
     }
 
@@ -460,7 +472,7 @@ class DumbController extends Controller
     */
     function where_or2(){
         Debug::debug(Database::table('products')
-        ->select(['name', 'cost', 'id'])
+        ->select(['id', 'name', 'cost', 'description'])
         ->where(['belongs_to', 90])
         ->where([ 
             ['name', ['CocaCola', 'PesiLoca']], 
@@ -471,16 +483,17 @@ class DumbController extends Controller
         ->get());
     }
 
-    // A OR (B AND C)
-    function where_or3(){
-        Debug::debug(Database::table('products')->showDeleted()
-        ->select(['name', 'cost', 'id'])
-        ->whereNotNull('description')
-        ->orWhere([ 
-                    ['cost', 100, '>='],
-                    ['cost', 500, '<']
-        ])        
-        ->get());
+    function or_where3(){
+        $email = 'nano@g.c';
+        $username = 'nano';
+
+        $row = Database::table('users')->setFetchMode('ASSOC')->unhide(['password'])
+            ->where([ 'email'=> $email ]) 
+            ->orWhere(['username' => $username ])
+            ->setValidator((new Validator())->setRequired(false))  
+            ->first();
+
+        Debug::debug($row);
     }
 
     // SELECT * FROM products WHERE ((cost < IF(size = "1L", 300, 100) AND size = '1L' ) AND belongs_to = 90) AND deleted_at IS NULL ORDER BY cost ASC
@@ -997,6 +1010,8 @@ class DumbController extends Controller
 
         Debug::debug($dos);
     }
+
+ 
 
     /*
     function test(){

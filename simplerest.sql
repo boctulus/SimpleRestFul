@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 4.9.0.1
+-- version 4.9.1
 -- https://www.phpmyadmin.net/
 --
--- Host: localhost
--- Generation Time: Nov 20, 2019 at 03:09 PM
--- Server version: 5.7.27-0ubuntu0.18.04.1
--- PHP Version: 7.2.24-0ubuntu0.18.04.1
+-- Servidor: 127.0.0.1
+-- Tiempo de generación: 28-11-2019 a las 13:56:04
+-- Versión del servidor: 10.4.8-MariaDB
+-- Versión de PHP: 7.3.11
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET AUTOCOMMIT = 0;
@@ -19,13 +19,13 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `simplerest`
+-- Base de datos: `simplerest`
 --
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `folders`
+-- Estructura de tabla para la tabla `folders`
 --
 
 CREATE TABLE `folders` (
@@ -36,7 +36,7 @@ CREATE TABLE `folders` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
--- Dumping data for table `folders`
+-- Volcado de datos para la tabla `folders`
 --
 
 INSERT INTO `folders` (`id`, `resource_table`, `name`, `belongs_to`) VALUES
@@ -54,7 +54,7 @@ INSERT INTO `folders` (`id`, `resource_table`, `name`, `belongs_to`) VALUES
 -- --------------------------------------------------------
 
 --
--- Table structure for table `group_permissions`
+-- Estructura de tabla para la tabla `group_permissions`
 --
 
 CREATE TABLE `group_permissions` (
@@ -67,7 +67,7 @@ CREATE TABLE `group_permissions` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
--- Dumping data for table `group_permissions`
+-- Volcado de datos para la tabla `group_permissions`
 --
 
 INSERT INTO `group_permissions` (`id`, `folder_id`, `belongs_to`, `member`, `r`, `w`) VALUES
@@ -78,7 +78,7 @@ INSERT INTO `group_permissions` (`id`, `folder_id`, `belongs_to`, `member`, `r`,
 -- --------------------------------------------------------
 
 --
--- Table structure for table `messages`
+-- Estructura de tabla para la tabla `messages`
 --
 
 CREATE TABLE `messages` (
@@ -94,29 +94,37 @@ CREATE TABLE `messages` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
--- Dumping data for table `messages`
+-- Volcado de datos para la tabla `messages`
 --
 
 INSERT INTO `messages` (`id`, `from_email`, `from_name`, `to_email`, `to_name`, `subject`, `body`, `created_at`, `sent_at`) VALUES
-(38, 'no_responder@simplerest.mapapulque.ro', 'No responder', 'san@', '', 'Cambio de contraseña', 'Para cambiar la contraseña siga el enlace:<br/><a href=\'http://simplerest.lan/login/change_pass/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU3MzQ4ODI3MSwiZXhwIjoxNTc0MDkzMDcxLCJlbWFpbCI6InNhbkAifQ.hgMVBC9M2CDsSCtOivQnPtx7sVRpfEYm6NrscdBri-0/1574093071\'>http://simplerest.lan/login/change_pass/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU3MzQ4ODI3MSwiZXhwIjoxNTc0MDkzMDcxLCJlbWFpbCI6InNhbkAifQ.hgMVBC9M2CDsSCtOivQnPtx7sVRpfEYm6NrscdBri-0/1574093071</a>', '2019-11-11 13:04:31', NULL);
+(38, 'no_responder@simplerest.mapapulque.ro', 'No responder', 'san@', '', 'Cambio de contraseña', 'Para cambiar la contraseña siga el enlace:<br/><a href=\'http://simplerest.lan/login/change_pass/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU3MzQ4ODI3MSwiZXhwIjoxNTc0MDkzMDcxLCJlbWFpbCI6InNhbkAifQ.hgMVBC9M2CDsSCtOivQnPtx7sVRpfEYm6NrscdBri-0/1574093071\'>http://simplerest.lan/login/change_pass/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU3MzQ4ODI3MSwiZXhwIjoxNTc0MDkzMDcxLCJlbWFpbCI6InNhbkAifQ.hgMVBC9M2CDsSCtOivQnPtx7sVRpfEYm6NrscdBri-0/1574093071</a>', '2019-11-11 13:04:31', NULL),
+(39, 'no_responder@simplerest.mapapulque.ro', 'No responder', 'boctulus@gmail.com', '', 'Cambio de contraseña', 'Para cambiar la contraseña siga el enlace:<br/><a href=\'http://simplerest.lan/login/change_pass/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU3NDYyMDU5MywiZXhwIjoxNTc1MjI1MzkzLCJlbWFpbCI6ImJvY3R1bHVzQGdtYWlsLmNvbSJ9.8zrO6DydRYrQRxKgEH8go95bOxf9rTMrCHVxqPkIJfM/1575225393\'>http://simplerest.lan/login/change_pass/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU3NDYyMDU5MywiZXhwIjoxNTc1MjI1MzkzLCJlbWFpbCI6ImJvY3R1bHVzQGdtYWlsLmNvbSJ9.8zrO6DydRYrQRxKgEH8go95bOxf9rTMrCHVxqPkIJfM/1575225393</a>', '2019-11-24 15:36:33', NULL),
+(40, 'no_responder@simplerest.mapapulque.ro', 'No responder', 'pbozzolo@gmail.com', '', 'Cambio de contraseña', 'Para cambiar la contraseña siga el enlace:<br/><a href=\'http://simplerest.lan/login/change_pass/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU3NDYyMDg0MiwiZXhwIjoxNTc1MjI1NjQyLCJlbWFpbCI6InBib3p6b2xvQGdtYWlsLmNvbSJ9.slGk_5Xvx1C8YcG8HL54WY0nJmuY1eNY_Ughq6yZSTc/1575225642\'>http://simplerest.lan/login/change_pass/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU3NDYyMDg0MiwiZXhwIjoxNTc1MjI1NjQyLCJlbWFpbCI6InBib3p6b2xvQGdtYWlsLmNvbSJ9.slGk_5Xvx1C8YcG8HL54WY0nJmuY1eNY_Ughq6yZSTc/1575225642</a>', '2019-11-24 15:40:42', NULL),
+(41, 'no_responder@simplerest.mapapulque.ro', 'No responder', 'boo@', 'Boo ', 'Confirmación de correo', 'Por favor confirme su correo siguiendo el enlace:<br/><a href=\'http://simplerest.lan/login/confirm_email/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU3NDg4MzkzNCwiZXhwIjoxNTc1NDg4NzM0LCJlbWFpbCI6ImJvb0AifQ.2TDt5II0L1yqHZtAkDNcL54K3MGGThEq1XDst9cn0s4/1575488734\'>http://simplerest.lan/login/confirm_email/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU3NDg4MzkzNCwiZXhwIjoxNTc1NDg4NzM0LCJlbWFpbCI6ImJvb0AifQ.2TDt5II0L1yqHZtAkDNcL54K3MGGThEq1XDst9cn0s4/1575488734</a>', '2019-11-27 16:45:34', NULL),
+(42, 'no_responder@simplerest.mapapulque.ro', 'No responder', 'uub@', 'Uub ', 'Confirmación de correo', 'Por favor confirme su correo siguiendo el enlace:<br/><a href=\'http://simplerest.lan/login/confirm_email/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU3NDg4ODM1MywiZXhwIjoxNTc1NDkzMTUzLCJlbWFpbCI6InV1YkAifQ.dqY6xEd-PX8AcP0e-OKPJQ0ucrNhNlqXhO2iZUqyJTQ/1575493153\'>http://simplerest.lan/login/confirm_email/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU3NDg4ODM1MywiZXhwIjoxNTc1NDkzMTUzLCJlbWFpbCI6InV1YkAifQ.dqY6xEd-PX8AcP0e-OKPJQ0ucrNhNlqXhO2iZUqyJTQ/1575493153</a>', '2019-11-27 17:59:13', NULL),
+(43, 'no_responder@simplerest.mapapulque.ro', 'No responder', 'asdfgh2', ' ', 'Confirmación de correo', 'Por favor confirme su correo siguiendo el enlace:<br/><a href=\'http://simplerest.lan/login/confirm_email/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU3NDkwOTQxNiwiZXhwIjoxNTc1NTE0MjE2LCJlbWFpbCI6ImFzZGZnaDIifQ.tSUdGnYpfWjMLTHT-L3h19SFQw4tbMGT5uxXtupbMPc/1575514216\'>http://simplerest.lan/login/confirm_email/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU3NDkwOTQxNiwiZXhwIjoxNTc1NTE0MjE2LCJlbWFpbCI6ImFzZGZnaDIifQ.tSUdGnYpfWjMLTHT-L3h19SFQw4tbMGT5uxXtupbMPc/1575514216</a>', '2019-11-27 23:50:16', NULL),
+(44, 'no_responder@simplerest.mapapulque.ro', 'No responder', 'asdfgh23', ' ', 'Confirmación de correo', 'Por favor confirme su correo siguiendo el enlace:<br/><a href=\'http://simplerest.lan/login/confirm_email/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU3NDkwOTU5OCwiZXhwIjoxNTc1NTE0Mzk4LCJlbWFpbCI6ImFzZGZnaDIzIn0.uJ3ssjicRJrW6pSZN05vDCf5Z8D-ubCypNzYU3JLSko/1575514398\'>http://simplerest.lan/login/confirm_email/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU3NDkwOTU5OCwiZXhwIjoxNTc1NTE0Mzk4LCJlbWFpbCI6ImFzZGZnaDIzIn0.uJ3ssjicRJrW6pSZN05vDCf5Z8D-ubCypNzYU3JLSko/1575514398</a>', '2019-11-27 23:53:18', NULL),
+(45, 'no_responder@simplerest.mapapulque.ro', 'No responder', 'asdfgh234', ' ', 'Confirmación de correo', 'Por favor confirme su correo siguiendo el enlace:<br/><a href=\'http://simplerest.lan/login/confirm_email/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU3NDkwOTcyOCwiZXhwIjoxNTc1NTE0NTI4LCJlbWFpbCI6ImFzZGZnaDIzNCJ9.2z7EN8DjsM7XeRKSwvm1oS6EaGmRsGlR9xZhBXQaB-Y/1575514528\'>http://simplerest.lan/login/confirm_email/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU3NDkwOTcyOCwiZXhwIjoxNTc1NTE0NTI4LCJlbWFpbCI6ImFzZGZnaDIzNCJ9.2z7EN8DjsM7XeRKSwvm1oS6EaGmRsGlR9xZhBXQaB-Y/1575514528</a>', '2019-11-27 23:55:28', NULL),
+(46, 'no_responder@simplerest.mapapulque.ro', 'No responder', 'pepe@', ' ', 'Confirmación de correo', 'Por favor confirme su correo siguiendo el enlace:<br/><a href=\'http://simplerest.lan/login/confirm_email/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU3NDkwOTk5NCwiZXhwIjoxNTc1NTE0Nzk0LCJlbWFpbCI6InBlcGVAIn0.BDVslxr-m_MBfW_WZ-50inDMp81SZLKKkUlT7-0s_SU/1575514794\'>http://simplerest.lan/login/confirm_email/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU3NDkwOTk5NCwiZXhwIjoxNTc1NTE0Nzk0LCJlbWFpbCI6InBlcGVAIn0.BDVslxr-m_MBfW_WZ-50inDMp81SZLKKkUlT7-0s_SU/1575514794</a>', '2019-11-27 23:59:54', NULL);
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `other_permissions`
+-- Estructura de tabla para la tabla `other_permissions`
 --
 
 CREATE TABLE `other_permissions` (
   `id` int(11) NOT NULL,
   `folder_id` int(11) NOT NULL,
   `belongs_to` int(11) NOT NULL,
-  `guest` tinyint(4) NOT NULL DEFAULT '0',
+  `guest` tinyint(4) NOT NULL DEFAULT 0,
   `r` tinyint(4) NOT NULL,
   `w` tinyint(4) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
--- Dumping data for table `other_permissions`
+-- Volcado de datos para la tabla `other_permissions`
 --
 
 INSERT INTO `other_permissions` (`id`, `folder_id`, `belongs_to`, `guest`, `r`, `w`) VALUES
@@ -128,7 +136,7 @@ INSERT INTO `other_permissions` (`id`, `folder_id`, `belongs_to`, `guest`, `r`, 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `products`
+-- Estructura de tabla para la tabla `products`
 --
 
 CREATE TABLE `products` (
@@ -140,38 +148,38 @@ CREATE TABLE `products` (
   `created_at` datetime NOT NULL,
   `modified_at` datetime DEFAULT NULL,
   `deleted_at` datetime DEFAULT NULL,
-  `active` tinyint(11) DEFAULT '1',
-  `locked` tinyint(4) DEFAULT '0',
+  `active` tinyint(11) DEFAULT 1,
+  `locked` tinyint(4) DEFAULT 0,
   `workspace` varchar(40) DEFAULT NULL,
   `belongs_to` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
--- Dumping data for table `products`
+-- Volcado de datos para la tabla `products`
 --
 
 INSERT INTO `products` (`id`, `name`, `description`, `size`, `cost`, `created_at`, `modified_at`, `deleted_at`, `active`, `locked`, `workspace`, `belongs_to`) VALUES
-(100, 'Vodka', 'chino', '2 1/4 L', 137, '2019-07-04 00:00:00', '2019-11-04 16:45:10', NULL, 1, 1, '', 90),
-(103, 'Juguito ric0', 'Delicious juic333333', '1 Litros', 150, '2019-09-13 00:00:00', '2019-11-07 00:19:19', NULL, 1, 0, NULL, 90),
-(105, 'Agua mineral', 'De Córdoba', '1L', 525, '2019-03-15 00:00:00', '2019-10-22 22:01:58', NULL, 1, 0, 'lista publica', 90),
-(106, 'Vodka', 'Rusiaaaaaa', '1L', 400, '2019-02-16 00:00:00', '2019-11-07 00:51:15', NULL, 1, 0, NULL, 4),
-(113, 'Vodkaaaa', 'URU', '1L', 550, '2019-03-31 00:00:00', '2019-10-29 17:33:39', NULL, 1, 0, NULL, 86),
-(114, 'AAABBBCCCcccD', 'cccccC', '29', 200, '2019-01-23 00:00:00', '2019-10-29 18:40:30', NULL, 1, 0, NULL, 4),
-(119, 'CocaCola', 'gaseosa', '1L', 44, '2018-10-15 00:00:00', '2019-11-11 13:22:24', NULL, 1, 0, 'lista2', 90),
-(120, 'MiBebida', 'Rica Rica', '1L', 100, '2018-12-23 00:00:00', '2019-11-03 21:37:48', NULL, 1, 0, NULL, 90),
-(121, 'OtraBebida', 'gaseosa', '1L', 25, '2019-09-28 00:00:00', '2019-11-11 13:58:21', NULL, 1, 0, 'lista2', 90),
-(122, 'Cerveza de malta', 'Pichu', '1L', 100, '2018-12-29 00:00:00', '2019-11-03 21:37:48', NULL, 1, 0, NULL, 90),
+(100, 'Vodka', NULL, '2 1/4 L', 125, '2019-07-04 00:00:00', '2019-11-24 22:46:44', '2019-11-25 02:46:44', 1, 1, '', 90),
+(103, 'Juguito ric0', 'Delicious juic333333', '1 Litros', 150, '2019-09-13 00:00:00', '2019-11-24 22:46:46', '2019-11-25 02:46:46', 1, 1, NULL, 90),
+(105, 'Agua mineral', 'De Córdoba', '1L', 525, '2019-03-15 00:00:00', '2019-11-24 22:46:48', '2019-11-25 02:46:48', 1, 1, 'lista publica', 90),
+(106, 'Vodka', 'Rusiaaaaaa', '1L', 400, '2019-02-16 00:00:00', '2019-11-24 22:46:50', '2019-11-25 02:46:50', 1, 1, NULL, 4),
+(113, 'Vodkaaaa', 'URU', '1L', 550, '2019-03-31 00:00:00', '2019-11-24 22:46:52', '2019-11-25 02:46:52', 1, 1, NULL, 86),
+(114, 'AAABBBCCCcccD', 'cccccC', '29', 200, '2019-01-23 00:00:00', '2019-11-24 22:46:54', '2019-11-25 02:46:54', 1, 1, NULL, 4),
+(119, 'CocaCola', 'gaseosa', '1L', 44, '2018-10-15 00:00:00', '2019-11-24 22:46:56', '2019-11-25 02:46:56', 1, 1, 'lista2', 90),
+(120, 'MiBebida', 'Rica Rica', '1L', 100, '2018-12-23 00:00:00', '2019-11-23 13:59:32', '2019-11-23 17:59:32', 1, 0, NULL, 90),
+(121, 'OtraBebida', 'gaseosa', '1L', 25, '2019-09-28 00:00:00', '2019-11-24 22:46:58', '2019-11-25 02:46:58', 1, 1, 'lista2', 90),
+(122, 'Cerveza de malta', 'Pichu', '1L', 100, '2018-12-29 00:00:00', '2019-11-24 22:47:00', '2019-11-25 02:47:00', 1, 1, NULL, 90),
 (123, 'PesiLoca', 'x_x', '2L', 30, '2018-12-16 00:00:00', '2019-11-17 07:48:25', '2019-11-17 07:48:25', 1, 0, 'mylist', 90),
-(125, 'Vodka', 'Genial', '3L', 250, '2017-01-10 00:00:00', '2019-11-07 11:22:48', NULL, 1, 0, 'lista publica', 90),
+(125, 'Vodka', NULL, '3L', 250, '2017-01-10 00:00:00', '2019-11-23 13:59:39', NULL, 1, 0, 'lista publica', 90),
 (126, 'Uvas fermentadas', 'Espectacular', '5L', 300, '2019-06-24 00:00:00', '2019-10-14 22:39:51', NULL, 1, 0, 'lista publica', 90),
 (127, 'Vodka venezolanoooooooooooo', 'del caribe', '1L', 100, '2019-07-12 00:00:00', '2019-11-04 12:08:36', NULL, 1, 1, NULL, 90),
 (131, 'Vodkaaaabc', 'Rusia', '1L', 550, '2019-06-04 00:00:00', NULL, NULL, 1, 0, 'secreto', 4),
-(132, 'Ron venezolano', 'Rico', '1L', 100, '2019-10-03 00:00:00', '2019-11-03 21:37:48', NULL, 1, 0, NULL, 90),
+(132, 'Ron venezolano', 'Ricooo', '1L', 100, '2019-10-03 00:00:00', '2019-11-27 16:56:52', NULL, 1, 0, NULL, 90),
 (133, 'Vodka venezolano', 'de Vzla', '1.5L', 100, '2019-09-19 00:00:00', '2019-11-12 12:48:31', NULL, 1, 0, NULL, 90),
 (137, 'Agua ardiente', 'Si que arde!', '1L', 120, '2019-07-16 00:00:00', '2019-11-03 20:46:12', NULL, 1, 0, 'lista', 90),
-(143, 'Agua ', '--', '1L', 100, '2019-06-03 00:00:00', '2019-11-03 21:37:48', NULL, 1, 0, NULL, 90),
+(143, 'Agua ', '--', '1L', 100, '2019-06-03 00:00:00', '2019-11-27 16:51:42', '2019-11-27 20:51:42', 1, 0, NULL, 90),
 (145, 'Juguito XII', 'de manzanas exprimidas', '1L', 350, '2019-02-09 00:00:00', NULL, NULL, 1, 0, 'lista24', 90),
-(146, 'Wisky', NULL, '2L', 255, '2019-08-31 00:00:00', '2019-10-16 10:28:20', NULL, 1, 0, 'lista24', 90),
+(146, 'Wisky', '', '2L', 230, '2019-08-31 00:00:00', '2019-11-27 16:57:21', NULL, 1, 0, 'lista24', 90),
 (147, 'Aqua fresh', 'Rico', '1L', 100, '2019-03-20 00:00:00', '2019-11-04 11:53:06', NULL, 1, 0, 'comparto', 90),
 (148, 'Alcohol etílico', '', '1L', 100, '2019-04-21 00:00:00', '2019-11-03 21:37:48', NULL, 1, 0, 'comparto', 90),
 (151, 'Juguito XIII', 'Rico', '1L', 355, '2019-10-03 00:00:00', '2019-10-15 17:00:58', NULL, 1, 0, 'lista24', 90),
@@ -197,7 +205,7 @@ INSERT INTO `products` (`id`, `name`, `description`, `size`, `cost`, `created_at
 (179, 'Agua mineral', '', '1L', 10, '2019-11-02 20:46:20', '2019-11-03 20:46:12', NULL, 1, 0, NULL, 125),
 (180, 'Pintura blanca exteriores', '', '5L', 200, '2019-11-02 21:19:06', NULL, NULL, 1, 0, NULL, 125),
 (181, 'Pintura blanca exteriores', '', '2L', 100, '2019-11-02 21:19:22', '2019-11-03 20:46:12', NULL, 1, 0, NULL, 125),
-(182, 'Pintura blanca interiores', '', '2L', 80, '2019-11-02 21:20:00', '2019-11-03 20:46:12', NULL, 1, 0, NULL, 125),
+(182, 'Pintura blanca interiores', NULL, '2L', 80, '2019-11-02 21:20:00', '2019-11-03 20:46:12', NULL, 1, 0, NULL, 125),
 (183, 'Tuercas', '', '', 0, '2019-11-03 21:33:20', NULL, NULL, 1, 0, NULL, 125),
 (184, 'AA', 'BB', '2L', 23, '2019-11-03 23:54:40', NULL, NULL, 1, 0, NULL, 131),
 (185, 'ABC', '', '', 0, '2019-11-03 23:55:18', NULL, NULL, 1, 0, NULL, 132),
@@ -211,7 +219,7 @@ INSERT INTO `products` (`id`, `name`, `description`, `size`, `cost`, `created_at
 (193, 'Re-Jugo', 'Delicious juicEEEEXXX', '1 L', 350, '2019-11-07 00:18:25', NULL, NULL, 1, 0, NULL, 4),
 (194, 'Re-Jugo', 'Delicious juicEEEEXXXYZ', '1 L', 350, '2019-11-07 00:20:53', NULL, NULL, 1, 0, NULL, 135),
 (195, 'Boo', 'Delicious juicEEEEXXXYZ4444444444444444444444444', '1 L', 350, '2019-11-07 01:31:43', NULL, NULL, 1, 0, NULL, 4),
-(196, 'AAAAAAA', 'TTTTTTT', '', 0, '2019-11-07 22:58:51', NULL, NULL, 1, 0, NULL, 137),
+(196, 'NaranjAAAAAAA', 'OK', '', 0, '2019-11-07 22:58:51', '2019-11-24 17:49:34', NULL, 1, 0, NULL, 137),
 (197, 'HEYYYYYY', '', '', 0, '2019-11-10 00:57:51', NULL, NULL, 1, 0, NULL, 150),
 (198, 'AAAAA', 'x_x', '', 22, '2019-11-11 10:38:19', '2019-11-11 13:15:58', NULL, 1, 0, NULL, 90),
 (199, 'cuzbgmbhiudjqvrmzwqf', 'x_x', '1L', 66, '2019-11-11 10:42:57', '2019-11-11 13:15:58', NULL, 1, 0, 'lista publica', 90),
@@ -225,18 +233,23 @@ INSERT INTO `products` (`id`, `name`, `description`, `size`, `cost`, `created_at
 (207, 'Juguito de tomate papaya', NULL, '1L', 150, '2019-11-11 15:15:05', '2019-11-11 15:41:32', NULL, 1, 0, 'lista', 87),
 (208, 'Juguito de tomate pitaya', NULL, '1L', 450, '2019-11-11 15:15:16', NULL, NULL, 1, 0, 'lista', 87),
 (209, 'AAA', '', '', 0, '2019-11-12 12:50:01', '2019-11-12 12:50:04', '2019-11-12 12:50:04', 1, 0, NULL, 113),
-(210, 'GGG', '', '', 0, '2019-11-12 13:02:55', '2019-11-12 13:03:10', '2019-11-12 13:03:10', 1, 0, NULL, 113);
+(210, 'GGG', '', '', 0, '2019-11-12 13:02:55', '2019-11-12 13:03:10', '2019-11-12 13:03:10', 1, 0, NULL, 113),
+(211, 'EEEE', '', '', 50, '2019-11-27 17:06:24', '2019-11-27 17:52:07', NULL, 1, 0, NULL, 159),
+(212, 'RRR', '', '', 0, '2019-11-27 18:01:44', '2019-11-27 18:01:50', '2019-11-27 22:01:50', 1, 0, NULL, 160),
+(213, 'E%$', '', '', 0, '2019-11-27 18:02:17', NULL, NULL, 1, 0, NULL, 160),
+(214, 'TTT', '', '', 0, '2019-11-28 00:01:02', NULL, NULL, 1, 0, NULL, 167);
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `users`
+-- Estructura de tabla para la tabla `users`
 --
 
 CREATE TABLE `users` (
   `id` int(11) NOT NULL,
+  `username` varchar(15) NOT NULL,
   `email` varchar(60) NOT NULL,
-  `confirmed_email` tinyint(4) NOT NULL DEFAULT '0',
+  `confirmed_email` tinyint(4) NOT NULL DEFAULT 0,
   `firstname` varchar(50) DEFAULT NULL,
   `lastname` varchar(80) DEFAULT NULL,
   `password` varchar(60) DEFAULT NULL,
@@ -245,129 +258,133 @@ CREATE TABLE `users` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
--- Dumping data for table `users`
+-- Volcado de datos para la tabla `users`
 --
 
-INSERT INTO `users` (`id`, `email`, `confirmed_email`, `firstname`, `lastname`, `password`, `deleted_at`, `belongs_to`) VALUES
-(1, 'boctulus1@gmail.com', 1, '', '0', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
-(4, 'pbozzolo@gmail.com', 1, 'Paulinoxxx', 'Bozzoxx', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
-(5, 'pepe@gmail.com', 1, 'Pepe', 'Gonzalez', '$2y$10$J.KPjyFukfxcKg83TvQGaeCTrLN9XyYXTgtTDZdZ91DJTdE73VIDK', NULL, 1),
-(9, 'dios@gmail.com', 1, 'Paulinoxxxxxyyz', 'Bozzoxx000555zZ', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
-(11, 'diosdado@gmail.com', 1, 'Sr', 'Z', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
-(13, 'diosdado2@gmail.com', 1, 'Sr', 'D', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 13),
-(14, 'juancho@aaa.com', 1, 'Juan', 'Perez', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
-(15, 'juancho11@aaa.com', 1, 'Juan XI', 'Perez 10', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
-(16, 'mabel@aaa.com', 1, 'Mabel', 'S', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
-(17, 'a@b.commmm', 1, 'Nicos', 'Buzzi', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 17),
-(20, 'a@b.commmmmmmmmmmm', 1, 'Nicos', 'AAA', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
-(34, 'peter@abc.com', 1, 'Nicos', 'Buzzi', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
-(36, 'ndrrxdjrtewwrxdhgxwbpeter@abc.com', 1, 'Nicos', 'Buzzi', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', '2019-10-28 17:15:32', 0),
-(37, 'xjzrzfiibkjvdeczoeeepeter@abc.com', 1, 'Nicos', 'Buzzi', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', '2019-10-28 17:15:45', 0),
-(38, 'udcsoqjyrdgnhqqtukhupeter@abc.com', 1, 'Nicos', 'Buzzi', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
-(39, 'qbosmfvwezohbutpifbopeter@abc.com', 1, 'Nicos', 'Buzzi', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
-(40, 'gjappgiduiqczagnousspeter@abc.com', 1, 'Nicos', 'Buzzi', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
-(41, 'ymcshlekdzhugvmwbjpipeter@abc.com', 1, 'Nicos', 'Buzzi', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
-(43, 'vydqkgqszpncijwhxeiapeter@abc.com', 1, 'Nicos', 'Buzzi', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
-(44, 'itbrknzsfnawnhxgmockpeter@abc.com', 1, 'Nicos', 'Buzzi', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
-(45, 'cproifnsfxvkxtppbgdupeter@abc.com', 1, 'Nicos', 'Buzzi', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
-(46, 'xxxxxxxxxxxxxxxxyz@abc.com', 1, 'Nicolayyyy', 'Buzzi', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
-(47, 'atlsqcgxgszbpcrzydykpeter@abc.com', 1, 'Nicos', 'Buzzi', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', '2019-11-07 08:12:33', 0),
-(48, 'gates@outlook.com', 1, 'Bill', 'Gates', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
-(51, 'kkk@bbbbbb.com', 1, 'Sr K', 'NS/NC', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
-(52, 'tito@gmail.com', 1, 'Tito', 'El Grande', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
-(53, 'ooooiiii@gmail.com', 1, 'Oooo', 'iiiiiiii', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
-(54, 'booooiiii@gmail.com', 1, 'AAA', 'BBB', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
-(55, 'iooobooooiiii@gmail.com', 1, 'IIoo', 'ahaha', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
-(56, 'iooobooooiiioooi@gmail.com', 1, 'IIoo', 'ahaha', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
-(57, 'iooobooooiiioooi@gmail.commmm', 1, 'IIoo', 'ahaha', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
-(58, 'kkk@bbbbbb.commmm', 1, 'Sr K', 'NS/NC', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
-(59, 'kkkbooooiiii@gmail.com', 1, 'Ooookkk', 'kkkk', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
-(60, 'aaa@bbbb.com', 1, 'Jjjj', 'kkk', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
-(61, 'aaa@bbbb.commmm', 1, 'Jjjj', 'kkk', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
-(62, 'kkk@bbbbbb.commmmmmm', 1, 'Sr K', 'NS/NC', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
-(63, 'aaa@bbbb.commmmmmm', 1, 'Jjjj', 'kkk', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
-(64, 'booooiiiixxxx@gmail.com', 1, 'xxx', 'xxxxxxxxxx', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
-(65, 'aaa@bbbb.commmmmmmuuuuu', 1, 'Jjjj', 'kkk', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
-(66, 'aaa@dgdgd.cococ', 1, 'ajajaj', 'ajajaj', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
-(67, 'booooiiiferfr@gmail.com', 1, 'BillY', 'GGGG', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
-(68, 'aaa@dgdgd.cococo', 1, 'ajajaj', 'ajajaj', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
-(69, 'test@gmail.com', 1, 'TEST', '---', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
-(70, 'kkk@bbJJJJJJJ', 1, 'Sr K', 'NS/NC', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
-(72, 'aie@b.c', 1, 'Sr K', 'NS/NC', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
-(73, 'mabelf450@gmail.com', 1, 'Mabel', 'F', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
-(74, 'abc@def.com', 1, 'Sr K', 'NS/NC', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
-(75, 'abc@def.commm', 1, 'Sr K', 'NS/NC', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
-(76, 'abc@def.net', 1, 'Sr K', 'NS/NC', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
-(77, 'abc@def.co', 1, 'Sr K', 'NS/NC', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
-(78, 'abc@def.cox', 1, 'Sr K', 'NS/NC', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
-(79, 'feli@', 1, 'Sr K', 'NS/NC', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
-(80, 'feli@casa', 1, 'Sr K', 'NS/NC', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
-(81, 'feli@casa.com', 1, 'Sr K', 'NS/NC', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
-(82, 'feli@casa.net', 1, 'Sr K', 'NS/NC', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
-(83, 'feli@casa.neto', 1, 'Sr K', 'NS/NC', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
-(84, 'pablo@', 1, 'Nicos', 'AAA', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
-(85, 'feli@teamo', 1, 'Felipe', 'Bozzolo', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
-(86, 'nuevo@gmail.com', 1, 'Norberto', 'Nullo', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
-(87, 'pedro@gmail.com', 1, 'Pedro', 'Picapiedras', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
-(88, 'feli@abc', 1, 'Felipe', 'Bozzzolo', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
-(89, 'h@', 1, 'Sr H', 'J', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
-(90, 'nano@', 1, 'NA', 'NA', '$2y$10$qmCo8ZeT1XJWPZ1kuSeFjuj7rEDT9J/YDV4yD3BsVoE.pz0ryfhE2', NULL, 90),
-(102, 'feli@delacasita', 1, 'Sr K', 'NS/NC', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 102),
-(103, 'feli@delacasita2', 1, 'Sr K', 'NS/NC', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 103),
-(104, 'feli@delacasita5', 1, 'Sr K', 'NS/NC', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 104),
-(105, 'feli@delacasita50', 1, 'Sr K', 'NS/NC', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 105),
-(106, 'feli@delacasita50000', 1, 'Sr K', 'NS/NC', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 106),
-(107, 'feli@delacasita50000700', 1, 'Sr K', 'NS/NC', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 107),
-(108, 'feli@delacasita50000700800', 1, 'Sr K', 'NS/NC', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 108),
-(109, 'feli@compeon', 1, 'Sr K', 'NS/NC', '$2y$10$ocJZwzelZ3W.3Eas5ig/q.qaBm79ottSuJ8ee2wXv9584INHL2RpW', NULL, 109),
-(110, 'feli@compeon_mundial', 1, 'Sr K', 'NS/NC', '$2y$10$k4kFWXmQacW4LDS.j4gVk./LqKPUtOc9XaObNWojsAzmFnIxbLZ8u', NULL, 110),
-(111, 'feli@compeon_dios', 1, 'Sr K', 'NS/NC', '$2y$10$nYh5nGXM6mVwwAP93G4Nv.m8P8aQmJKLm5fODQBqdmzzSCEZzDiOC', NULL, 111),
-(112, 'superpepe@', 1, 'Super Pepe', '', '$2y$10$hITAKY1zsMPMIe0KCO6YuuG5Xke8FeZlw00Uw1Mz4J57LU0lLfvja', NULL, 112),
-(113, 'mabelsusanaf@gmail.com', 1, NULL, NULL, NULL, NULL, 113),
-(114, 'xyz@', 1, 'XYZ', 'ZZZ', '$2y$10$mMaJuMmAt7hgTo8KljlDRuavoOg4F0ZGw.hAK/vmpNQJ0xvA/ZEmG', NULL, NULL),
-(115, 'x@', 1, 'Sr K', 'NS/NC', '$2y$10$K64bJLscpFCH7Geal..vhuKeMzZOP9MWD21eXPj7VpfYiHw4AaEMC', NULL, NULL),
-(116, 'xy@', 1, 'Sr K', 'NS/NC', '$2y$10$86ztfpWglgqvK/MyJf12VOYY8rqjJ4Qhi1XhpOsNW0u.BMM3odtUG', NULL, NULL),
-(117, 'aaa@', 1, 'A', 'AB', '$2y$10$KP8rEs5DracAVvcdMY/ATuB3xwEz7Rjwqj5DilPiszMi8wMRKNAhK', NULL, NULL),
-(118, 'aaaC@', 1, 'A', 'AB', '$2y$10$T59OjL8Rxb/QZeArKW.PK.GVVG7V3Ao846KSimwt6xGbf7tx0oik.', NULL, NULL),
-(119, 'aaaCD@', 1, 'A', 'AB', '$2y$10$SvAYgvxsszn1Z/cfMW/w9eopOcih3CzADDEDd2q0wKwqwTBWVPZoi', NULL, 119),
-(120, 'xyza@', 1, 'XYZA', 'ZZZA', '$2y$10$rp40xaVPNtHqSsDYXVBNCespVSLBpvwdp1oyV7NY6nJk011q2/Iri', NULL, 120),
-(121, 'nono@', 1, 'Nono', 'viecco', '$2y$10$W5HaPfOxbAE9rRb04XCzeO/sS0tlHQ4ZTnmXzZPnd2s1qZt26OFdS', NULL, 121),
-(122, 'sss@', 1, 'Regular', 'Tester', '$2y$10$8FiysajEjA0.5eyXuLNUZeqQkUBgxCYVonwk1Z5k4rTf/rPMLu.2y', NULL, 122),
-(123, 'ppp@', 1, 'Regular', 'Tester', '$2y$10$J3C1J2pqvJbuQXEekf6vf.AL0lEJbpGrhPtZCujXRfyv16nEzQvdm', NULL, 123),
-(124, 'w@', 1, 'AA', 'BB', '$2y$10$899qRrlzAXbnyE/5CHLZVezdK9beIDJqrUmb/TcdgepkPHYTMLJTK', NULL, 124),
-(125, 'tester3@', 1, 'Tester', '', '$2y$10$u5L16gB3HEQUROjNFBbrd.KslpcM4J6ref0k/cUcrWZcTolZZZfa.', NULL, 125),
-(126, 'jk@', 1, 'J', 'K', '$2y$10$irie63zGURJ/JQiJuyph/uVkVmAJRiSvvDRGaBokyvVLpi8tqganW', NULL, NULL),
-(127, 'aaaCDEF@', 1, 'A', 'AB', '$2y$10$juP31/p3B.P7F/b2MXxGF.kiN/HG1zwIyehkNWjef5yhFYSGq.YwC', NULL, NULL),
-(128, 'aaaCDEFG@', 1, 'A', 'AB', '$2y$10$nkIhbPrL4Y/oJJOe6JdOO.57U8Njn57IRM5cYG7FtPDA2jffOsFNm', NULL, NULL),
-(129, 'aaaCDEFGI@', 1, 'A', 'AB', '$2y$10$VeyVsSP/.2SgfBJq25FXIOPq2iXceFiEgRiEVuOTi5oPIMWc8Vteq', NULL, NULL),
-(130, 'aaaCDEFGIJK@', 1, 'A', 'AB', '$2y$10$ann6qT5V/SkaYk/InT27ouVPhrkNaVOlvwgY2nf27lhlT5hm0hnTK', NULL, 130),
-(131, 'aaaCDEFGIJKLM@', 1, 'A', 'AB', '$2y$10$N2hoKh4E9.aYnAPmMPuSb.mgkLAJA1mB0pAnpjsLRU7DuyX1.b1ZC', NULL, 131),
-(132, 'tt@', 1, 'T', 'TT', '$2y$10$qXJ25mY64hef.47EjJkBNeYDgG.zHNH8QsodGK3OW13EYQdpaifFG', NULL, 132),
-(133, 'jc@', 1, 'Juan', 'Carlos', '$2y$10$gMgqAHr1A5.phZ2/n.RuVuJEM8QnfPVAiTGMVqvCOf7mlWXrGNjXK', NULL, 133),
-(135, 'boctulus@gmail.com', 1, 'Pablo', 'Bozzolo', NULL, NULL, 135),
-(136, '', 1, 'Bill', 'O', '$2y$10$GHiCUTrFu01EiVcVgTvRluGweRBx8rF6V2qgbhNH82Oi86ATE0RO2', NULL, 136),
-(137, 'san@', 1, 'San', 'Pepe', '$2y$10$OVUu5rTU1JPSTv2HeXq/puWq86vZT24VAuYTW.sAT.pqzxZEJPFou', NULL, 137),
-(138, 'j@', 1, 'AJ', 'J', '$2y$10$TOUciinPf3DEBTjALBLnaOhMLzHrwBRkvczOWYD5OsZOy9aVGVfnC', NULL, 138),
-(139, 'aaaCDEFGIJKLMSSS@', 1, 'A', 'AB', '$2y$10$0YDH5aE9l3lQwxFp25bLXepmGQF8fM4XcK4zt/lNzS/2.M7mVgz4S', NULL, 139),
-(140, 'ZZZ@', 1, 'A', 'AB', '$2y$10$QosozVg0npjSEimSeOZ74OPyXXZO0SwPsZevPOJlQ0GnHDK7DcsR6', NULL, 140),
-(141, 'ZZZ@PEPE.com', 1, 'A', 'AB', '$2y$10$XIpys1..n4XcQ9CWP89vce9j7NeAiMYYeOqonYtGgUi.9nZcaccB2', NULL, 141),
-(142, 'A@PEPE.COM', 1, 'A', 'AB', '$2y$10$Fn5Wkt8masdaOdqBHIaU0uDuRbi7mEVDSzlHgAK8wfJSesSlQWAZu', NULL, 142),
-(143, 'Ab@PEPE.COM', 1, 'A', 'AB', '$2y$10$ehfF6Uwrvdl3NoqYkqhnIexzzCX49pCdbEXOYKrI1O2jsvdHLEpCa', NULL, 143),
-(147, 'ABCDEF@PEPE.COM', 1, 'A', 'AB', '$2y$10$67kVEbzj5C7eGl8b9f01jeMvbU6Cy2xGYADhYl5PvMmUAXAenmmb2', NULL, 147),
-(148, 'ABCDEFG@PEPE.COM', 1, 'A', 'AB', '$2y$10$p/KGmzQsMmlDDJlYmhr9GOUmkcO4A.A8sefXd7bN3GthEIEA4YCSO', NULL, 148),
-(149, 'X@PEPE.COM', 1, 'A', 'AB', '$2y$10$R9EtFdhCWUjMMFkLZxLiA.8XJ2hd2SE8Q3eDuyUa8KOV0TsTGNRX.', NULL, 149),
-(150, 'Y@PEPE.COM', 1, 'A', 'AB', '$2y$10$WeO4iScCcFe/yV4d7iUbFeYOfTR6H3TGDjunJLskrJg/.9raTP7IG', NULL, 150),
-(151, 'F@PEPE.COM', 1, 'A', 'AB', '$2y$10$LDtPjcxYtrwMVfae.8MsNuRaoRgsnVtagH2fbYG3m3MIYOeAWB4fC', NULL, 151),
-(152, 'G@PEPE.COM', 1, 'A', 'AB', '$2y$10$TY9RyLYn.E24qAeBn9LCzuy8bRT1/UReSDDodfdHouQ7jRN6GqMTq', NULL, 152),
-(153, 'GG@PEPE.COM', 1, 'A', 'AB', '$2y$10$qt79FFFbCbQNya/a8fMMn.tcstyJYUHRXIw36pGDTLExLueDKbJby', NULL, 153),
-(154, 'GGG@PEPE.COM', 1, 'A', 'AB', '$2y$10$bIqxFs1bOo.CkImQj5t26.R6fnp5UO8913B5NkxNDy5gP0bhNoP2O', NULL, 154),
-(155, 'elpiojo@', 1, 'Ojo', '', '$2y$10$UvEXPDfjiZ/PPits.tThwurSYCz844ZMh9mCVBC5Y9s7Hp8KwlR.2', NULL, 155),
-(156, 'elpiojo2@', 1, 'Ojo', '', '$2y$10$aPWXX4L3MNnPcz0Q.zLFRO97ChkGYQoUdyvk.RzVDuwRaQDiMxkUS', NULL, 156);
+INSERT INTO `users` (`id`, `username`, `email`, `confirmed_email`, `firstname`, `lastname`, `password`, `deleted_at`, `belongs_to`) VALUES
+(1, 'boctulus1', 'boctulus1@gmail.com', 1, '', '0', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
+(4, 'pbozzolo', 'pbozzolo@gmail.com', 1, 'Paulinoxxx', 'Bozzoxx', '$2y$10$jAKcStnGqtcOslt1Std7ceYqq3mMIh6Lis/Ug4Z6IDQV65tyyP2Xe', NULL, 0),
+(5, 'pepe', 'pepe@gmail.com', 1, 'Pepe', 'Gonzalez', '$2y$10$J.KPjyFukfxcKg83TvQGaeCTrLN9XyYXTgtTDZdZ91DJTdE73VIDK', NULL, 1),
+(9, 'dios', 'dios@gmail.com', 1, 'Paulinoxxxxxyyz', 'Bozzoxx000555zZ', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
+(11, 'diosdado', 'diosdado@gmail.com', 1, 'Sr', 'Z', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
+(13, 'diosdado2', 'diosdado2@gmail.com', 1, 'Sr', 'D', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 13),
+(14, 'juancho', 'juancho@aaa.com', 1, 'Juan', 'Perez', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
+(15, 'juancho11', 'juancho11@aaa.com', 1, 'Juan XI', 'Perez 10', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
+(16, 'mabel', 'mabel@aaa.com', 1, 'Mabel', 'S', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
+(17, 'a', 'a@b.commmm', 1, 'Nicos', 'Buzzi', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 17),
+(20, 'a1', 'a@b.commmmmmmmmmmm', 1, 'Nicos', 'AAA', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
+(34, 'peter', 'peter@abc.com', 1, 'Nicos', 'Buzzi', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
+(38, 'udcsoqjyrdg', 'udcsoqjyrdgnhqqtukhupeter@abc.com', 1, 'Nicos', 'Buzzi', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
+(39, 'qbosmfvwezo', 'qbosmfvwezohbutpifbopeter@abc.com', 1, 'Nicos', 'Buzzi', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
+(40, 'gjappgiduiq', 'gjappgiduiqczagnousspeter@abc.com', 1, 'Nicos', 'Buzzi', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
+(41, 'ymcshlekdzh', 'ymcshlekdzhugvmwbjpipeter@abc.com', 1, 'Nicos', 'Buzzi', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
+(43, 'vydqkgqszpn', 'vydqkgqszpncijwhxeiapeter@abc.com', 1, 'Nicos', 'Buzzi', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
+(44, 'itbrknzsfna', 'itbrknzsfnawnhxgmockpeter@abc.com', 1, 'Nicos', 'Buzzi', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
+(45, 'cproifnsfxv', 'cproifnsfxvkxtppbgdupeter@abc.com', 1, 'Nicos', 'Buzzi', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
+(46, 'xxxxxxxxxxx', 'xxxxxxxxxxxxxxxxyz@abc.com', 1, 'Nicolayyyy', 'Buzzi', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
+(48, 'gates', 'gates@outlook.com', 1, 'Bill', 'Gates', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
+(51, 'kkk', 'kkk@bbbbbb.com', 1, 'Sr K', 'NS/NC', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
+(52, 'tito', 'tito@gmail.com', 1, 'Tito', 'El Grande', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
+(53, 'ooooiiii', 'ooooiiii@gmail.com', 1, 'Oooo', 'iiiiiiii', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
+(54, 'booooiiii', 'booooiiii@gmail.com', 1, 'AAA', 'BBB', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
+(55, 'iooobooooii', 'iooobooooiiii@gmail.com', 1, 'IIoo', 'ahaha', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
+(56, 'iooobooooii5', 'iooobooooiiioooi@gmail.com', 1, 'IIoo', 'ahaha', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
+(57, 'iooobooooii57', 'iooobooooiiioooi@gmail.commmm', 1, 'IIoo', 'ahaha', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
+(58, 'kkk1', 'kkk@bbbbbb.commmm', 1, 'Sr K', 'NS/NC', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
+(59, 'kkkbooooiii', 'kkkbooooiiii@gmail.com', 1, 'Ooookkk', 'kkkk', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
+(60, 'aaa', 'aaa@bbbb.com', 1, 'Jjjj', 'kkk', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
+(61, 'aaa7', 'aaa@bbbb.commmm', 1, 'Jjjj', 'kkk', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
+(62, 'kkk6', 'kkk@bbbbbb.commmmmmm', 1, 'Sr K', 'NS/NC', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
+(63, 'aaa5', 'aaa@bbbb.commmmmmm', 1, 'Jjjj', 'kkk', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
+(64, 'booooiiiixx', 'booooiiiixxxx@gmail.com', 1, 'xxx', 'xxxxxxxxxx', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
+(65, 'aaa9', 'aaa@bbbb.commmmmmmuuuuu', 1, 'Jjjj', 'kkk', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
+(66, 'aaa54', 'aaa@dgdgd.cococ', 1, 'ajajaj', 'ajajaj', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
+(67, 'booooiiifer', 'booooiiiferfr@gmail.com', 1, 'BillY', 'GGGG', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
+(68, 'aaa78', 'aaa@dgdgd.cococo', 1, 'ajajaj', 'ajajaj', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
+(69, 'test', 'test@gmail.com', 1, 'TEST', '---', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
+(70, 'kkk65', 'kkk@bbJJJJJJJ', 1, 'Sr K', 'NS/NC', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
+(72, 'aie', 'aie@b.c', 1, 'Sr K', 'NS/NC', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
+(73, 'mabelf450', 'mabelf450@gmail.com', 1, 'Mabel', 'F', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
+(74, 'abc', 'abc@def.com', 1, 'Sr K', 'NS/NC', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
+(75, 'abc4', 'abc@def.commm', 1, 'Sr K', 'NS/NC', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
+(76, 'abc6', 'abc@def.net', 1, 'Sr K', 'NS/NC', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
+(77, 'abc62', 'abc@def.co', 1, 'Sr K', 'NS/NC', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
+(78, 'abc9', 'abc@def.cox', 1, 'Sr K', 'NS/NC', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
+(79, 'feli', 'feli@', 1, 'Sr K', 'NS/NC', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
+(80, 'feli3', 'feli@casa', 1, 'Sr K', 'NS/NC', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
+(81, 'feli5', 'feli@casa.com', 1, 'Sr K', 'NS/NC', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
+(82, 'feli4', 'feli@casa.net', 1, 'Sr K', 'NS/NC', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
+(83, 'feli9', 'feli@casa.neto', 1, 'Sr K', 'NS/NC', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
+(84, 'pablo', 'pablo@', 1, 'Nicos', 'AAA', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
+(85, 'feli6', 'feli@teamo', 1, 'Felipe', 'Bozzolo', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
+(86, 'nuevo', 'nuevo@gmail.com', 1, 'Norberto', 'Nullo', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
+(87, 'pedro', 'pedro@gmail.com', 1, 'Pedro', 'Picapiedras', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
+(88, 'feli8', 'feli@abc', 1, 'Felipe', 'Bozzzolo', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
+(89, 'h', 'h@', 1, 'Sr H', 'J', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 0),
+(90, 'nano', 'nano@g.c', 1, 'NA', 'NA', '$2y$10$qmCo8ZeT1XJWPZ1kuSeFjuj7rEDT9J/YDV4yD3BsVoE.pz0ryfhE2', NULL, 90),
+(102, 'feli61', 'feli@delacasita', 1, 'Sr K', 'NS/NC', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 102),
+(103, 'feli1', 'feli@delacasita2', 1, 'Sr K', 'NS/NC', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 103),
+(104, 'feli7', 'feli@delacasita5', 1, 'Sr K', 'NS/NC', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 104),
+(105, 'feli80', 'feli@delacasita50', 1, 'Sr K', 'NS/NC', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 105),
+(106, 'feli72', 'feli@delacasita50000', 1, 'Sr K', 'NS/NC', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 106),
+(107, 'feli36', 'feli@delacasita50000700', 1, 'Sr K', 'NS/NC', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 107),
+(108, 'feli31', 'feli@delacasita50000700800', 1, 'Sr K', 'NS/NC', '$2y$10$/ehgjdS8p8IbRKMW4AVVOuX38p8yMIZinciIWsj79rDUfRfKH6/56', NULL, 108),
+(109, 'feli34', 'feli@compeon', 1, 'Sr K', 'NS/NC', '$2y$10$ocJZwzelZ3W.3Eas5ig/q.qaBm79ottSuJ8ee2wXv9584INHL2RpW', NULL, 109),
+(110, 'feli67', 'feli@compeon_mundial', 1, 'Sr K', 'NS/NC', '$2y$10$k4kFWXmQacW4LDS.j4gVk./LqKPUtOc9XaObNWojsAzmFnIxbLZ8u', NULL, 110),
+(111, 'feli76', 'feli@compeon_dios', 1, 'Sr K', 'NS/NC', '$2y$10$nYh5nGXM6mVwwAP93G4Nv.m8P8aQmJKLm5fODQBqdmzzSCEZzDiOC', NULL, 111),
+(112, 'superpepe', 'superpepe@', 1, 'Super Pepe', '', '$2y$10$hITAKY1zsMPMIe0KCO6YuuG5Xke8FeZlw00Uw1Mz4J57LU0lLfvja', NULL, 112),
+(113, 'mabelsusana', 'mabelsusanaf@gmail.com', 1, NULL, NULL, NULL, NULL, 113),
+(114, 'xyz', 'xyz@', 1, 'XYZ', 'ZZZ', '$2y$10$mMaJuMmAt7hgTo8KljlDRuavoOg4F0ZGw.hAK/vmpNQJ0xvA/ZEmG', NULL, NULL),
+(115, 'x', 'x@', 1, 'Sr K', 'NS/NC', '$2y$10$K64bJLscpFCH7Geal..vhuKeMzZOP9MWD21eXPj7VpfYiHw4AaEMC', NULL, NULL),
+(116, 'xy', 'xy@', 1, 'Sr K', 'NS/NC', '$2y$10$86ztfpWglgqvK/MyJf12VOYY8rqjJ4Qhi1XhpOsNW0u.BMM3odtUG', NULL, NULL),
+(117, 'aaa3', 'aaa@', 1, 'A', 'AB', '$2y$10$KP8rEs5DracAVvcdMY/ATuB3xwEz7Rjwqj5DilPiszMi8wMRKNAhK', NULL, NULL),
+(118, 'aaaC', 'aaaC@', 1, 'A', 'AB', '$2y$10$T59OjL8Rxb/QZeArKW.PK.GVVG7V3Ao846KSimwt6xGbf7tx0oik.', NULL, NULL),
+(119, 'aaaCD', 'aaaCD@', 1, 'A', 'AB', '$2y$10$SvAYgvxsszn1Z/cfMW/w9eopOcih3CzADDEDd2q0wKwqwTBWVPZoi', NULL, 119),
+(120, 'xyza', 'xyza@', 1, 'XYZA', 'ZZZA', '$2y$10$rp40xaVPNtHqSsDYXVBNCespVSLBpvwdp1oyV7NY6nJk011q2/Iri', NULL, 120),
+(121, 'nono', 'nono@', 1, 'Nono', 'viecco', '$2y$10$W5HaPfOxbAE9rRb04XCzeO/sS0tlHQ4ZTnmXzZPnd2s1qZt26OFdS', NULL, 121),
+(122, 'sss', 'sss@', 1, 'Regular', 'Tester', '$2y$10$8FiysajEjA0.5eyXuLNUZeqQkUBgxCYVonwk1Z5k4rTf/rPMLu.2y', NULL, 122),
+(123, 'ppp', 'ppp@', 1, 'Regular', 'Tester', '$2y$10$J3C1J2pqvJbuQXEekf6vf.AL0lEJbpGrhPtZCujXRfyv16nEzQvdm', NULL, 123),
+(124, 'w', 'w@', 1, 'AA', 'BB', '$2y$10$899qRrlzAXbnyE/5CHLZVezdK9beIDJqrUmb/TcdgepkPHYTMLJTK', NULL, 124),
+(125, 'tester3', 'tester3@', 1, 'Tester', '', '$2y$10$u5L16gB3HEQUROjNFBbrd.KslpcM4J6ref0k/cUcrWZcTolZZZfa.', NULL, 125),
+(126, 'jk', 'jk@', 1, 'J', 'K', '$2y$10$irie63zGURJ/JQiJuyph/uVkVmAJRiSvvDRGaBokyvVLpi8tqganW', NULL, NULL),
+(127, 'aaaCDEF', 'aaaCDEF@', 1, 'A', 'AB', '$2y$10$juP31/p3B.P7F/b2MXxGF.kiN/HG1zwIyehkNWjef5yhFYSGq.YwC', NULL, NULL),
+(128, 'aaaCDEFG', 'aaaCDEFG@', 1, 'A', 'AB', '$2y$10$nkIhbPrL4Y/oJJOe6JdOO.57U8Njn57IRM5cYG7FtPDA2jffOsFNm', NULL, NULL),
+(129, 'aaaCDEFGI', 'aaaCDEFGI@', 1, 'A', 'AB', '$2y$10$VeyVsSP/.2SgfBJq25FXIOPq2iXceFiEgRiEVuOTi5oPIMWc8Vteq', NULL, NULL),
+(130, 'aaaCDEFGIJK', 'aaaCDEFGIJK@', 1, 'A', 'AB', '$2y$10$ann6qT5V/SkaYk/InT27ouVPhrkNaVOlvwgY2nf27lhlT5hm0hnTK', NULL, 130),
+(131, 'aaaCDEFGIJK9', 'aaaCDEFGIJKLM@', 1, 'A', 'AB', '$2y$10$N2hoKh4E9.aYnAPmMPuSb.mgkLAJA1mB0pAnpjsLRU7DuyX1.b1ZC', NULL, 131),
+(132, 'tt', 'tt@', 1, 'T', 'TT', '$2y$10$qXJ25mY64hef.47EjJkBNeYDgG.zHNH8QsodGK3OW13EYQdpaifFG', NULL, 132),
+(133, 'jc', 'jc@', 1, 'Juan', 'Carlos', '$2y$10$gMgqAHr1A5.phZ2/n.RuVuJEM8QnfPVAiTGMVqvCOf7mlWXrGNjXK', NULL, 133),
+(135, 'boctulus', 'boctulus@gmail.com', 1, 'Pablo', 'Bozzolo', '$2y$10$k0dfh9fPueuBlpPr0zC6V.kEr0CR4uHjEc3IUKipfRR3sDnnSvieu', NULL, 135),
+(136, 'bill', 'bill@', 1, 'Bill', 'O', '$2y$10$GHiCUTrFu01EiVcVgTvRluGweRBx8rF6V2qgbhNH82Oi86ATE0RO2', NULL, 136),
+(137, 'san', 'san@', 1, 'San', 'Pepe', '$2y$10$OVUu5rTU1JPSTv2HeXq/puWq86vZT24VAuYTW.sAT.pqzxZEJPFou', NULL, 137),
+(138, 'j', 'j@', 1, 'AJ', 'J', '$2y$10$TOUciinPf3DEBTjALBLnaOhMLzHrwBRkvczOWYD5OsZOy9aVGVfnC', NULL, 138),
+(139, 'aaaCDEFGIJK6', 'aaaCDEFGIJKLMSSS@', 1, 'A', 'AB', '$2y$10$0YDH5aE9l3lQwxFp25bLXepmGQF8fM4XcK4zt/lNzS/2.M7mVgz4S', NULL, 139),
+(140, 'ZZZ', 'ZZZ@', 1, 'A', 'AB', '$2y$10$QosozVg0npjSEimSeOZ74OPyXXZO0SwPsZevPOJlQ0GnHDK7DcsR6', NULL, 140),
+(141, 'ZZZ5', 'ZZZ@PEPE.com', 1, 'A', 'AB', '$2y$10$XIpys1..n4XcQ9CWP89vce9j7NeAiMYYeOqonYtGgUi.9nZcaccB2', NULL, 141),
+(142, 'A5', 'A@PEPE.COM', 1, 'A', 'AB', '$2y$10$Fn5Wkt8masdaOdqBHIaU0uDuRbi7mEVDSzlHgAK8wfJSesSlQWAZu', NULL, 142),
+(143, 'Ab', 'Ab@PEPE.COM', 1, 'A', 'AB', '$2y$10$ehfF6Uwrvdl3NoqYkqhnIexzzCX49pCdbEXOYKrI1O2jsvdHLEpCa', NULL, 143),
+(147, 'ABCDEF', 'ABCDEF@PEPE.COM', 1, 'A', 'AB', '$2y$10$67kVEbzj5C7eGl8b9f01jeMvbU6Cy2xGYADhYl5PvMmUAXAenmmb2', NULL, 147),
+(148, 'ABCDEFG', 'ABCDEFG@PEPE.COM', 1, 'A', 'AB', '$2y$10$p/KGmzQsMmlDDJlYmhr9GOUmkcO4A.A8sefXd7bN3GthEIEA4YCSO', NULL, 148),
+(149, 'X8', 'X@PEPE.COM', 1, 'A', 'AB', '$2y$10$R9EtFdhCWUjMMFkLZxLiA.8XJ2hd2SE8Q3eDuyUa8KOV0TsTGNRX.', NULL, 149),
+(150, 'Y', 'Y@PEPE.COM', 1, 'A', 'AB', '$2y$10$WeO4iScCcFe/yV4d7iUbFeYOfTR6H3TGDjunJLskrJg/.9raTP7IG', NULL, 150),
+(151, 'F', 'F@PEPE.COM', 1, 'A', 'AB', '$2y$10$LDtPjcxYtrwMVfae.8MsNuRaoRgsnVtagH2fbYG3m3MIYOeAWB4fC', NULL, 151),
+(152, 'G', 'G@PEPE.COM', 1, 'A', 'AB', '$2y$10$TY9RyLYn.E24qAeBn9LCzuy8bRT1/UReSDDodfdHouQ7jRN6GqMTq', NULL, 152),
+(153, 'GG', 'GG@PEPE.COM', 1, 'A', 'AB', '$2y$10$qt79FFFbCbQNya/a8fMMn.tcstyJYUHRXIw36pGDTLExLueDKbJby', NULL, 153),
+(154, 'GGG', 'GGG@PEPE.COM', 1, 'A', 'AB', '$2y$10$bIqxFs1bOo.CkImQj5t26.R6fnp5UO8913B5NkxNDy5gP0bhNoP2O', NULL, 154),
+(155, 'elpiojo', 'elpiojo@', 1, 'Ojo', '', '$2y$10$UvEXPDfjiZ/PPits.tThwurSYCz844ZMh9mCVBC5Y9s7Hp8KwlR.2', NULL, 155),
+(156, 'elpiojo2', 'elpiojo2@', 1, 'Ojo', '', '$2y$10$aPWXX4L3MNnPcz0Q.zLFRO97ChkGYQoUdyvk.RzVDuwRaQDiMxkUS', NULL, 156),
+(159, 'boo', 'boo@', 1, 'Boo', '', '$2y$10$eZfHERLi3AlNU7zsPzV.OOqF0Hs7jkh.LXRKdM/3XVABpLujf/f.G', NULL, 159),
+(160, 'uub', 'uub@', 1, 'Uub', '', '$2y$10$ylqsjqzOYFRrfRNYGaruteJ1uLnqcDLyyJTE6If1wb3GNCvEwTk/u', NULL, 160),
+(163, 'asdfgh', 'asdfgh', 0, NULL, NULL, '$2y$10$3qyTA2frHg.CNo2VQTh/cenZoi4y4dtoKhGQNe6P8lqL.u5jS3MFu', NULL, 163),
+(164, 'asdfgh2', 'asdfgh2', 0, NULL, NULL, '$2y$10$lWC.2LcTeHNX65n1NDwDsuSekR0zYC0WNBTOzXEesuRSkKt3krTxa', NULL, 164),
+(165, 'asdfgh23', 'asdfgh23', 0, NULL, NULL, '$2y$10$3ehTASOEPlBjoNYdrZE.WeoKNoV35.DvjpDW1S7IkihN3ByKlCRse', NULL, 165),
+(166, 'asdfgh234', 'asdfgh234', 0, NULL, NULL, '$2y$10$AgMfAavv9tAZjJNPZWAceeEq6gBnBgbKiQRrnqtBIioMk8zMvZrKi', NULL, 166),
+(167, 'pepem', 'pepe@', 1, NULL, NULL, '$2y$10$E7MLf1GxIdRnT4uwOYr03e6mrs3BXd1SApL6EzvzqTs4EkyzttjKm', NULL, 167);
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `user_roles`
+-- Estructura de tabla para la tabla `user_roles`
 --
 
 CREATE TABLE `user_roles` (
@@ -379,7 +396,7 @@ CREATE TABLE `user_roles` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
--- Dumping data for table `user_roles`
+-- Volcado de datos para la tabla `user_roles`
 --
 
 INSERT INTO `user_roles` (`id`, `user_id`, `role_id`, `created_at`, `modification_date`) VALUES
@@ -430,14 +447,20 @@ INSERT INTO `user_roles` (`id`, `user_id`, `role_id`, `created_at`, `modificatio
 (66, 153, 3, '2019-11-10 22:08:29', NULL),
 (67, 154, 3, '2019-11-10 22:08:41', NULL),
 (68, 156, 3, '2019-11-11 11:42:16', NULL),
-(69, 148, 3, '2019-11-11 11:58:20', NULL);
+(69, 148, 3, '2019-11-11 11:58:20', NULL),
+(70, 159, 3, '2019-11-27 16:45:34', NULL),
+(71, 160, 3, '2019-11-27 17:59:13', NULL),
+(72, 164, 3, '2019-11-27 23:50:16', NULL),
+(73, 165, 3, '2019-11-27 23:53:18', NULL),
+(74, 166, 3, '2019-11-27 23:55:28', NULL),
+(75, 167, 3, '2019-11-27 23:59:54', NULL);
 
 --
--- Indexes for dumped tables
+-- Índices para tablas volcadas
 --
 
 --
--- Indexes for table `folders`
+-- Indices de la tabla `folders`
 --
 ALTER TABLE `folders`
   ADD PRIMARY KEY (`id`),
@@ -445,7 +468,7 @@ ALTER TABLE `folders`
   ADD KEY `owner` (`belongs_to`);
 
 --
--- Indexes for table `group_permissions`
+-- Indices de la tabla `group_permissions`
 --
 ALTER TABLE `group_permissions`
   ADD PRIMARY KEY (`id`),
@@ -454,13 +477,13 @@ ALTER TABLE `group_permissions`
   ADD KEY `belongs_to` (`belongs_to`);
 
 --
--- Indexes for table `messages`
+-- Indices de la tabla `messages`
 --
 ALTER TABLE `messages`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `other_permissions`
+-- Indices de la tabla `other_permissions`
 --
 ALTER TABLE `other_permissions`
   ADD PRIMARY KEY (`id`),
@@ -468,22 +491,23 @@ ALTER TABLE `other_permissions`
   ADD KEY `belongs_to` (`belongs_to`);
 
 --
--- Indexes for table `products`
+-- Indices de la tabla `products`
 --
 ALTER TABLE `products`
   ADD PRIMARY KEY (`id`),
   ADD KEY `created_by` (`belongs_to`);
 
 --
--- Indexes for table `users`
+-- Indices de la tabla `users`
 --
 ALTER TABLE `users`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `email` (`email`),
+  ADD UNIQUE KEY `username` (`username`),
   ADD KEY `belongs_to` (`belongs_to`);
 
 --
--- Indexes for table `user_roles`
+-- Indices de la tabla `user_roles`
 --
 ALTER TABLE `user_roles`
   ADD PRIMARY KEY (`id`),
@@ -492,63 +516,63 @@ ALTER TABLE `user_roles`
   ADD KEY `role_id` (`role_id`);
 
 --
--- AUTO_INCREMENT for dumped tables
+-- AUTO_INCREMENT de las tablas volcadas
 --
 
 --
--- AUTO_INCREMENT for table `folders`
+-- AUTO_INCREMENT de la tabla `folders`
 --
 ALTER TABLE `folders`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
--- AUTO_INCREMENT for table `group_permissions`
+-- AUTO_INCREMENT de la tabla `group_permissions`
 --
 ALTER TABLE `group_permissions`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
--- AUTO_INCREMENT for table `messages`
+-- AUTO_INCREMENT de la tabla `messages`
 --
 ALTER TABLE `messages`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=47;
 
 --
--- AUTO_INCREMENT for table `other_permissions`
+-- AUTO_INCREMENT de la tabla `other_permissions`
 --
 ALTER TABLE `other_permissions`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
--- AUTO_INCREMENT for table `products`
+-- AUTO_INCREMENT de la tabla `products`
 --
 ALTER TABLE `products`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=211;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=215;
 
 --
--- AUTO_INCREMENT for table `users`
+-- AUTO_INCREMENT de la tabla `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=157;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=168;
 
 --
--- AUTO_INCREMENT for table `user_roles`
+-- AUTO_INCREMENT de la tabla `user_roles`
 --
 ALTER TABLE `user_roles`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=70;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=76;
 
 --
--- Constraints for dumped tables
+-- Restricciones para tablas volcadas
 --
 
 --
--- Constraints for table `folders`
+-- Filtros para la tabla `folders`
 --
 ALTER TABLE `folders`
   ADD CONSTRAINT `folders_ibfk_1` FOREIGN KEY (`belongs_to`) REFERENCES `users` (`id`);
 
 --
--- Constraints for table `group_permissions`
+-- Filtros para la tabla `group_permissions`
 --
 ALTER TABLE `group_permissions`
   ADD CONSTRAINT `group_permissions_ibfk_1` FOREIGN KEY (`folder_id`) REFERENCES `folders` (`id`),
@@ -556,14 +580,14 @@ ALTER TABLE `group_permissions`
   ADD CONSTRAINT `group_permissions_ibfk_3` FOREIGN KEY (`belongs_to`) REFERENCES `users` (`id`);
 
 --
--- Constraints for table `other_permissions`
+-- Filtros para la tabla `other_permissions`
 --
 ALTER TABLE `other_permissions`
   ADD CONSTRAINT `other_permissions_ibfk_1` FOREIGN KEY (`folder_id`) REFERENCES `folders` (`id`),
   ADD CONSTRAINT `other_permissions_ibfk_2` FOREIGN KEY (`belongs_to`) REFERENCES `users` (`id`);
 
 --
--- Constraints for table `user_roles`
+-- Filtros para la tabla `user_roles`
 --
 ALTER TABLE `user_roles`
   ADD CONSTRAINT `user_roles_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);

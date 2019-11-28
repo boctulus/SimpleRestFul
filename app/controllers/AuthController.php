@@ -12,6 +12,8 @@ use simplerest\models\UsersModel;
 use simplerest\models\RolesModel;
 use simplerest\models\UserRolesModel;
 use simplerest\libs\Debug;
+use simplerest\libs\Validator;
+use simplerest\core\exceptions\InvalidValidationException;
 
 
 class AuthController extends Controller implements IAuth
@@ -105,50 +107,51 @@ class AuthController extends Controller implements IAuth
         }else if (empty($password)){
             Factory::response()->sendError('password is required',400);
         }
-              
-        $conn = $this->getConnection();
-        
-        $u = (new UsersModel($conn))->setFetchMode('ASSOC');
-        $rows = $u->unhide(['password'])
-        ->where(['email'=> $email])
-        ->orWhere(['username' => $username])
-        ->get();
 
-        if (count($rows) ==0)    
-            Factory::response()->sendError('Incorrect username / email or password', 401);
- 
-        $hash = $rows[0]['password'];
+        try {              
 
-        if (!password_verify($password, $hash))
-            Factory::response()->sendError('Incorrect username / email or password', 401);
+            $row = Database::table('users')->setFetchMode('ASSOC')->unhide(['password'])
+            ->where([ 'email'=> $email, 'username' => $username ], 'OR')
+            ->setValidator((new Validator())->setRequired(false))  
+            ->first();
 
-        $confirmed_email = $rows[0]['confirmed_email'];
+            $hash = $row['password'];
 
-        // Fetch roles
-        $uid = $rows[0]['id'];
-        $rows = Database::table('user_roles')->setFetchMode('ASSOC')->where(['user_id', $uid])->get(['role_id as role']);	
-        
-        $r = new RolesModel();
+            if (!password_verify($password, $hash))
+                Factory::response()->sendError('Incorrect username / email or password', 401);
 
-        $roles = [];
-        if (count($rows) != 0){            
-            foreach ($rows as $row){
-                $roles[] = $r->getRoleName($row['role']);
-            }
-        }else
-            $roles[] = 'registered';
+            $confirmed_email = $row['confirmed_email'];           
 
-        $access  = $this->gen_jwt(['uid' => $uid, 'roles' => $roles, 'confirmed_email' => $confirmed_email], 'access_token');
-        $refresh = $this->gen_jwt(['uid' => $uid, 'roles' => $roles, 'confirmed_email' => $confirmed_email], 'refresh_token');
-
-        Factory::response()->send([ 
-                                    'access_token'=> $access,
-                                    'token_type' => 'bearer', 
-                                    'expires_in' => $this->config['access_token']['expiration_time'],
-                                    'refresh_token' => $refresh                                         
-                                    // 'scope' => 'read write'
-                                    ]);
+            // Fetch roles
+            $uid = $row['id'];
+            $rows = Database::table('user_roles')->setFetchMode('ASSOC')->where(['user_id', $uid])->get(['role_id as role']);	
             
+            $r = new RolesModel();
+
+            $roles = [];
+            if (count($rows) != 0){            
+                foreach ($rows as $row){
+                    $roles[] = $r->getRoleName($row['role']);
+                }
+            }else
+                $roles[] = 'registered';
+
+            $access  = $this->gen_jwt(['uid' => $uid, 'roles' => $roles, 'confirmed_email' => $confirmed_email], 'access_token');
+            $refresh = $this->gen_jwt(['uid' => $uid, 'roles' => $roles, 'confirmed_email' => $confirmed_email], 'refresh_token');
+
+            Factory::response()->send([ 
+                                        'access_token'=> $access,
+                                        'token_type' => 'bearer', 
+                                        'expires_in' => $this->config['access_token']['expiration_time'],
+                                        'refresh_token' => $refresh                                         
+                                        // 'scope' => 'read write'
+                                        ]);
+          
+        } catch (InvalidValidationException $e) { 
+            Factory::response()->sendError('Validation Error', 400, json_decode($e->getMessage()));
+        } catch(\Exception $e){
+            Factory::response()->sendError($e->getMessage());
+        }	
         
     }
 
@@ -236,7 +239,7 @@ class AuthController extends Controller implements IAuth
 
             $data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
 
-            $uid = Database::table('users')->create($data);
+            $uid = Database::table('users')->setValidator(new Validator())->create($data);
             if (empty($uid))
                 Factory::response()->sendError("Error in user registration", 500, 'Error creating user');
 
@@ -297,6 +300,8 @@ class AuthController extends Controller implements IAuth
                                         // 'scope' => 'read write'
                                       ]);
 
+        } catch (InvalidValidationException $e) { 
+            Factory::response()->sendError('Validation Error', 400, json_decode($e->getMessage()));
         }catch(\Exception $e){
             Factory::response()->sendError($e->getMessage());
         }	

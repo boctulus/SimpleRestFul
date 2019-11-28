@@ -504,6 +504,10 @@ class Model {
 		$vars   = array_merge($this->w_vars, $this->h_vars); 
 		////////////////////////
 
+
+		//Debug::debug($vars, 'VARS:');
+		//Debug::debug($values, 'VALS:');
+
 		// Validación
 		if (!empty($this->validator)){
 			$validado = $this->validator->validate($this->getRules(), array_combine($vars, $values));
