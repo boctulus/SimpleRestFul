@@ -118,14 +118,15 @@ class Validator implements IValidator
 			
 		foreach($rules as $field => $rule){
 
-			//Debug::debug($rule, "RULE $field :");
+			/*
+			Debug::debug($rule, "RULE $field :");
 			
-			//if (!isset($data[$field]))
-			//	continue;
+			if (isset($data[$field]))			
+				Debug::debug($data[$field], 'VALOR:');			
 			
-			//Debug::debug($data[$field], 'VALOR:');			
-			//echo "\n";
-			
+			echo "---------------------------------<p/>\n";
+			*/
+
 			if (!isset($data[$field])){
 				//var_export(['field' =>$data[$field], 'required' => $rule['required']]);
 

@@ -988,7 +988,7 @@ class Model {
 			$_where[] = "$var $ops[$ix] ?";
 		}
 
-		$this->w_vars = $vars;
+		$this->w_vars = array_merge($this->w_vars, $vars); //
 
 		////////////////////////////////////////////
 		// group

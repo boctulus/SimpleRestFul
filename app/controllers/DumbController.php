@@ -468,7 +468,8 @@ class DumbController extends Controller
     /*
         Showing also deleted records
 
-        SELECT  name, cost, id FROM products WHERE (belongs_to = '90' AND (name IN ('CocaCola', 'PesiLoca')  OR cost >= 550 OR cost < 100) AND description IS NOT NULL) AND deleted_at IS NULL
+        SELECT  name, cost, id FROM products WHERE (belongs_to = '90' AND (name IN ('CocaCola', 'PesiLoca')  OR cost >= 550 OR cost < 100) AND description IS NOT NULL) AND deleted_at IS NULL OR  (cost >= 100 AND cost < 500)
+
     */
     function where_or2(){
         Debug::debug(Database::table('products')
@@ -483,18 +484,35 @@ class DumbController extends Controller
         ->get());
     }
 
+    // SELECT * FROM users WHERE (email = 'nano@g.c' OR  username = 'nano') AND deleted_at IS NULL
     function or_where3(){
         $email = 'nano@g.c';
         $username = 'nano';
 
-        $row = Database::table('users')->setFetchMode('ASSOC')->unhide(['password'])
+        $rows = Database::table('users')->setFetchMode('ASSOC')->unhide(['password'])
+            ->where([ 'email'=> $email, 
+                      'username' => $username 
+            ], 'OR') 
+            ->setValidator((new Validator())->setRequired(false))  
+            ->get();
+
+        Debug::debug($rows);
+    }
+
+    // SELECT * FROM users WHERE (email = 'nano@g.c' OR  username = 'nano') AND deleted_at IS NULL
+    function or_where3b(){
+        $email = 'nano@g.c';
+        $username = 'nano';
+
+        $rows = Database::table('users')->setFetchMode('ASSOC')
             ->where([ 'email'=> $email ]) 
             ->orWhere(['username' => $username ])
             ->setValidator((new Validator())->setRequired(false))  
-            ->first();
+            ->get();
 
-        Debug::debug($row);
+        Debug::debug($rows);
     }
+
 
     // SELECT * FROM products WHERE ((cost < IF(size = "1L", 300, 100) AND size = '1L' ) AND belongs_to = 90) AND deleted_at IS NULL ORDER BY cost ASC
     function where_raw(){
