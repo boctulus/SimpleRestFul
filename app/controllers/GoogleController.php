@@ -120,10 +120,10 @@ class GoogleController extends Controller
         try 
         {        
             $conn = $this->getConnection();	
-            $u = new UsersModel($conn);
+            $u = (new UsersModel($conn))->setFetchMode('ASSOC');
 
-            // exits
-            if ($u->where(['email', $payload['email']])->exists()){
+            $rows = $u->where(['email', $payload['email']])->get();
+            if (count($rows) == 1){
                 // Email already exists
                 $uid = $rows[0]['id'];
 
@@ -141,7 +141,26 @@ class GoogleController extends Controller
                 $data['email'] = $payload['email'];
                 $data['firstname'] = $payload['given_name'] ?? NULL;
                 $data['lastname'] = $payload['family_name'] ?? NULL;
-                //$data['username'] = ... 
+
+                ///
+                preg_match('/[^@]+/', $payload['email'], $matches);
+                $username = substr($matches[0], 0, 12);
+        
+                $existe = Database::table('users')->where(['username', $username])->exists();
+                
+                if ($existe){
+                    $_username = $username;
+                    $append = 1;
+                    while($existe){
+                        $_username = $username . $append;
+                        $existe = Database::table('users')->where(['username', $_username])->exists();
+                        $append++;
+                    }
+                    $username = $_username;
+                }         
+        
+                $data['username'] = $username;
+                ///
                 
                 $uid = $u->create($data);
                 if (empty($uid))
@@ -155,9 +174,6 @@ class GoogleController extends Controller
 
                 $r = new RolesModel();
                 $role = $this->config['registration_role'];
-
-                //var_dump($role);
-                //Debug::debug([ 'user_id' => $uid, 'role_id' => $r->get_role_id($role) ]);
 
                 $ur = new UserRolesModel($conn);
                 $id = $ur->create([ 'user_id' => $uid, 'role_id' => $r->get_role_id($role) ]);  // registered or other            

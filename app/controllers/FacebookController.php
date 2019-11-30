@@ -109,6 +109,26 @@ class FacebookController extends Controller
                     $data['firstname'] = $firstname ?? NULL;
                     $data['lastname'] = $lastname ?? NULL;
                     
+                    ///
+                    preg_match('/[^@]+/', $payload['email'], $matches);
+                    $username = substr($matches[0], 0, 12);
+            
+                    $existe = Database::table('users')->where(['username', $username])->exists();
+                    
+                    if ($existe){
+                        $_username = $username;
+                        $append = 1;
+                        while($existe){
+                            $_username = $username . $append;
+                            $existe = Database::table('users')->where(['username', $_username])->exists();
+                            $append++;
+                        }
+                        $username = $_username;
+                    }         
+            
+                    $data['username'] = $username;
+                    ///
+                
                     $uid = $u->create($data);
                     if (empty($uid))
                         return ['error' => 'Error in user registration!', 'code' => 500];
