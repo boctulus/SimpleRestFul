@@ -3,7 +3,13 @@
 namespace simplerest\controllers;
 
 global $api_version;
-class_alias("\simplerest\core\api\\v$api_version\ApiController", 'simplerest\controllers\ApiController');
+
+if (!file_exists(CORE_PATH . 'api'. DIRECTORY_SEPARATOR . $api_version . DIRECTORY_SEPARATOR . 'ApiController.php')){  
+    \simplerest\core\Response::getInstance()->sendError("API version $api_version is not supported", 400);
+}
+
+class_alias("\simplerest\core\api\\$api_version\ApiController", 'simplerest\controllers\ApiController');
+
 
 class MyApiController extends ApiController
 {
