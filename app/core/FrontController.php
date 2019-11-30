@@ -12,6 +12,7 @@ class FrontController
     static function resolve()
     {
         global $argv;
+        global $api_version;
 
         $config = include '../config/config.php';
 
@@ -56,11 +57,19 @@ class FrontController
             $req = Request::getInstance();            
         
             if ($_params[0]=='api'){
-                @list($controller) = array_slice($_params,1,1);
-                $params = array_slice($_params,2);
+                if (!isset($_params[1]))
+                    Response::getInstance()->sendError('API version is missing');
+
+                if (substr($_params[1],0,1) !== 'v' || ((string) (int) substr($_params[1],1) != substr($_params[1],1)) )
+                    Response::getInstance()->sendError("Incorrect format for API version");
+
+                $api_version = (int) substr($_params[1],1); 
+                
+                @list($controller) = array_slice($_params,2,1);
+                $params = array_slice($_params,3,2);
                 $req->setParams($params);     
                 $namespace = 'simplerest\\api\\';
-                
+
                 $class_name = $namespace . ucfirst($controller); //
                 $method = strtolower($_SERVER['REQUEST_METHOD']);
             }else{

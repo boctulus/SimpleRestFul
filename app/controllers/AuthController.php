@@ -120,7 +120,8 @@ class AuthController extends Controller implements IAuth
             if (!password_verify($password, $hash))
                 Factory::response()->sendError('Incorrect username / email or password', 401);
 
-            $confirmed_email = $row['confirmed_email'];           
+            $confirmed_email = $row['confirmed_email']; 
+            $username = $row['username'];           
 
             // Fetch roles
             $uid = $row['id'];
@@ -136,14 +137,21 @@ class AuthController extends Controller implements IAuth
             }else
                 $roles[] = 'registered';
 
-            $access  = $this->gen_jwt(['uid' => $uid, 'roles' => $roles, 'confirmed_email' => $confirmed_email], 'access_token');
-            $refresh = $this->gen_jwt(['uid' => $uid, 'roles' => $roles, 'confirmed_email' => $confirmed_email], 'refresh_token');
+            $access  = $this->gen_jwt([ 'uid' => $uid, 
+                                        'roles' => $roles, 
+                                        'confirmed_email' => $confirmed_email
+            ], 'access_token');
+            $refresh = $this->gen_jwt([ 'uid' => $uid, 
+                                        'roles' => $roles, 
+                                        'confirmed_email' => $confirmed_email
+            ], 'refresh_token');
 
             Factory::response()->send([ 
                                         'access_token'=> $access,
                                         'token_type' => 'bearer', 
                                         'expires_in' => $this->config['access_token']['expiration_time'],
-                                        'refresh_token' => $refresh                                         
+                                        'refresh_token' => $refresh,
+                                        'username' => $username                                         
                                         // 'scope' => 'read write'
                                         ]);
           
@@ -296,7 +304,8 @@ class AuthController extends Controller implements IAuth
                                         'access_token'=> $access,
                                         'token_type' => 'bearer', 
                                         'expires_in' => $this->config['access_token']['expiration_time'],
-                                        'refresh_token' => $refresh
+                                        'refresh_token' => $refresh,
+                                        'username' => $data['username']
                                         // 'scope' => 'read write'
                                       ]);
 

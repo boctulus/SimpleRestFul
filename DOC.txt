@@ -3,8 +3,20 @@ DOCUMENTACION
 
 SimpleRest utiliza la arquitectura MVC donde modelos y controladores se implementan con clases y las vistas con archivos planos.
 
-### Controlador
+# Versionado
 
+Se especifica la versión en la url y esto tiene como efecto cargar una versión distinta de la clase ApiController en /app/core/api
+
+	GET /api/v1/products
+	GET /api/v2/products
+	GET /api/v3/products
+
+En el primer por ejemplo caso carga la clase /app/core/api/v1/ApiController
+
+La clase MyApiController en /app/controllers es la responsable de seleccionar la versión solicitada de la API.
+
+
+### Controlador
 
 Para demostrar como ejecutar un controlador desde la linea de comandos ejemplificaremos con un simple controlador:
 
@@ -579,13 +591,6 @@ En cambio una respuesta que contiene un error, puede o no poseer cuerpo pudiendo
     "error": "Not found",
     "error_detail": "Register for id=1850 does not exists"
 }
-
-# Versionado
-
-Se sugiere implementarlo agregando un parámetro en la url:
-
-	GET /api/products/136/version=2
-
 
 # NGINX web server
 

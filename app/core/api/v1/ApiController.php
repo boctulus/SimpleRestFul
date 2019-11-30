@@ -1,7 +1,8 @@
 <?php
 
-namespace simplerest\core;
+namespace simplerest\core\api\v1;
 
+use simplerest\core\Controller;
 use simplerest\core\interfaces\IAuth;
 use simplerest\libs\Factory;
 use simplerest\libs\Arrays;
@@ -376,10 +377,12 @@ abstract class ApiController extends Controller
                                         $_get[$key] = [$campo, '%'.$v.'%', 'like'];
                                         $ignored[] = $campo;
                                     break;
+                                    /*
                                     case 'notContains':
                                         $_get[$key] = [$campo, '%'.$v.'%', 'not like'];
                                         $ignored[] = $campo;
                                     break;
+                                    */
                                     case 'startsWith':
                                         $_get[$key] = [$campo, $v.'%', 'like'];
                                         $ignored[] = $campo;

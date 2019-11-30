@@ -2,7 +2,8 @@
 
 namespace simplerest\controllers;
 
-use simplerest\core\ApiController; 
+global $api_version;
+class_alias("\simplerest\core\api\\v$api_version\ApiController", 'simplerest\controllers\ApiController');
 
 class MyApiController extends ApiController
 {
