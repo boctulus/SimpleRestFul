@@ -135,3 +135,24 @@ When a record is softly deleted then it can be seen at TrashCan where is posible
         "cost": "230"
     }
 
+# /me
+
+The simple way to perform CRUD operations on the current user is using /api/v1/me endpoint.
+
+    GET /api/v1/me
+
+    {
+        "data": {
+            "id": "4",
+            "username": "pbozzolo",
+            "email": "pbozzolo@gmail.com",
+            "confirmed_email": "1",
+            "firstname": "Paulinoxxxy",
+            "lastname": "Bozzoxxxy",
+            "deleted_at": null,
+            "belongs_to": "0"
+        },
+        "error": "",
+        "error_detail": ""
+    }
+

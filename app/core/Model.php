@@ -563,7 +563,8 @@ class Model {
 			}
 		}
 		
-		$q  .= "WHERE $where";
+		if (!empty($where))
+			$q  .= "WHERE $where";
 
 		$group = (!empty($this->group)) ? 'GROUP BY '.implode(',', $this->group) : '';
 		$q  .= " $group";
