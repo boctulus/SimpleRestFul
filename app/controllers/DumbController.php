@@ -724,7 +724,7 @@ class DumbController extends Controller
     function get_user($id){
         $u = Database::table('users');
         $u->unhide(['password']);
-        $u->hide(['firstname','lastname']);
+        $u->hide(['username', 'confirmed_email', 'firstname','lastname', 'deleted_at', 'belongs_to']);
         
         Debug::debug($u->where(['id'=>$id])->get());
     }

@@ -141,15 +141,16 @@ class Model {
 	}
 
 	/**
-	 * removehidden
+	 * removeHidden
 	 *
 	 * @param  array $fields
 	 *
 	 * @return void
 	 */
-	protected function removehidden(&$fields)
+	protected function removeHidden(&$fields)
 	{	
-		if (!empty($this->hidden)){
+		if (!empty($this->hidden) && (empty($this->select_raw_q)) ){			
+			
 			if (empty($fields)) {
 				$fields = $this->properties;
 			}
@@ -159,6 +160,7 @@ class Model {
 				if ($k != null)
 					unset($fields[$k]);
 			}
+
 		}
 	}
 
@@ -399,13 +401,8 @@ class Model {
 			if (empty($conjunction))
 				$conjunction = 'AND';
 
-			/*
-				Remover los campos ocultos siempre es un problema
-				ya que puede agregar campos donde se necesita una sola columna
-			*/
-			//if (!empty($this->select_raw_vals))	
-				$this->removehidden($fields);		
-
+			$this->removeHidden($fields);	
+							
 			if ($this->distinct){
 				$remove = [$this->id_name];
 

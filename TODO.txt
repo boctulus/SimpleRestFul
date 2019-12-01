@@ -1,10 +1,5 @@
 # TODO
 
-- Chequear que hacia esto en Model:
-
-//if (!empty($this->select_raw_vals))	
-				$this->removehidden($fields);	
-
 - Generador de modelos, controladores y apis (resource controllers) como en Laravel:
 
 Ejemplo:
