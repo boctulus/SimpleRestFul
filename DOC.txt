@@ -11,7 +11,7 @@ Se especifica la versión en la url y esto tiene como efecto cargar una versión
 	GET /api/v2/products
 	GET /api/v3/products
 
-En el primer por ejemplo caso carga la clase /app/core/api/v1/ApiController
+En el primer por ejemplo caso carga la clase /app/core/api/v1/v1/ApiController
 
 La clase MyApiController en /app/controllers es la responsable de seleccionar la versión solicitada de la API.
 
@@ -48,7 +48,6 @@ En la terminal nos cambiamos al directorio "public" y ejecutamos:
 	{
 		protected $table_name = "products";
 		protected $id_name = 'id';
-		protected $fillable = ['name','description','size','cost', 'workspace', 'belongs_to'];
 		protected $nullable = ['workspace', 'created'];
 	 
 		/*
@@ -73,7 +72,7 @@ En la terminal nos cambiamos al directorio "public" y ejecutamos:
 
 	}
 
-Como puede observarse cada campo en el schema es de un tipo, el nombre de la tabla se especifica en $table_name aunque se recomienda que coincida con el nombre de la clase modelo en minúsculas. 
+Cada campo en el schema es de un tipo, el nombre de la tabla se especifica en $table_name aunque se recomienda que coincida con el nombre de la clase modelo en minúsculas. 
 
 Todas las tablas deben tener un único id inclusive si son "tablas intermedias" (conocidas también como "tablas puente") y se especifica en la propiedad $id_name.
 
@@ -92,6 +91,31 @@ having()
 get()
 orderBy()
 etc
+
+
+### Campos fillables, no-fillables, nullables y ocultos
+
+Se puede definir un array de campos "fillables" aunque por lo general se lo puede dejar en automático. También es posible definir por el contrario, campos a excluir como "no fillables".
+
+	protected $fillable = [
+							'email',
+							'password',
+							'firstname',
+							'lastname',
+							'deleted_at',
+							'belongs_to'
+	];
+
+	// o ...
+	protected $not_fillable = ['confirmed_email'];
+
+Los campos no-nullables serian los requeridos para las validaciones y se definen de igual modo: 
+
+	protected $nullable = ['id', 'firstname', 'lastname', 'deleted_at', 'belongs_to', 'confirmed_email'];
+
+Por último tenemos los campos ocultos:
+
+	protected $hidden   = [	'password' ];
 
 
 ### Validaciones
@@ -418,35 +442,35 @@ El campo $folder_field almacena el nombre del campo que en el ejemplo es "worksp
 
 Para acceder a un folder se especifica el id del folder y otros usuarios pueden entonces listar o visualizar recursos que se le hayan compartido.
 
-	GET /api/products?folder=1
+	GET /api/v1/v1/products?folder=1
 
 Por supuesto pueden aplicarse otros filtros:
 
-	GET /api/products?folder=1&cost=200
+	GET /api/v1/products?folder=1&cost=200
 
 Y puede visualizarse un registro en particular (ej: 124) para el que no tendríamos permiso si no especificamos el folder:
 
-	GET /api/products/124?folder=1		
+	GET /api/v1/products/124?folder=1		
 
 Un usuario con rol de administrador en principio obtendrá todos los registros para un endpoint incluidos los que pertenecen a folders privados de otros usuarios:
 
-	GET /api/products
+	GET /api/v1/products
 
 <-- obtiene todos los registros indiscriminadamente
 
 Sin embargo también puede restringir a un folder en particular:
 
-	GET /api/products?folder=57
+	GET /api/v1/products?folder=57
 
 Los permisos para los folders se conceden creando entradas en la tabla group_permissions y es importante notar que debe darse explícitamente permiso al owner (así como a los otros usuarios) para que éste ver registros dentro de ese folder.
 
-Obviamente cada usuario puede listar, editar o borrar sus folders usando el endpoint /api/folders
+Obviamente cada usuario puede listar, editar o borrar sus folders usando el endpoint /api/v1/folders
 
-Igualmente cada usuario puede hacer CRUD sobre los permisos de "grupo" y para "otros" a través de sus respectivos endpoints /api/GroupPermissions y /api/OtherPermissions respectivamente de modo de permitir a otros miembros acceso de lectura y/o escritura de sus registros.
+Igualmente cada usuario puede hacer CRUD sobre los permisos de "grupo" y para "otros" a través de sus respectivos endpoints /api/v1/GroupPermissions y /api/v1/OtherPermissions respectivamente de modo de permitir a otros miembros acceso de lectura y/o escritura de sus registros.
 
 Para crear un registro en un folder del que se ha concedido permiso de escritura se incluye como campo el id del "folder". Ej:
 
-	POST /api/products
+	POST /api/v1/products
 
 	{
 		"name": "Supreme jugo",
@@ -478,7 +502,7 @@ Es importante entender que cuando creamos un registro dentro de un folder que no
 
 Igualmente para modificar un registro de otro usuario que nos ha compartido su folder especificamos el id del folder:
 
-	PUT /api/products/136
+	PUT /api/v1/products/136
 
 	{
 	    "name": "Vodka venezolano",
@@ -490,7 +514,7 @@ Igualmente para modificar un registro de otro usuario que nos ha compartido su f
 
 Mismo para borrar un registro perteneciente a un folder es necesario estar "dentro" haciendo referencia al folder en cuestión:
 
-	DELETE /api/products/136
+	DELETE /api/v1/products/136
 
 	{
     	"folder": "1"
@@ -518,13 +542,13 @@ Cuando un registro es marcado como borrado aparece en TrashCan, la papelera de r
 
 Para ver elementos en la papelera
 
-	GET /api/TrashCan?entity=products
-	GET /api/TrashCan/157?entity=products
+	GET /api/v1/TrashCan?entity=products
+	GET /api/v1/TrashCan/157?entity=products
 
 
 Para hacer un "undelete" de un recurso se hace un PATCH o PUT sobre el TrashCan
 
-	PATCH /api/TrashCan/157	
+	PATCH /api/v1/TrashCan/157	
 
 	{
 		"entity": "Products",
@@ -533,7 +557,7 @@ Para hacer un "undelete" de un recurso se hace un PATCH o PUT sobre el TrashCan
 
 Para eliminar *permanentemente* un recurso se realiza un DELETE sobre el elemento en la papelera:
 
-	DELETE /api/TrashCan/157
+	DELETE /api/v1/TrashCan/157
 
 	{
     	"entity": "Products"
@@ -541,7 +565,7 @@ Para eliminar *permanentemente* un recurso se realiza un DELETE sobre el element
 
 La papelera acepta los mismos filtros y los resultados se pueden ordenar igual que con cualquier entidad:
 
-	GET /api/TrashCan?entity=Products&order[deleted_at]=DESC
+	GET /api/v1/TrashCan?entity=Products&order[deleted_at]=DESC
 
 
 ### Registros bloqueados
@@ -608,5 +632,5 @@ Se sugiere crear una entidad "Views" que contenga todas las urls de las vistas l
 
 Al hacer un GET a Views se listarían todas las urls de vistas para los roles del usuario en particular pero podría filtrarse por un rol específico:
 
-GET /api/views?rol=admin
+GET /api/v1/views?rol=admin
   

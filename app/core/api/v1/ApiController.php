@@ -85,14 +85,16 @@ abstract class ApiController extends Controller
                 $this->callable = ['get', 'post', 'put', 'patch', 'delete'];
             }else{
                 foreach ($this->roles as $role){
-                    $cruds = $this->scope[$role];
-    
-                    if (!empty($this->scope[$role])){
-                        foreach ($operations as $op => $verbs) {
-                            if (in_array($op, $cruds))
-                                $this->callable = array_merge($this->callable, $verbs);
-                        }
-                    } 
+                    if (isset($this->scope[$role])){
+                        $cruds = $this->scope[$role];
+        
+                        if (!empty($this->scope[$role])){
+                            foreach ($operations as $op => $verbs) {
+                                if (in_array($op, $cruds))
+                                    $this->callable = array_merge($this->callable, $verbs);
+                            }
+                        } 
+                    }                       
                 }    
             }
 

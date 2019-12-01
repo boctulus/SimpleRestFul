@@ -1,5 +1,10 @@
 # TODO
 
+- Chequear que hacia esto en Model:
+
+//if (!empty($this->select_raw_vals))	
+				$this->removehidden($fields);	
+
 - Generador de modelos, controladores y apis (resource controllers) como en Laravel:
 
 Ejemplo:
@@ -233,14 +238,11 @@ Content-Length: ...
     <link rel="close" href="/accounts/12345/close" />
 </account>
  
-- Versionado ej: http://simplerest.lan/api/v1/users 
-
 - Simplificar la forma de crear la conexion a la DB como en Laravel Lummen:
 https://lumen.laravel.com/docs/6.x/database
 
 - Implementar mi data-validator
 - Generar Modelos con sus schemas a partir de la DB como con CRUDO usando un comando.
-- Probar en Windows
 - Form de registro (front)
 - Paginador (front)
 - Controles más complejos como checkbox, radio, combobox

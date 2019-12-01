@@ -13,15 +13,10 @@ use simplerest\libs\Validator;
 use simplerest\models\RolesModel;
 use simplerest\core\exceptions\InvalidValidationException;
 
-class Me extends Controller
-{   
-    protected $scope = [
-        'guest'      => [], 
-        'registered' => ['read', 'write'],
-        'basic'      => ['read'],
-        'regular'    => ['read', 'write']
-    ];
-
+class MySelf extends Controller
+{ 
+    protected $modelName = 'usersModel';
+    
     protected $default_headers = [
         'access-control-allow-Methods' => 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
         'access-control-allow-credentials' => 'true',
@@ -78,14 +73,16 @@ class Me extends Controller
                 $this->callable = ['get', 'post', 'put', 'patch', 'delete'];
             }else{
                 foreach ($this->roles as $role){
-                    $cruds = $this->scope[$role];
+                    if (isset($this->scope[$role])){
+                        $cruds = $this->scope[$role];
     
-                    if (!empty($this->scope[$role])){
-                        foreach ($operations as $op => $verbs) {
-                            if (in_array($op, $cruds))
-                                $this->callable = array_merge($this->callable, $verbs);
-                        }
-                    } 
+                        if (!empty($this->scope[$role])){
+                            foreach ($operations as $op => $verbs) {
+                                if (in_array($op, $cruds))
+                                    $this->callable = array_merge($this->callable, $verbs);
+                            }
+                        } 
+                    }                    
                 }    
             }
 
@@ -100,9 +97,8 @@ class Me extends Controller
             $verbos = array_merge($this->callable, ['options']);            
             $headers = array_merge($headers, ['access-control-allow-Methods' => implode(',',array_map( function ($e){ return strtoupper($e); },$verbos)) ]);
             $this->setheaders($headers);            
-        }    
-
-        $this->modelName = 'usersModel';            
+        }      
+        
     }
 
     

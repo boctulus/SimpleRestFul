@@ -20,6 +20,8 @@ class UsersModel extends Model
 							'belongs_to'
 	];
 	*/
+
+	protected $not_fillable = ['confirmed_email'];
 	protected $nullable = ['id', 'firstname', 'lastname', 'deleted_at', 'belongs_to', 'confirmed_email'];
 	protected $hidden   = [	'password' ];
 

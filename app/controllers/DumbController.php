@@ -1049,7 +1049,6 @@ class DumbController extends Controller
             $username = $_username;
         }         
 
-        echo $username;
         $affected = Database::table('users')->where(['email' => $email])->update(['username' => $username]);
     }
     

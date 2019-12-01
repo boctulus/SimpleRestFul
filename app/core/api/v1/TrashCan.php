@@ -1,6 +1,6 @@
 <?php
 
-namespace simplerest\api;
+namespace simplerest\core\api\v1;
 
 use simplerest\controllers\MyApiController;
 use simplerest\libs\Factory;

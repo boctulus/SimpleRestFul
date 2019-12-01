@@ -69,7 +69,7 @@ class FrontController
                 $params = array_slice($_params,3,2);
                 $req->setParams($params);    
                 
-                if ($controller == 'me')
+                if ($controller == 'trashCan')
                    $namespace = 'simplerest\\core\\api\\'. $api_version . '\\';
                 else
                     $namespace = 'simplerest\\api\\';

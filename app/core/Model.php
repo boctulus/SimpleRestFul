@@ -14,7 +14,8 @@ class Model {
 	protected $id_name = 'id';
 	protected $schema   = [];
 	protected $nullable = [];
-	protected $fillable;
+	protected $fillable = [];
+	protected $not_fillable = [];
 	protected $hidden;
 	protected $properties = [];
 	protected $joins  = [];
@@ -80,6 +81,8 @@ class Model {
 			$this->fillable = $this->properties;
 			$this->unfill([$this->id_name, 'created_at', 'modified_at', 'deleted_at', 'locked']);
 		}
+
+		$this->unfill($this->not_fillable);
 
 		$this->nullable[] = $this->id_name;
 		$this->nullable[] = 'locked';
@@ -400,7 +403,7 @@ class Model {
 				Remover los campos ocultos siempre es un problema
 				ya que puede agregar campos donde se necesita una sola columna
 			*/
-			if (!empty($this->select_raw_vals))	
+			//if (!empty($this->select_raw_vals))	
 				$this->removehidden($fields);		
 
 			if ($this->distinct){
