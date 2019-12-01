@@ -60,15 +60,19 @@ class FrontController
                 if (!isset($_params[1]))
                     Response::getInstance()->sendError('API version is missing');
 
-                if (substr($_params[1],0,1) !== 'v' || !preg_match('/^v[0-9.]+$/', $_params[1], $matches) )
+                if (!preg_match('/^v[0-9.]+$/', $_params[1], $matches) )
                     Response::getInstance()->sendError("Incorrect format for API version");
 
                 $api_version = $_params[1]; 
                 
                 @list($controller) = array_slice($_params,2,1);
                 $params = array_slice($_params,3,2);
-                $req->setParams($params);     
-                $namespace = 'simplerest\\api\\';
+                $req->setParams($params);    
+                
+                if ($controller == 'me')
+                   $namespace = 'simplerest\\core\\api\\'. $api_version . '\\';
+                else
+                    $namespace = 'simplerest\\api\\';
 
                 $class_name = $namespace . ucfirst($controller); //
                 $method = strtolower($_SERVER['REQUEST_METHOD']);

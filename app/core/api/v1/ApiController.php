@@ -70,6 +70,7 @@ abstract class ApiController extends Controller
                         break;
                     }
                 }
+                $this->is_admin = false;
             }else{
                 $this->uid = null;
                 $this->is_admin = false;
@@ -591,6 +592,8 @@ abstract class ApiController extends Controller
             else
                 Factory::response()->sendError("Error: creation of resource fails!");
 
+        } catch (InvalidValidationException $e) { 
+            Factory::response()->sendError('Validation Error', 400, json_decode($e->getMessage()));
         } catch (\Exception $e) {
             Factory::response()->sendError($e->getMessage());
         }	
@@ -685,6 +688,8 @@ abstract class ApiController extends Controller
             else
                 Factory::response()->sendError("Error in PATCH",404);	
 
+        } catch (InvalidValidationException $e) { 
+            Factory::response()->sendError('Validation Error', 400, json_decode($e->getMessage()));
         } catch (\Exception $e) {
             Factory::response()->sendError("Error during PATCH for id=$id with message: {$e->getMessage()}");
         }

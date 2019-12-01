@@ -21,7 +21,7 @@ class Model {
 	protected $show_deleted = false;
 	protected $conn;
 	protected $fields = [];
-	protected $where;
+	protected $where  = [];
 	protected $where_group_op  = [];
 	protected $where_having_op = [];
 	protected $group  = [];
