@@ -18,9 +18,6 @@ use simplerest\core\exceptions\InvalidValidationException;
 
 class AuthController extends Controller implements IAuth
 {
-    protected $must_have = [];
-    protected $must_not  = [];
-
     function __construct()
     { 
         header('access-control-allow-credentials: true');
@@ -32,16 +29,6 @@ class AuthController extends Controller implements IAuth
         parent::__construct();
     }
        
-    protected function afterRegister(){}
-
-    function addMustHave(array $conditions, $http_code, $msg) {
-        $this->must_have[] = [ $conditions , $http_code, $msg ];
-    }
-
-    function addMustNotHave(array $conditions, $http_code, $msg) {
-        $this->must_not[]  = [ $conditions , $http_code, $msg ];
-    }
-
     protected function gen_jwt(array $props, string $token_type){
         $time = time();
 
@@ -150,8 +137,7 @@ class AuthController extends Controller implements IAuth
                                         'access_token'=> $access,
                                         'token_type' => 'bearer', 
                                         'expires_in' => $this->config['access_token']['expiration_time'],
-                                        'refresh_token' => $refresh,
-                                        'username' => $username                                         
+                                        'refresh_token' => $refresh                                   
                                         // 'scope' => 'read write'
                                         ]);
           
@@ -304,8 +290,7 @@ class AuthController extends Controller implements IAuth
                                         'access_token'=> $access,
                                         'token_type' => 'bearer', 
                                         'expires_in' => $this->config['access_token']['expiration_time'],
-                                        'refresh_token' => $refresh,
-                                        'username' => $data['username']
+                                        'refresh_token' => $refresh
                                         // 'scope' => 'read write'
                                       ]);
 

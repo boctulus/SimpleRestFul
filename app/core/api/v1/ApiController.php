@@ -231,6 +231,8 @@ abstract class ApiController extends Controller
      * @return void
      */
     function get(int $id = null){
+        global $api_version;
+
         try {            
 
             $conn = Database::getConnection();
@@ -492,7 +494,6 @@ abstract class ApiController extends Controller
 
 
                 #var_export($_get); ////
-
                 //var_export($_SERVER["QUERY_STRING"]);
 
                 $query = Factory::request()->getQuery();
@@ -519,7 +520,7 @@ abstract class ApiController extends Controller
                 if ($page +1 <= $page_count){
                     $query['page'] = ($page +1);
 
-                    $next =  Url::protocol() . '//' . $_SERVER['HTTP_HOST'] . '/api/' . $this->model_table . '?' . $query = str_replace(['%5B', '%5D', '%2C'], ['[', ']', ','], http_build_query($query));
+                    $next =  Url::protocol() . '//' . $_SERVER['HTTP_HOST'] . '/api/' . $api_version . '/'. $this->model_table . '?' . $query = str_replace(['%5B', '%5D', '%2C'], ['[', ']', ','], http_build_query($query));
                 }else{
                     $next = 'null';
                 }
