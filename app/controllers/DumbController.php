@@ -166,6 +166,14 @@ class DumbController extends Controller
         Debug::debug(Database::table('products')->random()->select(['id', 'name'])->first());
     }
 
+    function count(){
+        $c = Database::table('users')
+        ->where([ 'belongs_to'=> 160] )
+        ->count();
+
+        var_dump($c);
+    }
+
     function count1(){
         // SELECT COUNT(*) FROM products WHERE cost >= 100 AND size = '1L' AND belongs_to = 90 AND deleted_at IS NULL 
 
@@ -1029,6 +1037,5 @@ class DumbController extends Controller
         Debug::debug($dos);
     }
 
- 
-   
+       
 }

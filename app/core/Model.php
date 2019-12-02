@@ -140,31 +140,7 @@ class Model {
 		return $this->table_name. ' '.(!empty($this->table_alias) ? 'as '.$this->table_alias : '');
 	}
 
-	/**
-	 * removeHidden
-	 *
-	 * @param  array $fields
-	 *
-	 * @return void
-	 */
-	protected function removeHidden(&$fields)
-	{	
-		if (!empty($this->hidden) && (empty($this->select_raw_q)) ){			
-			
-			if (empty($fields)) {
-				$fields = $this->properties;
-			}
-
-			foreach ($this->hidden as $h){
-				$k = array_search($h, $fields);
-				if ($k != null)
-					unset($fields[$k]);
-			}
-
-		}
-	}
-
-	
+		
 	/**
 	 * unhide
 	 * remove from hidden list of fields
@@ -401,7 +377,24 @@ class Model {
 			if (empty($conjunction))
 				$conjunction = 'AND';
 
-			$this->removeHidden($fields);	
+			// remove hidden
+			
+			if (!empty($this->hidden)){			
+			
+				if (empty($this->select_raw_q)){
+					if (empty($fields) && $aggregate_func == null) {
+						$fields = $this->properties;
+					}
+		
+					foreach ($this->hidden as $h){
+						$k = array_search($h, $fields);
+						if ($k != null)
+							unset($fields[$k]);
+					}
+				}			
+
+			}
+
 							
 			if ($this->distinct){
 				$remove = [$this->id_name];
