@@ -1,17 +1,17 @@
 <?php
 
-namespace simplerest\api;
+namespace simplerest\controllers\api;
 
-use simplerest\controllers\MyApiController;
+use simplerest\controllers\MyApiController;; 
 
-class Folders extends MyApiController
+class OtherPermissions extends MyApiController
 {     
     protected $scope = [
         'guest'   => [ ],  
         'basic'   => ['read'],
         'regular' => ['read', 'write']
     ];
-
+    
     function __construct()
     {
         parent::__construct();

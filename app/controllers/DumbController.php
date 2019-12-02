@@ -2,13 +2,13 @@
 
 namespace simplerest\controllers;
 
+use simplerest\core\Controller;
 use simplerest\core\Request;
+use simplerest\libs\Factory;
+use simplerest\libs\Debug;
 use simplerest\libs\Database;
 use simplerest\models\UsersModel;
 use simplerest\models\ProductsModel;
-use simplerest\libs\Factory;
-use simplerest\libs\Debug;
-use simplerest\core\Controller;
 use simplerest\models\UserRolesModel;
 use PHPMailer\PHPMailer\PHPMailer;
 use simplerest\libs\Utils;

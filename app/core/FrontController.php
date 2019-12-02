@@ -4,6 +4,7 @@ namespace simplerest\core;
 
 use simplerest\libs\Url;
 use simplerest\libs\Arrays;
+use simplerest\libs\Debug;
 
 class FrontController
 {
@@ -25,9 +26,6 @@ class FrontController
 
             if (empty($controller))
                 throw new \Exception("Lacks controller specification");
-
-            //if (empty($action))
-            //    throw new \Exception("Lacks action specification");    
 
             $req = Request::getInstance();  
             $req->setParams($params);
@@ -60,34 +58,65 @@ class FrontController
                 if (!isset($_params[1]))
                     Response::getInstance()->sendError('API version is missing');
 
-                if (!preg_match('/^v[0-9.]+$/', $_params[1], $matches) )
+                if (!preg_match('/^v[0-9]+(\.+[0-9]+)?$/', $_params[1], $matches) )
                     Response::getInstance()->sendError("Incorrect format for API version");
 
                 $api_version = $_params[1]; 
                 
-                @list($controller) = array_slice($_params,2,1);
+                $controller = $_params[2];
                 $params = array_slice($_params,3,2);
                 $req->setParams($params);    
                 
-                if ($controller == 'trashCan')
+                if ($controller == 'trashCan' || $controller == 'TrashCan')
                    $namespace = 'simplerest\\core\\api\\'. $api_version . '\\';
                 else
-                    $namespace = 'simplerest\\api\\';
+                    $namespace = 'simplerest\\controllers\\api\\';
 
                 $class_name = $namespace . ucfirst($controller); //
                 $method = strtolower($_SERVER['REQUEST_METHOD']);
             }else{
-                @list($controller, $action) = array_slice($_params,0,2);
-                $params = array_slice($_params,2);
-                $req->setParams($params);
+                //Debug::debug($_params, 'PARAMS:');
+
                 $namespace = 'simplerest\\controllers\\';
 
-                $default_controller_name = substr($config['DEFAULT_CONTROLLER'],0, strlen($config['DEFAULT_CONTROLLER'])-10);
-                $class_file = !empty($controller) ? $controller : $default_controller_name;
-                $method = !empty($action) ? $action : self::DEFAULT_ACTION;
-        
-                $class_name = ucfirst($class_file);
-                $class_name = "${namespace}${class_name}Controller";
+                if (empty($_params) || $_params[0]==''){
+                    $class_file = substr($config['DEFAULT_CONTROLLER'],0, strlen($config['DEFAULT_CONTROLLER'])-10);
+                    $class_name = ucfirst($class_file);
+                    $class_name = "${namespace}${class_name}Controller";
+                    $method = self::DEFAULT_ACTION;  
+                    $params = [];      
+                }else{
+                    // Hipótesis
+                    $ix = 0;
+                    $folder = '';
+                    $controller = $_params[$ix];
+
+                    $class_file =  CONTROLLERS_PATH.ucfirst($controller).'Controller.php';
+                    $cnt  = count($_params) -1;
+                    while (!file_exists($class_file) && ($ix < $cnt)){
+                        $ix++;
+                        $folder = implode(DIRECTORY_SEPARATOR, array_slice($_params,0,$ix)). DIRECTORY_SEPARATOR;
+                        //Debug::debug($folder, 'NAMESPACE:');
+                        $controller = $_params[$ix];
+                        $class_file =  CONTROLLERS_PATH. $folder. ucfirst($controller).'Controller.php';
+                        //Debug::debug($class_file, "Probando ...");
+                    }
+
+                    //Debug::debug($class_file, "Probando ...");
+                    
+                    $action = $_params[$ix+1] ?? null;
+                    $params = array_slice($_params,$ix+2);
+                    $req->setParams($params);                    
+
+                    $method = !empty($action) ? $action : self::DEFAULT_ACTION;
+            
+                    $class_name = ucfirst($controller);
+                    $class_name = "${namespace}${folder}${class_name}Controller";
+
+                    //Debug::debug($class_name, 'CLASS_NAME:');
+                    //Debug::debug($method, 'METHOD:');
+                }
+                
             }
         }
        

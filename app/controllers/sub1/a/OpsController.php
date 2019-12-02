@@ -1,14 +1,15 @@
 <?php
 
-namespace simplerest\controllers\sub1;
+namespace simplerest\controllers\sub1\a;
+
+use simplerest\core\Controller;
+use simplerest\core\Request;
+use simplerest\libs\Factory;
+use simplerest\libs\Debug;
 
 class OpsController extends Controller
 {   
-	use simplerest\core\Request;
-	use simplerest\libs\Factory;
-	use simplerest\libs\Debug;
-	use simplerest\core\Controller;
-
+	
     function __construct()
     {
         parent::__construct();
@@ -16,6 +17,10 @@ class OpsController extends Controller
 
     function index(){
         return 'INDEX';
+    }
+
+    function inc($a){
+        return (int) (++$a);
     }
 
     function add($a, $b){

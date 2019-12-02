@@ -17,8 +17,8 @@ SimpleRest utiliza la arquitectura MVC donde modelos y controladores se implemen
 |
 ├── core                          # Basically mvc engine directory
 │   ├── api
-|   |   └── v1
-|   |   └── v2
+|   |   ├── v1
+|   |   ├── v2
 |   |   └── vN
 │   ├── exceptions
 │   ├── interfaces                          
@@ -39,6 +39,7 @@ SimpleRest utiliza la arquitectura MVC donde modelos y controladores se implemen
 └── .htaccess                     
 ```
 
+
 # Versionado
 
 Se especifica la versión en la url y esto tiene como efecto cargar una versión distinta de la clase ApiController en /app/core/api
@@ -54,7 +55,7 @@ La clase MyApiController en /app/controllers es la responsable de seleccionar la
 
 ### Controlador
 
-Para demostrar como ejecutar un controlador desde la linea de comandos ejemplificaremos con un simple controlador:
+Para demostrar como ejecutar un controlador desde la linea de comandos ejemplificaremos con un simple controlador ubicado en la carpeta controllers:
 
 	<?php
 
@@ -74,6 +75,7 @@ En la terminal nos cambiamos al directorio "public" y ejecutamos:
 
 	php index.php dumb add 1 6
 
+* Hay soporte para sub-directorios o sub-sub-(sub)-directorios 
 
 ### Modelo
 
