@@ -154,7 +154,7 @@ class FacebookController extends Controller
                     'confirmed_email' => 1
                 ];
 
-                //Debug::debug($my_payload); ////
+                //Debug::dd($my_payload); ////
     
                 $access  = $this->gen_jwt($my_payload, 'access_token');
                 $refresh = $this->gen_jwt($my_payload, 'refresh_token');

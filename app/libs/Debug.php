@@ -4,20 +4,7 @@ namespace simplerest\libs;
 
 class Debug
 {
-	static function dd($var, $prettify = false, $exit = true){
-		if ($prettify){
-			print '<pre>';
-			print_r($var);
-			print '</pre>';
-		}
-		else{
-			var_dump($var);
-			if ($exit)
-				exit;
-		}
-	}
-
-	static function debug($v, $msg=null, $exit=false, $prettify = true) 
+	static function dd($v, $msg=null, $exit=false, $prettify = true) 
 	{			
 		if (gettype($v)=='boolean'){
 			echo ($v ? "TRUE" : "FALSE");

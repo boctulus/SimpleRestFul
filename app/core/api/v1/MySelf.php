@@ -47,7 +47,7 @@ class MySelf extends Controller
 
             if (!empty($this->auth_payload)){
                 $this->uid = $this->auth_payload->uid; 
-                //Debug::debug($this->uid, 'UID:');
+                //Debug::dd($this->uid, 'UID:');
 
                 $r = new RolesModel();
                 $this->roles  = $this->auth_payload->roles;              

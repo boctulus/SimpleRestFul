@@ -1,7 +1,8 @@
 <?php
-declare(strict_types=1);
 
 namespace simplerest\libs;
+
+use simplerest\core\Model;
 
 class Database {
 
@@ -28,15 +29,24 @@ class Database {
 		return self::$conn;
 	}
 	
-	public static function model($name) {
-		$class = '\\simplerest\\models\\' . $name . 'Model';
-		return new $class(self::getConnection());
+	private static function model(Model $m = null){
+		static $model = null;
+		
+		if ($m == null){
+			return $model;
+		}else
+			$model = $m;
+	}
+
+	// Returns last executed query 
+	public static function getQueryLog(){
+		return static::model()->getLog();
 	}
 
 	public static function table($from, $alias = NULL) {
 
 		// Usar un wrapper y chequear el tipo
-		if (stripos($from, 'FROM') === false){
+		if (stripos($from, ' FROM ') === false){
 			$tb_name = $from;
 		
 			$names = explode('_', $tb_name);
@@ -49,11 +59,15 @@ class Database {
 			if (!is_null($alias))
 				$obj->setTableAlias($alias);
 
+			static::model($obj);			
 			return $obj;	
 		}
 
-		return (new \simplerest\core\Model(self::getConnection()))
-        ->fromRaw($from);
+		$model = new Model(self::getConnection());
+		static::model($model);
+
+		$st = ($model)->fromRaw($from);	
+		return $st;
 	}
 
 		

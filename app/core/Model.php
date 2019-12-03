@@ -47,6 +47,8 @@ class Model {
 	protected $randomize = false;
 	protected $distinct  = false;
 	protected $to_merge_bindings = [];
+	protected $last_pre_compiled_query;
+	protected $last_bindings = [];
 	protected $limit;
 	protected $offset;
 	protected $pag_vals = [];
@@ -438,7 +440,7 @@ class Model {
 		}			
 
 
-		//Debug::debug($fields, 'FIELDS:');
+		//Debug::dd($fields, 'FIELDS:');
 
 		if (!$existance){
 			if ($aggregate_func != null){
@@ -446,8 +448,8 @@ class Model {
 					if ($aggregate_field == null)
 						$aggregate_field = '*';
 
-					//Debug::debug($fields, 'FIELDS:');
-					//Debug::debug([$aggregate_field], 'AGGREGATE FIELD:');
+					//Debug::dd($fields, 'FIELDS:');
+					//Debug::dd([$aggregate_field], 'AGGREGATE FIELD:');
 
 					if (!empty($fields))
 						$_f = implode(", ", $fields). ',';
@@ -470,7 +472,7 @@ class Model {
 			}else{
 				$q = 'SELECT ';
 
-				//Debug::debug($fields);
+				//Debug::dd($fields);
 				
 				// SELECT RAW
 				if (!empty($this->select_raw_q)){
@@ -498,8 +500,8 @@ class Model {
 		////////////////////////
 
 
-		//Debug::debug($vars, 'VARS:');
-		//Debug::debug($values, 'VALS:');
+		//Debug::dd($vars, 'VARS:');
+		//Debug::dd($values, 'VALS:');
 
 		// Validación
 		if (!empty($this->validator)){
@@ -612,14 +614,16 @@ class Model {
 		if ($existance)
 			$q .= ')';
 
-		//DEBUG::debug($q, 'Query:');
-		//DEBUG::debug($vars, 'Vars:');
-		//DEBUG::debug($values, 'Vals:');
+		//Debug::dd($q, 'Query:');
+		//Debug::dd($vars, 'Vars:');
+		//Debug::dd($values, 'Vals:');
 		//exit;
 		//var_dump($q);
 		//var_export($vars);
 		//var_export($values);
 
+		$this->last_bindings = $this->getBindings();
+		$this->last_pre_compiled_query = $q;
 		return $q;	
 	}
 
@@ -634,7 +638,7 @@ class Model {
 								$this->pag_vals
 							);
 		
-		//Debug::debug($values);
+		//Debug::dd($values);
 
 		return $values;
 	}
@@ -790,6 +794,17 @@ class Model {
 		}		
 		
 		return $st;	
+	}
+
+	// Debug query
+	function dd(){
+		$sql = preg_replace('!\s+!', ' ', $this->toSql());
+		return Arrays::str_replace_array('?', $this->getBindings(), $sql);
+	}
+
+	function getLog(){
+		$sql = preg_replace('!\s+!', ' ', $this->last_pre_compiled_query);
+		return Arrays::str_replace_array('?', $this->last_bindings, $sql);
 	}
 
 	function get(array $fields = null, array $order = null, int $limit = NULL, int $offset = null){
@@ -996,9 +1011,9 @@ class Model {
 		$this->where[] = ' ' .$ws_str;
 		////////////////////////////////////////////
 
-		//Debug::debug($this->where);
-		//Debug::debug($this->w_vars, 'WHERE VARS');	
-		//Debug::debug($this->w_vals, 'WHERE VALS');	
+		//Debug::dd($this->where);
+		//Debug::dd($this->w_vars, 'WHERE VARS');	
+		//Debug::dd($this->w_vals, 'WHERE VALS');	
 
 		return $this;
 	}
@@ -1093,17 +1108,17 @@ class Model {
 		if ((count($conditions) == 3 || count($conditions) == 2) && !is_array($conditions[1]))
 			$conditions = [$conditions];
 	
-		//Debug::debug($conditions, 'COND:');
+		//Debug::dd($conditions, 'COND:');
 
 		$_having = [];
 		foreach ((array) $conditions as $cond) {		
 		
 			if (Arrays::is_assoc($cond)){
-				//Debug::debug($cond, 'COND PRE-CAMBIO');
+				//Debug::dd($cond, 'COND PRE-CAMBIO');
 				$cond[0] = Arrays::array_key_first($cond);
 				$cond[1] = $cond[$cond[0]];
 
-				//Debug::debug([$cond[0], $cond[1]], 'COND POST-CAMBIO');
+				//Debug::dd([$cond[0], $cond[1]], 'COND POST-CAMBIO');
 			}
 			
 			$op = $cond[2] ?? '=';	
@@ -1125,9 +1140,9 @@ class Model {
 		$this->having[] = ' ' .$ws_str;
 		////////////////////////////////////////////
 
-		//Debug::debug($this->having, 'HAVING:');
-		//Debug::debug($this->h_vars, 'VARS');
-		//Debug::debug($this->h_vals, 'VALUES');
+		//Debug::dd($this->having, 'HAVING:');
+		//Debug::dd($this->h_vars, 'VARS');
+		//Debug::dd($this->h_vals, 'VALUES');
 
 		return $this;
 	}

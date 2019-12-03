@@ -59,7 +59,7 @@ class FrontController
             $class_name = $namespace . ucfirst($controller); //
             $method = strtolower($_SERVER['REQUEST_METHOD']);
         }else{
-            //Debug::debug($_params, 'PARAMS:');
+            //Debug::dd($_params, 'PARAMS:');
 
             $namespace = 'simplerest\\controllers\\';
 
@@ -80,13 +80,13 @@ class FrontController
                 while (!file_exists($class_file) && ($ix < $cnt)){
                     $ix++;
                     $folder = implode(DIRECTORY_SEPARATOR, array_slice($_params,0,$ix)). DIRECTORY_SEPARATOR;
-                    //Debug::debug($folder, 'NAMESPACE:');
+                    //Debug::dd($folder, 'NAMESPACE:');
                     $controller = $_params[$ix];
                     $class_file =  CONTROLLERS_PATH. $folder. ucfirst($controller).'Controller.php';
-                    //Debug::debug($class_file, "Probando ...");
+                    //Debug::dd($class_file, "Probando ...");
                 }
 
-                //Debug::debug($class_file, "Probando ...");
+                //Debug::dd($class_file, "Probando ...");
                 
                 $action = $_params[$ix+1] ?? null;
                 $params = array_slice($_params,$ix+2);
@@ -97,8 +97,8 @@ class FrontController
                 $class_name = ucfirst($controller);
                 $class_name = "${namespace}${folder}${class_name}Controller";
 
-                //Debug::debug($class_name, 'CLASS_NAME:');
-                //Debug::debug($method, 'METHOD:');
+                //Debug::dd($class_name, 'CLASS_NAME:');
+                //Debug::dd($method, 'METHOD:');
             }
             
         }

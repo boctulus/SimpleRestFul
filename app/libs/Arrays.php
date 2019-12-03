@@ -50,5 +50,38 @@ class Arrays
 		if (!is_int($key)) return TRUE;
 	        return FALSE;
     }
+
+    /**
+     * A str_replace_array for PHP
+     *
+     * As described in http://php.net/str_replace this wouldnot make sense
+     * However there are chances that we need it, so often !
+     * See https://wiki.php.net/rfc/cyclic-replace
+     *
+     * @author Jitendra Adhikari | adhocore <jiten.adhikary@gmail.com>
+     *
+     * @param string $search  The search string
+     * @param array  $replace The array to replace $search in cyclic order
+     * @param string $subject The subject on which to search and replace
+     *
+     * @return string
+     */
+    static function str_replace_array($search, array $replace, $subject)
+    {
+        if (0 === $tokenc = substr_count($subject, $search)) {
+            return $subject;
+        }
+        $string  = '';
+        if (count($replace) >= $tokenc) {
+            $replace = array_slice($replace, 0, $tokenc);
+            $tokenc += 1; 
+        } else {
+            $tokenc = count($replace) + 1;
+        }
+        foreach(explode($search, $subject, $tokenc) as $part) {
+            $string .= $part.array_shift($replace);
+        }
+        return $string;
+    }
 }
 
