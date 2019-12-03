@@ -1,5 +1,19 @@
 # TODO
 
+- El AuthController y el FrontController deben poder ser extendidos
+
+- Investigar porque ac'a SI detecta un error y no valida 
+
+http://simplerest.lan/api/v1/products?fields=name,cost,size&cost[gt]=150K
+http://simplerest.lan/api/v1/products?fields=name,cost,size&cost[gt]=150&cost[lteq]=350K
+
+pero ac'a NO:
+
+http://simplerest.lan/api/v1/products?fields=name,cost,size&cost[gt]=150K&cost[lteq]=350
+
+* Podr'ia ser una limitaci'on de la clase Validator al trabajar con array asociativos :\
+
+
 - Generador de modelos, controladores y apis (resource controllers) como en Laravel:
 
 Ejemplo:

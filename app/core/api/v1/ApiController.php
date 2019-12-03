@@ -241,6 +241,12 @@ abstract class ApiController extends Controller
             $instance = (new $model($conn))->setFetchMode('ASSOC'); 
             
             $_get    = Factory::request()->getQuery();
+            $data    = [];
+            
+            foreach ($_get as $f => $v){
+                if (!is_array($v))
+                    $data[$f] = $v;
+            }     
 
             // patch for Nginx
             $_q      = Arrays::shift($_get,'q');
@@ -381,37 +387,51 @@ abstract class ApiController extends Controller
                                     case 'contains':
                                         $_get[$key] = [$campo, '%'.$v.'%', 'like'];
                                         $ignored[] = $campo;
+                                        $data[$campo][] = $v;
                                     break;
                                     case 'notContains':
                                         $_get[$key] = [$campo, '%'.$v.'%', 'not like'];
                                         $ignored[] = $campo;
+                                        $data[$campo][] = $v;
                                     break;
                                     case 'startsWith':
                                         $_get[$key] = [$campo, $v.'%', 'like'];
                                         $ignored[] = $campo;
+                                        $data[$campo][] = $v;
                                     break;
                                     case 'notStartsWith':
                                         $_get[$key] = [$campo, $v.'%', 'not like'];
                                         $ignored[] = $campo;
+                                        $data[$campo][] = $v;
                                     break;
                                     case 'endsWith':
                                         $_get[$key] = [$campo, '%'.$v, 'like'];
                                         $ignored[] = $campo;
+                                        $data[$campo][] = $v;
                                     break;
                                     case 'notEndsWith':
                                         $_get[$key] = [$campo, '%'.$v, 'not like'];
                                         $ignored[] = $campo;
+                                        $data[$campo][] = $v;
                                     break;
-                                    case 'in':                                         
+                                    case 'in':                                    
                                         if (strpos($v, ',')!== false){    
                                             $vals = explode(',', $v);
                                             $_get[$key] = [$campo, $vals, 'IN']; 
+
+                                            foreach ($vals as $_v){
+                                                $data[$campo][] = $_v;
+                                            }
                                         }                                         
                                     break;
                                     case 'notIn':
                                         if (strpos($v, ',')!== false){    
                                             $vals = explode(',', $v);
                                             $_get[$key] = [$campo, $vals, 'NOT IN'];
+
+                                            foreach ($vals as $_v){
+                                                $data[$campo][] = $_v;
+                                            }
                                         }                                         
                                     break;
                                     case 'between':
@@ -424,6 +444,9 @@ abstract class ApiController extends Controller
 
                                             $_get[] = [$campo, $min, '>='];
                                             $_get[] = [$campo, $max, '<='];
+
+                                            $data[$campo][] = $min;
+                                            $data[$campo][] = $max;
                                         }                                         
                                     break;
                                     default:
@@ -434,7 +457,8 @@ abstract class ApiController extends Controller
                                             if ($op == $oo){
                                                 $op = $eqops[$ko];
                                                 unset($_get[$key]);
-                                                $_get[] = [$campo, $v, $op]; 
+                                                $_get[] = [$campo, $v, $op];
+                                                $data[$campo][] = $v; // 
                                                 $found = true;                            
                                                 break;                                    
                                             }                                    
@@ -452,7 +476,11 @@ abstract class ApiController extends Controller
                             $v = $val[1];
                             if (strpos($v, ',')!== false){    
                                 $vals = explode(',', $v);
-                                $_get[$key] = [$campo, $vals];                                
+                                $_get[$key] = [$campo, $vals];    
+                                
+                                foreach ($vals as $_v){
+                                    $data[$campo][] = $_v;
+                                }
                             } 
                         }   
                         
@@ -486,12 +514,19 @@ abstract class ApiController extends Controller
                     $_get[] = [$this->folder_field, $f_rows[0]['name']];
                     $_get[] = ['belongs_to', $f_rows[0]['belongs_to']];
                 }
+
+                 if ($id == null){
+                    $validation = (new Validator())->setRequired(false)->ignoreFields($ignored)->validate($instance->getRules(),$data);
+                    //var_export(['data' => $data, 'rules'=> $instance->getRules(), 'validation' => $validation]);
+
+                    if ($validation !== true)
+                        throw new InvalidValidationException(json_encode($validation));
+                }      
            
                 if (strtolower($pretty) == 'false' || $pretty === 0)
                     $pretty = false;
                 else
                     $pretty = true;   
-
 
                 #var_export($_get); ////
                 //var_export($_SERVER["QUERY_STRING"]);
@@ -525,11 +560,9 @@ abstract class ApiController extends Controller
                     $next = 'null';
                 }
 
-                $pg = ['pages' => $page_count, 'nextUrl' => $next];
-    
-                $instance->setValidator((new Validator())->setRequired(false)->ignoreFields($ignored));
+                $pg = ['pages' => $page_count, 'nextUrl' => $next];   
+                          
                 $rows = $instance->where($_get)->get($fields, $order, $limit, $offset);
-
                 Factory::response()->setPretty($pretty)->code(200)->setPaginator($pg)->send($rows);
         
             }

@@ -1037,5 +1037,20 @@ class DumbController extends Controller
         Debug::debug($dos);
     }
 
+    function valida(){
+        Debug::debug ( 
+            (new Validator())->validate([
+                'id'   => ['type' => 'int', 'required' => true],
+                'cost' => ['type'=> 'int'],
+                'size' => ['type'=> 'str'],
+                'name' => ['type'=> 'str', 'min' => 3]
+            ],
+            [ 
+                'cost' => ['150K', '200'],
+                'size' => ['1L'],
+                'name' => ['ab']
+            ])
+        );
+    }
        
 }

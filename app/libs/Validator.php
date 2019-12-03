@@ -47,7 +47,7 @@ class Validator implements IValidator
 			throw new \InvalidArgumentException('Data type is undefined');
 
 		if ($tipo == 'int' || $tipo == 'integer'){
-			return preg_match('/^(-?[0-9]+)$/',trim($dato)) == 1;
+			return preg_match('/^(-?[0-9]+)+$/',trim($dato)) == 1;
 		}elseif($tipo == 'decimal' || $tipo == 'float' || $tipo == 'double'){
 			$dato = trim($dato);
 			return is_numeric($dato);
@@ -89,6 +89,7 @@ class Validator implements IValidator
 
 	*/
 	function validate(array $rules, array $data){
+		//var_export(['rules' => $rules, 'data' => $data]);
 
 		// i18n
         bindtextdomain('validator', LOCALE_PATH);
@@ -99,6 +100,7 @@ class Validator implements IValidator
 		if (empty($rules))
 			throw new \InvalidArgumentException('No validation rules!');
 		
+		// no habilitar:
 		//if (empty($data))
 		//	throw new \InvalidArgumentException('No data!');
 	
@@ -127,107 +129,119 @@ class Validator implements IValidator
 			echo "---------------------------------<p/>\n";
 			*/
 
-			if (!isset($data[$field])){
-				//var_export(['field' =>$data[$field], 'required' => $rule['required']]);
+			// multiple-values for each field
 
+			if (!isset($data[$field])){
 				if ($this->required && isset($rule['required']) && $rule['required']){
 					$push_error($field,['data'=> null, 'error'=> 'required', 'error_detail' =>sprintf(_('%s is required'), $field)],$errores);
-				}
-
+				}	
+				
 				continue;
 			}
 				
-			
-			$dato = $data[$field];
-			
-			if(in_array($field, (array) $this->ignored_fields))
-				continue;
-			
-			if (!isset($rule['required']) || $this->required)
-				$rule['required'] = false;
+			foreach ((array) $data[$field] as $dato){
+				//Debug::debug(['field' => $field, 'data' => $dato]);
 
-			$avoid_type_check = false;
-			if($rule['required']){
-				if(trim($dato)=='')
-					$push_error($field,['data'=>$dato, 'error'=>'required', 'error_detail' => sprintf(_('%s is required'), $field)],$errores);
-			}	
-			
-			if (isset($rule['type']) && in_array($rule['type'],['numeric','number','int','integer','float','double','decimal']) && trim($dato)=='')
-				$avoid_type_check = true;
-			
-			if (isset($rule['type']) && !$avoid_type_check)
-				if (!get_class()::isType($dato, $rule['type']))
-					$push_error($field,['data'=>$dato, 'error'=>'type', 'error_detail' => _("It's not a valid {$rule['type']}")],$errores);
-				
-					
-			if(isset($rule['type'])){	
-				if(in_array($rule['type'],['str','string','notnum','email'])){
-						
-						if(isset($rule['min'])){ 
-							$rule['min'] = (int) $rule['min'];
-							if(strlen($dato)<$rule['min'])
-								$push_error($field,['data'=>$dato, 'error'=>'min', 'error_detail' => sprintf(_('Minimum length is %d'),$rule['min'])],$errores);
-						}
-						
-						if(isset($rule['max'])){ 
-							$rule['max'] = (int) $rule['max'];
-							if(strlen($dato)>$rule['max'])
-								$push_error($field,['data'=>$dato, 'error'=>'max', 'error_detail' => sprintf(_('Maximum length is %d'), $rule['max'])],$errores);
-						}
-				}	
-				
-				if(in_array($rule['type'],['numeric','number','int','integer','float','double','decimal'])){
-						
-						if(isset($rule['min'])){ 
-							$rule['min'] = (int) $rule['min'];
-							if($dato<$rule['min'])
-								$push_error($field,['data'=>$dato, 'error'=>'min', 'error_detail' => sprintf(_('Minimum is %d'), $rule['min'])],$errores);
-						}
-						
-						if(isset($rule['max'])){ 
-							$rule['max'] = (int) $rule['max'];
-							if($dato>$rule['max'])
-								$push_error($field,['data'=>$dato, 'error'=>'max', 'error_detail' => sprintf(_('Maximum is %d'), $rule['max'])],$errores);
-						}
-				}	
-				
-				if(in_array($rule['type'],['time','date'])){
-						
-					$t0 = strtotime($dato);
-
-					/*
-					if (!$t0){
-						$push_error($field,['data'=>$dato, 'error'=>'type', 'error_detail' => 'Invalid date'],$errores);
+				if (!isset($dato) || empty($dato)){
+					//var_export(['field' =>$dato, 'required' => $rule['required']]);
+	
+					if ($this->required && isset($rule['required']) && $rule['required']){
+						$push_error($field,['data'=> null, 'error'=> 'required', 'error_detail' =>sprintf(_('%s is required'), $field)],$errores);
 					}
-					*/
-
-					if(isset($rule['min'])){ 
-						if($t0<strtotime($rule['min']))
-							$push_error($field,['data'=>$dato, 'error'=>'min', 'error_detail' => 'Minimum is '.$rule['min']],$errores);
-					}
-					
-					if(isset($rule['max'])){ 
-						if($t0>strtotime($rule['max']))
-							$push_error($field,['data'=>$dato, 'error'=>'max', 'error_detail' => 'Maximum is '.$rule['max']],$errores);
-					}
-				}	
-				
-				if($rule['type']=='array' && is_array($dato)){
-						$rule['min'] = (int) $rule['min'];
-						if(isset($rule['min'])){ 
-							if(count($dato)<$rule['min'])
-								$push_error($field,['data'=>$dato, 'error'=>'min', 'error_detail' => 'Minimum is '.$rule['min'].' opciones'],$errores);
-						}
-						
-						if(isset($rule['max'])){ 
-						$rule['max'] = (int) $rule['max'];
-							if(count($dato)>$rule['max'])
-								$push_error($field,['data'=>$dato, 'error'=>'min', 'error_detail' => 'Maximum is '.$rule['max'].' opciones'],$errores);
-						}
+	
+					continue 2;
 				}
 				
-			}	
+				if(in_array($field, (array) $this->ignored_fields))
+					continue 2;
 				
+				if (!isset($rule['required']) || $this->required)
+					$rule['required'] = false;
+	
+				$avoid_type_check = false;
+				if($rule['required']){
+					if(trim($dato)=='')
+						$push_error($field,['data'=>$dato, 'error'=>'required', 'error_detail' => sprintf(_('%s is required'), $field)],$errores);
+				}	
+				
+				if (isset($rule['type']) && in_array($rule['type'],['numeric','number','int','integer','float','double','decimal']) && trim($dato)=='')
+					$avoid_type_check = true;
+				
+				if (isset($rule['type']) && !$avoid_type_check)
+					if (!get_class()::isType($dato, $rule['type']))
+						$push_error($field,['data'=>$dato, 'error'=>'type', 'error_detail' => _("It's not a valid {$rule['type']}")],$errores);
+					
+						
+				if(isset($rule['type'])){	
+					if(in_array($rule['type'],['str','string','notnum','email'])){
+							
+							if(isset($rule['min'])){ 
+								$rule['min'] = (int) $rule['min'];
+								if(strlen($dato)<$rule['min'])
+									$push_error($field,['data'=>$dato, 'error'=>'min', 'error_detail' => sprintf(_('Minimum length is %d'),$rule['min'])],$errores);
+							}
+							
+							if(isset($rule['max'])){ 
+								$rule['max'] = (int) $rule['max'];
+								if(strlen($dato)>$rule['max'])
+									$push_error($field,['data'=>$dato, 'error'=>'max', 'error_detail' => sprintf(_('Maximum length is %d'), $rule['max'])],$errores);
+							}
+					}	
+					
+					if(in_array($rule['type'],['numeric','number','int','integer','float','double','decimal'])){
+							
+							if(isset($rule['min'])){ 
+								$rule['min'] = (int) $rule['min'];
+								if($dato<$rule['min'])
+									$push_error($field,['data'=>$dato, 'error'=>'min', 'error_detail' => sprintf(_('Minimum is %d'), $rule['min'])],$errores);
+							}
+							
+							if(isset($rule['max'])){ 
+								$rule['max'] = (int) $rule['max'];
+								if($dato>$rule['max'])
+									$push_error($field,['data'=>$dato, 'error'=>'max', 'error_detail' => sprintf(_('Maximum is %d'), $rule['max'])],$errores);
+							}
+					}	
+					
+					if(in_array($rule['type'],['time','date'])){
+							
+						$t0 = strtotime($dato);
+	
+						/*
+						if (!$t0){
+							$push_error($field,['data'=>$dato, 'error'=>'type', 'error_detail' => 'Invalid date'],$errores);
+						}
+						*/
+	
+						if(isset($rule['min'])){ 
+							if($t0<strtotime($rule['min']))
+								$push_error($field,['data'=>$dato, 'error'=>'min', 'error_detail' => 'Minimum is '.$rule['min']],$errores);
+						}
+						
+						if(isset($rule['max'])){ 
+							if($t0>strtotime($rule['max']))
+								$push_error($field,['data'=>$dato, 'error'=>'max', 'error_detail' => 'Maximum is '.$rule['max']],$errores);
+						}
+					}	
+					
+					/*
+					if($rule['type']=='array' && is_array($dato)){
+							$rule['min'] = (int) $rule['min'];
+							if(isset($rule['min'])){ 
+								if(count($dato)<$rule['min'])
+									$push_error($field,['data'=>$dato, 'error'=>'min', 'error_detail' => 'Minimum is '.$rule['min'].' opciones'],$errores);
+							}
+							
+							if(isset($rule['max'])){ 
+							$rule['max'] = (int) $rule['max'];
+								if(count($dato)>$rule['max'])
+									$push_error($field,['data'=>$dato, 'error'=>'min', 'error_detail' => 'Maximum is '.$rule['max'].' opciones'],$errores);
+							}
+					}
+					*/
+				}	
+			}
+							
 		}
 
 		$validated = empty($errores) ? true : $errores;
