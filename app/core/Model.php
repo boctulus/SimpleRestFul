@@ -553,7 +553,7 @@ class Model {
 				if (empty($where))
 					$where = "deleted_at IS NULL";
 				else
-					$where = "($where) AND deleted_at IS NULL";
+					$where =  ($where[0]=='(' && $where[strlen($where)-1]==')' ? $where :   ($where) ) . " AND deleted_at IS NULL";
 
 			}
 		}
@@ -628,6 +628,8 @@ class Model {
 	}
 
 	function getBindings(){
+		$pag = !empty($this->pag_vals) ? [ $this->pag_vals[0][1], $this->pag_vals[1][1] ] : [];
+
 		$values = array_merge(	
 								$this->select_raw_vals,
 								$this->from_raw_vals,
@@ -635,11 +637,8 @@ class Model {
 								$this->w_vals,
 								$this->having_raw_vals,
 								$this->h_vals,
-								$this->pag_vals
+								$pag
 							);
-		
-		//Debug::dd($values);
-
 		return $values;
 	}
 
@@ -798,13 +797,14 @@ class Model {
 
 	// Debug query
 	function dd(){
-		$sql = preg_replace('!\s+!', ' ', $this->toSql());
-		return Arrays::str_replace_array('?', $this->getBindings(), $sql);
+		$sql = Arrays::str_replace_array('?', $this->getBindings(), $this->toSql());
+		return preg_replace('!\s+!', ' ', $sql);
 	}
 
+	// Debug last query
 	function getLog(){
-		$sql = preg_replace('!\s+!', ' ', $this->last_pre_compiled_query);
-		return Arrays::str_replace_array('?', $this->last_bindings, $sql);
+		$sql = Arrays::str_replace_array('?', $this->last_bindings, $this->last_pre_compiled_query);
+		return preg_replace('!\s+!', ' ', $sql);
 	}
 
 	function get(array $fields = null, array $order = null, int $limit = NULL, int $offset = null){

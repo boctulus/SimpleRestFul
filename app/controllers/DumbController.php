@@ -180,17 +180,9 @@ class DumbController extends Controller
         echo Database::table('products')
         ->where([ ['cost', 100, '>='], ['size', '1L'], ['belongs_to', 90] ])
         ->count();
-    }
+    } 
 
     function count2(){
-        // SELECT COUNT(modified_at) FROM products WHERE cost >= 100 AND size = '1L' AND belongs_to = 90 AND deleted_at IS NULL 
-
-        echo Database::table('products')
-        ->where([ ['cost', 100, '>='], ['size', '1L'], ['belongs_to', 90] ])
-        ->count('modified_at');
-    }
-
-    function count3(){
         // SELECT COUNT(DISTINCT description) FROM products WHERE cost >= 100 AND size = '1L' AND belongs_to = 90 AND deleted_at IS NULL  
 
         echo Database::table('products')
@@ -1085,12 +1077,242 @@ class DumbController extends Controller
         // SELECT id, name FROM products WHERE deleted_at IS NULL ORDER BY RAND()
         Debug::dd($query->getLog());       
 
+        // SELECT COUNT(*) FROM users WHERE belongs_to = 160 AND deleted_at IS NULL 
         $query = Database::table('users')
         ->where([ 'belongs_to'=> 160] )
         ->count();
-
         Debug::dd(Database::getQueryLog());
 
-    }
+        // SELECT COUNT(modified_at) FROM products WHERE (cost >= 100 AND size = 1L AND belongs_to = 90) 
+        Database::table('products')->showDeleted()
+        ->where([ ['cost', 100, '>='], ['size', '1L'], ['belongs_to', 90] ])
+        ->count('modified_at');
+        Debug::dd(Database::getQueryLog());
+
+        // SELECT COUNT(DISTINCT description) FROM products WHERE (cost >= 100 AND size = 1L AND belongs_to = 90) 
+        Database::table('products')->showDeleted()
+        ->where([ ['cost', 100, '>='], ['size', '1L'], ['belongs_to', 90] ])
+        ->distinct()
+        ->count('description');
+        Debug::dd(Database::getQueryLog());
+        
+        // SELECT COUNT(*) FROM products WHERE (cost >= 200 OR size = 2L) AND deleted_at IS NULL 
+        $query = Database::table('products')
+        ->where([ [ 'cost', '200', '>='], [ 'size', '2L'] ], 'OR')
+        ->count();
+        Debug::dd(Database::getQueryLog());
+
+        // SELECT COUNT(*) FROM products WHERE (cost >= 200 OR size = 2L) 
+        $query = Database::table('products')->showDeleted()
+        ->where([ [ 'cost', '200', '>='], [ 'size', '2L'] ], 'OR')
+        ->count();
+        Debug::dd(Database::getQueryLog());
+
+        // SELECT COUNT(DISTINCT description) FROM products WHERE (cost >= 100 AND size = 1L AND belongs_to = 90) AND deleted_at IS NULL 
+        Database::table('products')
+        ->where([ ['cost', 100, '>='], ['size', '1L'], ['belongs_to', 90] ])
+        ->distinct()
+        ->count('description');
+        Debug::dd(Database::getQueryLog());
+
+        // SELECT AVG(cost) FROM products WHERE (cost >= 100 AND size = 1L AND belongs_to = 90) AND deleted_at IS NULL
+        Database::table('products')
+        ->where([ ['cost', 100, '>='], ['size', '1L'], ['belongs_to', 90] ])
+        ->avg('cost');
+        Debug::dd(Database::getQueryLog());
+
+        // SELECT SUM(cost) FROM products WHERE (cost >= 100 AND size = 1L AND belongs_to = 90) AND deleted_at IS NULL
+        Database::table('products')
+        ->where([ ['cost', 100, '>='], ['size', '1L'], ['belongs_to', 90] ])
+        ->sum('cost');
+        Debug::dd(Database::getQueryLog());
+
+        // SELECT MIN(cost) FROM products WHERE (cost >= 100 AND size = 1L AND belongs_to = 90) AND deleted_at IS NULL 
+        Database::table('products')
+        ->where([ ['cost', 100, '>='], ['size', '1L'], ['belongs_to', 90] ])
+        ->min('cost');
+        Debug::dd(Database::getQueryLog());
+
+        // SELECT MAX(cost) FROM products WHERE (cost >= 100 AND size = 1L AND belongs_to = 90) AND deleted_at IS NULL
+        Database::table('products')
+        ->where([ ['cost', 100, '>='], ['size', '1L'], ['belongs_to', 90] ])
+        ->max('cost');
+        Debug::dd(Database::getQueryLog());
+
+        // SELECT * FROM products WHERE deleted_at IS NULL ORDER BY cost DESC
+        Database::table('products')->orderBy(['cost' => 'DESC'])->get();
+        Debug::dd(Database::getQueryLog());        
+
+        // SELECT * FROM products WHERE deleted_at IS NULL LIMIT 20, 10
+        Database::table('products')->limit(10)->offset(20)->get();
+        Debug::dd(Database::getQueryLog());
+
+        // SELECT cost FROM products WHERE (cost >= 100 AND size = 1L AND belongs_to = 90) AND deleted_at IS NULL LIMIT 20, 10
+        Database::table('products')
+        ->where([ ['cost', 100, '>='], ['size', '1L'], ['belongs_to', 90] ])
+        ->limit(10)->offset(20)
+        ->get(['cost']);
+        Debug::dd(Database::getQueryLog());
+
+        // SELECT id, name, cost FROM products WHERE deleted_at IS NULL ORDER BY RAND() LIMIT 0, 1
+        Database::table('products')->random()->select(['id', 'name'])->addSelect('cost')->first();
+        Debug::dd(Database::getQueryLog());
+
+        // SELECT cost * 1.05 as cost_after_inc FROM products WHERE deleted_at IS NULL
+        Database::table('products')->setFetchMode('COLUMN')
+        ->selectRaw('cost * ? as cost_after_inc', [1.05])->get();
+        Debug::dd(Database::getQueryLog());
+
+        // SELECT cost * 1.05 as cost_after_inc FROM products WHERE (cost >= 100 AND size = 1L AND belongs_to = 90) AND deleted_at IS NULL
+        Database::table('products')
+        ->where([ ['cost', 100, '>='], ['size', '1L'], ['belongs_to', 90] ])
+        ->selectRaw('cost * ? as cost_after_inc', [1.05])->get();
+        Debug::dd(Database::getQueryLog());
+
+        // SELECT DISTINCT cost * 1.05 as cost_after_inc, name, description, size, cost, workspace, active, locked, belongs_to FROM products WHERE (cost >= 100 AND size = 1L AND belongs_to = 90) AND deleted_at IS NULL 
+        Database::table('products')
+        ->where([ ['cost', 100, '>='], ['size', '1L'], ['belongs_to', 90] ])
+        ->selectRaw('cost * ? as cost_after_inc', [1.05])->distinct()->get();
+        Debug::dd(Database::getQueryLog());
+
+        // SELECT DISTINCT cost * 1.05 as cost_after_inc, name, size FROM products WHERE (cost >= 100 AND size = 1L AND belongs_to = 90) AND deleted_at IS NULL
+        Database::table('products')
+        ->where([ ['cost', 100, '>='], ['size', '1L'], ['belongs_to', 90] ])
+        ->select(['name', 'size'])
+        ->selectRaw('cost * ? as cost_after_inc', [1.05])->distinct()->get();
+        Debug::dd(Database::getQueryLog());
+
+        // SELECT DISTINCT cost * 1.05 as cost_after_inc, name, size FROM products WHERE (cost >= 100 AND size = 1L AND belongs_to = 90) AND deleted_at IS NULL
+        Database::table('products')
+        ->where([ ['cost', 100, '>='], ['size', '1L'], ['belongs_to', 90] ])
+        ->selectRaw('cost * ? as cost_after_inc', [1.05])->distinct()
+        ->addSelect('name')
+        ->addSelect('size')
+        ->get();
+        Debug::dd(Database::getQueryLog());
+    
+        // SELECT cost * 1.05 as cost_after_inc, name, cost FROM products WHERE (cost >= 100 AND size = 1L AND belongs_to = 90) AND deleted_at IS NULL  
+        Database::table('products')
+        ->where([ ['cost', 100, '>='], ['size', '1L'], ['belongs_to', 90] ])
+        ->selectRaw('cost * ? as cost_after_inc', [1.05])
+        ->addSelect('name')
+        ->addSelect('cost')
+        ->get();
+        Debug::dd(Database::getQueryLog());
+
+        // SELECT size, COUNT(*) FROM products GROUP BY size
+        Database::table('products')->showDeleted()
+        ->groupBy(['size'])->select(['size'])->count();
+        Debug::dd(Database::getQueryLog());
+
+        // SELECT size, AVG(cost) FROM products GROUP BY size
+        Database::table('products')->showDeleted()
+        ->groupBy(['size'])->select(['size'])
+        ->avg('cost');
+        Debug::dd(Database::getQueryLog());
+
+        // SELECT * FROM products WHERE size = 2L
+        Database::table('products')->showDeleted()->where([ 
+            ['size', '2L']
+        ])->get();
+        Debug::dd(Database::getQueryLog());
+
+        // SELECT * FROM products WHERE size = 2L
+        Database::table('products')->showDeleted()->where([ 
+            'size', '2L'
+        ])->get();
+        Debug::dd(Database::getQueryLog());
+
+        // SELECT * FROM products WHERE size = 2L 
+        Database::table('products')->showDeleted()->where( 
+            ['size' => '2L']
+        )->get();
+        Debug::dd(Database::getQueryLog());
+        
+        // SELECT * FROM products WHERE (name IN ('Vodka', 'Wisky', 'Tekila', 'CocaCola') AND locked = 0 AND belongs_to = 90) AND description IS NOT AND deleted_at IS NULL
+        Database::table('products')
+        ->where([ 
+            ['name', ['Vodka', 'Wisky', 'Tekila','CocaCola']], // IN 
+            ['locked', 0],
+            ['belongs_to', 90]
+        ])
+        ->whereNotNull('description')
+        ->get();
+        Debug::dd(Database::getQueryLog());
+
+        // SELECT * FROM products WHERE (name IN ('CocaCola', 'PesiLoca') OR cost IN (100, 200) OR cost >= 550) AND deleted_at IS NULL 
+        Database::table('products')->where([ 
+            ['name', ['CocaCola', 'PesiLoca']], 
+            ['cost', 550, '>='],
+            ['cost', [100, 200]]
+        ], 'OR')->get();
+        Debug::dd(Database::getQueryLog());
+
+        // SELECT * FROM products WHERE name NOT IN ('CocaCola', 'PesiLoca', 'Wisky', 'Vodka') AND deleted_at IS NULL
+        Database::table('products')->where([ 
+            ['name', ['CocaCola', 'PesiLoca', 'Wisky', 'Vodka'], 'NOT IN']
+        ])->get();
+        Debug::dd(Database::getQueryLog());
+ 
+        // SELECT * FROM products WHERE (cost < 200 AND name = CocaCola) AND deleted_at IS NULL 
+        Database::table('products')->where([ 
+            ['cost', 200, '<'],
+            ['name', 'CocaCola'] 
+        ])->get();
+        Debug::dd(Database::getQueryLog());
+
+        // SELECT * FROM products WHERE (cost >= 200 AND cost <= 270) AND deleted_at IS NULL 
+        Database::table('products')->where([ 
+            ['cost', 200, '>='],
+            ['cost', 270, '<=']
+        ])->get();
+        Debug::dd(Database::getQueryLog());
+
+        // SELECT * FROM products WHERE size IN ('0.5L', '3L') AND deleted_at IS NULL 
+        Database::table('products')->where(['size', ['0.5L', '3L'], 'IN'])->get();
+        Debug::dd(Database::getQueryLog());
+
+        // SELECT * FROM products WHERE size IN ('0.5L', '3L') AND deleted_at IS NULL
+        Database::table('products')->where(['size', ['0.5L', '3L']])->get();
+        Debug::dd(Database::getQueryLog());
+
+        // SELECT * FROM products WHERE size IN ('0.5L', '3L') AND deleted_at IS NULL 
+        Database::table('products')->whereIn('size', ['0.5L', '3L'])->get();
+        Debug::dd(Database::getQueryLog());
+
+        // SELECT * FROM products WHERE size NOT IN ('0.5L', '3L') AND deleted_at IS NULL
+        Database::table('products')->where(['size', ['0.5L', '3L'], 'NOT IN'])->get();
+        Debug::dd(Database::getQueryLog());
+
+        // SELECT * FROM products WHERE size NOT IN ('0.5L', '3L') AND deleted_at IS NULL
+        Database::table('products')->whereNotIn('size', ['0.5L', '3L'])->get();
+        Debug::dd(Database::getQueryLog());
+
+        // SELECT * FROM products WHERE workspace IS AND deleted_at IS NULL 
+        Database::table('products')->where(['workspace', null])->get();
+        Debug::dd(Database::getQueryLog());
+
+        // SELECT * FROM products WHERE workspace IS AND deleted_at IS NULL 
+        Database::table('products')->whereNull('workspace')->get();
+        Debug::dd(Database::getQueryLog());
+
+        // SELECT * FROM products WHERE workspace IS NOT AND deleted_at IS NULL
+        Database::table('products')->where(['workspace', null, 'IS NOT'])->get();
+        Debug::dd(Database::getQueryLog());
+
+        // SELECT * FROM products WHERE workspace IS NOT AND deleted_at IS NULL 
+        Database::table('products')->whereNotNull('workspace')->get();
+        Debug::dd(Database::getQueryLog());
+
+        // SELECT name, cost FROM products WHERE cost >= 100 AND cost <= 250 AND deleted_at IS NULL 
+        Database::table('products')
+        ->select(['name', 'cost'])
+        ->whereBetween('cost', [100, 250])->get();
+        Debug::dd(Database::getQueryLog());
+
+
+    } // end fn
+
+
        
 }

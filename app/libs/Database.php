@@ -6,7 +6,9 @@ use simplerest\core\Model;
 
 class Database {
 
-    private static $conn;
+	private static $conn;
+	private static $model;
+	//private static $enabled = false;
 
     private function __construct() { }
 
@@ -28,20 +30,15 @@ class Database {
 		
 		return self::$conn;
 	}
-	
-	private static function model(Model $m = null){
-		static $model = null;
 		
-		if ($m == null){
-			return $model;
-		}else
-			$model = $m;
-	}
-
 	// Returns last executed query 
 	public static function getQueryLog(){
-		return static::model()->getLog();
+		return static::$model->getLog();
 	}
+	
+	//public static function enableQueryLog(){
+	//	static::$enabled = true;
+	//}
 
 	public static function table($from, $alias = NULL) {
 
@@ -59,12 +56,12 @@ class Database {
 			if (!is_null($alias))
 				$obj->setTableAlias($alias);
 
-			static::model($obj);			
+			static::$model = $obj;			
 			return $obj;	
 		}
 
 		$model = new Model(self::getConnection());
-		static::model($model);
+		static::$model = $model;
 
 		$st = ($model)->fromRaw($from);	
 		return $st;
