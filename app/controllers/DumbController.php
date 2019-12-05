@@ -1138,8 +1138,8 @@ class DumbController extends Controller
         Debug::dd($query->dd());
 
          // SELECT * FROM products
-         $query = Database::table('products')->showDeleted();
-         Debug::dd($query->dd());
+        $query = Database::table('products')->showDeleted();
+        Debug::dd($query->dd());
 
         //SELECT DISTINCT size FROM products WHERE deleted_at IS NULL  
         $query = Database::table('products')->select(['size'])->distinct();
@@ -1720,23 +1720,8 @@ class DumbController extends Controller
         $m = new \simplerest\core\Model($conn);
         $res = $m->fromRaw("({$sub->toSql()}) as sub")->count();
     
-        Debug::dd($m->getLastPrecompiledQuery());  
-            
-        // SELECT  COUNT(*) FROM (SELECT  size FROM products  GROUP BY size ) as sub 
-        $sub = Database::table('products')->showDeleted()
-        ->select(['size'])
-        ->where(['belongs_to', 90])
-        ->groupBy(['size']);
-
-        $conn = Database::getConnection();
-
-        $res = (new \simplerest\core\Model($conn))
-        ->fromRaw("({$sub->toSql()}) as sub")
-        ->mergeBindings($sub)
-        ->count();
-
-        Debug::dd($m->getLastPrecompiledQuery());
-        
+        Debug::dd(preg_replace('!\s+!', ' ',$m->getLastPrecompiledQuery()));  
+                 
         // SELECT COUNT(*) FROM (SELECT size FROM products WHERE belongs_to = 90 GROUP BY size ) as sub 
         $sub = Database::table('products')->showDeleted()
         ->select(['size'])
@@ -1750,9 +1735,8 @@ class DumbController extends Controller
         Debug::dd(Database::getQueryLog());
     }
 
-    function testunion(){
-   
-        // <--- corregir: no puede quedar como ? 
+    function testunion(){   
+        // SELECT id, name, description, belongs_to FROM products WHERE belongs_to = ? AND cost >= ? UNION SELECT id, name, description, belongs_to FROM products WHERE belongs_to = ? ORDER BY id ASC LIMIT ?, ?
         $uno = Database::table('products')->showDeleted()
         ->select(['id', 'name', 'description', 'belongs_to'])
         ->where(['belongs_to', 90]);
@@ -1764,30 +1748,11 @@ class DumbController extends Controller
         ->where(['cost', 200, '>='])
         ->union($uno)
         ->orderBy(['id' => 'ASC'])
-        //->offset(20)
-        //->limit(10)
+        ->offset(20)
+        ->limit(10)
         ->get();
 
-        //Debug::dd(Database::getQueryLog());
-        Debug::dd($m2->getLastPrecompiledQuery());
-        Debug::dd($dos);
-
-        /*
-        // SELECT id, name, description, belongs_to FROM products WHERE belongs_to = 4 UNION SELECT id, name, description, belongs_to FROM products WHERE belongs_to = 0 ORDER BY id ASC LIMIT 5, ?
-        $uno = Database::table('products')->showDeleted()
-        ->select(['id', 'name', 'description', 'belongs_to'])
-        ->where(['belongs_to', 90]);
-
-        $dos = Database::table('products')->showDeleted()
-        ->select(['id', 'name', 'description', 'belongs_to'])
-        ->where(['cost', 200, '>='])
-        ->unionAll($uno)
-        ->orderBy(['id' => 'ASC'])
-        ->limit(5)
-        ->get();
-
-        Debug::dd(Database::getQueryLog());
-        */
+        Debug::dd(preg_replace('!\s+!', ' ',$m2->getLastPrecompiledQuery()));
     }
 
     function testdelete(){
@@ -1797,7 +1762,7 @@ class DumbController extends Controller
     }
 
     function testcreate(){       
-        $id = Database::table('users')->create(['email'=> 'testing_create@g.com', 'password'=>'pass', 'firstname'=>'Jhon', 'lastname'=>'Doe', 'username' => 'doe1979']);
+        $id = Database::table('users')->create(['email'=> 'doe2000@g.com', 'password'=>'pass', 'firstname'=>'Jhon', 'lastname'=>'Doe', 'username' => 'doe2000']);
         Debug::dd(Database::getQueryLog());
         
         $ok = (bool) Database::table('users')->where(['id' => $id])->delete(false);        
@@ -1815,22 +1780,22 @@ class DumbController extends Controller
     }
 
     function testhide(){
+        // SELECT id, email, password FROM users WHERE id = 100000 AND deleted_at IS NUL
         $u = Database::table('users');
         $u->unhide(['password']);
         $u->hide(['username', 'confirmed_email', 'firstname','lastname', 'deleted_at', 'belongs_to']);
-        $u->where(['id'=>$id])->get();
+        $u->where(['id'=>100000])->get();
         Debug::dd(Database::getQueryLog());
     }
 
-    function testfill(){ 
-        $u = Database::table('users');
-        $id = $u->create(['email'=> 'testing@g.com', 'password'=>'pass', 'firstname'=>'Jhon', 'lastname'=>'Doe', 'confirmed_email' => 1]);
-        Debug::dd(Database::getQueryLog());   
-        
-        $u = Database::table('users');
-        $u->unfill(['password']);
-        $id = $u->create(['email'=> 'testing@g.com', 'password'=>'pass', 'firstname'=>'Jhon', 'lastname'=>'Doe']);
-        Debug::dd(Database::getQueryLog()); 
+    function test(){
+        Database::table('products')->showDeleted()
+        ->select(['id', 'name', 'size', 'cost', 'belongs_to'])
+        ->where(['size', '1L'])
+        ->orderBy(['size' => 'desc', 'cost' => 'asc'])
+        ->get();
+
+        Debug::dd(Database::getQueryLog());
     }
 
        

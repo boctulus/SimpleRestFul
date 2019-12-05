@@ -1,0 +1,169 @@
+        
+
+
+    function testsubqueries(){
+        //  
+        $sub = Database::table('users')
+        ->select(['id'])
+        ->whereRaw('password IS NULL');
+
+        Database::table('products')->showDeleted()
+        ->select(['id', 'name', 'size', 'cost', 'belongs_to'])
+        ->whereRaw("belongs_to IN ({$sub->toSql()})")
+        ->get();
+
+        $this->assertEquals(Database::getQueryLog(), "SELECT id, name, size, cost, belongs_to FROM products WHERE belongs_to IN (SELECT id FROM users WHERE password IS NULL AND deleted_at IS NULL )");   
+
+        //  
+        $sub = Database::table('users')->showDeleted()
+        ->select(['id'])
+        ->whereRaw('confirmed_email = 1')
+        ->where(['password', 100, '<']);
+
+        $res = Database::table('products')->showDeleted()
+        ->mergeBindings($sub)
+        ->select(['id', 'name', 'size', 'cost', 'belongs_to'])
+        ->where(['size', '1L'])
+        ->whereRaw("belongs_to IN ({$sub->toSql()})")
+        ->get();
+
+        $this->assertEquals(Database::getQueryLog(), "SELECT id, name, size, cost, belongs_to FROM products WHERE (belongs_to IN (SELECT id FROM users WHERE (confirmed_email = 1) AND password < 100 )) AND size = '1L'");  
+
+        // 
+        $sub = Database::table('users')->showDeleted()
+        ->selectRaw('users.id')
+        ->join('user_roles', 'users.id', '=', 'user_roles.user_id')
+        ->whereRaw('confirmed_email = 1')
+        ->where(['password', 100, '<'])
+        ->where(['role_id', 2]);
+
+        $res = Database::table('products')->showDeleted()
+        ->mergeBindings($sub)
+        ->select(['id', 'name', 'size', 'cost', 'belongs_to'])
+        ->where(['size', '1L'])
+        ->whereRaw("belongs_to IN ({$sub->toSql()})")
+        ->orderBy(['id' => 'desc'])
+        ->get();
+
+        $this->assertEquals(Database::getQueryLog(), "SELECT id, name, size, cost, belongs_to FROM products WHERE (belongs_to IN (SELECT users.id FROM users INNER JOIN user_roles ON users.id=user_roles.user_id WHERE (confirmed_email = 1) AND password < 100 AND role_id = 2 )) AND size = '1L' ORDER BY id DESC");    
+        
+
+        //  
+        $sub = Database::table('users')->showDeleted()
+        ->selectRaw('users.id')
+        ->join('user_roles', 'users.id', '=', 'user_roles.user_id')
+        ->whereRaw('confirmed_email = 1')
+        ->where(['password', 100, '<'])
+        ->where(['role_id', 3]);
+
+        $res = Database::table('products')->showDeleted()
+        ->mergeBindings($sub)
+        ->select(['size'])
+        ->whereRaw("belongs_to IN ({$sub->toSql()})")
+        ->groupBy(['size'])
+        ->avg('cost');
+
+        $this->assertEquals(Database::getQueryLog(), "SELECT size, AVG(cost) FROM products WHERE belongs_to IN (SELECT users.id FROM users INNER JOIN user_roles ON users.id=user_roles.user_id WHERE (confirmed_email = 1) AND password < 100 AND role_id = 3 ) GROUP BY size");
+
+        // SELECT  COUNT(*) FROM (SELECT  size FROM products  GROUP BY size ) as sub  
+        $sub = Database::table('products')->showDeleted()
+        ->select(['size'])
+        ->groupBy(['size']);
+    
+        $conn = Database::getConnection();
+    
+        $m = new \simplerest\core\Model($conn);
+        $res = $m->fromRaw("({$sub->toSql()}) as sub")->count();
+    
+        Debug::dd(preg_replace('!\s+!', ' ',$m->getLastPrecompiledQuery()));  
+            
+        // SELECT  COUNT(*) FROM (SELECT  size FROM products  GROUP BY size ) as sub 
+        $sub = Database::table('products')->showDeleted()
+        ->select(['size'])
+        ->where(['belongs_to', 90])
+        ->groupBy(['size']);
+
+        $conn = Database::getConnection();
+
+        $res = (new \simplerest\core\Model($conn))
+        ->fromRaw("({$sub->toSql()}) as sub")
+        ->mergeBindings($sub)
+        ->count();
+
+        Debug::dd(preg_replace('!\s+!', ' ',$m->getLastPrecompiledQuery()));
+        
+        // SELECT COUNT(*) FROM (SELECT size FROM products WHERE belongs_to = 90 GROUP BY size ) as sub 
+        $sub = Database::table('products')->showDeleted()
+        ->select(['size'])
+        ->where(['belongs_to', 90])
+        ->groupBy(['size']);
+
+        $res = Database::table("({$sub->toSql()}) as sub")
+        ->mergeBindings($sub)
+        ->count();
+
+        $this->assertEquals(Database::getQueryLog(), "");
+    }
+
+    function testunion(){   
+        // SELECT id, name, description, belongs_to FROM products WHERE belongs_to = ? AND cost >= ? UNION SELECT id, name, description, belongs_to FROM products WHERE belongs_to = ? ORDER BY id ASC LIMIT ?, ?
+        $uno = Database::table('products')->showDeleted()
+        ->select(['id', 'name', 'description', 'belongs_to'])
+        ->where(['belongs_to', 90]);
+
+        $m2  = Database::table('products')->showDeleted();
+        $dos = $m2
+        ->select(['id', 'name', 'description', 'belongs_to'])
+        ->where(['belongs_to', 4])
+        ->where(['cost', 200, '>='])
+        ->union($uno)
+        ->orderBy(['id' => 'ASC'])
+        ->offset(20)
+        ->limit(10)
+        ->get();
+
+        Debug::dd(preg_replace('!\s+!', ' ',$m2->getLastPrecompiledQuery()));
+    }
+
+    function testdelete(){
+        $u = Database::table('users');
+        $u->where(['id' => 100000])->delete(false);
+        $this->assertEquals(Database::getQueryLog(), "");
+    }
+
+    function testcreate(){       
+        $id = Database::table('users')->create(['email'=> 'testing_create@g.com', 'password'=>'pass', 'firstname'=>'Jhon', 'lastname'=>'Doe', 'username' => 'doe1979']);
+        $this->assertEquals(Database::getQueryLog(), "");
+        
+        $ok = (bool) Database::table('users')->where(['id' => $id])->delete(false);        
+        $this->assertEquals(Database::getQueryLog(), "");
+        Debug::dd($ok);
+    }
+
+    function testupdate(){
+        $u = Database::table('users');
+        $u->where(['id' => 100000])->update(['firstname'=>'Nico', 'lastname'=>'Buzzi']);
+        $this->assertEquals(Database::getQueryLog(), "");
+
+        $u->where([ ['lastname', ['AAA', 'Buzzi']] ])->update(['firstname'=>'Nicolay']);
+        $this->assertEquals(Database::getQueryLog(), "");
+    }
+
+    function testhide(){
+        $u = Database::table('users');
+        $u->unhide(['password']);
+        $u->hide(['username', 'confirmed_email', 'firstname','lastname', 'deleted_at', 'belongs_to']);
+        $u->where(['id'=>$id])->get();
+        $this->assertEquals(Database::getQueryLog(), "");
+    }
+
+    function testfill(){ 
+        $u = Database::table('users');
+        $id = $u->create(['email'=> 'testing@g.com', 'password'=>'pass', 'firstname'=>'Jhon', 'lastname'=>'Doe', 'confirmed_email' => 1]);
+        $this->assertEquals(Database::getQueryLog(), "");   
+        
+        $u = Database::table('users');
+        $u->unfill(['password']);
+        $id = $u->create(['email'=> 'testing@g.com', 'password'=>'pass', 'firstname'=>'Jhon', 'lastname'=>'Doe']);
+        $this->assertEquals(Database::getQueryLog(), ""); 
+    }

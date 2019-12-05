@@ -817,7 +817,7 @@ class Model {
 		}
 				
 		$sql = Arrays::str_replace_array('?', $bindings, $pre_compiled_sql);
-		return preg_replace('!\s+!', ' ', $sql);
+		return trim(preg_replace('!\s+!', ' ', $sql));
 	}
 
 	// Debug query
@@ -1251,7 +1251,7 @@ class Model {
 			//echo "Bind: ".($ix+1)." - $val ($type)\n";
 		}
 
-		$this->last_bindings = $this->getBindings();
+		$this->last_bindings = $values;
 		$this->last_pre_compiled_query = $q;
 	 
 		if($st->execute())
