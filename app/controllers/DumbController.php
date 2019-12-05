@@ -85,6 +85,7 @@ class DumbController extends Controller
         Debug::dd(Database::getQueryLog());
     }
     
+    ///
     function limite(){
         Database::table('products')->offset(20)->limit(10)->get();
         Debug::dd(Database::getQueryLog());
@@ -93,27 +94,7 @@ class DumbController extends Controller
         Debug::dd(Database::getQueryLog());
     }
 
-    function cuenta(){
-        Database::table('users')
-        ->where([ 'belongs_to'=> 160] )
-        ->count();
-
-        //Debug::dd(Database::getQueryLog());
-
-        //
-        /*
-        $sub = Database::table('products')->showDeleted()
-        ->select(['size'])
-        ->groupBy(['size']);
-    
-        $conn = Database::getConnection();
-    
-        $m = new \simplerest\core\Model($conn);
-        $res = $m->fromRaw("({$sub->toSql()}) as sub")->count();
-    
-        Debug::dd(Database::getQueryLog());     
-        */
-
+    function sub1(){
         // SELECT COUNT(*) FROM (SELECT  name, size FROM products  GROUP BY size ) as sub 
         $sub = Database::table('products')
         ->select(['name', 'size'])
@@ -126,7 +107,22 @@ class DumbController extends Controller
     
         //Debug::dd($sub->toSql());
         Debug::dd($m->getLastPrecompiledQuery());
-        Debug::dd(Database::getQueryLog());     
+        //Debug::dd(Database::getQueryLog());     
+    }
+
+    function sub1a(){
+        $sub = Database::table('products')
+        ->select(['id', 'name', 'size'])
+        ->where(['cost', 150, '>=']);
+    
+        $conn = Database::getConnection();
+    
+        $m = new \simplerest\core\Model($conn);
+        $res = $m->fromRaw("({$sub->toSql()}) as sub")->count();
+    
+        //Debug::dd($sub->toSql());
+        //Debug::dd($m->getLastPrecompiledQuery());
+        //Debug::dd(Database::getQueryLog());     
     }
 
     function distinct(){
@@ -906,7 +902,8 @@ class DumbController extends Controller
         ->whereRaw('belongs_to IN (SELECT id FROM users WHERE password IS NULL)')
         ->get();
 
-        Debug::dd($st);    
+        Debug::dd(Database::getQueryLog());  
+        Debug::dd($st);         
     }
 
     /*
@@ -925,7 +922,8 @@ class DumbController extends Controller
         ->whereRaw("belongs_to IN ({$sub->toSql()})")
         ->get();
 
-        Debug::dd($st);    
+        Debug::dd(Database::getQueryLog());
+        Debug::dd($st);            
     }
 
     /*
@@ -944,6 +942,7 @@ class DumbController extends Controller
         ->whereRaw("belongs_to IN ({$sub->toSql()})")
         ->get();
 
+        Debug::dd(Database::getQueryLog());
         Debug::dd($res);    
     }
 
@@ -967,6 +966,7 @@ class DumbController extends Controller
         ->orderBy(['id' => 'desc'])
         ->get();
 
+        Debug::dd(Database::getQueryLog());  
         Debug::dd($res);    
     }
 
@@ -1044,6 +1044,20 @@ class DumbController extends Controller
     }
     
     /*
+        Subconsulta (rudimentaria) en el SELECT
+    */
+    function sub5(){
+        $res = Database::table('products')->showDeleted()
+        ->select(['name', 'cost'])
+        ->selectRaw('cost - (SELECT MAX(cost) FROM products) as diferencia')
+        ->where(['belongs_to', 90])
+        ->get();
+
+        Debug::dd(Database::getQueryLog()); 
+        Debug::dd($res);
+    }
+
+    /*
         UNION
 
         SELECT id, name, description, belongs_to FROM products WHERE belongs_to = 90 UNION SELECT id, name, description, belongs_to FROM products WHERE belongs_to = 4 ORDER by id ASC LIMIT 5;
@@ -1061,6 +1075,25 @@ class DumbController extends Controller
         ->limit(5)
         ->get();
 
+        Debug::dd($dos);
+    }
+
+    function union2(){
+        $uno = Database::table('products')->showDeleted()
+        ->select(['id', 'name', 'description', 'belongs_to'])
+        ->where(['belongs_to', 90]);
+
+        $m2  = Database::table('products')->showDeleted();
+        $dos = $m2
+        ->select(['id', 'name', 'description', 'belongs_to'])
+        ->where(['belongs_to', 4])
+        ->where(['cost', 200, '>='])
+        ->union($uno)
+        ->orderBy(['id' => 'ASC'])
+        ->get();
+
+        //Debug::dd(Database::getQueryLog());
+        Debug::dd($m2->getLastPrecompiledQuery());
         Debug::dd($dos);
     }
 
@@ -1677,10 +1710,7 @@ class DumbController extends Controller
 
         Debug::dd(Database::getQueryLog());
 
-        /*
-        No aparece el COUNT(*)  !!!!
-
-        // SELECT size FROM products GROUP BY size 
+        // SELECT  COUNT(*) FROM (SELECT  size FROM products  GROUP BY size ) as sub  
         $sub = Database::table('products')->showDeleted()
         ->select(['size'])
         ->groupBy(['size']);
@@ -1690,12 +1720,9 @@ class DumbController extends Controller
         $m = new \simplerest\core\Model($conn);
         $res = $m->fromRaw("({$sub->toSql()}) as sub")->count();
     
-        Debug::dd(Database::getQueryLog());  
-        */
-
-        /*
-        No aparece el COUNT(*)  !!!!
-
+        Debug::dd($m->getLastPrecompiledQuery());  
+            
+        // SELECT  COUNT(*) FROM (SELECT  size FROM products  GROUP BY size ) as sub 
         $sub = Database::table('products')->showDeleted()
         ->select(['size'])
         ->where(['belongs_to', 90])
@@ -1708,11 +1735,9 @@ class DumbController extends Controller
         ->mergeBindings($sub)
         ->count();
 
-        Debug::dd(Database::getQueryLog());
-        */
-
-         /*
-        No aparece el COUNT(*)  !!!!
+        Debug::dd($m->getLastPrecompiledQuery());
+        
+        // SELECT COUNT(*) FROM (SELECT size FROM products WHERE belongs_to = 90 GROUP BY size ) as sub 
         $sub = Database::table('products')->showDeleted()
         ->select(['size'])
         ->where(['belongs_to', 90])
@@ -1723,27 +1748,31 @@ class DumbController extends Controller
         ->count();
 
         Debug::dd(Database::getQueryLog());
-        */
     }
 
     function testunion(){
-        // SELECT id, name, description, belongs_to FROM products WHERE belongs_to = 4 UNION SELECT id, name, description, belongs_to FROM products WHERE belongs_to = 0 ORDER BY id ASC LIMIT 5, ?
-
-        // <--- corregir paginación !!!! no puede quedar como ? por falta de offset
+   
+        // <--- corregir: no puede quedar como ? 
         $uno = Database::table('products')->showDeleted()
         ->select(['id', 'name', 'description', 'belongs_to'])
         ->where(['belongs_to', 90]);
 
-        $dos = Database::table('products')->showDeleted()
+        $m2  = Database::table('products')->showDeleted();
+        $dos = $m2
         ->select(['id', 'name', 'description', 'belongs_to'])
         ->where(['belongs_to', 4])
+        ->where(['cost', 200, '>='])
         ->union($uno)
         ->orderBy(['id' => 'ASC'])
-        ->limit(5)
+        //->offset(20)
+        //->limit(10)
         ->get();
 
-        Debug::dd(Database::getQueryLog());
+        //Debug::dd(Database::getQueryLog());
+        Debug::dd($m2->getLastPrecompiledQuery());
+        Debug::dd($dos);
 
+        /*
         // SELECT id, name, description, belongs_to FROM products WHERE belongs_to = 4 UNION SELECT id, name, description, belongs_to FROM products WHERE belongs_to = 0 ORDER BY id ASC LIMIT 5, ?
         $uno = Database::table('products')->showDeleted()
         ->select(['id', 'name', 'description', 'belongs_to'])
@@ -1758,6 +1787,7 @@ class DumbController extends Controller
         ->get();
 
         Debug::dd(Database::getQueryLog());
+        */
     }
 
     function testdelete(){

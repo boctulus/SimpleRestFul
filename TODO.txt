@@ -2,18 +2,22 @@
 
 - El AuthController y el FrontController deben poder ser extendidos
 
-- Investigar porque ac'a SI detecta un error y no valida 
+- Subconsultas:
 
-http://simplerest.lan/api/v1/products?fields=name,cost,size&cost[gt]=150K
-http://simplerest.lan/api/v1/products?fields=name,cost,size&cost[gt]=150&cost[lteq]=350K
+  > En el SELECT 
+  > En el FROM -> funciona pero no acepta parámetros para la subconsulta y la forma de ver la consulta es mediante getLastPrecompiledQuery() ya que getQueryLog() queda apuntando a la consulta "hija".
+  > En el WHERE -> ok
+  > En el HAVING 
 
-pero ac'a NO:
+  > UNION > funciona pero getQueryLog() no muestra los bindings de la subconsulta
 
-http://simplerest.lan/api/v1/products?fields=name,cost,size&cost[gt]=150K&cost[lteq]=350
+Subconsultas en el SELECT puede implementarse con selectRaw() y en el HAVING con havingRaw()
 
-* Podr'ia ser una limitaci'on de la clase Validator al trabajar con array asociativos :\
-
-
+Leer
+https://www.tutorialesprogramacionya.com/sqlserverya/temarios/descripcion.php?inicio=75&cod=98&punto=92
+https://docs.aws.amazon.com/es_es/redshift/latest/dg/r_Subquery_examples.html
+https://www.mundoracle.com/subconsultas.html?Pg=sql_plsql_6.htm
+  
 - Generador de modelos, controladores y apis (resource controllers) como en Laravel:
 
 Ejemplo:
