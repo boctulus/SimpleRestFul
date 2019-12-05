@@ -76,7 +76,59 @@ class DumbController extends Controller
         Debug::dd(Database::table('products')->get());
         //Debug::dd(Database::table('products')->setFetchMode('ASSOC')->get());
     }
+
+    function limit(){
+        Debug::dd(Database::table('products')->offset(20)->limit(10)->get());
+        Debug::dd(Database::getQueryLog());
+
+        Debug::dd(Database::table('products')->limit(10)->get());
+        Debug::dd(Database::getQueryLog());
+    }
     
+    function limite(){
+        Database::table('products')->offset(20)->limit(10)->get();
+        Debug::dd(Database::getQueryLog());
+
+        Database::table('products')->limit(10)->get();
+        Debug::dd(Database::getQueryLog());
+    }
+
+    function cuenta(){
+        Database::table('users')
+        ->where([ 'belongs_to'=> 160] )
+        ->count();
+
+        //Debug::dd(Database::getQueryLog());
+
+        //
+        /*
+        $sub = Database::table('products')->showDeleted()
+        ->select(['size'])
+        ->groupBy(['size']);
+    
+        $conn = Database::getConnection();
+    
+        $m = new \simplerest\core\Model($conn);
+        $res = $m->fromRaw("({$sub->toSql()}) as sub")->count();
+    
+        Debug::dd(Database::getQueryLog());     
+        */
+
+        // SELECT COUNT(*) FROM (SELECT  name, size FROM products  GROUP BY size ) as sub 
+        $sub = Database::table('products')
+        ->select(['name', 'size'])
+        ->groupBy(['size']);
+    
+        $conn = Database::getConnection();
+    
+        $m = new \simplerest\core\Model($conn);
+        $res = $m->fromRaw("({$sub->toSql()}) as sub")->count();
+    
+        //Debug::dd($sub->toSql());
+        Debug::dd($m->getLastPrecompiledQuery());
+        Debug::dd(Database::getQueryLog());     
+    }
+
     function distinct(){
         Debug::dd(Database::table('products')->distinct()->get(['size']));
 
@@ -180,6 +232,8 @@ class DumbController extends Controller
         echo Database::table('products')
         ->where([ ['cost', 100, '>='], ['size', '1L'], ['belongs_to', 90] ])
         ->count();
+
+        Debug::dd(Database::getQueryLog());
     } 
 
     function count2(){
@@ -1098,13 +1152,13 @@ class DumbController extends Controller
         
         // SELECT COUNT(*) FROM products WHERE (cost >= 200 OR size = 2L) AND deleted_at IS NULL 
         $query = Database::table('products')
-        ->where([ [ 'cost', '200', '>='], [ 'size', '2L'] ], 'OR')
+        ->where([ [ 'cost', 200, '>='], [ 'size', '2L'] ], 'OR')
         ->count();
         Debug::dd(Database::getQueryLog());
 
         // SELECT COUNT(*) FROM products WHERE (cost >= 200 OR size = 2L) 
         $query = Database::table('products')->showDeleted()
-        ->where([ [ 'cost', '200', '>='], [ 'size', '2L'] ], 'OR')
+        ->where([ [ 'cost', 200, '>='], [ 'size', '2L'] ], 'OR')
         ->count();
         Debug::dd(Database::getQueryLog());
 

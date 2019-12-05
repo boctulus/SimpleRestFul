@@ -795,28 +795,39 @@ class Model {
 		return $st;	
 	}
 
+	function getLastPrecompiledQuery(){
+		return $this->last_pre_compiled_query;
+	}
+
+	private function _dd($pre_compiled_sql, $bindings){		
+		foreach($bindings as $ix => $val){			
+			if(is_null($val)){
+				$bindings[$ix] = 'NULL';
+			}elseif(isset($vars[$ix]) && isset($this->schema[$vars[$ix]])){
+				$const = $this->schema[$vars[$ix]];
+				if ($const == 'STR')
+					$bindings[$ix] = "'$val'";
+			}elseif(is_int($val)){
+				// pass
+			}
+			elseif(is_bool($val)){
+				// pass
+			} elseif(is_string($val))
+				$bindings[$ix] = "'$val'";	
+		}
+				
+		$sql = Arrays::str_replace_array('?', $bindings, $pre_compiled_sql);
+		return preg_replace('!\s+!', ' ', $sql);
+	}
+
 	// Debug query
 	function dd(){		
-		$bindings = $this->getBindings();
-		foreach ($bindings as $ix => $binding){
-			if ($binding == null)
-				$bindings[$ix] = 'NULL';
-		}
-
-		$sql = Arrays::str_replace_array('?', $bindings, $this->toSql());
-		return preg_replace('!\s+!', ' ', $sql);
+		return $this->_dd($this->toSql(), $this->getBindings());
 	}
 
 	// Debug last query
 	function getLog(){
-		$bindings = $this->last_bindings;
-		foreach ($bindings as $ix => $binding){
-			if ($binding == null)
-				$bindings[$ix] = 'NULL';
-		}
-
-		$sql = Arrays::str_replace_array('?', $bindings, $this->last_pre_compiled_query);
-		return preg_replace('!\s+!', ' ', $sql);
+		return $this->_dd($this->last_pre_compiled_query, $this->last_bindings);
 	}
 
 	function get(array $fields = null, array $order = null, int $limit = NULL, int $offset = null){
@@ -1239,6 +1250,9 @@ class Model {
 			$st->bindValue($ix+1, $val, $type);
 			//echo "Bind: ".($ix+1)." - $val ($type)\n";
 		}
+
+		$this->last_bindings = $this->getBindings();
+		$this->last_pre_compiled_query = $q;
 	 
 		if($st->execute())
 			return $st->rowCount();
@@ -1298,9 +1312,11 @@ class Model {
 				$type = \PDO::PARAM_STR;	
 
 			$st->bindValue($ix+1, $val, $type);
-			//echo "Bind: ".($ix+1)." - $val ($type)\n";
 		}
 	 
+		$this->last_bindings = $this->getBindings();
+		$this->last_pre_compiled_query = $q;
+
 		if($st->execute())
 			return $st->rowCount();
 		else 
@@ -1318,7 +1334,7 @@ class Model {
 		if (!Arrays::is_assoc($data))
 			throw new \InvalidArgumentException('Array of data should be associative');
 
-		$vars   = array_keys($data);
+		$vars = array_keys($data);
 		$vals = array_values($data);		
 
 		if(!empty($this->fillable) && is_array($this->fillable)){
@@ -1338,7 +1354,7 @@ class Model {
 
 		$str_vars = implode(', ',$vars);
 
-		$symbols = array_map(function($v){ return ":$v";}, $vars);
+		$symbols = array_map(function($v){ return '?';}, $vars);
 		$str_vals = implode(', ',$symbols);
 
 		if ($this->inSchema(['created_at'])){
@@ -1349,10 +1365,24 @@ class Model {
 		$q = "INSERT INTO " . $this->from() . " ($str_vars) VALUES ($str_vals)";
 		$st = $this->conn->prepare($q);
 
-		foreach($vals as $ix => $val){
-			$const = $this->schema[$vars[$ix]];
-			$st->bindValue(":{$vars[$ix]}", $val, constant("PDO::PARAM_{$const}"));
+		foreach($vals as $ix => $val){			
+			if(is_null($val)){
+				$type = \PDO::PARAM_NULL;
+			}elseif(isset($vars[$ix]) && isset($this->schema[$vars[$ix]])){
+				$const = $this->schema[$vars[$ix]];
+				$type = constant("PDO::PARAM_{$const}");
+			}elseif(is_int($val))
+				$type = \PDO::PARAM_INT;
+			elseif(is_bool($val))
+				$type = \PDO::PARAM_BOOL;
+			elseif(is_string($val))
+				$type = \PDO::PARAM_STR;	
+
+			$st->bindValue($ix+1, $val, $type);
 		}
+
+		$this->last_bindings = $vals;
+		$this->last_pre_compiled_query = $q;
 
 		$result = $st->execute();
 		if ($result){
