@@ -20,9 +20,9 @@ include 'config/constants.php';
 
 class ModelTest extends TestCase
 {   		
-    public function testget()
-    {
-		$this->assertIsArray(Database::table('products')->get());
+  public function testget()
+  {
+		  $this->assertIsArray(Database::table('products')->get());
 	}	
 	
 }

@@ -1045,7 +1045,7 @@ class DumbController extends Controller
         );
     }
 
-    function debug(){
+    function testget(){
         // SELECT * FROM products WHERE deleted_at IS NULL
         $query = Database::table('products');
         Debug::dd($query->dd());
@@ -1310,9 +1310,444 @@ class DumbController extends Controller
         ->whereBetween('cost', [100, 250])->get();
         Debug::dd(Database::getQueryLog());
 
+        // SELECT name, cost FROM products WHERE (cost < 100 OR cost > 250) AND deleted_at IS NULL 
+        Database::table('products')
+        ->select(['name', 'cost'])
+        ->whereNotBetween('cost', [100, 250])->get();
+		Debug::dd(Database::getQueryLog());
+    
+        // SELECT * FROM products WHERE id = 103 AND deleted_at IS NULL 
+        Database::table('products')
+        ->find(103);
+		Debug::dd(Database::getQueryLog());
+
+        // SELECT name FROM products WHERE cost = 150 AND deleted_at IS NULL LIMIT 0, 1
+        Database::table('products')
+        ->where(['cost', 150])
+        ->value('name');
+		Debug::dd(Database::getQueryLog());
+    
+        // SELECT name, cost, id FROM products WHERE belongs_to = 90 AND (cost >= 100 AND cost < 500) AND description IS NOT NULL 
+        Database::table('products')->showDeleted()
+        ->select(['name', 'cost', 'id'])
+        ->where(['belongs_to', 90])
+        ->where([ 
+            ['cost', 100, '>='],
+            ['cost', 500, '<']
+        ])
+        ->whereNotNull('description')
+        ->get();
+		Debug::dd(Database::getQueryLog());
+   
+         // SELECT name, cost, id FROM products WHERE belongs_to = 90 AND (name IN ('CocaCola', 'PesiLoca') OR cost >= 550 OR cost < 100) AND description IS NOT NULL  
+        Database::table('products')->showDeleted()
+        ->select(['name', 'cost', 'id'])
+        ->where(['belongs_to', 90])
+        ->where([ 
+            ['name', ['CocaCola', 'PesiLoca']], 
+            ['cost', 550, '>='],
+            ['cost', 100, '<']
+        ], 'OR')
+        ->whereNotNull('description')
+        ->get();
+		Debug::dd(Database::getQueryLog());
+    
+        // SELECT name, cost, id FROM products WHERE belongs_to = 90 OR name IN ('CocaCola', 'PesiLoca') OR (cost <= 550 AND cost >= 100)
+        Database::table('products')->showDeleted()
+        ->select(['name', 'cost', 'id'])
+        ->where(['belongs_to', 90])
+        ->orWhere(['name', ['CocaCola', 'PesiLoca']])
+        ->orWhere([
+            ['cost', 550, '<='],
+            ['cost', 100, '>=']
+        ])
+        ->get();
+		Debug::dd(Database::getQueryLog());
+    
+        // SELECT name, cost, id, description FROM products WHERE description IS NOT NULL OR (cost >= 100 AND cost < 500 
+        Database::table('products')->showDeleted()
+        ->select(['name', 'cost', 'id', 'description'])
+        ->whereNotNull('description')
+        ->orWhere([ 
+                    ['cost', 100, '>='],
+                    ['cost', 500, '<']
+        ])        
+        ->get();
+		Debug::dd(Database::getQueryLog());
+ 
+        // SELECT id, name, cost, description FROM products WHERE belongs_to = 90 AND (name IN ('CocaCola', 'PesiLoca') OR cost >= 550 OR cost < 100) AND description IS NOT NULL AND deleted_at IS NULL
+        Database::table('products')
+        ->select(['id', 'name', 'cost', 'description'])
+        ->where(['belongs_to', 90])
+        ->where([ 
+            ['name', ['CocaCola', 'PesiLoca']], 
+            ['cost', 550, '>='],
+            ['cost', 100, '<']
+        ], 'OR')
+        ->whereNotNull('description')
+        ->get();
+		Debug::dd(Database::getQueryLog());
+    
+        // SELECT * FROM users WHERE (email = nano@g.c OR username = nano@g.c) AND deleted_at IS NULL 
+        Database::table('users')->setFetchMode('ASSOC')->unhide(['password'])
+            ->where([ 'email'=> 'nano@g.c', 
+                      'username' => 'nano@g.c' 
+            ], 'OR') 
+            ->setValidator((new Validator())->setRequired(false))  
+            ->get();
+
+		Debug::dd(Database::getQueryLog());
+    
+        // SELECT id, username, email, confirmed_email, firstname, lastname, deleted_at, belongs_to FROM users WHERE email = nano@g.c OR username = nano AND deleted_at IS NULL 
+        $rows = Database::table('users')
+            ->where([ 'email'=> 'nano@g.c' ]) 
+            ->orWhere(['username' => 'nano' ])
+            ->setValidator((new Validator())->setRequired(false))  
+            ->get();
+		Debug::dd(Database::getQueryLog());
+    
+        // SELECT * FROM products WHERE (cost < IF(size = "1L", 300, 100) AND size = 1L) AND belongs_to = 90 AND deleted_at IS NULL ORDER BY cost ASC
+        Database::table('products')
+        ->where(['belongs_to' => 90])
+        ->whereRaw('cost < IF(size = "1L", ?, 100) AND size = ?', [300, '1L'])
+        ->orderBy(['cost' => 'ASC'])
+        ->get();
+		Debug::dd(Database::getQueryLog());
+    
+        // SELECT * FROM products WHERE EXISTS (SELECT 1 FROM users WHERE products.belongs_to = users.id AND users.lastname = AB )
+        Database::table('products')->showDeleted()
+        ->whereRaw('EXISTS (SELECT 1 FROM users WHERE products.belongs_to = users.id AND users.lastname = ?  )', ['AB'])
+        ->get();
+		Debug::dd(Database::getQueryLog());
+    
+        // SELECT * FROM products WHERE EXISTS (SELECT 1 FROM users WHERE products.belongs_to = users.id AND users.lastname = AB)
+        Database::table('products')->showDeleted()
+        ->whereExists('(SELECT 1 FROM users WHERE products.belongs_to = users.id AND users.lastname = ?)', ['AB'])
+        ->get();
+		Debug::dd(Database::getQueryLog());
+    
+        // SELECT * FROM products WHERE deleted_at IS NULL ORDER BY cost ASC, id DESC LIMIT 1, 4
+        Database::table('products')->orderBy(['cost'=>'ASC', 'id'=>'DESC'])->take(4)->offset(1)->get();
+		Debug::dd(Database::getQueryLog());
+
+        // SELECT * FROM products WHERE deleted_at IS NULL ORDER BY cost ASC, id DESC LIMIT 1, 4
+        Database::table('products')->orderBy(['cost'=>'ASC'])->orderBy(['id'=>'DESC'])->take(4)->offset(1)->get();
+		Debug::dd(Database::getQueryLog());
+
+        // SELECT * FROM products WHERE deleted_at IS NULL ORDER BY cost ASC, id DESC LIMIT 1, 4
+        Database::table('products')->orderBy(['cost'=>'ASC'])->take(4)->offset(1)->get(null, ['id'=>'DESC']);
+		Debug::dd(Database::getQueryLog());
+
+        // SELECT * FROM products WHERE deleted_at IS NULL ORDER BY cost ASC, id DESC LIMIT 1, 4
+        Database::table('products')->orderBy(['cost'=>'ASC'])->orderBy(['id'=>'DESC'])->take(4)->offset(1)->get();
+		Debug::dd(Database::getQueryLog());
+
+        // SELECT * FROM products WHERE deleted_at IS NULL ORDER BY cost ASC, id DESC LIMIT 1, 4
+        Database::table('products')->take(4)->offset(1)->get(null, ['cost'=>'ASC', 'id'=>'DESC']);
+		Debug::dd(Database::getQueryLog());
+    
+        // SELECT * FROM products WHERE deleted_at IS NULL ORDER BY locked * active DESC
+        Database::table('products')->orderByRaw('locked * active DESC')->get();
+		Debug::dd(Database::getQueryLog());
+    
+        // SELECT size, AVG(cost) FROM products WHERE cost >= 100 AND deleted_at IS NULL GROUP BY size ORDER BY size DESC
+        Database::table('products')->where([ 
+            ['cost', 100, '>=']
+        ])->orderBy(['size' => 'DESC'])->groupBy(['size'])->select(['size'])->avg('cost');
+		Debug::dd(Database::getQueryLog());
+    
+        // SELECT * FROM products WHERE (cost >= 200 AND cost <= 270 AND belongs_to = 90) AND deleted_at IS NULL 
+        Database::table('products')->where([ 
+            ['cost', 200, '>='],
+            ['cost', 270, '<='],
+            ['belongs_to',  90]
+        ])->get(); 
+		Debug::dd(Database::getQueryLog());
+        
+        // SELECT * FROM products WHERE (cost >= 150 AND cost <= 270) AND belongs_to = 90 AND deleted_at IS NULL 
+        Database::table('products')
+        ->where([ 
+                ['cost', 150, '>='],
+                ['cost', 270, '<=']            
+            ])
+        ->where(['belongs_to' =>  90])->get();
+		Debug::dd(Database::getQueryLog());		
+    
+        // SELECT cost, size FROM products WHERE deleted_at IS NULL GROUP BY cost,size HAVING cost = 100
+        Database::table('products')
+            ->groupBy(['cost', 'size'])
+            ->having(['cost', 100])
+            ->get(['cost', 'size']);
+		Debug::dd(Database::getQueryLog());
+        
+        // SELECT cost, size, belongs_to FROM products WHERE deleted_at IS NULL GROUP BY cost,size,belongs_to HAVING belongs_to = 90 AND (cost >= 100 OR size = 1L) ORDER BY size DESC
+        Database::table('products')
+            ->groupBy(['cost', 'size', 'belongs_to'])
+            ->having(['belongs_to', 90])
+            ->having([  
+                        ['cost', 100, '>='],
+                        ['size' => '1L'] ], 
+            'OR')
+            ->orderBy(['size' => 'DESC'])
+            ->get(['cost', 'size', 'belongs_to']); 
+		Debug::dd(Database::getQueryLog());
+    
+        // SELECT cost, size, belongs_to FROM products WHERE deleted_at IS NULL GROUP BY cost,size,belongs_to HAVING belongs_to = 90 OR cost >= 100 OR size = 1L ORDER BY size DESC
+        Database::table('products')
+            ->groupBy(['cost', 'size', 'belongs_to'])
+            ->having(['belongs_to', 90])
+            ->orHaving(['cost', 100, '>='])
+            ->orHaving(['size' => '1L'])
+            ->orderBy(['size' => 'DESC'])
+            ->get(['cost', 'size', 'belongs_to']); 
+		Debug::dd(Database::getQueryLog());
+    
+        // SELECT cost, size, belongs_to FROM products WHERE deleted_at IS NULL GROUP BY cost,size,belongs_to HAVING belongs_to = 90 OR (cost >= 100 AND size = 1L) ORDER BY size DESC
+        Database::table('products')
+            ->groupBy(['cost', 'size', 'belongs_to'])
+            ->having(['belongs_to', 90])
+            ->orHaving([  
+                        ['cost', 100, '>='],
+                        ['size' => '1L'] ] 
+            )
+            ->orderBy(['size' => 'DESC'])
+            ->get(['cost', 'size', 'belongs_to']); 
+		Debug::dd(Database::getQueryLog());
+    
+        // SELECT SUM(cost) as total_cost FROM products WHERE size = 1L AND deleted_at IS NULL GROUP BY belongs_to HAVING SUM(cost) > 500 LIMIT 1, 3
+        Database::table('products')
+            ->selectRaw('SUM(cost) as total_cost')
+            ->where(['size', '1L'])
+            ->groupBy(['belongs_to']) 
+            ->havingRaw('SUM(cost) > ?', [500])
+            ->limit(3)
+            ->offset(1)
+            ->get();
+		Debug::dd(Database::getQueryLog());
+    
+        // SELECT * FROM other_permissions as op INNER JOIN folders ON op.folder_id=folders.id INNER JOIN users ON folders.belongs_to=users.id INNER JOIN user_roles ON users.id=user_roles.user_id WHERE (guest = 1 AND resource_table = products AND r = 1) ORDER BY users.id DESC
+        $o = Database::table('other_permissions', 'op');
+        $o->join('folders', 'op.folder_id', '=',  'folders.id')
+                    ->join('users', 'folders.belongs_to', '=', 'users.id')
+                    ->join('user_roles', 'users.id', '=', 'user_roles.user_id')
+                    ->where([
+                        ['guest', 1],
+                        ['resource_table', 'products'],
+                        ['r', 1]
+                    ])
+                    ->orderByRaw('users.id DESC')
+                    ->get();
+        Debug::dd(Database::getQueryLog());
+        
+        // SELECT * FROM products WHERE workspace IS NULL AND deleted_at IS NULL L 
+        Database::table('products')->where(['workspace', null])->get();  
+        Debug::dd(Database::getQueryLog());	
+
+        // SELECT * FROM products WHERE workspace IS NULL AND deleted_at IS NULL 
+        Database::table('products')->whereNull('workspace')->get();
+        Debug::dd(Database::getQueryLog());     
+        
+        // SELECT id, name, size, cost, belongs_to FROM products WHERE belongs_to IN (SELECT id FROM users WHERE password IS NULL) 
+        Database::table('products')->showDeleted()
+            ->select(['id', 'name', 'size', 'cost', 'belongs_to'])
+            ->whereRaw('belongs_to IN (SELECT id FROM users WHERE password IS NULL)')
+            ->get();
+	    Debug::dd(Database::getQueryLog());
 
     } // end fn
+    
 
+    function testsubqueries(){   
+        
+        // SELECT id, name, size, cost, belongs_to FROM products WHERE belongs_to IN (SELECT id FROM users WHERE password IS NULL AND deleted_at IS NULL ) 
+
+        $sub = Database::table('users')
+        ->select(['id'])
+        ->whereRaw('password IS NULL');
+
+        Database::table('products')->showDeleted()
+        ->select(['id', 'name', 'size', 'cost', 'belongs_to'])
+        ->whereRaw("belongs_to IN ({$sub->toSql()})")
+        ->get();
+
+        Debug::dd(Database::getQueryLog());   
+
+        // SELECT id, name, size, cost, belongs_to FROM products WHERE (belongs_to IN (SELECT id FROM users WHERE (confirmed_email = 1) AND password < 100 )) AND size = 1L 
+        $sub = Database::table('users')->showDeleted()
+        ->select(['id'])
+        ->whereRaw('confirmed_email = 1')
+        ->where(['password', 100, '<']);
+
+        $res = Database::table('products')->showDeleted()
+        ->mergeBindings($sub)
+        ->select(['id', 'name', 'size', 'cost', 'belongs_to'])
+        ->where(['size', '1L'])
+        ->whereRaw("belongs_to IN ({$sub->toSql()})")
+        ->get();
+
+        Debug::dd(Database::getQueryLog());  
+
+        // SELECT id, name, size, cost, belongs_to FROM products WHERE (belongs_to IN (SELECT users.id FROM users INNER JOIN user_roles ON users.id=user_roles.user_id WHERE (confirmed_email = 1) AND password < 100 AND role_id = 2 )) AND size = 1L ORDER BY id DESC
+        $sub = Database::table('users')->showDeleted()
+        ->selectRaw('users.id')
+        ->join('user_roles', 'users.id', '=', 'user_roles.user_id')
+        ->whereRaw('confirmed_email = 1')
+        ->where(['password', 100, '<'])
+        ->where(['role_id', 2]);
+
+        $res = Database::table('products')->showDeleted()
+        ->mergeBindings($sub)
+        ->select(['id', 'name', 'size', 'cost', 'belongs_to'])
+        ->where(['size', '1L'])
+        ->whereRaw("belongs_to IN ({$sub->toSql()})")
+        ->orderBy(['id' => 'desc'])
+        ->get();
+
+        Debug::dd(Database::getQueryLog());    
+        
+
+        // SELECT size, AVG(cost) FROM products WHERE belongs_to IN (SELECT users.id FROM users INNER JOIN user_roles ON users.id=user_roles.user_id WHERE (confirmed_email = 1) AND password < 100 AND role_id = 3 ) GROUP BY size 
+        $sub = Database::table('users')->showDeleted()
+        ->selectRaw('users.id')
+        ->join('user_roles', 'users.id', '=', 'user_roles.user_id')
+        ->whereRaw('confirmed_email = 1')
+        ->where(['password', 100, '<'])
+        ->where(['role_id', 3]);
+
+        $res = Database::table('products')->showDeleted()
+        ->mergeBindings($sub)
+        ->select(['size'])
+        ->whereRaw("belongs_to IN ({$sub->toSql()})")
+        ->groupBy(['size'])
+        ->avg('cost');
+
+        Debug::dd(Database::getQueryLog());
+
+        /*
+        No aparece el COUNT(*)  !!!!
+
+        // SELECT size FROM products GROUP BY size 
+        $sub = Database::table('products')->showDeleted()
+        ->select(['size'])
+        ->groupBy(['size']);
+    
+        $conn = Database::getConnection();
+    
+        $m = new \simplerest\core\Model($conn);
+        $res = $m->fromRaw("({$sub->toSql()}) as sub")->count();
+    
+        Debug::dd(Database::getQueryLog());  
+        */
+
+        /*
+        No aparece el COUNT(*)  !!!!
+
+        $sub = Database::table('products')->showDeleted()
+        ->select(['size'])
+        ->where(['belongs_to', 90])
+        ->groupBy(['size']);
+
+        $conn = Database::getConnection();
+
+        $res = (new \simplerest\core\Model($conn))
+        ->fromRaw("({$sub->toSql()}) as sub")
+        ->mergeBindings($sub)
+        ->count();
+
+        Debug::dd(Database::getQueryLog());
+        */
+
+         /*
+        No aparece el COUNT(*)  !!!!
+        $sub = Database::table('products')->showDeleted()
+        ->select(['size'])
+        ->where(['belongs_to', 90])
+        ->groupBy(['size']);
+
+        $res = Database::table("({$sub->toSql()}) as sub")
+        ->mergeBindings($sub)
+        ->count();
+
+        Debug::dd(Database::getQueryLog());
+        */
+    }
+
+    function testunion(){
+        // SELECT id, name, description, belongs_to FROM products WHERE belongs_to = 4 UNION SELECT id, name, description, belongs_to FROM products WHERE belongs_to = 0 ORDER BY id ASC LIMIT 5, ?
+
+        // <--- corregir paginación !!!! no puede quedar como ? por falta de offset
+        $uno = Database::table('products')->showDeleted()
+        ->select(['id', 'name', 'description', 'belongs_to'])
+        ->where(['belongs_to', 90]);
+
+        $dos = Database::table('products')->showDeleted()
+        ->select(['id', 'name', 'description', 'belongs_to'])
+        ->where(['belongs_to', 4])
+        ->union($uno)
+        ->orderBy(['id' => 'ASC'])
+        ->limit(5)
+        ->get();
+
+        Debug::dd(Database::getQueryLog());
+
+        // SELECT id, name, description, belongs_to FROM products WHERE belongs_to = 4 UNION SELECT id, name, description, belongs_to FROM products WHERE belongs_to = 0 ORDER BY id ASC LIMIT 5, ?
+        $uno = Database::table('products')->showDeleted()
+        ->select(['id', 'name', 'description', 'belongs_to'])
+        ->where(['belongs_to', 90]);
+
+        $dos = Database::table('products')->showDeleted()
+        ->select(['id', 'name', 'description', 'belongs_to'])
+        ->where(['cost', 200, '>='])
+        ->unionAll($uno)
+        ->orderBy(['id' => 'ASC'])
+        ->limit(5)
+        ->get();
+
+        Debug::dd(Database::getQueryLog());
+    }
+
+    function testdelete(){
+        $u = Database::table('users');
+        $u->where(['id' => 100000])->delete(false);
+        Debug::dd(Database::getQueryLog());
+    }
+
+    function testcreate(){       
+        $id = Database::table('users')->create(['email'=> 'testing_create@g.com', 'password'=>'pass', 'firstname'=>'Jhon', 'lastname'=>'Doe', 'username' => 'doe1979']);
+        Debug::dd(Database::getQueryLog());
+        
+        $ok = (bool) Database::table('users')->where(['id' => $id])->delete(false);        
+        Debug::dd(Database::getQueryLog());
+        Debug::dd($ok);
+    }
+
+    function testupdate(){
+        $u = Database::table('users');
+        $u->where(['id' => 100000])->update(['firstname'=>'Nico', 'lastname'=>'Buzzi']);
+        Debug::dd(Database::getQueryLog());
+
+        $u->where([ ['lastname', ['AAA', 'Buzzi']] ])->update(['firstname'=>'Nicolay']);
+        Debug::dd(Database::getQueryLog());
+    }
+
+    function testhide(){
+        $u = Database::table('users');
+        $u->unhide(['password']);
+        $u->hide(['username', 'confirmed_email', 'firstname','lastname', 'deleted_at', 'belongs_to']);
+        $u->where(['id'=>$id])->get();
+        Debug::dd(Database::getQueryLog());
+    }
+
+    function testfill(){ 
+        $u = Database::table('users');
+        $id = $u->create(['email'=> 'testing@g.com', 'password'=>'pass', 'firstname'=>'Jhon', 'lastname'=>'Doe', 'confirmed_email' => 1]);
+        Debug::dd(Database::getQueryLog());   
+        
+        $u = Database::table('users');
+        $u->unfill(['password']);
+        $id = $u->create(['email'=> 'testing@g.com', 'password'=>'pass', 'firstname'=>'Jhon', 'lastname'=>'Doe']);
+        Debug::dd(Database::getQueryLog()); 
+    }
 
        
 }

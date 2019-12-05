@@ -13,7 +13,6 @@ class UsersModel extends Model
 	protected $fillable = [
 							'email',
 							'password',
-							'confirmed_email',
 							'firstname',
 							'lastname',
 							'deleted_at',

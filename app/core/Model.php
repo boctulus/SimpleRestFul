@@ -796,14 +796,26 @@ class Model {
 	}
 
 	// Debug query
-	function dd(){
-		$sql = Arrays::str_replace_array('?', $this->getBindings(), $this->toSql());
+	function dd(){		
+		$bindings = $this->getBindings();
+		foreach ($bindings as $ix => $binding){
+			if ($binding == null)
+				$bindings[$ix] = 'NULL';
+		}
+
+		$sql = Arrays::str_replace_array('?', $bindings, $this->toSql());
 		return preg_replace('!\s+!', ' ', $sql);
 	}
 
 	// Debug last query
 	function getLog(){
-		$sql = Arrays::str_replace_array('?', $this->last_bindings, $this->last_pre_compiled_query);
+		$bindings = $this->last_bindings;
+		foreach ($bindings as $ix => $binding){
+			if ($binding == null)
+				$bindings[$ix] = 'NULL';
+		}
+
+		$sql = Arrays::str_replace_array('?', $bindings, $this->last_pre_compiled_query);
 		return preg_replace('!\s+!', ' ', $sql);
 	}
 
@@ -1261,6 +1273,7 @@ class Model {
 			$d = new \DateTime();
 			$at = $d->format('Y-m-d G:i:s');
 
+			$this->fill(['deleted_at']);
 			return $this->update(['deleted_at' => $at]);
 		}
 
@@ -1270,8 +1283,8 @@ class Model {
 		
 		$st = $this->conn->prepare($q);
 		
-		$vars = $this->vars;		
-		foreach($this->values as $ix => $val){			
+		$vars = $this->w_vars;		
+		foreach($this->w_vals as $ix => $val){			
 			if(is_null($val)){
 				$type = \PDO::PARAM_NULL;
 			}elseif(isset($vars[$ix]) && isset($this->schema[$vars[$ix]])){
