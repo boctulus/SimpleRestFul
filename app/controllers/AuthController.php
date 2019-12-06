@@ -58,12 +58,6 @@ class AuthController extends Controller implements IAuth
         return \Firebase\JWT\JWT::encode($payload, $secret_key,  $encryption);
     }
 
-    /*
-        Login for API Rest
-
-        @param email
-        @param password
-    */
     function login()
     {
         switch($_SERVER['REQUEST_METHOD']) {
@@ -128,6 +122,7 @@ class AuthController extends Controller implements IAuth
                                         'roles' => $roles, 
                                         'confirmed_email' => $confirmed_email
             ], 'access_token');
+
             $refresh = $this->gen_jwt([ 'uid' => $uid, 
                                         'roles' => $roles, 
                                         'confirmed_email' => $confirmed_email
@@ -152,8 +147,6 @@ class AuthController extends Controller implements IAuth
 
     /*
         Access Token renewal
-        
-        Only by POST*
     */	
     function token()
     {
@@ -227,7 +220,7 @@ class AuthController extends Controller implements IAuth
             // exits
             if (Database::table('users')->where(['email', $data['email']])->exists())
                 Factory::response()->sendError('Email already exists');  
-                
+
             if (Database::table('users')->where(['username', $data['username']])->exists())
                 Factory::response()->sendError('Username already exists');
 
