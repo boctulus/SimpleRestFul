@@ -478,9 +478,9 @@ abstract class ApiController extends Controller
                                 $vals = explode(',', $v);
                                 $_get[$key] = [$campo, $vals];    
                                 
-                                foreach ($vals as $_v){
-                                    $data[$campo][] = $_v;
-                                }
+                                //foreach ($vals as $_v){
+                                   // $data[$campo][] = $_v;
+                                //}
                             } 
                         }   
                         

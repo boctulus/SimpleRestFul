@@ -142,7 +142,7 @@ class Validator implements IValidator
 			foreach ((array) $data[$field] as $dato){
 				//Debug::dd(['field' => $field, 'data' => $dato]);
 
-				if (!isset($dato) || empty($dato)){
+				if (!isset($dato) || $dato == '' || $dato == null){
 					//var_export(['field' =>$dato, 'required' => $rule['required']]);
 	
 					if ($this->required && isset($rule['required']) && $rule['required']){
@@ -160,8 +160,9 @@ class Validator implements IValidator
 	
 				$avoid_type_check = false;
 				if($rule['required']){
-					if(trim($dato)=='')
+					if(trim($dato)==''){
 						$push_error($field,['data'=>$dato, 'error'=>'required', 'error_detail' => sprintf(_('%s is required'), $field)],$errores);
+					}						
 				}	
 				
 				if (isset($rule['type']) && in_array($rule['type'],['numeric','number','int','integer','float','double','decimal']) && trim($dato)=='')
