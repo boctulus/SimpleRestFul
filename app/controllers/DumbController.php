@@ -13,7 +13,9 @@ use simplerest\models\UserRolesModel;
 use PHPMailer\PHPMailer\PHPMailer;
 use simplerest\libs\Utils;
 use simplerest\libs\Validator;
-
+use GuzzleHttp\Client;
+//use Guzzle\Http\Message\Request;
+//Guzzle\Http\Message\Response
 
 class DumbController extends Controller
 {
@@ -21,6 +23,24 @@ class DumbController extends Controller
     {
         parent::__construct();
     }
+
+    function test(){
+        $credentials = ['email' => "tester3@g.c", "password" => "gogogo"];
+        // "http://simplerest.lan/auth/login",
+
+        $client = new Client();
+        
+        $client->post(
+            'http://simplerest.lan/auth/login',
+            array(
+                'debug' => TRUE,
+                'form_params' => ['email' => "tester3@g.c", 'password' => "gogogo"]
+            )
+        );
+
+        Debug::dd($res);
+    }
+
 
     function index(){
         return 'INDEX';
@@ -1116,60 +1136,7 @@ class DumbController extends Controller
         Debug::dd($dos);
     }
 
-    function test(){
-        $curl = curl_init();
-
-        $obj  = ['email' => "tester3@g.c", "password" => "gogogo"];
-        $data = json_encode($obj);
-
-        curl_setopt_array($curl, array(
-        CURLOPT_URL => "http://simplerest.lan/auth/login",
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_ENCODING => "",
-        CURLOPT_MAXREDIRS => 10,
-        CURLOPT_TIMEOUT => 30,
-        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-        CURLOPT_CUSTOMREQUEST => "POST",
-        CURLOPT_POSTFIELDS => $data,
-        CURLOPT_HTTPHEADER => array(
-            "Accept: */*",
-            "Accept-Encoding: gzip, deflate",
-            "Cache-Control: no-cache",
-            "Connection: keep-alive",
-            "Content-Length: ". strlen($data),
-            "Content-Type: text/plain",
-            "Host: simplerest.lan",
-            "cache-control: no-cache"
-            ),
-        ));
-
-        $response = curl_exec($curl);
-        $err = curl_error($curl);
-        $http_code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-
-        // Check HTTP status code
-        if ($err){
-            throw new \Exception("$err ($http_code)");
-        }
-        
-        if ($http_code != 200)
-            throw new \Exception("Unexpected http code ($http_code)");
-
-        $res = json_decode($response, true);
-
-        if (isset($res['error']) && !empty($res['error']))
-            throw new \Exception($res['error']);
-
-        if (isset($res['data']['access_token']) && isset($res['data']['refresh_token']) && isset($res['data']['expires_in'])){
-            echo 'OK';
-
-            $payload = \Firebase\JWT\JWT::decode($res['data']['access_token'], $this->config['access_token']['secret_key'], [ $this->config['access_token']['encryption'] ]);
-
-            Debug::dd($payload);
-        }
-
-        //Debug::dd('HTTP code: '. $http_code);
-    }
+    
 
        
 }

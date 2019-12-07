@@ -10,7 +10,10 @@ require_once __DIR__ . '../../vendor/autoload.php';
 
 use PHPUnit\Framework\TestCase;
 use simplerest\models\UsersModel;
+use simplerest\models\RolesModel;
 use simplerest\libs\Database;
+use simplerest\libs\Debug;
+
 
 define('HOST', 'simplerest.lan');
 define('BASE_URL', 'http://'. HOST .'/');
@@ -23,15 +26,64 @@ class AuthTest extends TestCase
         $this->config = include 'config/config.php';
     }
 
+    /*
+        @param string access_token
+    */
+    private function get_me(string $at){
+        $ch = curl_init();
+
+        curl_setopt_array($ch, array(
+            CURLOPT_URL => BASE_URL . "api/v1/me",
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => "GET",
+            CURLOPT_HTTPHEADER => array(
+                "Accept: */*",
+                "Accept-Encoding: gzip, deflate",
+                "Cache-Control: no-cache",
+                "Connection: keep-alive",
+                "Authorization: Bearer $at",
+                "Content-Type: text/plain",
+                "Host: " . HOST,
+                "cache-control: no-cache"
+                ),
+            ));
+
+        curl_setopt($ch, CURLOPT_FAILONERROR, true);
+        
+        $response = curl_exec($ch);
+        $err = curl_error($ch);
+        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+        if (curl_errno($ch)) {
+            $error_msg = curl_error($ch);
+            throw new \Exception("$error_msg ($http_code)");
+        }
+        
+        if ($http_code != 200)
+            throw new \Exception("Unexpected http code ($http_code)");
+
+        $res = json_decode($response, true);
+
+      
+        if (!isset($res['data']['id']) || !isset($res['data']['email']))
+            throw new \Exception("Empty uid or email");       
+
+        // [id, username, emai,... ]
+        return $res['data'];
+    }
+
+
 	/*
 		Case: OK
 	*/
-	public function testlogin1()
-    {
+	private function login($credentials){
 		$ch = curl_init();
 
-        $obj  = ['email' => "tester3@g.c", "password" => "gogogo"];
-        $data = json_encode($obj);
+        $data = json_encode($credentials);
 
         curl_setopt_array($ch, array(
         CURLOPT_URL => BASE_URL . "auth/login",
@@ -54,7 +106,7 @@ class AuthTest extends TestCase
             ),
         ));
 
-		curl_setopt($ch, CURLOPT_FAILONERROR, true); // Required for HTTP error codes to be reported via our call to curl_error($ch)
+		curl_setopt($ch, CURLOPT_FAILONERROR, true);
 		
         $response = curl_exec($ch);
         $err = curl_error($ch);
@@ -88,71 +140,28 @@ class AuthTest extends TestCase
 		$this->assertTrue(
 			isset($rt_payload->uid) && isset($rt_payload->roles)
 		);
+
+        $uid = $this->get_me($res['data']['access_token'])['id'];
+
+        $role_ids = Database::table('user_roles')->where(['user_id' => $uid])->pluck('role_id');
+        $rm = new RolesModel();
+
+        foreach ($role_ids as $role_id){
+            $this->assertTrue(
+                in_array($rm->getRoleName($role_id), $rt_payload->roles)
+            );
+        }
+
+	}
+
+	public function testlogin1()
+    {
+        $this->login(['email' => "tester3@g.c", "password" => "gogogo"]);     
 	}
 	
-	/*
-		Case: OK
-	*/
 	public function testlogin1b()
     {
-		$ch = curl_init();
-
-        $obj  = ['username' => "tester3", "password" => "gogogo"];
-        $data = json_encode($obj);
-
-        curl_setopt_array($ch, array(
-        CURLOPT_URL => BASE_URL . "auth/login",
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_ENCODING => "",
-        CURLOPT_MAXREDIRS => 10,
-        CURLOPT_TIMEOUT => 30,
-        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-        CURLOPT_CUSTOMREQUEST => "POST",
-        CURLOPT_POSTFIELDS => $data,
-        CURLOPT_HTTPHEADER => array(
-            "Accept: */*",
-            "Accept-Encoding: gzip, deflate",
-            "Cache-Control: no-cache",
-            "Connection: keep-alive",
-            "Content-Length: ". strlen($data),
-            "Content-Type: text/plain",
-            "Host: " . HOST,
-            "cache-control: no-cache"
-            ),
-        ));
-
-        $response = curl_exec($ch);
-        $err = curl_error($ch);
-        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-
-        // Check HTTP status code
-        if ($err){
-            throw new \Exception("$err ($http_code)");
-        }
-        
-        if ($http_code != 200)
-            throw new \Exception("Unexpected http code ($http_code)");
-
-		$res = json_decode($response, true);
-		
-        if (isset($res['error']) && !empty($res['error']))
-            throw new \Exception($res['error']);
-
-		$this->assertTrue(
-            isset($res['data']['access_token']) && isset($res['data']['refresh_token']) && isset($res['data']['expires_in'])
-		);
-		
-		$at_payload = \Firebase\JWT\JWT::decode($res['data']['access_token'], $this->config['access_token']['secret_key'], [ $this->config['access_token']['encryption'] ]);
-
-		$this->assertTrue(
-			isset($at_payload->uid) && isset($at_payload->roles)
-		);		
-
-		$rt_payload = \Firebase\JWT\JWT::decode($res['data']['refresh_token'], $this->config['refresh_token']['secret_key'], [ $this->config['access_token']['encryption'] ]);
-
-		$this->assertTrue(
-			isset($rt_payload->uid) && isset($rt_payload->roles)
-		);
+        $this->login(['username' => "tester3", "password" => "gogogo"]);
 	}
 
 	/*
