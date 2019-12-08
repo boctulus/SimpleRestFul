@@ -994,4 +994,830 @@ class ApiTest extends TestCase
 
         $this->assertEquals($model_arr,$res['data']); 
     }
+
+    public function testfilter010()
+    {
+        list($at, $rt) = $this->login(['email' => "tester3@g.c", "password" => "gogogo"]);  
+        
+        $ch = curl_init();
+
+        curl_setopt_array($ch, array(
+            CURLOPT_URL => BASE_URL . "api/v1/products?name[contains]=%20de%20",
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => "GET",
+            CURLOPT_HTTPHEADER => array(
+                "Accept: */*",
+                "Accept-Encoding: gzip, deflate",
+                "Cache-Control: no-cache",
+                "Connection: keep-alive",
+                "Authorization: Bearer $at",
+                "Content-Type: text/plain",
+                "Host: " . HOST,
+                "cache-control: no-cache"
+                ),
+            ));
+
+        curl_setopt($ch, CURLOPT_FAILONERROR, true);
+        
+        $response = curl_exec($ch);
+        $err = curl_error($ch);
+        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $res = json_decode($response, true);
+
+        if (curl_errno($ch)) {
+            $error_msg = curl_error($ch);
+
+            if (isset($res['error']))
+                Debug::dd($res['error']);
+
+            throw new \Exception("$error_msg ($http_code)");
+        }
+        
+        if ($http_code != 200)
+            throw new \Exception("Unexpected http code ($http_code)");
+
+        $this->assertTrue(
+            isset($res['data']) && isset($res['paginator'])
+        );
+
+        $model_arr = Database::table('products')->where([
+            ['belongs_to', $this->get_me($at)['id']], 
+            ['name', '% de %', 'LIKE']
+        ])
+        ->setFetchMode('ASSOC')->limit($this->config['paginator']['default_limit'])->get();
+
+        $this->assertEquals($model_arr,$res['data']); 
+    }
+
+    public function testfilter011()
+    {
+        list($at, $rt) = $this->login(['email' => "tester3@g.c", "password" => "gogogo"]);  
+        
+        $ch = curl_init();
+
+        curl_setopt_array($ch, array(
+            CURLOPT_URL => BASE_URL . "api/v1/products?name[notContains]=%20de%20",
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => "GET",
+            CURLOPT_HTTPHEADER => array(
+                "Accept: */*",
+                "Accept-Encoding: gzip, deflate",
+                "Cache-Control: no-cache",
+                "Connection: keep-alive",
+                "Authorization: Bearer $at",
+                "Content-Type: text/plain",
+                "Host: " . HOST,
+                "cache-control: no-cache"
+                ),
+            ));
+
+        curl_setopt($ch, CURLOPT_FAILONERROR, true);
+        
+        $response = curl_exec($ch);
+        $err = curl_error($ch);
+        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $res = json_decode($response, true);
+
+        if (curl_errno($ch)) {
+            $error_msg = curl_error($ch);
+
+            if (isset($res['error']))
+                Debug::dd($res['error']);
+
+            throw new \Exception("$error_msg ($http_code)");
+        }
+        
+        if ($http_code != 200)
+            throw new \Exception("Unexpected http code ($http_code)");
+
+        $this->assertTrue(
+            isset($res['data']) && isset($res['paginator'])
+        );
+
+        $model_arr = Database::table('products')->where([
+            ['belongs_to', $this->get_me($at)['id']], 
+            ['name', '% de %', 'NOT LIKE']
+        ])
+        ->setFetchMode('ASSOC')->limit($this->config['paginator']['default_limit'])->get();
+
+        $this->assertEquals($model_arr,$res['data']); 
+    }
+
+    /*
+        Comparadores numéricos
+    */
+
+    public function testfilter012()
+    {
+        list($at, $rt) = $this->login(['email' => "tester3@g.c", "password" => "gogogo"]);  
+        
+        $ch = curl_init();
+
+        curl_setopt_array($ch, array(
+            CURLOPT_URL => BASE_URL . "api/v1/products?cost[neq]=100",
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => "GET",
+            CURLOPT_HTTPHEADER => array(
+                "Accept: */*",
+                "Accept-Encoding: gzip, deflate",
+                "Cache-Control: no-cache",
+                "Connection: keep-alive",
+                "Authorization: Bearer $at",
+                "Content-Type: text/plain",
+                "Host: " . HOST,
+                "cache-control: no-cache"
+                ),
+            ));
+
+        curl_setopt($ch, CURLOPT_FAILONERROR, true);
+        
+        $response = curl_exec($ch);
+        $err = curl_error($ch);
+        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $res = json_decode($response, true);
+
+        if (curl_errno($ch)) {
+            $error_msg = curl_error($ch);
+
+            if (isset($res['error']))
+                Debug::dd($res['error']);
+
+            throw new \Exception("$error_msg ($http_code)");
+        }
+        
+        if ($http_code != 200)
+            throw new \Exception("Unexpected http code ($http_code)");
+
+        $this->assertTrue(
+            isset($res['data']) && isset($res['paginator'])
+        );
+
+        $model_arr = Database::table('products')->where([
+            ['belongs_to', $this->get_me($at)['id']], 
+            ['cost', 100, '!=']
+        ])
+        ->setFetchMode('ASSOC')->limit($this->config['paginator']['default_limit'])->get();
+
+        $this->assertEquals($model_arr,$res['data']); 
+    }
+
+    public function testfilter013()
+    {
+        list($at, $rt) = $this->login(['email' => "tester3@g.c", "password" => "gogogo"]);  
+        
+        $ch = curl_init();
+
+        curl_setopt_array($ch, array(
+            CURLOPT_URL => BASE_URL . "api/v1/products?cost[gt]=100",
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => "GET",
+            CURLOPT_HTTPHEADER => array(
+                "Accept: */*",
+                "Accept-Encoding: gzip, deflate",
+                "Cache-Control: no-cache",
+                "Connection: keep-alive",
+                "Authorization: Bearer $at",
+                "Content-Type: text/plain",
+                "Host: " . HOST,
+                "cache-control: no-cache"
+                ),
+            ));
+
+        curl_setopt($ch, CURLOPT_FAILONERROR, true);
+        
+        $response = curl_exec($ch);
+        $err = curl_error($ch);
+        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $res = json_decode($response, true);
+
+        if (curl_errno($ch)) {
+            $error_msg = curl_error($ch);
+
+            if (isset($res['error']))
+                Debug::dd($res['error']);
+
+            throw new \Exception("$error_msg ($http_code)");
+        }
+        
+        if ($http_code != 200)
+            throw new \Exception("Unexpected http code ($http_code)");
+
+        $this->assertTrue(
+            isset($res['data']) && isset($res['paginator'])
+        );
+
+        $model_arr = Database::table('products')->where([
+            ['belongs_to', $this->get_me($at)['id']], 
+            ['cost', 100, '>']
+        ])
+        ->setFetchMode('ASSOC')->limit($this->config['paginator']['default_limit'])->get();
+
+        $this->assertEquals($model_arr,$res['data']); 
+    }
+
+    public function testfilter014()
+    {
+        list($at, $rt) = $this->login(['email' => "tester3@g.c", "password" => "gogogo"]);  
+        
+        $ch = curl_init();
+
+        curl_setopt_array($ch, array(
+            CURLOPT_URL => BASE_URL . "api/v1/products?cost[lt]=100",
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => "GET",
+            CURLOPT_HTTPHEADER => array(
+                "Accept: */*",
+                "Accept-Encoding: gzip, deflate",
+                "Cache-Control: no-cache",
+                "Connection: keep-alive",
+                "Authorization: Bearer $at",
+                "Content-Type: text/plain",
+                "Host: " . HOST,
+                "cache-control: no-cache"
+                ),
+            ));
+
+        curl_setopt($ch, CURLOPT_FAILONERROR, true);
+        
+        $response = curl_exec($ch);
+        $err = curl_error($ch);
+        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $res = json_decode($response, true);
+
+        if (curl_errno($ch)) {
+            $error_msg = curl_error($ch);
+
+            if (isset($res['error']))
+                Debug::dd($res['error']);
+
+            throw new \Exception("$error_msg ($http_code)");
+        }
+        
+        if ($http_code != 200)
+            throw new \Exception("Unexpected http code ($http_code)");
+
+        $this->assertTrue(
+            isset($res['data']) && isset($res['paginator'])
+        );
+
+        $model_arr = Database::table('products')->where([
+            ['belongs_to', $this->get_me($at)['id']], 
+            ['cost', 100, '<']
+        ])
+        ->setFetchMode('ASSOC')->limit($this->config['paginator']['default_limit'])->get();
+
+        $this->assertEquals($model_arr,$res['data']); 
+    }
+
+    public function testfilter015()
+    {
+        list($at, $rt) = $this->login(['email' => "tester3@g.c", "password" => "gogogo"]);  
+        
+        $ch = curl_init();
+
+        curl_setopt_array($ch, array(
+            CURLOPT_URL => BASE_URL . "api/v1/products?cost[gteq]=100",
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => "GET",
+            CURLOPT_HTTPHEADER => array(
+                "Accept: */*",
+                "Accept-Encoding: gzip, deflate",
+                "Cache-Control: no-cache",
+                "Connection: keep-alive",
+                "Authorization: Bearer $at",
+                "Content-Type: text/plain",
+                "Host: " . HOST,
+                "cache-control: no-cache"
+                ),
+            ));
+
+        curl_setopt($ch, CURLOPT_FAILONERROR, true);
+        
+        $response = curl_exec($ch);
+        $err = curl_error($ch);
+        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $res = json_decode($response, true);
+
+        if (curl_errno($ch)) {
+            $error_msg = curl_error($ch);
+
+            if (isset($res['error']))
+                Debug::dd($res['error']);
+
+            throw new \Exception("$error_msg ($http_code)");
+        }
+        
+        if ($http_code != 200)
+            throw new \Exception("Unexpected http code ($http_code)");
+
+        $this->assertTrue(
+            isset($res['data']) && isset($res['paginator'])
+        );
+
+        $model_arr = Database::table('products')->where([
+            ['belongs_to', $this->get_me($at)['id']], 
+            ['cost', 100, '>=']
+        ])
+        ->setFetchMode('ASSOC')->limit($this->config['paginator']['default_limit'])->get();
+
+        $this->assertEquals($model_arr,$res['data']); 
+    }
+
+    public function testfilter016()
+    {
+        list($at, $rt) = $this->login(['email' => "tester3@g.c", "password" => "gogogo"]);  
+        
+        $ch = curl_init();
+
+        curl_setopt_array($ch, array(
+            CURLOPT_URL => BASE_URL . "api/v1/products?cost[lteq]=100",
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => "GET",
+            CURLOPT_HTTPHEADER => array(
+                "Accept: */*",
+                "Accept-Encoding: gzip, deflate",
+                "Cache-Control: no-cache",
+                "Connection: keep-alive",
+                "Authorization: Bearer $at",
+                "Content-Type: text/plain",
+                "Host: " . HOST,
+                "cache-control: no-cache"
+                ),
+            ));
+
+        curl_setopt($ch, CURLOPT_FAILONERROR, true);
+        
+        $response = curl_exec($ch);
+        $err = curl_error($ch);
+        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $res = json_decode($response, true);
+
+        if (curl_errno($ch)) {
+            $error_msg = curl_error($ch);
+
+            if (isset($res['error']))
+                Debug::dd($res['error']);
+
+            throw new \Exception("$error_msg ($http_code)");
+        }
+        
+        if ($http_code != 200)
+            throw new \Exception("Unexpected http code ($http_code)");
+
+        $this->assertTrue(
+            isset($res['data']) && isset($res['paginator'])
+        );
+
+        $model_arr = Database::table('products')->where([
+            ['belongs_to', $this->get_me($at)['id']], 
+            ['cost', 100, '<=']
+        ])
+        ->setFetchMode('ASSOC')->limit($this->config['paginator']['default_limit'])->get();
+
+        $this->assertEquals($model_arr,$res['data']); 
+    }
+
+    public function testfilter017()
+    {
+        list($at, $rt) = $this->login(['email' => "tester3@g.c", "password" => "gogogo"]);  
+        
+        $ch = curl_init();
+
+        curl_setopt_array($ch, array(
+            CURLOPT_URL => BASE_URL . "api/v1/products?order[cost]=ASC&cost[between]=50,100",
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => "GET",
+            CURLOPT_HTTPHEADER => array(
+                "Accept: */*",
+                "Accept-Encoding: gzip, deflate",
+                "Cache-Control: no-cache",
+                "Connection: keep-alive",
+                "Authorization: Bearer $at",
+                "Content-Type: text/plain",
+                "Host: " . HOST,
+                "cache-control: no-cache"
+                ),
+            ));
+
+        curl_setopt($ch, CURLOPT_FAILONERROR, true);
+        
+        $response = curl_exec($ch);
+        $err = curl_error($ch);
+        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $res = json_decode($response, true);
+
+        if (curl_errno($ch)) {
+            $error_msg = curl_error($ch);
+
+            if (isset($res['error']))
+                Debug::dd($res['error']);
+
+            throw new \Exception("$error_msg ($http_code)");
+        }
+        
+        if ($http_code != 200)
+            throw new \Exception("Unexpected http code ($http_code)");
+
+        $this->assertTrue(
+            isset($res['data']) && isset($res['paginator'])
+        );
+
+        $model_arr = Database::table('products')->where([
+            ['belongs_to', $this->get_me($at)['id']], 
+            ['cost', 100, '<='],
+            ['cost', 50, '>=']
+        ])
+        ->setFetchMode('ASSOC')->limit($this->config['paginator']['default_limit'])->orderBy(['cost' => 'ASC'])->get();
+
+        $this->assertEquals($model_arr,$res['data']); 
+    }
+
+    public function testfilter018()
+    {
+        list($at, $rt) = $this->login(['email' => "tester3@g.c", "password" => "gogogo"]);  
+        
+        $ch = curl_init();
+
+        curl_setopt_array($ch, array(
+            CURLOPT_URL => BASE_URL . "api/v1/products?order[created_at]=ASC&created_at[between]=2019-11-02+16%3A07%3A10,2019-11-03+21%3A33%3A20",
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => "GET",
+            CURLOPT_HTTPHEADER => array(
+                "Accept: */*",
+                "Accept-Encoding: gzip, deflate",
+                "Cache-Control: no-cache",
+                "Connection: keep-alive",
+                "Authorization: Bearer $at",
+                "Content-Type: text/plain",
+                "Host: " . HOST,
+                "cache-control: no-cache"
+                ),
+            ));
+
+        curl_setopt($ch, CURLOPT_FAILONERROR, true);
+        
+        $response = curl_exec($ch);
+        $err = curl_error($ch);
+        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $res = json_decode($response, true);
+
+        if (curl_errno($ch)) {
+            $error_msg = curl_error($ch);
+
+            if (isset($res['error']))
+                Debug::dd($res['error']);
+
+            throw new \Exception("$error_msg ($http_code)");
+        }
+        
+        if ($http_code != 200)
+            throw new \Exception("Unexpected http code ($http_code)");
+
+        $this->assertTrue(
+            isset($res['data']) && isset($res['paginator'])
+        );
+
+        $model_arr = Database::table('products')->where([
+            ['belongs_to', $this->get_me($at)['id']], 
+            ['created_at', '2019-11-02 16:07:10', '>='],
+            ['created_at', '2019-11-03 21:33:20', '<=']
+        ])
+        ->setFetchMode('ASSOC')->limit($this->config['paginator']['default_limit'])->orderBy(['created_at' => 'ASC'])->get();
+
+        $this->assertEquals($model_arr,$res['data']); 
+    }
+
+    public function testfilter019()
+    {
+        list($at, $rt) = $this->login(['email' => "tester3@g.c", "password" => "gogogo"]);  
+        
+        $ch = curl_init();
+
+        curl_setopt_array($ch, array(
+            CURLOPT_URL => BASE_URL . "api/v1/products?fields=id,name,cost",
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => "GET",
+            CURLOPT_HTTPHEADER => array(
+                "Accept: */*",
+                "Accept-Encoding: gzip, deflate",
+                "Cache-Control: no-cache",
+                "Connection: keep-alive",
+                "Authorization: Bearer $at",
+                "Content-Type: text/plain",
+                "Host: " . HOST,
+                "cache-control: no-cache"
+                ),
+            ));
+
+        curl_setopt($ch, CURLOPT_FAILONERROR, true);
+        
+        $response = curl_exec($ch);
+        $err = curl_error($ch);
+        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $res = json_decode($response, true);
+
+        if (curl_errno($ch)) {
+            $error_msg = curl_error($ch);
+
+            if (isset($res['error']))
+                Debug::dd($res['error']);
+
+            throw new \Exception("$error_msg ($http_code)");
+        }
+        
+        if ($http_code != 200)
+            throw new \Exception("Unexpected http code ($http_code)");
+
+        $this->assertTrue(
+            isset($res['data']) && isset($res['paginator'])
+        );
+
+        $model_arr = Database::table('products')->where([
+            ['belongs_to', $this->get_me($at)['id']]
+        ])
+        ->setFetchMode('ASSOC')->limit($this->config['paginator']['default_limit'])->get(['id', 'name', 'cost']);
+
+        $this->assertEquals($model_arr,$res['data']); 
+    }
+
+    public function testfilter020()
+    {
+        list($at, $rt) = $this->login(['email' => "tester3@g.c", "password" => "gogogo"]);  
+        
+        $uid = $this->get_me($at)['id'];
+        $id  = Database::table('products')->where([
+            ['belongs_to', $uid]
+        ])->random()->value('id');
+
+        //Debug::dd(Database::getQueryLog());
+
+        $ch = curl_init();
+
+        curl_setopt_array($ch, array(
+            CURLOPT_URL => BASE_URL . "api/v1/products/$id?fields=id,name,cost",
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => "GET",
+            CURLOPT_HTTPHEADER => array(
+                "Accept: */*",
+                "Accept-Encoding: gzip, deflate",
+                "Cache-Control: no-cache",
+                "Connection: keep-alive",
+                "Authorization: Bearer $at",
+                "Content-Type: text/plain",
+                "Host: " . HOST,
+                "cache-control: no-cache"
+                ),
+            ));
+
+        curl_setopt($ch, CURLOPT_FAILONERROR, true);
+        
+        $response = curl_exec($ch);
+        $err = curl_error($ch);
+        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $res = json_decode($response, true);
+
+        if (curl_errno($ch)) {
+            $error_msg = curl_error($ch);
+
+            if (isset($res['error']))
+                Debug::dd($res['error']);
+
+            throw new \Exception("$error_msg ($http_code)");
+        }
+        
+        if ($http_code != 200)
+            throw new \Exception("Unexpected http code ($http_code)");
+
+        $model_arr = Database::table('products')->where([
+            'id' => $id
+        ])
+        ->setFetchMode('ASSOC')->first(['id', 'name', 'cost']);
+
+        $this->assertEquals($model_arr,$res['data']); 
+    }
+
+    public function testfilter021()
+    {
+        list($at, $rt) = $this->login(['email' => "tester3@g.c", "password" => "gogogo"]);  
+        
+        $uid = $this->get_me($at)['id'];
+        $id  = Database::table('products')->where([
+            ['belongs_to', $uid]
+        ])->random()->value('id');
+
+        $ch = curl_init();
+
+        curl_setopt_array($ch, array(
+            CURLOPT_URL => BASE_URL . "api/v1/products/$id?exclude=description",
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => "GET",
+            CURLOPT_HTTPHEADER => array(
+                "Accept: */*",
+                "Accept-Encoding: gzip, deflate",
+                "Cache-Control: no-cache",
+                "Connection: keep-alive",
+                "Authorization: Bearer $at",
+                "Content-Type: text/plain",
+                "Host: " . HOST,
+                "cache-control: no-cache"
+                ),
+            ));
+
+        curl_setopt($ch, CURLOPT_FAILONERROR, true);
+        
+        $response = curl_exec($ch);
+        $err = curl_error($ch);
+        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $res = json_decode($response, true);
+
+        if (curl_errno($ch)) {
+            $error_msg = curl_error($ch);
+
+            if (isset($res['error']))
+                Debug::dd($res['error']);
+
+            throw new \Exception("$error_msg ($http_code)");
+        }
+        
+        if ($http_code != 200)
+            throw new \Exception("Unexpected http code ($http_code)");
+
+        $model_arr = Database::table('products')->where([
+            'id' => $id
+        ])
+        ->setFetchMode('ASSOC')->hide(['description'])->first();
+
+        //Debug::dd(Database::getQueryLog()); 
+
+        $this->assertEquals($model_arr,$res['data']); 
+    }
+
+    public function testfilter022()
+    {
+        list($at, $rt) = $this->login(['email' => "tester3@g.c", "password" => "gogogo"]);  
+        
+        $uid = $this->get_me($at)['id'];
+
+        $ch = curl_init();
+
+        curl_setopt_array($ch, array(
+            CURLOPT_URL => BASE_URL . "api/v1/products?description=NULL",
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => "GET",
+            CURLOPT_HTTPHEADER => array(
+                "Accept: */*",
+                "Accept-Encoding: gzip, deflate",
+                "Cache-Control: no-cache",
+                "Connection: keep-alive",
+                "Authorization: Bearer $at",
+                "Content-Type: text/plain",
+                "Host: " . HOST,
+                "cache-control: no-cache"
+                ),
+            ));
+
+        curl_setopt($ch, CURLOPT_FAILONERROR, true);
+        
+        $response = curl_exec($ch);
+        $err = curl_error($ch);
+        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $res = json_decode($response, true);
+
+        if (curl_errno($ch)) {
+            $error_msg = curl_error($ch);
+
+            if (isset($res['error']))
+                Debug::dd($res['error']);
+
+            throw new \Exception("$error_msg ($http_code)");
+        }
+        
+        if ($http_code != 200)
+            throw new \Exception("Unexpected http code ($http_code)");
+
+        $model_arr = Database::table('products')
+        ->where(['belongs_to' => $uid])
+        ->where([ 
+             'description' => NULL
+        ])
+        ->setFetchMode('ASSOC')->get();
+
+        //Debug::dd(Database::getQueryLog()); 
+
+        $this->assertEquals($model_arr,$res['data']); 
+    }
+
+    public function testfilter023()
+    {
+        list($at, $rt) = $this->login(['email' => "tester3@g.c", "password" => "gogogo"]);  
+        
+        $uid = $this->get_me($at)['id'];
+
+        $ch = curl_init();
+
+        curl_setopt_array($ch, array(
+            CURLOPT_URL => BASE_URL . "api/v1/products?description[neq]=NULL",
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_ENCODING => "",
+            CURLOPT_MAXREDIRS => 10,
+            CURLOPT_TIMEOUT => 30,
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+            CURLOPT_CUSTOMREQUEST => "GET",
+            CURLOPT_HTTPHEADER => array(
+                "Accept: */*",
+                "Accept-Encoding: gzip, deflate",
+                "Cache-Control: no-cache",
+                "Connection: keep-alive",
+                "Authorization: Bearer $at",
+                "Content-Type: text/plain",
+                "Host: " . HOST,
+                "cache-control: no-cache"
+                ),
+            ));
+
+        curl_setopt($ch, CURLOPT_FAILONERROR, true);
+        
+        $response = curl_exec($ch);
+        $err = curl_error($ch);
+        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $res = json_decode($response, true);
+
+        if (curl_errno($ch)) {
+            $error_msg = curl_error($ch);
+
+            if (isset($res['error']))
+                Debug::dd($res['error']);
+
+            throw new \Exception("$error_msg ($http_code)");
+        }
+        
+        if ($http_code != 200)
+            throw new \Exception("Unexpected http code ($http_code)");
+
+        $model_arr = Database::table('products')
+        ->where(['belongs_to', $uid])
+        ->where([ 
+             'description',  NULL, 'IS NOT'
+        ])
+        ->setFetchMode('ASSOC')->limit($this->config['paginator']['default_limit'])->get();
+
+        //Debug::dd(Database::getQueryLog()); 
+        //Debug::dd($model_arr);
+        //Debug::dd($res['data']);
+
+        $this->assertEquals($model_arr, $res['data']); 
+    }
+
 }

@@ -24,24 +24,6 @@ class DumbController extends Controller
         parent::__construct();
     }
 
-    function test(){
-        $credentials = ['email' => "tester3@g.c", "password" => "gogogo"];
-        // "http://simplerest.lan/auth/login",
-
-        $client = new Client();
-        
-        $client->post(
-            'http://simplerest.lan/auth/login',
-            array(
-                'debug' => TRUE,
-                'form_params' => ['email' => "tester3@g.c", 'password' => "gogogo"]
-            )
-        );
-
-        Debug::dd($res);
-    }
-
-
     function index(){
         return 'INDEX';
     }
@@ -1136,6 +1118,15 @@ class DumbController extends Controller
         Debug::dd($dos);
     }
 
+    function test(){
+        $uid = 90;
+
+        $id  = Database::table('products')->where([
+            ['belongs_to', $uid]
+        ])->random()->value('id');
+
+        Debug::dd($id);
+    }
     
 
        

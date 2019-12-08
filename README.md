@@ -31,7 +31,7 @@ Example
 
     GET /api/v1/products?name[contains]=jugo 
 
-### Numerical comparisons
+### Other comparators
 
     =    eq
     !=   neq
@@ -82,11 +82,6 @@ Pagination can be done with page and pageSize
 
     GET /api/v1/products?page=3
     GET /api/v1/products?pageSize=20&page=2
-
-### Show soft-deleted items
-
-    GET /api/v1/products?trashed=true
-    GET /api/v1/products/157?trashed=true
     
 ### Pretty print 
 
