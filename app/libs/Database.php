@@ -13,6 +13,9 @@ class Database {
     private function __construct() { }
 
     public static function getConnection() {
+		if (self::$conn != null)
+			return self::$conn;
+
 		$config = include CONFIG_PATH . 'config.php';
 
         $db_name = $config['database']['db_name'];

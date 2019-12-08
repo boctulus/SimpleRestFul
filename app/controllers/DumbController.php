@@ -1119,13 +1119,52 @@ class DumbController extends Controller
     }
 
     function test(){
-        $uid = 90;
+        $not_hidden = Database::table('products')->getNotHidden();
+        $cnt = count($not_hidden);
+        $cnt = $cnt > 1 ? ceil($cnt / 2)  : $cnt;
+        $ixs = array_rand($not_hidden, $cnt);
 
-        $id  = Database::table('products')->where([
-            ['belongs_to', $uid]
-        ])->random()->value('id');
+        $fields = [];
+        foreach ($ixs as $ix){
+            $fields[] = $not_hidden[$ix];
+        }
 
-        Debug::dd($id);
+        Debug::dd(implode(',',$fields));
+    }
+
+    private function get_rand($table){
+        $not_hidden = Database::table($table)->getNotHidden();
+        $not_hidden = array_diff($not_hidden, ['belongs_to', 'deleted_at', 'id']);
+
+        $stuck = false;
+        $val   = null;
+
+        $field = $not_hidden[array_rand($not_hidden, 1)];
+
+        while ($val == null || $stuck){
+            $i = 0;
+            $stuck = false;
+            $field = $not_hidden[array_rand($not_hidden, 1)];
+            $val = Database::table($table)->whereNotNull($field)->random()->value($field);
+            while(trim($val) == ''){
+                $i++;
+                $val = Database::table($table)->whereNotNull($field)->random()->value($field);
+                if ($i>5){
+                    $stuck = true;
+                    break;
+                }                
+            }
+            //
+            $not_hidden = array_diff($not_hidden, [$field]);
+        }
+
+        return [$field, $val];
+    }
+
+    function test2(){
+        for ($i=0; $i<1000; $i++){
+            Debug::dd($this->get_rand('products'));
+        }        
     }
     
 

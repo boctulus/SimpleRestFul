@@ -16,7 +16,7 @@ class Model {
 	protected $nullable = [];
 	protected $fillable = [];
 	protected $not_fillable = [];
-	protected $hidden;
+	protected $hidden   = [];
 	protected $properties = [];
 	protected $joins  = [];
 	protected $show_deleted = false;
@@ -1435,6 +1435,10 @@ class Model {
 		return $this->properties;
 	}
 
+	public function getIdName(){
+		return $this->id_name;
+	}
+
 	public function getNotHidden(){
 		return array_diff($this->properties, $this->hidden);
 	}
@@ -1449,6 +1453,10 @@ class Model {
 
 	public function getFillables(){
 		return $this->fillable;
+	}
+
+	public function getNullables(){
+		return $this->nullable;
 	}
 
 	public function getRules(){
