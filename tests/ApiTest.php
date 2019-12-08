@@ -440,44 +440,86 @@ class ApiTest extends TestCase
         );
     }
 
-    private function get_rand($table){
-        $not_hidden = Database::table($table)->getNotHidden();
-        $not_hidden = array_diff($not_hidden, ['belongs_to', 'deleted_at', 'id']);
+    private function get_rand_fields($table, $count = 1, $nullables = false){
+        $m = Database::table($table);
 
-        $stuck = false;
-        $val   = null;
+        $ff = $m->getNotHidden();
+        $ff = array_diff($ff, ['belongs_to', 'created_at', 'deleted_at', 'modified_at', 'id']);
 
-        $field = $not_hidden[array_rand($not_hidden, 1)];
+        if (!$nullables)
+            $ff = array_intersect($ff, $m->getNotNullables());
 
-        while ($val == null || $stuck){
-            $i = 0;
-            $stuck = false;
-            $field = $not_hidden[array_rand($not_hidden, 1)];
-            $val = Database::table($table)->whereNotNull($field)->random()->value($field);
-            while(trim($val) == ''){
-                $i++;
-                $val = Database::table($table)->whereNotNull($field)->random()->value($field);
-                if ($i>5){
-                    $stuck = true;
-                    break;
-                }                
-            }
-            //
-            $not_hidden = array_diff($not_hidden, [$field]);
+        $ixs  = array_rand($ff, $count);
+
+        $fields = [];
+        foreach ((array) $ixs as $ix){
+            $fields[] = $ff[$ix];
         }
 
-        return [$field, $val];
+        return $fields;
     }
 
+    private function get_rand_vals($table, $field, $count = 1, $user_id = null){
+        $m = Database::table($table);
+
+        if ($user_id != null)
+            $m->where(['belongs_to', $user_id]);
+
+        return $m->random()->limit($count)->pluck($field);
+    }
+
+    private function get_rand($table, $num_values = 1, $nullables = false){
+        $m = Database::table($table);
+
+        $ff = $m->getNotHidden();
+        $ff = array_diff($ff, ['belongs_to', 'deleted_at', 'id']);
+        
+        if ($nullables)
+            $ff = array_intersect($ff, $m->getNullables());
+
+        $values = [];
+
+        $field  = $ff[array_rand($ff, 1)];
+
+        while (count($values) < $num_values){
+            $stuck  = false;
+            $val    = null; 
+
+            while ($val == null || $stuck){
+                $i = 0;
+                $stuck = false;
+
+                if ($stuck){
+                    $field = $ff[array_rand($ff, 1)];
+                }
+                
+                $val = Database::table($table)->whereNotNull($field)->random()->value($field);
+                while(trim($val) == ''){
+                    $i++;
+                    $val = Database::table($table)->whereNotNull($field)->random()->value($field);
+                    if ($i>5){
+                        $stuck = true;
+                        break;
+                    }                
+                }
+                //
+                $ff = array_diff($ff, [$field]);
+                $values[] = $val;
+            }
+
+        }
+            
+        return [$field, $values];
+    }
 
     public function testfilter001()
     {
-        list($field, $val) =  $this->get_rand('products');
+        list($field, $vals) =  $this->get_rand('products');
 
         $ch = curl_init();
 
         curl_setopt_array($ch, array(
-            CURLOPT_URL => BASE_URL . "api/v1/products?$field=". urlencode($val),
+            CURLOPT_URL => BASE_URL . "api/v1/products?$field=". urlencode($vals[0]),
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_ENCODING => "",
             CURLOPT_MAXREDIRS => 10,
@@ -517,19 +559,19 @@ class ApiTest extends TestCase
         );
 
         $model_arr = Database::table('products')
-        ->where(['belongs_to' => $this->uid, $field => $val])->setFetchMode('ASSOC')->limit($this->config['paginator']['default_limit'])->get();
+        ->where(['belongs_to' => $this->uid, $field => $vals[0]])->setFetchMode('ASSOC')->limit($this->config['paginator']['default_limit'])->get();
 
         $this->assertEquals($model_arr,$res['data']); 
     }
 
     public function testfilter001b()
     {
-        list($field, $val) = $this->get_rand('products');
+        list($field, $vals) = $this->get_rand('products');
 
         $ch = curl_init();
 
         curl_setopt_array($ch, array(
-            CURLOPT_URL => BASE_URL . "api/v1/products?{$field}[eq]=". urlencode($val),
+            CURLOPT_URL => BASE_URL . "api/v1/products?{$field}[eq]=". urlencode($vals[0]),
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_ENCODING => "",
             CURLOPT_MAXREDIRS => 10,
@@ -569,12 +611,12 @@ class ApiTest extends TestCase
         );
 
         $model_arr = Database::table('products')
-        ->where(['belongs_to' => $this->uid, $field => $val])->setFetchMode('ASSOC')->limit($this->config['paginator']['default_limit'])->get();
+        ->where(['belongs_to' => $this->uid, $field => $vals[0]])->setFetchMode('ASSOC')->limit($this->config['paginator']['default_limit'])->get();
 
         if ($model_arr != $res['data']){
             Debug::dd(Database::getQueryLog());
             Debug::dd($model_arr, 'MODELO:');
-            Debug::dd(BASE_URL . "api/v1/products?{$field}[eq]=". urlencode($val));
+            Debug::dd(BASE_URL . "api/v1/products?{$field}[eq]=". urlencode($vals[0]));
             Debug::dd($res['data'], 'API response:');
         }
 
@@ -583,10 +625,36 @@ class ApiTest extends TestCase
 
     public function testfilter002()
     {
+        $fields = $this->get_rand_fields('products', 2);
+
+        $values = Database::table('products')
+        ->random()
+        ->where(['belongs_to', $this->uid])
+        ->select($fields)->first();
+
+        //Debug::dd($values);
+
+        $fv = [];
+        $w  = [];
+        
+        foreach ($fields as $field){
+            $fv[] = $field . '=' . urlencode($values->$field);
+
+            if ($values->$field == NULL){
+                $op = 'IS NULL';
+            }else
+                $op = '=';                
+
+            $w[] = [$field, $values->$field, $op]; 
+        }
+        
+        $url_params = implode('&', $fv);
+        //Debug::dd($url_params);
+
         $ch = curl_init();
 
         curl_setopt_array($ch, array(
-            CURLOPT_URL => BASE_URL . "api/v1/products?name=Escalera&cost=80",
+            CURLOPT_URL => BASE_URL . "api/v1/products?$url_params",
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_ENCODING => "",
             CURLOPT_MAXREDIRS => 10,
@@ -625,18 +693,27 @@ class ApiTest extends TestCase
             isset($res['data']) && isset($res['paginator'])
         );
 
-        $model_arr = Database::table('products')->where(['belongs_to' => $this->uid, 
-        'name' => 'Escalera', 'cost' => 80])->setFetchMode('ASSOC')->limit($this->config['paginator']['default_limit'])->get();
+        $model_arr = Database::table('products')
+        ->where(['belongs_to', $this->uid])
+        ->where($w)->setFetchMode('ASSOC')->limit($this->config['paginator']['default_limit'])->get();
+
+        //Debug::dd(Database::getQueryLog()); 
 
         $this->assertEquals($model_arr,$res['data']); 
     }
 
     public function testfilter003()
     {
+        $field  = $this->get_rand_fields('products')[0];
+        $values = $this->get_rand_vals('products', $field, 2, $this->uid);
+
+        $values_str = implode(',', array_map('urlencode',$values));
+        //Debug::dd("api/v1/products?{$field}[in]=$values_str");
+
         $ch = curl_init();
 
         curl_setopt_array($ch, array(
-            CURLOPT_URL => BASE_URL . "api/v1/products?description[in]=metal,bronce,plastico",
+            CURLOPT_URL => BASE_URL . "api/v1/products?{$field}[in]=$values_str",
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_ENCODING => "",
             CURLOPT_MAXREDIRS => 10,
@@ -677,19 +754,25 @@ class ApiTest extends TestCase
 
         $model_arr = Database::table('products')->where([
             ['belongs_to', $this->uid], 
-            ['description', ['metal', 'bronce', 'plastico' ] ]
+            [$field, $values ]
         ])
         ->setFetchMode('ASSOC')->limit($this->config['paginator']['default_limit'])->get();
 
-        $this->assertEquals($model_arr,$res['data']); 
+        $this->assertEquals($model_arr, $res['data']); 
     }
 
     public function testfilter003b()
     {
+        $field  = $this->get_rand_fields('products')[0];
+        $values = $this->get_rand_vals('products', $field, 2, $this->uid);
+
+        $values_str = implode(',', array_map('urlencode',$values));
+        //Debug::dd("api/v1/products?$field=$values_str");
+
         $ch = curl_init();
 
         curl_setopt_array($ch, array(
-            CURLOPT_URL => BASE_URL . "api/v1/products?description=metal,bronce,plastico",
+            CURLOPT_URL => BASE_URL . "api/v1/products?$field=$values_str",
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_ENCODING => "",
             CURLOPT_MAXREDIRS => 10,
@@ -730,19 +813,25 @@ class ApiTest extends TestCase
 
         $model_arr = Database::table('products')->where([
             ['belongs_to', $this->uid], 
-            ['description', ['metal', 'bronce', 'plastico' ] ]
+            [$field, $values ]
         ])
         ->setFetchMode('ASSOC')->limit($this->config['paginator']['default_limit'])->get();
 
-        $this->assertEquals($model_arr,$res['data']); 
+        $this->assertEquals($model_arr, $res['data']);     
     }
 
     public function testfilter004()
     {
+        $field  = $this->get_rand_fields('products')[0];
+        $values = $this->get_rand_vals('products', $field, 2, $this->uid);
+
+        $values_str = implode(',', array_map('urlencode',$values));
+        //Debug::dd("api/v1/products?{$field}[in]=$values_str");
+
         $ch = curl_init();
 
         curl_setopt_array($ch, array(
-            CURLOPT_URL => BASE_URL . "api/v1/products?description[notIn]=metal,bronce,plastico",
+            CURLOPT_URL => BASE_URL . "api/v1/products?{$field}[notIn]=$values_str",
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_ENCODING => "",
             CURLOPT_MAXREDIRS => 10,
@@ -783,11 +872,11 @@ class ApiTest extends TestCase
 
         $model_arr = Database::table('products')->where([
             ['belongs_to', $this->uid], 
-            ['description', ['metal', 'bronce', 'plastico' ], 'NOT IN' ]
+            [$field, $values, 'NOT IN' ]
         ])
         ->setFetchMode('ASSOC')->limit($this->config['paginator']['default_limit'])->get();
 
-        $this->assertEquals($model_arr,$res['data']); 
+        $this->assertEquals($model_arr, $res['data']);
     }
 
     public function testfilter006()

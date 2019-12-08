@@ -244,9 +244,12 @@ abstract class ApiController extends Controller
             $data    = [];
             
             foreach ($_get as $f => $v){
-                if (!is_array($v))
+                if (!is_array($v) && strpos($v, ',')=== false)
                     $data[$f] = $v;
             }     
+
+            //var_export($data);
+            //exit;
 
             // patch for Nginx
             $_q      = Arrays::shift($_get,'q');
@@ -478,9 +481,9 @@ abstract class ApiController extends Controller
                                 $vals = explode(',', $v);
                                 $_get[$key] = [$campo, $vals];    
                                 
-                                //foreach ($vals as $_v){
-                                   // $data[$campo][] = $_v;
-                                //}
+                                foreach ($vals as $_v){
+                                   $data[$campo][] = $_v;
+                                }
                             } 
                         }   
                         

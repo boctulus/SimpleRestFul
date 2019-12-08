@@ -763,6 +763,21 @@ class DumbController extends Controller
     }
 
     /*
+        Debug without exec the query
+    */
+    function dontexec(){
+        Database::table('products')
+        ->dontExec() 
+        ->where([ 
+                ['cost', 150, '>='],
+                ['cost', 270, '<=']            
+            ])
+        ->where(['belongs_to' =>  90])->get(); 
+        
+        Debug::dd(Database::getQueryLog()); 
+    }
+
+    /*
         Pretty response 
     */
     function get_users(){
@@ -1119,54 +1134,129 @@ class DumbController extends Controller
     }
 
     function test(){
-        $not_hidden = Database::table('products')->getNotHidden();
-        $cnt = count($not_hidden);
+        $ff = Database::table('products')->getNotHidden();
+        $cnt = count($ff);
         $cnt = $cnt > 1 ? ceil($cnt / 2)  : $cnt;
-        $ixs = array_rand($not_hidden, $cnt);
+        $ixs = array_rand($ff, $cnt);
 
         $fields = [];
         foreach ($ixs as $ix){
-            $fields[] = $not_hidden[$ix];
+            $fields[] = $ff[$ix];
         }
 
         Debug::dd(implode(',',$fields));
     }
 
-    private function get_rand($table){
-        $not_hidden = Database::table($table)->getNotHidden();
-        $not_hidden = array_diff($not_hidden, ['belongs_to', 'deleted_at', 'id']);
+    private function get_rand_fields($table, $count = 1, $nullables = false){
+        $m = Database::table($table);
 
-        $stuck = false;
-        $val   = null;
+        $ff = $m->getNotHidden();
+        $ff = array_diff($ff, ['belongs_to', 'created_at', 'deleted_at', 'modified_at', 'id']);
 
-        $field = $not_hidden[array_rand($not_hidden, 1)];
+        if (!$nullables)
+            $ff = array_intersect($ff, $m->getNotNullables());
 
-        while ($val == null || $stuck){
-            $i = 0;
-            $stuck = false;
-            $field = $not_hidden[array_rand($not_hidden, 1)];
-            $val = Database::table($table)->whereNotNull($field)->random()->value($field);
-            while(trim($val) == ''){
-                $i++;
-                $val = Database::table($table)->whereNotNull($field)->random()->value($field);
-                if ($i>5){
-                    $stuck = true;
-                    break;
-                }                
-            }
-            //
-            $not_hidden = array_diff($not_hidden, [$field]);
+        $ixs  = array_rand($ff, $count);
+
+        $fields = [];
+        foreach ((array) $ixs as $ix){
+            $fields[] = $ff[$ix];
         }
 
-        return [$field, $val];
+        return $fields;
+    }
+
+    private function get_rand_vals($table, $field, $count = 1){
+        $m = Database::table($table);
+        return $m->random()->limit($count)->pluck($field);
+    }
+
+    private function get_rand($table, $num_values = 1, $nullables = false){
+        $m = Database::table($table);
+
+        $ff = $m->getNotHidden();
+        $ff = array_diff($ff, ['belongs_to', 'deleted_at', 'id']);
+        
+        if ($nullables)
+            $ff = array_intersect($ff, $m->getNullables());
+
+        $values = [];
+
+        $field  = $ff[array_rand($ff, 1)];
+
+        while (count($values) < $num_values){
+            $stuck  = false;
+            $val    = null; 
+
+            while ($val == null || $stuck){
+                $i = 0;
+                $stuck = false;
+
+                if ($stuck){
+                    $field = $ff[array_rand($ff, 1)];
+                }
+                
+                $val = Database::table($table)->whereNotNull($field)->random()->value($field);
+                while(trim($val) == ''){
+                    $i++;
+                    $val = Database::table($table)->whereNotNull($field)->random()->value($field);
+                    if ($i>5){
+                        $stuck = true;
+                        break;
+                    }                
+                }
+                //
+                $ff = array_diff($ff, [$field]);
+                $values[] = $val;
+            }
+
+        }
+            
+        return [$field, $values];
     }
 
     function test2(){
         for ($i=0; $i<1000; $i++){
-            Debug::dd($this->get_rand('products'));
+            Debug::dd($this->get_rand('products', 10));
         }        
     }
-    
 
+    function test3(){
+        Debug::dd($this->get_rand_fields('products', 2, true));
+    }
+    
+    function test4(){
+        Debug::dd($this->get_rand_vals('products', 'name', 10)); 
+    }
+
+    function test5(){
+        $this->uid = 125;
+        
+        $fields = $this->get_rand_fields('products', 2);
+
+        $values = Database::table('products')
+        ->random()
+        ->where(['belongs_to', $this->uid])
+        ->select($fields)->first();
+
+        //Debug::dd($values);
+
+        $fv = [];
+        $w  = [];
+        foreach ($fields as $field){
+            $fv[] = $field . '=' . urlencode($values->$field);
+            $w[] = [$field, $values->$field, '=']; 
+        }
+        
+        echo $url_params = implode('&', $fv);
+
+        $model_arr = Database::table('products')
+        ->where(['belongs_to', $this->uid])
+        ->where($w)->setFetchMode('ASSOC')->limit($this->config['paginator']['default_limit'])->get();
+
+        Debug::dd($model_arr);
+        Debug::dd(Database::getQueryLog()); 
+
+    }
        
 }

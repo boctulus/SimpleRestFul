@@ -54,6 +54,7 @@ class Model {
 	protected $pag_vals = [];
 	protected $roles;
 	protected $validator;
+	protected $exec = true;
 	protected $fetch_mode = \PDO::FETCH_OBJ;
 	
 	
@@ -132,6 +133,14 @@ class Model {
 
 	public function showDeleted($state = true){
 		$this->show_deleted = $state;
+		return $this;
+	}
+
+	/*
+		Don't execute the query
+	*/
+	public function dontExec(){
+		$this->exec = false;
 		return $this;
 	}
 
@@ -834,7 +843,7 @@ class Model {
 		$q = $this->toSql($fields, $order, $limit, $offset);
 		$st = $this->bind($q);
 
-		if ($st->execute())
+		if ($this->exec && $st->execute())
 			return $st->fetchAll($this->fetch_mode);
 		else
 			return false;	
@@ -844,7 +853,7 @@ class Model {
 		$q = $this->toSql($fields, NULL, 1);
 		$st = $this->bind($q);
 
-		if ($st->execute())
+		if ($this->exec && $st->execute())
 			return $st->fetch($this->fetch_mode);
 		else
 			return false;	
@@ -854,7 +863,7 @@ class Model {
 		$q = $this->toSql([$field], NULL, 1);
 		$st = $this->bind($q);
 
-		if ($st->execute())
+		if ($this->exec && $st->execute())
 			return $st->fetch(\PDO::FETCH_NUM)[0];
 		else
 			return false;	
@@ -864,7 +873,7 @@ class Model {
 		$q = $this->toSql(null, null, null, null, true);
 		$st = $this->bind($q);
 
-		if ($st->execute())
+		if ($this->exec && $st->execute())
 			return (bool) $st->fetch(\PDO::FETCH_NUM)[0];
 		else
 			return false;	
@@ -877,7 +886,7 @@ class Model {
 		$q = $this->toSql();
 		$st = $this->bind($q);
 	
-		if ($st->execute())
+		if ($this->exec && $st->execute())
 			return $st->fetchAll($this->fetch_mode);
 		else
 			return false;	
@@ -888,12 +897,12 @@ class Model {
 		$st = $this->bind($q);
 
 		if (empty($this->group)){
-			if ($st->execute())
+			if ($this->exec && $st->execute())
 				return $st->fetch(\PDO::FETCH_NUM)[0];
 			else
 				return false;	
 		}else{
-			if ($st->execute())
+			if ($this->exec && $st->execute())
 				return $st->fetchAll(\PDO::FETCH_NUM);
 			else
 				return false;
@@ -905,12 +914,12 @@ class Model {
 		$st = $this->bind($q);
 
 		if (empty($this->group)){
-			if ($st->execute())
+			if ($this->exec && $st->execute())
 				return $st->fetch(\PDO::FETCH_NUM)[0];
 			else
 				return false;	
 		}else{
-			if ($st->execute())
+			if ($this->exec && $st->execute())
 				return $st->fetchAll(\PDO::FETCH_NUM);
 			else
 				return false;
@@ -922,12 +931,12 @@ class Model {
 		$st = $this->bind($q);
 
 		if (empty($this->group)){
-			if ($st->execute())
+			if ($this->exec && $st->execute())
 				return $st->fetch(\PDO::FETCH_NUM)[0];
 			else
 				return false;	
 		}else{
-			if ($st->execute())
+			if ($this->exec && $st->execute())
 				return $st->fetchAll(\PDO::FETCH_NUM);
 			else
 				return false;
@@ -939,12 +948,12 @@ class Model {
 		$st = $this->bind($q);
 
 		if (empty($this->group)){
-			if ($st->execute())
+			if ($this->exec && $st->execute())
 				return $st->fetch(\PDO::FETCH_NUM)[0];
 			else
 				return false;	
 		}else{
-			if ($st->execute())
+			if ($this->exec && $st->execute())
 				return $st->fetchAll(\PDO::FETCH_NUM);
 			else
 				return false;
@@ -956,12 +965,12 @@ class Model {
 		$st = $this->bind($q);
 
 		if (empty($this->group)){
-			if ($st->execute())
+			if ($this->exec && $st->execute())
 				return $st->fetch(\PDO::FETCH_NUM)[0];
 			else
 				return false;	
 		}else{
-			if ($st->execute())
+			if ($this->exec && $st->execute())
 				return $st->fetchAll(\PDO::FETCH_NUM);
 			else
 				return false;
@@ -986,6 +995,9 @@ class Model {
 		if (count($conditions)>0){
 			if(is_array($conditions[Arrays::array_key_first($conditions)])){
 				foreach ($conditions as $cond) {
+					if ($cond[0] == null)
+						throw new \Exception("Table field can not be NULL");
+
 					if(is_array($cond[1]) && (empty($cond[2]) || in_array($cond[2], ['IN', 'NOT IN']) ))
 					{						
 						if($this->schema[$cond[0]] == 'STR')	
@@ -1430,36 +1442,40 @@ class Model {
 	/**
 	 * Get schema 
 	 */ 
-	public function getProperties()
+	function getProperties()
 	{
 		return $this->properties;
 	}
 
-	public function getIdName(){
+	function getIdName(){
 		return $this->id_name;
 	}
 
-	public function getNotHidden(){
+	function getNotHidden(){
 		return array_diff($this->properties, $this->hidden);
 	}
 
-	public function isNullable(string $field){
+	function isNullable(string $field){
 		return in_array($field, $this->nullable);
 	}
 
-	public function isFillable(string $field){
+	function isFillable(string $field){
 		return in_array($field, $this->fillable);
 	}
 
-	public function getFillables(){
+	function getFillables(){
 		return $this->fillable;
 	}
 
-	public function getNullables(){
+	function getNullables(){
 		return $this->nullable;
 	}
 
-	public function getRules(){
+	function getNotNullables(){
+		return array_diff($this->properties, $this->nullable);
+	}
+
+	function getRules(){
 		return $this->rules;
 	}
 
