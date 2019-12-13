@@ -376,9 +376,7 @@ class Model {
 	}
 
 	function toSql(array $fields = null, array $order = null, int $limit = NULL, int $offset = null, bool $existance = false, $aggregate_func = null, $aggregate_field = null)
-	{
-		// Agregar validaciones ?
-
+	{		
 		if (!empty($fields))
 			$fields = array_merge($this->fields, $fields);
 		else
@@ -556,8 +554,9 @@ class Model {
 		}			
 
 		$where = trim($where);
-
-		if ($this->inSchema(['deleted_at'])){
+		
+		// No tiene sentido el agregar un "WHERE deleted_at IS NULL" cuando hay un HAVING 
+		if ($this->inSchema(['deleted_at']) && empty($this->having)){
 			if (!$this->show_deleted){
 				if (empty($where))
 					$where = "deleted_at IS NULL";
@@ -619,6 +618,8 @@ class Model {
 		if (!$existance && $paginator!==null){
 			$q .= $paginator->getQuery();
 		}
+
+		$q  = rtrim($q);
 		
 		if ($existance)
 			$q .= ')';
@@ -630,7 +631,7 @@ class Model {
 		//var_dump($q);
 		//var_export($vars);
 		//var_export($values);
-
+		
 		$this->last_bindings = $this->getBindings();
 		$this->last_pre_compiled_query = $q;
 		return $q;	

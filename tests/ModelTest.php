@@ -461,12 +461,33 @@ class ModelTest extends TestCase
     ->where(['belongs_to' =>  90])->get();
     $this->assertEquals(Database::getQueryLog(), "SELECT * FROM products WHERE (cost >= 150 AND cost <= 270) AND belongs_to = 90 AND deleted_at IS NULL");		
 
+	Database::table('products')->showDeleted()
+            ->groupBy(['name'])
+            ->having(['c', 3, '>'])
+            ->select(['name'])
+			->selectRaw('COUNT(*) as c')
+			->get();
+	$this->assertEquals(Database::getQueryLog(), "SELECT COUNT(*) as c, name FROM products GROUP BY name HAVING c > 3");	
+
+	$sub = Database::table('products')
+		->select(['id']);
+	
+    Database::table('products')
+            ->groupBy(['name'])
+            ->having(['c', 3, '>='])
+            ->select(['name'])
+			->selectRaw('COUNT(name) as c')
+			->whereRaw("id IN ({$sub->toSql()})")
+			->get();
+			  
+	$this->assertEquals(Database::getQueryLog(), "SELECT COUNT(name) as c, name FROM products WHERE id IN (SELECT id FROM products WHERE deleted_at IS NULL) GROUP BY name HAVING c >= 3");		
+		
     // 
     Database::table('products')
       ->groupBy(['cost', 'size'])
       ->having(['cost', 100])
       ->get(['cost', 'size']);
-    $this->assertEquals(Database::getQueryLog(), "SELECT cost, size FROM products WHERE deleted_at IS NULL GROUP BY cost,size HAVING cost = 100");
+    $this->assertEquals(Database::getQueryLog(), "SELECT cost, size FROM products GROUP BY cost,size HAVING cost = 100");
 
     // 
     Database::table('products')
@@ -478,7 +499,7 @@ class ModelTest extends TestCase
       'OR')
       ->orderBy(['size' => 'DESC'])
       ->get(['cost', 'size', 'belongs_to']); 
-    $this->assertEquals(Database::getQueryLog(), "SELECT cost, size, belongs_to FROM products WHERE deleted_at IS NULL GROUP BY cost,size,belongs_to HAVING belongs_to = 90 AND (cost >= 100 OR size = '1L') ORDER BY size DESC");
+    $this->assertEquals(Database::getQueryLog(), "SELECT cost, size, belongs_to FROM products GROUP BY cost,size,belongs_to HAVING belongs_to = 90 AND (cost >= 100 OR size = '1L') ORDER BY size DESC");
 
     // 
     Database::table('products')
@@ -488,7 +509,7 @@ class ModelTest extends TestCase
       ->orHaving(['size' => '1L'])
       ->orderBy(['size' => 'DESC'])
       ->get(['cost', 'size', 'belongs_to']); 
-    $this->assertEquals(Database::getQueryLog(), "SELECT cost, size, belongs_to FROM products WHERE deleted_at IS NULL GROUP BY cost,size,belongs_to HAVING belongs_to = 90 OR cost >= 100 OR size = '1L' ORDER BY size DESC");
+    $this->assertEquals(Database::getQueryLog(), "SELECT cost, size, belongs_to FROM products GROUP BY cost,size,belongs_to HAVING belongs_to = 90 OR cost >= 100 OR size = '1L' ORDER BY size DESC");
 
     // 
     Database::table('products')
@@ -500,7 +521,7 @@ class ModelTest extends TestCase
       )
       ->orderBy(['size' => 'DESC'])
       ->get(['cost', 'size', 'belongs_to']); 
-    $this->assertEquals(Database::getQueryLog(), "SELECT cost, size, belongs_to FROM products WHERE deleted_at IS NULL GROUP BY cost,size,belongs_to HAVING belongs_to = 90 OR (cost >= 100 AND size = '1L') ORDER BY size DESC");
+    $this->assertEquals(Database::getQueryLog(), "SELECT cost, size, belongs_to FROM products GROUP BY cost,size,belongs_to HAVING belongs_to = 90 OR (cost >= 100 AND size = '1L') ORDER BY size DESC");
 
     // 
     Database::table('products')
@@ -555,7 +576,7 @@ class ModelTest extends TestCase
     ->whereRaw("belongs_to IN ({$sub->toSql()})")
     ->get();
 
-    $this->assertEquals(Database::getQueryLog(), "SELECT id, name, size, cost, belongs_to FROM products WHERE belongs_to IN (SELECT id FROM users WHERE password IS NULL AND deleted_at IS NULL )");   
+    $this->assertEquals(Database::getQueryLog(), "SELECT id, name, size, cost, belongs_to FROM products WHERE belongs_to IN (SELECT id FROM users WHERE password IS NULL AND deleted_at IS NULL)");   
 
     //  
     $sub = Database::table('users')->showDeleted()
@@ -570,7 +591,7 @@ class ModelTest extends TestCase
     ->whereRaw("belongs_to IN ({$sub->toSql()})")
     ->get();
 
-    $this->assertEquals(Database::getQueryLog(), "SELECT id, name, size, cost, belongs_to FROM products WHERE (belongs_to IN (SELECT id FROM users WHERE (confirmed_email = 1) AND password < 100 )) AND size = '1L'");  
+    $this->assertEquals(Database::getQueryLog(), "SELECT id, name, size, cost, belongs_to FROM products WHERE (belongs_to IN (SELECT id FROM users WHERE (confirmed_email = 1) AND password < 100)) AND size = '1L'");  
 
     // 
     $sub = Database::table('users')->showDeleted()
@@ -588,7 +609,7 @@ class ModelTest extends TestCase
     ->orderBy(['id' => 'desc'])
     ->get();
 
-    $this->assertEquals(Database::getQueryLog(), "SELECT id, name, size, cost, belongs_to FROM products WHERE (belongs_to IN (SELECT users.id FROM users INNER JOIN user_roles ON users.id=user_roles.user_id WHERE (confirmed_email = 1) AND password < 100 AND role_id = 2 )) AND size = '1L' ORDER BY id DESC");    
+    $this->assertEquals(Database::getQueryLog(), "SELECT id, name, size, cost, belongs_to FROM products WHERE (belongs_to IN (SELECT users.id FROM users INNER JOIN user_roles ON users.id=user_roles.user_id WHERE (confirmed_email = 1) AND password < 100 AND role_id = 2)) AND size = '1L' ORDER BY id DESC");    
     
     //  
     $sub = Database::table('users')->showDeleted()
@@ -605,7 +626,7 @@ class ModelTest extends TestCase
     ->groupBy(['size'])
     ->avg('cost');
 
-    $this->assertEquals(Database::getQueryLog(), "SELECT size, AVG(cost) FROM products WHERE belongs_to IN (SELECT users.id FROM users INNER JOIN user_roles ON users.id=user_roles.user_id WHERE (confirmed_email = 1) AND password < 100 AND role_id = 3 ) GROUP BY size");
+    $this->assertEquals(Database::getQueryLog(), "SELECT size, AVG(cost) FROM products WHERE belongs_to IN (SELECT users.id FROM users INNER JOIN user_roles ON users.id=user_roles.user_id WHERE (confirmed_email = 1) AND password < 100 AND role_id = 3) GROUP BY size");
 
     //   
     $sub = Database::table('products')->showDeleted()
@@ -617,7 +638,7 @@ class ModelTest extends TestCase
     $m = new \simplerest\core\Model($conn);
     $res = $m->fromRaw("({$sub->toSql()}) as sub")->count();
 
-    $this->assertEquals(trim(preg_replace('!\s+!', ' ',$m->getLastPrecompiledQuery())), "SELECT COUNT(*) FROM (SELECT size FROM products GROUP BY size ) as sub");
+    $this->assertEquals(trim(preg_replace('!\s+!', ' ',$m->getLastPrecompiledQuery())), "SELECT COUNT(*) FROM (SELECT size FROM products GROUP BY size) as sub");
 
     // 
     $sub = Database::table('products')->showDeleted()
@@ -629,7 +650,7 @@ class ModelTest extends TestCase
     ->mergeBindings($sub)
     ->count();
 
-    $this->assertEquals(trim(preg_replace('!\s+!', ' ',Database::getQueryLog())), "SELECT COUNT(*) FROM (SELECT size FROM products WHERE belongs_to = 90 GROUP BY size ) as sub");
+    $this->assertEquals(trim(preg_replace('!\s+!', ' ',Database::getQueryLog())), "SELECT COUNT(*) FROM (SELECT size FROM products WHERE belongs_to = 90 GROUP BY size) as sub");
   }
 
   function testunion(){   
