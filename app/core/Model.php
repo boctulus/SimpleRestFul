@@ -568,6 +568,9 @@ class Model {
 		
 		if (!empty($where))
 			$q  .= "WHERE $where";
+		
+		//if ($this->having)
+		//	$this->groupBy(['deleted_at']);
 
 		$group = (!empty($this->group)) ? 'GROUP BY '.implode(',', $this->group) : '';
 		$q  .= " $group";
@@ -597,6 +600,18 @@ class Model {
 			}else{
 				$having = "HAVING $implode ";
 			}
+			
+			/*
+			if ($this->inSchema(['deleted_at'])){
+				if (!$this->show_deleted){
+					if (empty($having))
+						$having = "HAVING deleted_at IS NULL";
+					else
+						$having = ($having[0]=='(' && $having[strlen($having)-1]==')' ? $having : ($having)) . " AND deleted_at IS NULL";
+
+				}
+			}
+			*/
 		}	
 
 		$q .= ' '.$having;

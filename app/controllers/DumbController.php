@@ -654,13 +654,13 @@ class DumbController extends Controller
         ->where(['belongs_to' =>  90])->get());         
     }
 		
-	// SELECT COUNT(name) as c, name FROM products WHERE id IN (SELECT id FROM products WHERE deleted_at IS NULL) GROUP BY name HAVING c >= 3
-	
+	// SELECT COUNT(name) as c, name FROM products WHERE id IN (SELECT id FROM products WHERE deleted_at IS NULL) GROUP BY name HAVING c >= 3	
 	function having(){       
 		$sub = Database::table('products')
 		->select(['id']);
 	
-        Debug::dd(Database::table('products') 
+        Debug::dd(Database::table('products')
+			//->dontExec()
             ->groupBy(['name'])
             ->having(['c', 3, '>='])
             ->select(['name'])
@@ -692,6 +692,8 @@ class DumbController extends Controller
             ->groupBy(['cost', 'size'])
             ->having(['cost', 100])
             ->get(['cost', 'size']));
+		
+		Debug::dd(Database::getQueryLog()); 
     }    
 	
     /*
