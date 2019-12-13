@@ -654,9 +654,64 @@ class DumbController extends Controller
         ->where(['belongs_to' =>  90])->get());         
     }
 		
-	// SELECT COUNT(name) as c, name FROM products WHERE id IN (SELECT id FROM products WHERE deleted_at IS NULL) GROUP BY name HAVING c >= 3	
+	/*
+		Array
+		(
+			[0] => stdClass Object
+				(
+					[c] => 3
+					[name] => Agua
+				)
+
+			[1] => stdClass Object
+				(
+					[c] => 5
+					[name] => Vodka
+				)
+
+		)
+		
+		SELECT COUNT(name) as c, name FROM products WHERE deleted_at IS NULL GROUP BY name HAVING c >= 3
+	*/	
 	function having(){  
         Debug::dd(Database::table('products')
+			//->dontExec()
+            ->groupBy(['name'])
+            ->having(['c', 3, '>='])
+            ->select(['name'])
+			->selectRaw('COUNT(name) as c')
+			->get());
+			
+		Debug::dd(Database::getQueryLog()); 
+    }  
+	
+	/*
+		Array
+		(
+			[0] => stdClass Object
+				(
+					[c] => 5
+					[name] => Agua 
+				)
+
+			[1] => stdClass Object
+				(
+					[c] => 3
+					[name] => Ron
+				)
+
+			[2] => stdClass Object
+				(
+					[c] => 9
+					[name] => Vodka
+				)
+
+		)
+
+		SELECT COUNT(name) as c, name FROM products GROUP BY name HAVING c >= 3
+	*/
+	function havingx(){  
+        Debug::dd(Database::table('products')->showDeleted()
 			//->dontExec()
             ->groupBy(['name'])
             ->having(['c', 3, '>='])
@@ -683,6 +738,10 @@ class DumbController extends Controller
         En el caso de múltiples condiciones estas se concatenan implícitamente con "AND" excepto 
         se espcifique "OR" como segundo parámetro de having()    
     */     
+	
+	/*
+		SELECT cost, size FROM products WHERE deleted_at IS NULL GROUP BY cost,size HAVING cost = 100
+	*/
     function having1(){        
         Debug::dd(Database::table('products')
             ->groupBy(['cost', 'size'])
@@ -692,6 +751,7 @@ class DumbController extends Controller
 		Debug::dd(Database::getQueryLog()); 
     }    
 	
+	// SELECT cost, size FROM products GROUP BY cost,size HAVING cost = 100
 	function having1b(){        
         Debug::dd(Database::table('products')->showDeleted()
             ->groupBy(['cost', 'size'])

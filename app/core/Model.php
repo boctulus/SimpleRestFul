@@ -555,27 +555,19 @@ class Model {
 
 		$where = trim($where);
 		
-		// No tiene sentido el agregar un "WHERE deleted_at IS NULL" cuando hay un HAVING 
-		// pero si un "WHERE id IN (SELECT id FROM tabla WHERE deleted_at IS NULL)"
 		if ($this->inSchema(['deleted_at'])){
 			if (!$this->show_deleted){
-				if (empty($where)){
-					if (empty($this->having))
-						$where = "deleted_at IS NULL";
-					else
-						$where = "id IN (SELECT {$this->id_name} FROM {$this->table_name} WHERE deleted_at IS NULL)";
-				}else{
-					if (empty($this->having))
-						$where =  ($where[0]=='(' && $where[strlen($where)-1]==')' ? $where :   ($where) ) . " AND deleted_at IS NULL";
-					else
-						$where = ($where[0]=='(' && $where[strlen($where)-1]==')' ? $where :   ($where) ) . " AND id IN (SELECT {$this->id_name} FROM {$this->table_name} WHERE deleted_at IS NULL)";
-				}
+				if (empty($where))
+					$where = "deleted_at IS NULL";
+				else
+					$where =  ($where[0]=='(' && $where[strlen($where)-1]==')' ? $where :   ($where) ) . " AND deleted_at IS NULL";
+
 			}
 		}
 		
 		if (!empty($where))
 			$q  .= "WHERE $where";
-
+		
 		$group = (!empty($this->group)) ? 'GROUP BY '.implode(',', $this->group) : '';
 		$q  .= " $group";
 

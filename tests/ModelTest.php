@@ -476,14 +476,14 @@ class ModelTest extends TestCase
 			->selectRaw('COUNT(name) as c')
 			->get();
 			  
-	$this->assertEquals(Database::getQueryLog(), "SELECT COUNT(name) as c, name FROM products WHERE id IN (SELECT id FROM products WHERE deleted_at IS NULL) GROUP BY name HAVING c >= 3");		
+	$this->assertEquals(Database::getQueryLog(), "SELECT COUNT(name) as c, name FROM products WHERE deleted_at IS NULL GROUP BY name HAVING c >= 3");		
 		
     // 
     Database::table('products')
       ->groupBy(['cost', 'size'])
       ->having(['cost', 100])
       ->get(['cost', 'size']);
-    $this->assertEquals(Database::getQueryLog(), "SELECT cost, size FROM products WHERE id IN (SELECT id FROM products WHERE deleted_at IS NULL) GROUP BY cost,size HAVING cost = 100");
+    $this->assertEquals(Database::getQueryLog(), "SELECT cost, size FROM products WHERE deleted_at IS NULL GROUP BY cost,size HAVING cost = 100");
 
 	// 
     Database::table('products')->showDeleted()
