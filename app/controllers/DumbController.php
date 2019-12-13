@@ -655,17 +655,13 @@ class DumbController extends Controller
     }
 		
 	// SELECT COUNT(name) as c, name FROM products WHERE id IN (SELECT id FROM products WHERE deleted_at IS NULL) GROUP BY name HAVING c >= 3	
-	function having(){       
-		$sub = Database::table('products')
-		->select(['id']);
-	
+	function having(){  
         Debug::dd(Database::table('products')
 			//->dontExec()
             ->groupBy(['name'])
             ->having(['c', 3, '>='])
             ->select(['name'])
 			->selectRaw('COUNT(name) as c')
-			->whereRaw("id IN ({$sub->toSql()})")
 			->get());
 			
 		Debug::dd(Database::getQueryLog()); 
@@ -695,6 +691,15 @@ class DumbController extends Controller
 		
 		Debug::dd(Database::getQueryLog()); 
     }    
+	
+	function having1b(){        
+        Debug::dd(Database::table('products')->showDeleted()
+            ->groupBy(['cost', 'size'])
+            ->having(['cost', 100])
+            ->get(['cost', 'size']));
+		
+		Debug::dd(Database::getQueryLog()); 
+    }   
 	
     /*
         HAVING ... OR ... OR ...

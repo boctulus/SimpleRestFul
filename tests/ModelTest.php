@@ -469,15 +469,11 @@ class ModelTest extends TestCase
 			->get();
 	$this->assertEquals(Database::getQueryLog(), "SELECT COUNT(*) as c, name FROM products GROUP BY name HAVING c > 3");	
 
-	$sub = Database::table('products')
-		->select(['id']);
-	
-    Database::table('products')
+	Database::table('products')
             ->groupBy(['name'])
             ->having(['c', 3, '>='])
             ->select(['name'])
 			->selectRaw('COUNT(name) as c')
-			->whereRaw("id IN ({$sub->toSql()})")
 			->get();
 			  
 	$this->assertEquals(Database::getQueryLog(), "SELECT COUNT(name) as c, name FROM products WHERE id IN (SELECT id FROM products WHERE deleted_at IS NULL) GROUP BY name HAVING c >= 3");		
@@ -487,10 +483,17 @@ class ModelTest extends TestCase
       ->groupBy(['cost', 'size'])
       ->having(['cost', 100])
       ->get(['cost', 'size']);
-    $this->assertEquals(Database::getQueryLog(), "SELECT cost, size FROM products GROUP BY cost,size HAVING cost = 100");
+    $this->assertEquals(Database::getQueryLog(), "SELECT cost, size FROM products WHERE id IN (SELECT id FROM products WHERE deleted_at IS NULL) GROUP BY cost,size HAVING cost = 100");
 
+	// 
+    Database::table('products')->showDeleted()
+      ->groupBy(['cost', 'size'])
+      ->having(['cost', 100])
+      ->get(['cost', 'size']);
+    $this->assertEquals(Database::getQueryLog(), "SELECT cost, size FROM products GROUP BY cost,size HAVING cost = 100");
+	
     // 
-    Database::table('products')
+    Database::table('products')->showDeleted()
       ->groupBy(['cost', 'size', 'belongs_to'])
       ->having(['belongs_to', 90])
       ->having([  
@@ -502,7 +505,7 @@ class ModelTest extends TestCase
     $this->assertEquals(Database::getQueryLog(), "SELECT cost, size, belongs_to FROM products GROUP BY cost,size,belongs_to HAVING belongs_to = 90 AND (cost >= 100 OR size = '1L') ORDER BY size DESC");
 
     // 
-    Database::table('products')
+    Database::table('products')->showDeleted()
       ->groupBy(['cost', 'size', 'belongs_to'])
       ->having(['belongs_to', 90])
       ->orHaving(['cost', 100, '>='])
@@ -512,7 +515,7 @@ class ModelTest extends TestCase
     $this->assertEquals(Database::getQueryLog(), "SELECT cost, size, belongs_to FROM products GROUP BY cost,size,belongs_to HAVING belongs_to = 90 OR cost >= 100 OR size = '1L' ORDER BY size DESC");
 
     // 
-    Database::table('products')
+    Database::table('products')->showDeleted()
       ->groupBy(['cost', 'size', 'belongs_to'])
       ->having(['belongs_to', 90])
       ->orHaving([  
