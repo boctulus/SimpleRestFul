@@ -7,7 +7,7 @@ use simplerest\core\Controller;
 class MyController extends Controller {
     protected $_title;
 
-    public function __construct(){
+    function __construct(){
         parent::__construct();
         $_ctrl = explode('\\',get_class($this));
         $ctrl  = $_ctrl[count($_ctrl)-1];

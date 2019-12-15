@@ -2,6 +2,8 @@
 
 namespace simplerest\core;
 
+use simplerest\libs\Factory;
+
 class Response
 {
     static protected $headers = [];
@@ -14,6 +16,7 @@ class Response
     static protected $quit = true;
     static protected $paginator;
     static protected $options = JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES;
+
 
 
     protected function __construct() { 
@@ -37,49 +40,54 @@ class Response
             throw new \Exception("Headers already sent in in $filename on line $line. Unable to redirect to $url");
     }
 
-    public function addHeaders(array $headers)
+    function addHeaders(array $headers)
     {
         static::$headers = $headers;
         return static::getInstance();
     }
   
-    public function addHeader(string $header)
+    function addHeader(string $header)
     {
         static::$headers[] = $header;
         return static::getInstance();
     }
 
-    public function code(int $http_code, string $msg = NULL)
+    function code(int $http_code, string $msg = NULL)
     {
         static::$http_code_msg = $msg;
         static::$http_code = $http_code;
         return static::getInstance();
     }
 
-    public function setPretty(bool $state){
+    function setPretty(bool $state){
         static::$pretty = $state;
         return static::getInstance();
     }
 
-    public function setQuit(bool $state){
+    function setQuit(bool $state){
         static::$quit = $state;
         return static::getInstance();
     }
 
-    public function encode($data){
+    function encode($data){
         if (static::$pretty)
             $options = static::$options | JSON_PRETTY_PRINT;
             
         return json_encode($data, $options);  
     }
 
-    public function setPaginator(array $p){
+    function setPaginator(array $p){
         static::$paginator = $p;
         return static::getInstance();
     }
 
+    private function zip($data){
+        ob_start("ob_gzhandler");
+        echo $data; 
+        ob_end_flush();
+    } 
 
-    public function send($data, int $http_code = NULL){
+    function send($data, int $http_code = NULL){
         $http_code = $http_code != NULL ? $http_code : static::$http_code;
         
         if ($http_code == NULL)
@@ -98,10 +106,13 @@ class Response
                 $arr['paginator'] = static::$paginator;
 
             $data = $this->encode($arr);
-        }
-            
+        }            
 
-        echo $data . "\n"; 
+        if (Factory::request()->gzip()){
+            $this->addHeader('Content-Encoding: gzip');
+            $this->zip($data. "\n");
+        }else
+            echo $data. "\n";
 
         if (static::$quit)
             exit;  	
@@ -115,7 +126,7 @@ class Response
     }
  
     // send as JSON
-    public function sendJson($data, int $http_code = NULL){
+    function sendJson($data, int $http_code = NULL){
         $http_code = $http_code != NULL ? $http_code : static::$http_code;
         
         if ($http_code != NULL)
@@ -147,7 +158,15 @@ class Response
         if ($http_code != NULL)
             header(trim('HTTP/'.static::$version.' '.$http_code.' '.static::$http_code_msg));
 
-        echo $this->encode(['error' => $msg_error, 'error_detail' => $error_detail], $http_code) . "\n";
+        
+        $res =  $this->encode(['error' => $msg_error, 'error_detail' => $error_detail], $http_code) . "\n";
+        
+        if (Factory::request()->gzip()){
+            $this->addHeader('Content-Encoding: gzip');
+            $this->zip($res);    
+        }
+        else
+            echo $res;
         
         if (static::$quit)
             exit; 

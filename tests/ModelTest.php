@@ -22,7 +22,7 @@ include 'config/constants.php';
 
 class ModelTest extends TestCase
 {   		
-  public function testget()
+  function testget()
   {
     //
     $query = Database::table('products');

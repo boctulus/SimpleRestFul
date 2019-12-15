@@ -42,7 +42,7 @@ class ProductsModel extends Model
 		'deleted_at' 	=> ['type'=>'datetime'],
 	];
 
-    public function __construct($db = NULL){
+    function __construct($db = NULL){
 		parent::__construct($db);
 	}
 

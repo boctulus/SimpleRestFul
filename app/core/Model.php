@@ -62,7 +62,7 @@ class Model {
 		Chequear en cada método si hay una conexión 
 	*/
 
-	public function __construct(\PDO $conn = null){
+	function __construct(\PDO $conn = null){
 
 		if($conn){
 			$this->conn = $conn;
@@ -116,22 +116,22 @@ class Model {
 		}		
 	}
 
-	public function setFetchMode($mode){
+	function setFetchMode($mode){
 		$this->fetch_mode = constant("PDO::FETCH_{$mode}");
 		return $this;
 	}
 
-	public function setValidator(IValidator $validator){
+	function setValidator(IValidator $validator){
 		$this->validator = $validator;
 		return $this;
 	}
 
-	public function setTableAlias($tb_alias){
+	function setTableAlias($tb_alias){
 		$this->table_alias = $tb_alias;
 		return $this;
 	}
 
-	public function showDeleted($state = true){
+	function showDeleted($state = true){
 		$this->show_deleted = $state;
 		return $this;
 	}
@@ -139,7 +139,7 @@ class Model {
 	/*
 		Don't execute the query
 	*/
-	public function dontExec(){
+	function dontExec(){
 		$this->exec = false;
 		return $this;
 	}

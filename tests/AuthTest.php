@@ -154,12 +154,12 @@ class AuthTest extends TestCase
 
 	}
 
-	public function testlogin1()
+	function testlogin1()
     {
         $this->login(['email' => "tester3@g.c", "password" => "gogogo"]);     
 	}
 	
-	public function testlogin1b()
+	function testlogin1b()
     {
         $this->login(['username' => "tester3", "password" => "gogogo"]);
 	}
@@ -167,7 +167,7 @@ class AuthTest extends TestCase
 	/*
 		Case: wrong user or password
 	*/
-	public function testlogin2()
+	function testlogin2()
     {
 		$ch = curl_init();
 
@@ -213,7 +213,7 @@ class AuthTest extends TestCase
 	/*
 		Case: wrong user or password
 	*/
-	public function testlogin2b()
+	function testlogin2b()
     {
 		$ch = curl_init();
 
@@ -259,7 +259,7 @@ class AuthTest extends TestCase
 	/*
 		Case: OK
 	*/
-	public function testregister1()
+	function testregister1()
     {
 		$ch = curl_init();
 
@@ -334,7 +334,7 @@ class AuthTest extends TestCase
 		->where(['id' => $uid])->delete(false);
 	}
 
-	public function testtokenrenew()
+	function testtokenrenew()
     {
 		$ch = curl_init();
 

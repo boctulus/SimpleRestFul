@@ -130,7 +130,7 @@ class ApiTest extends TestCase
         /api/v1/me
         Case: OK
     */
-	public function testgetme()
+	function testgetme()
     {
         $ch = curl_init();
 
@@ -179,7 +179,7 @@ class ApiTest extends TestCase
     /*
         /api/v1/products
     */
-	public function testgetproducts()
+	function testgetproducts()
     {
         $ch = curl_init();
 
@@ -233,7 +233,7 @@ class ApiTest extends TestCase
         get
         Case: found
     */
-    public function testgetproduct()
+    function testgetproduct()
     {
         $ch = curl_init();
         
@@ -295,7 +295,7 @@ class ApiTest extends TestCase
         get
         Case: not found
     */
-    public function testgetproductnotfound()
+    function testgetproductnotfound()
     {
         $model = Database::table('products');
         $idn = $model->getIdName();
@@ -332,7 +332,7 @@ class ApiTest extends TestCase
         $this->assertEquals($http_code, 404);
     }
 
-    public function testpagesize1a()
+    function testpagesize1a()
     {
         $ch = curl_init();
 
@@ -386,7 +386,7 @@ class ApiTest extends TestCase
         );
     }
 
-    public function testpagesize1b()
+    function testpagesize1b()
     {
         $ch = curl_init();
 
@@ -512,7 +512,7 @@ class ApiTest extends TestCase
         return [$field, $values];
     }
 
-    public function testfilter001()
+    function testfilter001()
     {
         list($field, $vals) =  $this->get_rand('products');
 
@@ -564,7 +564,7 @@ class ApiTest extends TestCase
         $this->assertEquals($model_arr,$res['data']); 
     }
 
-    public function testfilter001b()
+    function testfilter001b()
     {
         list($field, $vals) = $this->get_rand('products');
 
@@ -623,7 +623,7 @@ class ApiTest extends TestCase
         $this->assertEquals($model_arr,$res['data']);
     }
 
-    public function testfilter002()
+    function testfilter002()
     {
         $fields = $this->get_rand_fields('products', 2);
 
@@ -702,7 +702,7 @@ class ApiTest extends TestCase
         $this->assertEquals($model_arr,$res['data']); 
     }
 
-    public function testfilter003()
+    function testfilter003()
     {
         $field  = $this->get_rand_fields('products')[0];
         $values = $this->get_rand_vals('products', $field, 2, $this->uid);
@@ -761,7 +761,7 @@ class ApiTest extends TestCase
         $this->assertEquals($model_arr, $res['data']); 
     }
 
-    public function testfilter003b()
+    function testfilter003b()
     {
         $field  = $this->get_rand_fields('products')[0];
         $values = $this->get_rand_vals('products', $field, 2, $this->uid);
@@ -820,7 +820,7 @@ class ApiTest extends TestCase
         $this->assertEquals($model_arr, $res['data']);     
     }
 
-    public function testfilter004()
+    function testfilter004()
     {
         $field  = $this->get_rand_fields('products')[0];
         $values = $this->get_rand_vals('products', $field, 2, $this->uid);
@@ -879,7 +879,7 @@ class ApiTest extends TestCase
         $this->assertEquals($model_arr, $res['data']);
     }
 
-    public function testfilter006()
+    function testfilter006()
     {
         $ch = curl_init();
 
@@ -932,7 +932,7 @@ class ApiTest extends TestCase
         $this->assertEquals($model_arr,$res['data']); 
     }
 
-    public function testfilter007()
+    function testfilter007()
     {
         $ch = curl_init();
 
@@ -985,7 +985,7 @@ class ApiTest extends TestCase
         $this->assertEquals($model_arr,$res['data']); 
     }
 
-    public function testfilter008()
+    function testfilter008()
     {
         $ch = curl_init();
 
@@ -1043,7 +1043,7 @@ class ApiTest extends TestCase
         $this->assertEquals($model_arr,$res['data']); 
     }
 
-    public function testfilter009()
+    function testfilter009()
     {
         $ch = curl_init();
 
@@ -1101,7 +1101,7 @@ class ApiTest extends TestCase
         $this->assertEquals($model_arr,$res['data']); 
     }
 
-    public function testfilter010()
+    function testfilter010()
     {
         $ch = curl_init();
 
@@ -1157,7 +1157,7 @@ class ApiTest extends TestCase
         $this->assertEquals($model_arr,$res['data']); 
     }
 
-    public function testfilter011()
+    function testfilter011()
     {
         $ch = curl_init();
 
@@ -1217,7 +1217,7 @@ class ApiTest extends TestCase
         Comparadores numéricos
     */
 
-    public function testfilter012()
+    function testfilter012()
     {
         $ch = curl_init();
 
@@ -1273,7 +1273,7 @@ class ApiTest extends TestCase
         $this->assertEquals($model_arr,$res['data']); 
     }
 
-    public function testfilter013()
+    function testfilter013()
     {
         $ch = curl_init();
 
@@ -1329,7 +1329,7 @@ class ApiTest extends TestCase
         $this->assertEquals($model_arr,$res['data']); 
     }
 
-    public function testfilter014()
+    function testfilter014()
     {
         $ch = curl_init();
 
@@ -1385,7 +1385,7 @@ class ApiTest extends TestCase
         $this->assertEquals($model_arr,$res['data']); 
     }
 
-    public function testfilter015()
+    function testfilter015()
     {
         $ch = curl_init();
 
@@ -1441,7 +1441,7 @@ class ApiTest extends TestCase
         $this->assertEquals($model_arr,$res['data']); 
     }
 
-    public function testfilter016()
+    function testfilter016()
     {
         $ch = curl_init();
 
@@ -1497,7 +1497,7 @@ class ApiTest extends TestCase
         $this->assertEquals($model_arr,$res['data']); 
     }
 
-    public function testfilter017()
+    function testfilter017()
     {
         $ch = curl_init();
 
@@ -1554,7 +1554,7 @@ class ApiTest extends TestCase
         $this->assertEquals($model_arr,$res['data']); 
     }
 
-    public function testfilter018()
+    function testfilter018()
     {
         $ch = curl_init();
 
@@ -1611,7 +1611,7 @@ class ApiTest extends TestCase
         $this->assertEquals($model_arr,$res['data']); 
     }
 
-    public function testfilter019()
+    function testfilter019()
     {
         /*
             Elegir N campos al azar.....
@@ -1681,7 +1681,7 @@ class ApiTest extends TestCase
         $this->assertEquals($model_arr,$res['data']); 
     }
 
-    public function testfilter020()
+    function testfilter020()
     {
         $id  = Database::table('products')->where([
             ['belongs_to', $this->uid]
@@ -1751,7 +1751,7 @@ class ApiTest extends TestCase
         $this->assertEquals($model_arr,$res['data']); 
     }
 
-    public function testfilter021()
+    function testfilter021()
     {
         $id  = Database::table('products')->where([
             ['belongs_to', $this->uid]
@@ -1811,7 +1811,7 @@ class ApiTest extends TestCase
         $this->assertEquals($model_arr,$res['data']); 
     }
 
-    public function testfilter022()
+    function testfilter022()
     {
         $nullables = Database::table('products')->getNullables();
         if (count($nullables) == 0)
@@ -1870,7 +1870,7 @@ class ApiTest extends TestCase
         $this->assertEquals($model_arr,$res['data']); 
     }
 
-    public function testfilter023()
+    function testfilter023()
     {
         $nullables = Database::table('products')->getNullables();
         if (count($nullables) == 0)

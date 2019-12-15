@@ -18,7 +18,7 @@ class Paginator
      * @param int $offset
      * @param int $limit
     */
-    public function __construct($properties = null, array $order = null, int $offset = 0, int $limit = null){
+    function __construct($properties = null, array $order = null, int $offset = 0, int $limit = null){
         $this->order = $order;
         $this->offset = $offset;
         $this->limit = $limit;
@@ -28,7 +28,7 @@ class Paginator
             $this->compile();
     }
 
-    public function compile():void
+    function compile():void
     {
         $query = '';
         if (!empty($this->orders)){
@@ -65,7 +65,7 @@ class Paginator
      *
      * @return  self
      */ 
-    public function setOrders($orders): Paginator
+    function setOrders($orders): Paginator
     {
         $this->orders = $orders;
         return $this;
@@ -76,7 +76,7 @@ class Paginator
      *
      * @return  self
      */ 
-    public function setOffset($offset): Paginator
+    function setOffset($offset): Paginator
     {
         $this->offset = $offset;
         return $this;
@@ -87,7 +87,7 @@ class Paginator
      *
      * @return  self
      */ 
-    public function setLimit($limit): Paginator
+    function setLimit($limit): Paginator
     {
         $this->limit = $limit;
         return $this;
@@ -96,7 +96,7 @@ class Paginator
      /**
      * Get the value of query
      */ 
-    public function getQuery(): string
+    function getQuery(): string
     {
         return $this->query;
     }
@@ -104,7 +104,7 @@ class Paginator
     /**
      * Get the value of binding
      */ 
-    public function getBinding(): array
+    function getBinding(): array
     {
         return $this->binding;
     }

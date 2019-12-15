@@ -16,13 +16,13 @@ include 'config/constants.php';
 
 class ValidatorTest extends TestCase
 {   
-	public function testvalidateEmptyRuleException()
+	function testvalidateEmptyRuleException()
     {
         $this->expectException(\InvalidArgumentException::class);
         (new Validator())->validate([],['username'=>'admin','correo'=>'admin@serviya.com']);
     }
 	
-    public function testvalidate()
+    function testvalidate()
     {
 		// caso base, no hay "reglas" => no se valida nada
 		$this->assertTrue(
@@ -115,31 +115,31 @@ class ValidatorTest extends TestCase
 	
     }
 	
-	public function testisTypeExceptionPorTipoEmpty()
+	function testisTypeExceptionPorTipoEmpty()
     {
         $this->expectException(\InvalidArgumentException::class);
         Validator::isType('Brayan','');
     }
 	
-	public function testisTypeExceptionPorTipoDesconocido()
+	function testisTypeExceptionPorTipoDesconocido()
     {
         $this->expectException(\InvalidArgumentException::class);
         Validator::isType('Brayan','entero');
     }
 	
-	public function testisTypeExceptionPorDatoNull()
+	function testisTypeExceptionPorDatoNull()
     {
         $this->expectException(\InvalidArgumentException::class);
         Validator::isType(NULL,'int');
     }
 	
-	public function testisTypeExceptionPorRegexInvalida()
+	function testisTypeExceptionPorRegexInvalida()
     {
         $this->expectException(\InvalidArgumentException::class);
         Validator::isType('190-200-200','regex:/(.*/');
     }
 	
-	public function testisType()
+	function testisType()
     {
 		$this->assertTrue(
 			Validator::isType('Brayan','string')

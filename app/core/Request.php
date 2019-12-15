@@ -53,20 +53,28 @@ class Request  implements \ArrayAccess, Arrayable
         return static::$instance;
     }
 
-    public function setParams($params){
+    function setParams($params){
         static::$params = $params;
         return static::getInstance();
     }
 
-    public function headers(){
+    function headers(){
         return static::$headers;
     }
 
-    public function header($key){
+    function header($key){
         return static::$headers[$key] ?? NULL;
     }
 
-    public function getQuery($key = null)
+    function gzip(){
+        return in_array('gzip', explode(',', str_replace(' ', '',$this->header('Accept-Encoding'))));
+    }
+
+    function deflate(){
+        return in_array('deflate', explode(',', str_replace(' ', '',$this->header('Accept-Encoding'))));
+    }
+
+    function getQuery($key = null)
     {
         if ($key == null)
             return static::$query_arr;
@@ -75,18 +83,18 @@ class Request  implements \ArrayAccess, Arrayable
     }    
 
     // getter destructivo sobre $query_arr
-    public function shift($key, $default_value = NULL)
+    function shift($key, $default_value = NULL)
     {
         $out = static::$query_arr[$key] ?? $default_value;
         unset(static::$query_arr[$key]);
         return $out;
     }
 
-    public function getParam($index){
+    function getParam($index){
         return static::$params[$index];
     } 
 
-    public function raw()
+    function raw()
     {
         return static::$raw;
     }
@@ -106,7 +114,7 @@ class Request  implements \ArrayAccess, Arrayable
 
     /*  ArrayAccess       */
 
-    public function offsetSet($offset, $value) {
+    function offsetSet($offset, $value) {
         if (is_null($offset)) {
             static::$params[] = $value;
         } else {
@@ -114,21 +122,21 @@ class Request  implements \ArrayAccess, Arrayable
         }
     }
 
-    public function offsetExists($offset) {
+    function offsetExists($offset) {
         return isset(static::$params[$offset]);
     }
 
-    public function offsetUnset($offset) {
+    function offsetUnset($offset) {
         unset(static::$params[$offset]);
     }
 
-    public function offsetGet($offset) {
+    function offsetGet($offset) {
         return isset(static::$params[$offset]) ? static::$params[$offset] : null;
     }
 
     /* Arrayable Interface */ 
 
-    public function toArray(){
+    function toArray(){
         return static::$params;
     }
 

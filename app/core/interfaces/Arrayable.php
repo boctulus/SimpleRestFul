@@ -9,6 +9,6 @@ interface Arrayable {
      *
      * @return array
      */
-     public function toArray();
+     function toArray();
 
 }

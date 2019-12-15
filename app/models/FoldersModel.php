@@ -20,7 +20,7 @@ class FoldersModel extends Model
 		'belongs_to' => 'INT'	
 	];
 
-    public function __construct($db = NULL){
+    function __construct($db = NULL){
 		parent::__construct($db);
 	}
 
