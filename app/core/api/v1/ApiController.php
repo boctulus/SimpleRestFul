@@ -6,7 +6,7 @@ use simplerest\core\Controller;
 use simplerest\core\interfaces\IAuth;
 use simplerest\libs\Factory;
 use simplerest\libs\Arrays;
-use simplerest\libs\Database;
+use simplerest\libs\DB;
 use simplerest\libs\Debug;
 use simplerest\libs\Url;
 use simplerest\models\GroupPermissionsModel;
@@ -64,13 +64,13 @@ abstract class ApiController extends Controller
                 $r = new RolesModel();
                 $this->roles  = $this->auth_payload->roles;              
 
+                $this->is_admin = false;
                 foreach ($this->roles as $role){
                     if ($r->is_admin($role)){
                         $this->is_admin = true;
                         break;
                     }
-                }
-                $this->is_admin = false;
+                }                
             }else{
                 $this->uid = null;
                 $this->is_admin = false;
@@ -99,6 +99,7 @@ abstract class ApiController extends Controller
             }
 
             //var_export($this->callable);
+            //exit;
 
             if (empty($this->callable))
                 Factory::response()->sendError('You are not authorized',403);
@@ -235,7 +236,7 @@ abstract class ApiController extends Controller
 
         try {            
 
-            $conn = Database::getConnection();
+            $conn = DB::getConnection();
 
             $model    = 'simplerest\\models\\'.$this->modelName;
             $instance = (new $model($conn))->setFetchMode('ASSOC'); 
@@ -290,7 +291,7 @@ abstract class ApiController extends Controller
         
             if ($folder !== null)
             {
-                $f = Database::table('folders')->setFetchMode('ASSOC');
+                $f = DB::table('folders')->setFetchMode('ASSOC');
                 $f_rows = $f->where(['id' => $folder])->get();
         
                 if (count($f_rows) == 0 || $f_rows[0]['resource_table'] != $this->model_table)
@@ -595,7 +596,7 @@ abstract class ApiController extends Controller
         $folder = $data['folder'] ?? null;
 
         try {
-            $conn = Database::getConnection();
+            $conn = DB::getConnection();
             $instance->setConn($conn);
 
             if ($instance->inSchema(['belongs_to']))
@@ -606,7 +607,7 @@ abstract class ApiController extends Controller
                 if (empty($this->folder_field))
                     Factory::response()->sendError("'folder_field' is undefined", 403);
 
-                $f = Database::table('folders');
+                $f = DB::table('folders');
                 $f_rows = $f->where(['id' => $folder])->get();
                       
                 if (count($f_rows) == 0 || $f_rows[0]['resource_table'] != $this->model_table)
@@ -654,7 +655,7 @@ abstract class ApiController extends Controller
         try {
             $model    = 'simplerest\\models\\'.$this->modelName;
             
-            $conn = Database::getConnection();            
+            $conn = DB::getConnection();            
 
             // Creo una instancia
             $instance = new $model();
@@ -675,7 +676,7 @@ abstract class ApiController extends Controller
                 if (empty($this->folder_field))
                     Factory::response()->sendError("'folder_field' is undefined", 403);
 
-                $f = Database::table('folders')->setFetchMode('ASSOC');
+                $f = DB::table('folders')->setFetchMode('ASSOC');
                 $f_rows = $f->where(['id' => $folder])->get();
                       
                 if (count($f_rows) == 0 || $f_rows[0]['resource_table'] != $this->model_table)
@@ -775,7 +776,7 @@ abstract class ApiController extends Controller
         $folder = $data['folder'] ?? null;
 
         try {    
-            $conn = Database::getConnection();
+            $conn = DB::getConnection();
         
             $model    = 'simplerest\\models\\'.$this->modelName;
             
@@ -793,7 +794,7 @@ abstract class ApiController extends Controller
                 if (empty($this->folder_field))
                     Factory::response()->sendError("'folder_field' is undefined", 403);
 
-                $f = Database::table('folders')->setFetchMode('ASSOC');
+                $f = DB::table('folders')->setFetchMode('ASSOC');
                 $f_rows = $f->where(['id' => $folder])->get();
                       
                 if (count($f_rows) == 0 || $f_rows[0]['resource_table'] != $this->model_table)

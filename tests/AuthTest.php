@@ -11,7 +11,7 @@ require_once __DIR__ . '../../vendor/autoload.php';
 use PHPUnit\Framework\TestCase;
 use simplerest\models\UsersModel;
 use simplerest\models\RolesModel;
-use simplerest\libs\Database;
+use simplerest\libs\DB;
 use simplerest\libs\Debug;
 
 
@@ -143,7 +143,7 @@ class AuthTest extends TestCase
 
         $uid = $this->get_me($res['data']['access_token'])['id'];
 
-        $role_ids = Database::table('user_roles')->where(['user_id' => $uid])->pluck('role_id');
+        $role_ids = DB::table('user_roles')->where(['user_id' => $uid])->pluck('role_id');
         $rm = new RolesModel();
 
         foreach ($role_ids as $role_id){
@@ -324,13 +324,13 @@ class AuthTest extends TestCase
 			isset($rt_payload->uid) && isset($rt_payload->roles)
 		);
 
-		$uid = Database::table('users')
+		$uid = DB::table('users')
 		->where(['email' => $email])->value('id');
 
-		Database::table('user_roles')
+		DB::table('user_roles')
 		->where(['user_id' => $uid])->delete(false);
 
-		Database::table('users')
+		DB::table('users')
 		->where(['id' => $uid])->delete(false);
 	}
 

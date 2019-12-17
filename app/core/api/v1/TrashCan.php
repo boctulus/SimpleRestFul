@@ -5,7 +5,7 @@ namespace simplerest\core\api\v1;
 use simplerest\controllers\MyApiController;
 use simplerest\libs\Factory;
 use simplerest\libs\Arrays;
-use simplerest\libs\Database;
+use simplerest\libs\DB;
 use simplerest\libs\Validator;
 use simplerest\core\exceptions\InvalidValidationException;
 use simplerest\libs\Url;
@@ -38,7 +38,7 @@ class TrashCan extends MyApiController
             if (!class_exists($model))
                 Factory::response()->sendError("Entity $entity does not exists", 400);
 
-            $conn = Database::getConnection();
+            $conn = DB::getConnection();
             $instance = (new $model($conn))->setFetchMode('ASSOC'); 
             ////////////////////////////////////////////////////
             
@@ -347,7 +347,7 @@ class TrashCan extends MyApiController
         if (!class_exists($model))
             Factory::response()->sendError("Entity $entity does not exists", 400);
         
-        $conn = Database::getConnection();
+        $conn = DB::getConnection();
         $instance = (new $model($conn))->setFetchMode('ASSOC'); 
         ////////////////////////////////////////////////////
 
@@ -363,7 +363,7 @@ class TrashCan extends MyApiController
         //    Factory::response()->sendError('Lack some properties in your request: '.implode(',',$missing), 400);
        
         try {
-            $conn = Database::getConnection();
+            $conn = DB::getConnection();
             $instance->setConn($conn);
 
             $rows = $instance->where([
@@ -479,7 +479,7 @@ class TrashCan extends MyApiController
             if (!class_exists($model))
                 Factory::response()->sendError("Entity $entity does not exists", 400);
             
-            $conn = Database::getConnection();
+            $conn = DB::getConnection();
             $instance = (new $model($conn))->setFetchMode('ASSOC'); 
             ////////////////////////////////////////////////////
 

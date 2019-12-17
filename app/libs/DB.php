@@ -4,7 +4,7 @@ namespace simplerest\libs;
 
 use simplerest\core\Model;
 
-class Database {
+class DB {
 
 	private static $conn;
 	private static $model;
@@ -82,7 +82,7 @@ class Database {
 		static::getConnection()->rollback();
 	}
 
-	// https://github.com/laravel/framework/blob/4.1/src/Illuminate/Database/Connection.php#L417
+	// https://github.com/laravel/framework/blob/4.1/src/Illuminate/DB/Connection.php#L417
 	public static function transaction(\Closure $callback)
     {
 		static::beginTransaction();

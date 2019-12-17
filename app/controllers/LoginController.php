@@ -4,7 +4,7 @@ namespace simplerest\controllers;
 
 use simplerest\libs\Debug;
 use simplerest\libs\Factory;
-use simplerest\libs\Database;
+use simplerest\libs\DB;
 use simplerest\models\UsersModel;
 use simplerest\models\RolesModel;
 use simplerest\libs\Utils;
@@ -135,7 +135,7 @@ class LoginController extends MyController
 
 		try {	
 
-			$u = (Database::table('users'))->setFetchMode('ASSOC');
+			$u = (DB::table('users'))->setFetchMode('ASSOC');
 			$rows = $u->where(['email', $email])->get(['id']);
 
 			if (count($rows) === 0)
@@ -149,7 +149,7 @@ class LoginController extends MyController
 			$url = $base_url . '/login/change_pass/' . $token . '/' . $exp; 
 
 			// Queue email
-			$ok = (bool) Database::table('messages')->create([
+			$ok = (bool) DB::table('messages')->create([
 				'from_email' => $this->config['email']['mailer']['from'][0],
 				'from_name' => $this->config['email']['mailer']['from'][1],
 				'to_email' => $email, 
@@ -195,7 +195,7 @@ class LoginController extends MyController
 					if ($payload->exp < time())
 						$error = 'Token expired';
 						
-					$u = Database::table('users');
+					$u = DB::table('users');
 					$ok = (bool) $u->where(['email', $payload->email])
 						   		->update(['confirmed_email' => 1]);
 										
@@ -218,15 +218,15 @@ class LoginController extends MyController
 
 		if (!isset($error)){
 
-			$rows = Database::table('users')->setFetchMode('ASSOC')->where(['email', $payload->email])->get(['id']);
+			$rows = DB::table('users')->setFetchMode('ASSOC')->where(['email', $payload->email])->get(['id']);
 			$uid  = $rows[0]['id'];
 
-			$affected_rows = Database::table('users')->where(['id' => $uid])->update(['confirmed_email' => 1]);
+			$affected_rows = DB::table('users')->where(['id' => $uid])->update(['confirmed_email' => 1]);
 			
 			if ($affected_rows === false)
 				Factory::response()->sendError('Error', 500);
 
-			$rows = Database::table('user_roles')->setFetchMode('ASSOC')->where(['user_id', $uid])->get(['role_id as role']);	
+			$rows = DB::table('user_roles')->setFetchMode('ASSOC')->where(['user_id', $uid])->get(['role_id as role']);	
 
 			$r = new RolesModel();
 
@@ -356,14 +356,14 @@ class LoginController extends MyController
                     Factory::response()->sendError('Token expired',401);
 			
 				
-				$rows = Database::table('users')->setFetchMode('ASSOC')->where(['email', $payload->email])->get(['id']);
+				$rows = DB::table('users')->setFetchMode('ASSOC')->where(['email', $payload->email])->get(['id']);
 				$uid = $rows[0]['id'];
 
-				$affected = Database::table('users')->where(['id', $rows[0]['id']])->update(['password' => password_hash($data['password'], PASSWORD_DEFAULT)]);
+				$affected = DB::table('users')->where(['id', $rows[0]['id']])->update(['password' => password_hash($data['password'], PASSWORD_DEFAULT)]);
 
 				// Fetch roles
 				$uid = $rows[0]['id'];
-				$rows = Database::table('user_roles')->setFetchMode('ASSOC')->where(['user_id', $uid])->get(['role_id as role']);	
+				$rows = DB::table('user_roles')->setFetchMode('ASSOC')->where(['user_id', $uid])->get(['role_id as role']);	
 				
 				$r = new RolesModel();
 

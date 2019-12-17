@@ -10,7 +10,7 @@ require_once __DIR__ . '../../vendor/autoload.php';
 
 use PHPUnit\Framework\TestCase;
 use simplerest\models\UsersModel;
-use simplerest\libs\Database;
+use simplerest\libs\DB;
 use simplerest\libs\Debug;
 
 define('HOST', 'simplerest.lan');
@@ -223,7 +223,7 @@ class ApiTest extends TestCase
             isset($res['data']) && isset($res['paginator'])
         );
 
-        $model_arr = Database::table('products')->where(['belongs_to', $this->uid])->setFetchMode('ASSOC')->limit($this->config['paginator']['default_limit'])->get();
+        $model_arr = DB::table('products')->where(['belongs_to', $this->uid])->setFetchMode('ASSOC')->limit($this->config['paginator']['default_limit'])->get();
 
         $this->assertEquals($model_arr,$res['data']); 
     }
@@ -237,7 +237,7 @@ class ApiTest extends TestCase
     {
         $ch = curl_init();
         
-        $id  = Database::table('products')->where(['belongs_to' => $this->uid])->random()->value('id');
+        $id  = DB::table('products')->where(['belongs_to' => $this->uid])->random()->value('id');
 
         curl_setopt_array($ch, array(
             CURLOPT_URL => BASE_URL . "api/v1/products/$id",
@@ -282,8 +282,8 @@ class ApiTest extends TestCase
             empty($res['error'])
         );
 
-        $item = Database::table('products')->where(['id', $id])->setFetchMode('ASSOC')->first();
-        //Debug::dd(Database::getQueryLog());
+        $item = DB::table('products')->where(['id', $id])->setFetchMode('ASSOC')->first();
+        //Debug::dd(DB::getQueryLog());
 
         //Debug::dd($item);
         //Debug::dd($res['data']);
@@ -297,7 +297,7 @@ class ApiTest extends TestCase
     */
     function testgetproductnotfound()
     {
-        $model = Database::table('products');
+        $model = DB::table('products');
         $idn = $model->getIdName();
         $non_existing_id = $model->max($idn) + 1;
 
@@ -379,7 +379,7 @@ class ApiTest extends TestCase
             empty($res['error'])
         );
 
-        $cnt = Database::table('products')->count();
+        $cnt = DB::table('products')->count();
 
         $this->assertTrue(
             count($res['data']) == min($this->config['paginator']['default_limit'], $cnt)
@@ -433,7 +433,7 @@ class ApiTest extends TestCase
             empty($res['error'])
         );
 
-        $cnt = Database::table('products')->count();
+        $cnt = DB::table('products')->count();
 
         $this->assertTrue(
             count($res['data']) == min(5, $cnt)
@@ -441,7 +441,7 @@ class ApiTest extends TestCase
     }
 
     private function get_rand_fields($table, $count = 1, $nullables = false){
-        $m = Database::table($table);
+        $m = DB::table($table);
 
         $ff = $m->getNotHidden();
         $ff = array_diff($ff, ['belongs_to', 'created_at', 'deleted_at', 'modified_at', 'id']);
@@ -460,7 +460,7 @@ class ApiTest extends TestCase
     }
 
     private function get_rand_vals($table, $field, $count = 1, $user_id = null){
-        $m = Database::table($table);
+        $m = DB::table($table);
 
         if ($user_id != null)
             $m->where(['belongs_to', $user_id]);
@@ -469,7 +469,7 @@ class ApiTest extends TestCase
     }
 
     private function get_rand($table, $num_values = 1, $nullables = false){
-        $m = Database::table($table);
+        $m = DB::table($table);
 
         $ff = $m->getNotHidden();
         $ff = array_diff($ff, ['belongs_to', 'deleted_at', 'id']);
@@ -493,10 +493,10 @@ class ApiTest extends TestCase
                     $field = $ff[array_rand($ff, 1)];
                 }
                 
-                $val = Database::table($table)->whereNotNull($field)->random()->value($field);
+                $val = DB::table($table)->whereNotNull($field)->random()->value($field);
                 while(trim($val) == ''){
                     $i++;
-                    $val = Database::table($table)->whereNotNull($field)->random()->value($field);
+                    $val = DB::table($table)->whereNotNull($field)->random()->value($field);
                     if ($i>5){
                         $stuck = true;
                         break;
@@ -558,7 +558,7 @@ class ApiTest extends TestCase
             isset($res['data']) && isset($res['paginator'])
         );
 
-        $model_arr = Database::table('products')
+        $model_arr = DB::table('products')
         ->where(['belongs_to' => $this->uid, $field => $vals[0]])->setFetchMode('ASSOC')->limit($this->config['paginator']['default_limit'])->get();
 
         $this->assertEquals($model_arr,$res['data']); 
@@ -610,11 +610,11 @@ class ApiTest extends TestCase
             isset($res['data']) && isset($res['paginator'])
         );
 
-        $model_arr = Database::table('products')
+        $model_arr = DB::table('products')
         ->where(['belongs_to' => $this->uid, $field => $vals[0]])->setFetchMode('ASSOC')->limit($this->config['paginator']['default_limit'])->get();
 
         if ($model_arr != $res['data']){
-            Debug::dd(Database::getQueryLog());
+            Debug::dd(DB::getQueryLog());
             Debug::dd($model_arr, 'MODELO:');
             Debug::dd(BASE_URL . "api/v1/products?{$field}[eq]=". urlencode($vals[0]));
             Debug::dd($res['data'], 'API response:');
@@ -627,7 +627,7 @@ class ApiTest extends TestCase
     {
         $fields = $this->get_rand_fields('products', 2);
 
-        $values = Database::table('products')
+        $values = DB::table('products')
         ->random()
         ->where(['belongs_to', $this->uid])
         ->select($fields)->first();
@@ -693,11 +693,11 @@ class ApiTest extends TestCase
             isset($res['data']) && isset($res['paginator'])
         );
 
-        $model_arr = Database::table('products')
+        $model_arr = DB::table('products')
         ->where(['belongs_to', $this->uid])
         ->where($w)->setFetchMode('ASSOC')->limit($this->config['paginator']['default_limit'])->get();
 
-        //Debug::dd(Database::getQueryLog()); 
+        //Debug::dd(DB::getQueryLog()); 
 
         $this->assertEquals($model_arr,$res['data']); 
     }
@@ -752,7 +752,7 @@ class ApiTest extends TestCase
             isset($res['data']) && isset($res['paginator'])
         );
 
-        $model_arr = Database::table('products')->where([
+        $model_arr = DB::table('products')->where([
             ['belongs_to', $this->uid], 
             [$field, $values ]
         ])
@@ -811,7 +811,7 @@ class ApiTest extends TestCase
             isset($res['data']) && isset($res['paginator'])
         );
 
-        $model_arr = Database::table('products')->where([
+        $model_arr = DB::table('products')->where([
             ['belongs_to', $this->uid], 
             [$field, $values ]
         ])
@@ -870,7 +870,7 @@ class ApiTest extends TestCase
             isset($res['data']) && isset($res['paginator'])
         );
 
-        $model_arr = Database::table('products')->where([
+        $model_arr = DB::table('products')->where([
             ['belongs_to', $this->uid], 
             [$field, $values, 'NOT IN' ]
         ])
@@ -923,7 +923,7 @@ class ApiTest extends TestCase
             isset($res['data']) && isset($res['paginator'])
         );
 
-        $model_arr = Database::table('products')->where([
+        $model_arr = DB::table('products')->where([
             ['belongs_to', $this->uid], 
             ['name', 'Caja %', 'LIKE']
         ])
@@ -976,7 +976,7 @@ class ApiTest extends TestCase
             isset($res['data']) && isset($res['paginator'])
         );
 
-        $model_arr = Database::table('products')->where([
+        $model_arr = DB::table('products')->where([
             ['belongs_to', $this->uid], 
             ['name', 'Caja %', 'NOT LIKE']
         ])
@@ -1034,7 +1034,7 @@ class ApiTest extends TestCase
             isset($res['data']) && isset($res['paginator'])
         );
 
-        $model_arr = Database::table('products')->where([
+        $model_arr = DB::table('products')->where([
             ['belongs_to', $this->uid], 
             ['name', '%ora', 'LIKE']
         ])
@@ -1092,7 +1092,7 @@ class ApiTest extends TestCase
             isset($res['data']) && isset($res['paginator'])
         );
 
-        $model_arr = Database::table('products')->where([
+        $model_arr = DB::table('products')->where([
             ['belongs_to', $this->uid], 
             ['name', '%ora', 'NOT LIKE']
         ])
@@ -1148,7 +1148,7 @@ class ApiTest extends TestCase
             isset($res['data']) && isset($res['paginator'])
         );
 
-        $model_arr = Database::table('products')->where([
+        $model_arr = DB::table('products')->where([
             ['belongs_to', $this->uid], 
             ['name', '% de %', 'LIKE']
         ])
@@ -1204,7 +1204,7 @@ class ApiTest extends TestCase
             isset($res['data']) && isset($res['paginator'])
         );
 
-        $model_arr = Database::table('products')->where([
+        $model_arr = DB::table('products')->where([
             ['belongs_to', $this->uid], 
             ['name', '% de %', 'NOT LIKE']
         ])
@@ -1264,7 +1264,7 @@ class ApiTest extends TestCase
             isset($res['data']) && isset($res['paginator'])
         );
 
-        $model_arr = Database::table('products')->where([
+        $model_arr = DB::table('products')->where([
             ['belongs_to', $this->uid], 
             ['cost', 100, '!=']
         ])
@@ -1320,7 +1320,7 @@ class ApiTest extends TestCase
             isset($res['data']) && isset($res['paginator'])
         );
 
-        $model_arr = Database::table('products')->where([
+        $model_arr = DB::table('products')->where([
             ['belongs_to', $this->uid], 
             ['cost', 100, '>']
         ])
@@ -1376,7 +1376,7 @@ class ApiTest extends TestCase
             isset($res['data']) && isset($res['paginator'])
         );
 
-        $model_arr = Database::table('products')->where([
+        $model_arr = DB::table('products')->where([
             ['belongs_to', $this->uid], 
             ['cost', 100, '<']
         ])
@@ -1432,7 +1432,7 @@ class ApiTest extends TestCase
             isset($res['data']) && isset($res['paginator'])
         );
 
-        $model_arr = Database::table('products')->where([
+        $model_arr = DB::table('products')->where([
             ['belongs_to', $this->uid], 
             ['cost', 100, '>=']
         ])
@@ -1488,7 +1488,7 @@ class ApiTest extends TestCase
             isset($res['data']) && isset($res['paginator'])
         );
 
-        $model_arr = Database::table('products')->where([
+        $model_arr = DB::table('products')->where([
             ['belongs_to', $this->uid], 
             ['cost', 100, '<=']
         ])
@@ -1544,7 +1544,7 @@ class ApiTest extends TestCase
             isset($res['data']) && isset($res['paginator'])
         );
 
-        $model_arr = Database::table('products')->where([
+        $model_arr = DB::table('products')->where([
             ['belongs_to', $this->uid], 
             ['cost', 100, '<='],
             ['cost', 50, '>=']
@@ -1601,7 +1601,7 @@ class ApiTest extends TestCase
             isset($res['data']) && isset($res['paginator'])
         );
 
-        $model_arr = Database::table('products')->where([
+        $model_arr = DB::table('products')->where([
             ['belongs_to', $this->uid], 
             ['created_at', '2019-11-02 16:07:10', '>='],
             ['created_at', '2019-11-03 21:33:20', '<=']
@@ -1616,7 +1616,7 @@ class ApiTest extends TestCase
         /*
             Elegir N campos al azar.....
         */
-        $not_hidden = Database::table('products')->getNotHidden();
+        $not_hidden = DB::table('products')->getNotHidden();
         $cnt = count($not_hidden);
         $cnt = $cnt > 1 ? ceil($cnt / 2)  : $cnt;
         $ixs = array_rand($not_hidden, $cnt);
@@ -1673,7 +1673,7 @@ class ApiTest extends TestCase
             isset($res['data']) && isset($res['paginator'])
         );
 
-        $model_arr = Database::table('products')->where([
+        $model_arr = DB::table('products')->where([
             ['belongs_to', $this->uid]
         ])
         ->setFetchMode('ASSOC')->limit($this->config['paginator']['default_limit'])->get($fields);
@@ -1683,14 +1683,14 @@ class ApiTest extends TestCase
 
     function testfilter020()
     {
-        $id  = Database::table('products')->where([
+        $id  = DB::table('products')->where([
             ['belongs_to', $this->uid]
         ])->random()->value('id');
 
         /*
             Elegir N campos al azar.....
         */
-        $not_hidden = Database::table('products')->getNotHidden();
+        $not_hidden = DB::table('products')->getNotHidden();
         $cnt = count($not_hidden);
         $cnt = $cnt > 1 ? ceil($cnt / 2)  : $cnt;
         $ixs = array_rand($not_hidden, $cnt);
@@ -1743,7 +1743,7 @@ class ApiTest extends TestCase
         if ($http_code != 200)
             throw new \Exception("Unexpected http code ($http_code)");
 
-        $model_arr = Database::table('products')->where([
+        $model_arr = DB::table('products')->where([
             'id' => $id
         ])
         ->setFetchMode('ASSOC')->first($fields);
@@ -1753,11 +1753,11 @@ class ApiTest extends TestCase
 
     function testfilter021()
     {
-        $id  = Database::table('products')->where([
+        $id  = DB::table('products')->where([
             ['belongs_to', $this->uid]
         ])->random()->value('id');
 
-        $not_hidden = Database::table('products')->getNotHidden();
+        $not_hidden = DB::table('products')->getNotHidden();
         $field = $not_hidden[array_rand($not_hidden,1)];
 
         $ch = curl_init();
@@ -1801,19 +1801,19 @@ class ApiTest extends TestCase
         if ($http_code != 200)
             throw new \Exception("Unexpected http code ($http_code)");
 
-        $model_arr = Database::table('products')->where([
+        $model_arr = DB::table('products')->where([
             'id' => $id
         ])
         ->setFetchMode('ASSOC')->hide([$field])->first();
 
-        //Debug::dd(Database::getQueryLog()); 
+        //Debug::dd(DB::getQueryLog()); 
 
         $this->assertEquals($model_arr,$res['data']); 
     }
 
     function testfilter022()
     {
-        $nullables = Database::table('products')->getNullables();
+        $nullables = DB::table('products')->getNullables();
         if (count($nullables) == 0)
             return;
 
@@ -1858,21 +1858,21 @@ class ApiTest extends TestCase
         if ($http_code != 200)
             throw new \Exception("Unexpected http code ($http_code)");
 
-        $model_arr = Database::table('products')
+        $model_arr = DB::table('products')
         ->where(['belongs_to' => $this->uid])
         ->where([ 
             $nullables[0] => NULL
         ])
         ->setFetchMode('ASSOC')->get();
 
-        //Debug::dd(Database::getQueryLog()); 
+        //Debug::dd(DB::getQueryLog()); 
 
         $this->assertEquals($model_arr,$res['data']); 
     }
 
     function testfilter023()
     {
-        $nullables = Database::table('products')->getNullables();
+        $nullables = DB::table('products')->getNullables();
         if (count($nullables) == 0)
             return;
 
@@ -1917,14 +1917,14 @@ class ApiTest extends TestCase
         if ($http_code != 200)
             throw new \Exception("Unexpected http code ($http_code)");
 
-        $model_arr = Database::table('products')
+        $model_arr = DB::table('products')
         ->where(['belongs_to', $this->uid])
         ->where([ 
             $nullables[0],  NULL, 'IS NOT'
         ])
         ->setFetchMode('ASSOC')->limit($this->config['paginator']['default_limit'])->get();
 
-        //Debug::dd(Database::getQueryLog()); 
+        //Debug::dd(DB::getQueryLog()); 
         //Debug::dd($model_arr);
         //Debug::dd($res['data']);
 

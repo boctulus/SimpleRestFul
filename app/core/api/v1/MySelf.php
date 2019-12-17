@@ -6,7 +6,7 @@ use simplerest\core\Controller;
 use simplerest\core\interfaces\IAuth;
 use simplerest\libs\Factory;
 use simplerest\libs\Arrays;
-use simplerest\libs\Database;
+use simplerest\libs\DB;
 use simplerest\libs\Debug;
 use simplerest\libs\Url;
 use simplerest\libs\Validator;
@@ -168,7 +168,7 @@ class MySelf extends Controller
     function get(){
         try {            
 
-            $conn = Database::getConnection();
+            $conn = DB::getConnection();
 
             $model    = 'simplerest\\models\\'.$this->modelName;
             $instance = (new $model($conn))->setFetchMode('ASSOC'); 
@@ -195,7 +195,7 @@ class MySelf extends Controller
         try {
             $model    = 'simplerest\\models\\'.$this->modelName;
             
-            $conn = Database::getConnection();            
+            $conn = DB::getConnection();            
 
             // Creo una instancia
             $instance = new $model();
@@ -265,7 +265,7 @@ class MySelf extends Controller
         $folder = $data['folder'] ?? null;
 
         try {    
-            $conn = Database::getConnection();
+            $conn = DB::getConnection();
         
             $model    = 'simplerest\\models\\'.$this->modelName;
             $instance = new $model($conn);

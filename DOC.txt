@@ -395,7 +395,7 @@ La salida en caso de fracaso es un array conteniendo las reglas rotas para cada 
 
 Para efectuar la validación sobre las operaciones CRUD con los modelos es tan simple como incluir una instancia de la clase Validator:
 
-	$u = Database::table('products')->setValidator(new Validator());
+	$u = DB::table('products')->setValidator(new Validator());
 	$rows = $u->where(['cost' => '100X', 'belongs_to' => 90])->get();
 
 El validador es alimentado con los tipos del $schema y es complementado con un array $rules que puede estar presente opcionalmente en cada modelo.

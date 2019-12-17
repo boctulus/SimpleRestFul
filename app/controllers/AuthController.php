@@ -6,7 +6,7 @@ use Exception;
 use simplerest\core\Controller;
 use simplerest\core\interfaces\IAuth;
 use simplerest\libs\Factory;
-use simplerest\libs\Database;
+use simplerest\libs\DB;
 use simplerest\libs\Utils;
 use simplerest\models\UsersModel;
 use simplerest\models\RolesModel;
@@ -91,7 +91,7 @@ class AuthController extends Controller implements IAuth
 
         try {              
 
-            $row = Database::table('users')->setFetchMode('ASSOC')->unhide(['password'])
+            $row = DB::table('users')->setFetchMode('ASSOC')->unhide(['password'])
             ->where([ 'email'=> $email, 'username' => $username ], 'OR')
             ->setValidator((new Validator())->setRequired(false))  
             ->first();
@@ -106,7 +106,7 @@ class AuthController extends Controller implements IAuth
 
             // Fetch roles
             $uid = $row['id'];
-            $rows = Database::table('user_roles')->setFetchMode('ASSOC')->where(['user_id', $uid])->get(['role_id as role']);	
+            $rows = DB::table('user_roles')->setFetchMode('ASSOC')->where(['user_id', $uid])->get(['role_id as role']);	
             
             $r = new RolesModel();
 
@@ -218,19 +218,19 @@ class AuthController extends Controller implements IAuth
                 Factory::response()->sendError('There are missing properties in your request: '.implode(',',$missing), 400);
 
             // exits
-            if (Database::table('users')->where(['email', $data['email']])->exists())
+            if (DB::table('users')->where(['email', $data['email']])->exists())
                 Factory::response()->sendError('Email already exists');  
 
-            if (Database::table('users')->where(['username', $data['username']])->exists())
+            if (DB::table('users')->where(['username', $data['username']])->exists())
                 Factory::response()->sendError('Username already exists');
 
             $data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
 
-            $uid = Database::table('users')->setValidator(new Validator())->create($data);
+            $uid = DB::table('users')->setValidator(new Validator())->create($data);
             if (empty($uid))
                 Factory::response()->sendError("Error in user registration", 500, 'Error creating user');
 
-            $u = Database::table('users');    
+            $u = DB::table('users');    
             if ($u->inSchema(['belongs_to'])){
                 $affected = $u->where(['id', $uid])->update(['belongs_to' => $uid]);
             }
@@ -239,7 +239,7 @@ class AuthController extends Controller implements IAuth
                 $role = $this->config['registration_role'];
 
                 $r  = new RolesModel();
-                $ur = Database::table('userRoles');
+                $ur = DB::table('userRoles');
 
                 $ur_id = $ur->create([ 'user_id' => $uid, 'role_id' => $r->get_role_id($role) ]);  
 
@@ -265,7 +265,7 @@ class AuthController extends Controller implements IAuth
             $lastname  = $data['lastname']  ?? null;
             $email  = $data['email']  ?? null;
 
-            $ok = (bool) Database::table('messages')->create([
+            $ok = (bool) DB::table('messages')->create([
                 'from_email' => $this->config['email']['mailer']['from'][0],
                 'from_name' => $this->config['email']['mailer']['from'][1],
                 'to_email' => $email, 

@@ -4,7 +4,7 @@ namespace simplerest\controllers;
 
 use Exception;
 use simplerest\core\Controller;
-use simplerest\libs\Database;
+use simplerest\libs\DB;
 use simplerest\models\UsersModel;
 use simplerest\models\UserRolesModel;
 use simplerest\models\RolesModel;
@@ -113,14 +113,14 @@ class FacebookController extends Controller
                     preg_match('/[^@]+/', $payload['email'], $matches);
                     $username = substr($matches[0], 0, 12);
             
-                    $existe = Database::table('users')->where(['username', $username])->exists();
+                    $existe = DB::table('users')->where(['username', $username])->exists();
                     
                     if ($existe){
                         $_username = $username;
                         $append = 1;
                         while($existe){
                             $_username = $username . $append;
-                            $existe = Database::table('users')->where(['username', $_username])->exists();
+                            $existe = DB::table('users')->where(['username', $_username])->exists();
                             $append++;
                         }
                         $username = $_username;
@@ -134,7 +134,7 @@ class FacebookController extends Controller
                         return ['error' => 'Error in user registration!', 'code' => 500];
         
                     if ($u->inSchema(['belongs_to'])){
-                        Database::table('users')
+                        DB::table('users')
                         ->where(['id', $uid])
                         ->update(['belongs_to' => $uid]);
                     }

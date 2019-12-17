@@ -108,10 +108,10 @@ class Response
             $data = $this->encode($arr);
         }            
 
-        if (Factory::request()->gzip() && strlen($data) > 1000){
-            $this->addHeader('Content-Encoding: gzip');
-            $this->zip($data. "\n");
-        }else
+        //if (Factory::request()->gzip() && strlen($data) > 1000){
+        //    $this->addHeader('Content-Encoding: gzip');
+        //    $this->zip($data. "\n");
+        //}else
             echo $data. "\n";
 
         if (static::$quit)

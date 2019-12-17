@@ -2,7 +2,7 @@
 
 namespace simplerest\core;
 
-use simplerest\libs\Database;
+use simplerest\libs\DB;
 
 abstract class Controller
 {
@@ -17,7 +17,7 @@ abstract class Controller
     }
 
     protected function getConnection() {
-        return Database::getConnection();
+        return DB::getConnection();
     }
 
     function getCallable(){
