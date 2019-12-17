@@ -1,5 +1,9 @@
 # TODO
 
+- Documentar en Git como en 
+
+https://github.com/robsonvn/laravel-couchdb
+
 - Permitir setear nivel de compresion (1 a 6)
 
 	ini_set('zlib.output_compression_level', 4);

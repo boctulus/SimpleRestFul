@@ -70,5 +70,36 @@ class Database {
 		return $st;
 	}
 
+	public static function beginTransaction(){
+		static::getConnection()->beginTransaction();
+	}
+
+	public static function commit(){
+		static::getConnection()->commit();
+	}
+
+	public static function rollback(){
+		static::getConnection()->rollback();
+	}
+
+	// https://github.com/laravel/framework/blob/4.1/src/Illuminate/Database/Connection.php#L417
+	public static function transaction(\Closure $callback)
+    {
+		static::beginTransaction();
+
+		try
+		{
+			$result = $callback();
+			static::commit();
+		}
+
+		catch (\Exception $e)
+		{
+			static::rollBack();
+			throw $e;
+		}
+
+		return $result;
+    }
 		
 }

@@ -108,7 +108,7 @@ class Response
             $data = $this->encode($arr);
         }            
 
-        if (Factory::request()->gzip()){
+        if (Factory::request()->gzip() && strlen($data) > 1000){
             $this->addHeader('Content-Encoding: gzip');
             $this->zip($data. "\n");
         }else
@@ -132,8 +132,15 @@ class Response
         if ($http_code != NULL)
             header(trim('HTTP/'.static::$version.' '.$http_code.' '.static::$http_code_msg));
        
-        echo $this->encode([ 'data' => $data, 'error' => '', 'error_detail' => '' ]). "\n"; 
+        $res =  $this->encode([ 'data' => $data, 'error' => '', 'error_detail' => '' ]). "\n"; 
         
+        if (Factory::request()->gzip() && strlen($res) > 1000){
+            $this->addHeader('Content-Encoding: gzip');
+            $this->zip($res);    
+        }
+        else
+            echo $res;
+
         if (static::$quit)
             exit; 
     }
@@ -161,7 +168,7 @@ class Response
         
         $res =  $this->encode(['error' => $msg_error, 'error_detail' => $error_detail], $http_code) . "\n";
         
-        if (Factory::request()->gzip()){
+        if (Factory::request()->gzip() && strlen($res) > 1000){
             $this->addHeader('Content-Encoding: gzip');
             $this->zip($res);    
         }

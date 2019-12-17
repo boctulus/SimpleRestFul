@@ -69,7 +69,7 @@ class Validator implements IValidator
 		}elseif($tipo == 'time'){
 				return get_class()::isValidDate($dato,'H:i:s');	
 		// formato: 'regex:/expresion/'			
-		}elseif ((substr($tipo,0,7)=='regex:/') /* && (substr($tipo,-1)=='/') */ ){
+		}elseif ((substr($tipo,0,6)=='regex:')){
 			try{
 				$regex = substr($tipo,6);
 				return preg_match($regex,$dato) == 1;	
@@ -174,7 +174,7 @@ class Validator implements IValidator
 					
 						
 				if(isset($rule['type'])){	
-					if(in_array($rule['type'],['str','string','notnum','email'])){
+					if (in_array($rule['type'],['str','string','notnum','email']) || strpos($rule['type'], 'regex:') === 0 ){
 							
 							if(isset($rule['min'])){ 
 								$rule['min'] = (int) $rule['min'];

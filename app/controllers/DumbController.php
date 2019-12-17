@@ -66,12 +66,60 @@ class DumbController extends Controller
         for ($i=0;$i<20;$i++)
             $name .= chr(rand(97,122));
 
-        $id = Database::table('products')->create([ 'name' => $name, 
-                                                    'description' => 'Esto es una prueba', 
-                                                    'size' => '1L',
-                                                    'cost' => 66,
-                                                    'belongs_to' => 90
+        $id = Database::table('products')->create([ 
+            'name' => $name, 
+            'description' => 'Esto es una prueba', 
+            'size' => '1L',
+            'cost' => 66,
+            'belongs_to' => 90
         ]);    
+    }
+
+    function transaction(){
+        Database::beginTransaction();
+
+        try {
+            $name = '';
+            for ($i=0;$i<20;$i++)
+                $name .= chr(rand(97,122));
+
+            $id = Database::table('products')->create([ 
+                'name' => $name, 
+                'description' => 'Esto es una prueba', 
+                'size' => rand(1,5).'L',
+                'cost' => rand(0,500),
+                'belongs_to' => 90
+            ]);   
+
+            Database::table('products')->where(['id' => $id + 1])->update(['description' => 'editado *']);
+            
+            Database::commit();
+
+        } catch (\Exception $e) {
+            Database::rollback();
+            throw $e;
+        //} catch (\Throwable $e) {
+        //    Database::rollback();            
+        }            
+    }
+
+    // https://fideloper.com/laravel-database-transactions
+    function transaction2(){
+        Database::transaction(function(){
+            $name = '';
+            for ($i=0;$i<20;$i++)
+                $name .= chr(rand(97,122));
+
+            $id = Database::table('products')->create([ 
+                'name' => $name, 
+                'description' => 'Esto es una prueba', 
+                'size' => rand(1,5).'L',
+                'cost' => rand(0,500),
+                'belongs_to' => 90
+            ]);   
+
+            Database::table('products')->where(['id' => $id + 1])->update(['description' => 'editado *']);
+        });      
     }
 
     function get_products(){
@@ -965,6 +1013,11 @@ class DumbController extends Controller
       // ok
     function sender(){
         Debug::dd(Utils::send_mail('boctulus@gmail.com', 'Pablo ZZ', 'Pruebita', 'Hola!<p/>Esto es una <b>prueba</b><p/>Chau'));     
+    }
+
+    function validacion(){
+        $u = Database::table('users');
+        var_dump($u->where(['username' => 'nano_'])->get());
     }
 
     function validacion1(){
