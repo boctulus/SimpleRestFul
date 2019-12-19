@@ -1,5 +1,9 @@
 # TODO
 
+- Crear reglas de validación personalizadas 
+
+https://documentacion-laravel.com/validation.html
+
 - Documentar en Git como en 
 
 https://github.com/robsonvn/laravel-couchdb
