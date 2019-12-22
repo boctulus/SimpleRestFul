@@ -74,8 +74,8 @@ class ModelTest extends TestCase
     //  
     DB::table('products')->showDeleted()
     ->where([ ['cost', 100, '>='], ['size', '1L'], ['belongs_to', 90] ])
-    ->count('modified_at');
-    $this->assertEquals(DB::getQueryLog(), "SELECT COUNT(modified_at) FROM products WHERE (cost >= 100 AND size = '1L' AND belongs_to = 90)");;
+    ->count('updated_at');
+    $this->assertEquals(DB::getQueryLog(), "SELECT COUNT(updated_at) FROM products WHERE (cost >= 100 AND size = '1L' AND belongs_to = 90)");;
 
     //  
     DB::table('products')->showDeleted()
@@ -379,12 +379,12 @@ class ModelTest extends TestCase
       //  
     DB::table('users')->unhide(['password'])
       ->where([ 'email'=> 'nano@g.c', 
-                'username' => 'nano@g.c' 
+                'username' => 'nano' 
       ], 'OR') 
       ->setValidator((new Validator())->setRequired(false))  
       ->get();
 
-    $this->assertEquals(DB::getQueryLog(), "SELECT * FROM users WHERE (email = 'nano@g.c' OR username = 'nano@g.c') AND deleted_at IS NULL");
+    $this->assertEquals(DB::getQueryLog(), "SELECT * FROM users WHERE (email = 'nano@g.c' OR username = 'nano') AND deleted_at IS NULL");
 
     //  
     $rows = DB::table('users')

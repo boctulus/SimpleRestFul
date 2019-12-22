@@ -263,7 +263,7 @@ class AuthTest extends TestCase
     {
 		$ch = curl_init();
 
-		$username = 'nn_x23483j401wx';
+		$username = 'asdf_0000';
 		$email = "$username@g.c";
 
         $obj  = ['username' => $username, "email" => $email, "password" => "asdf1234"];

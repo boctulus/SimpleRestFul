@@ -1288,7 +1288,7 @@ class DumbController extends Controller
         $m = DB::table($table);
 
         $ff = $m->getNotHidden();
-        $ff = array_diff($ff, ['belongs_to', 'created_at', 'deleted_at', 'modified_at', 'id']);
+        $ff = array_diff($ff, ['belongs_to', 'created_at', 'deleted_at', 'updated_at', 'id']);
 
         if (!$nullables)
             $ff = array_intersect($ff, $m->getNotNullables());

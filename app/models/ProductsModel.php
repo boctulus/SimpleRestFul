@@ -11,7 +11,7 @@ class ProductsModel extends Model
 {
 	protected $table_name = "products";
 	protected $id_name = 'id';
-	protected $nullable = ['description', 'size', 'active', 'locked', 'workspace', 'created_at', 'modified_at', 'deleted_at' ];
+	protected $nullable = ['description', 'size', 'active', 'locked', 'workspace', 'created_at', 'updated_at', 'deleted_at' ];
  
 	/*
 		Types are INT, STR and BOOL among others
@@ -25,7 +25,9 @@ class ProductsModel extends Model
 		'cost' => 'INT',
 		'workspace' => 'STR',
 		'created_at' => 'STR',
-		'modified_at' => 'STR',
+		'created_by' => 'STR',
+		'updated_at' => 'STR',
+		'updated_by' => 'STR',
 		'deleted_at' => 'STR',
 		'active' => 'INT',
 		'locked' => 'INT',		 
@@ -38,7 +40,7 @@ class ProductsModel extends Model
 		'size' 			=> ['max'=>20],
         'workspace'		=> ['max'=>20],
 		'created_at' 	=> ['type'=>'datetime'],
-		'modified_at' 	=> ['type'=>'datetime'],
+		'updated_at' 	=> ['type'=>'datetime'],
 		'deleted_at' 	=> ['type'=>'datetime'],
 	];
 

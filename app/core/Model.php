@@ -82,7 +82,7 @@ class Model {
 
 		if ($this->fillable == NULL){
 			$this->fillable = $this->properties;
-			$this->unfill([$this->id_name, 'created_at', 'modified_at', 'deleted_at', 'locked']);
+			$this->unfill([$this->id_name, 'created_at', 'updated_at', 'deleted_at', 'locked']);
 		}
 
 		$this->unfill($this->not_fillable);
@@ -91,8 +91,11 @@ class Model {
 		$this->nullable[] = 'locked';
 		$this->nullable[] = 'belongs_to';
 		$this->nullable[] = 'created_at';
-		$this->nullable[] = 'modified_at';
+		$this->nullable[] = 'updated_at';
 		$this->nullable[] = 'deleted_at';
+		$this->nullable[] = 'created_by';
+		$this->nullable[] = 'updated_by';
+
 
 		// Validations
 		
@@ -411,8 +414,8 @@ class Model {
 				if ($this->inSchema(['created_at']))
 					$remove[] = 'created_at';
 
-				if ($this->inSchema(['modified_at']))
-					$remove[] = 'modified_at';
+				if ($this->inSchema(['updated_at']))
+					$remove[] = 'updated_at';
 
 				if ($this->inSchema(['deleted_at']))
 					$remove[] = 'deleted_at';
@@ -1228,8 +1231,8 @@ class Model {
 		}
 		$set =trim(substr($set, 0, strlen($set)-2));
 
-		if ($this->inSchema(['modified_at'])){
-			$set .= ', modified_at = NOW()';
+		if ($this->inSchema(['updated_at'])){
+			$set .= ', updated_at = NOW()';
 		}
 
 		$where = implode(' AND ', $this->where);

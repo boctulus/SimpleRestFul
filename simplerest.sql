@@ -192,7 +192,7 @@ CREATE TABLE `products` (
   `size` varchar(30) NOT NULL,
   `cost` int(11) NOT NULL,
   `created_at` datetime NOT NULL,
-  `modified_at` datetime DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL,
   `deleted_at` datetime DEFAULT NULL,
   `active` tinyint(11) DEFAULT 1,
   `locked` tinyint(4) DEFAULT 0,
@@ -204,7 +204,7 @@ CREATE TABLE `products` (
 -- Volcado de datos para la tabla `products`
 --
 
-INSERT INTO `products` (`id`, `name`, `description`, `size`, `cost`, `created_at`, `modified_at`, `deleted_at`, `active`, `locked`, `workspace`, `belongs_to`) VALUES
+INSERT INTO `products` (`id`, `name`, `description`, `size`, `cost`, `created_at`, `updated_at`, `deleted_at`, `active`, `locked`, `workspace`, `belongs_to`) VALUES
 (100, 'Vodka', NULL, '2 1/4 L', 200, '2019-07-04 00:00:00', '2019-11-24 22:46:44', '2019-11-25 02:46:44', 1, 1, '', 90),
 (103, 'Juguito ric0', 'Delicious juic333333', '1 Litros', 150, '2019-09-13 00:00:00', '2019-11-24 22:46:46', '2019-11-25 02:46:46', 1, 1, NULL, 90),
 (105, 'Agua mineral', 'De Córdoba', '1L', 525, '2019-03-15 00:00:00', '2019-11-24 22:46:48', '2019-11-25 02:46:48', 1, 1, 'lista publica', 90),

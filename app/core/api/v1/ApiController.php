@@ -331,7 +331,7 @@ abstract class ApiController extends Controller
 
                 $rows = $instance->where($_get)->get($fields); 
                 if (empty($rows))
-                    Factory::response()->sendCode(404);
+                    Factory::response()->sendError('Not found', 404);
                 else
                     Factory::response()->send($rows[0]);
             }else{    
@@ -637,6 +637,10 @@ abstract class ApiController extends Controller
                 Factory::response()->sendError('Data validation error', 400, $validado);
             }  
 
+            if ($instance->inSchema(['created_by'])){
+                $data['created_by'] = $this->uid;
+            }
+
             if ($instance->create($data)!==false){
                 Factory::response()->send(['id' => $instance->id], 201);
             }	
@@ -734,6 +738,10 @@ abstract class ApiController extends Controller
                 Factory::response()->sendError('Data validation error', 400, $validado);
             }
     
+            if ($instance->inSchema(['updated_by'])){
+                $data['updated_by'] = $this->uid;
+            }
+
             if ($instance->where(['id', $id])->update($data) !== false)
                 Factory::response()->sendJson("OK");
             else

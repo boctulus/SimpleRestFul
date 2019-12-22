@@ -1,12 +1,5 @@
 # TODO
 
-- Agregar campo created_by además de belongs_to
-
-- Cambiar modified_at por updated_at 
-
-- Si el campo "belongs_to" no existe en la tabla o bien en el modelo hay un $owned = false,
-=> permitir a todos los usuarios registrados poder leer o escribir en esa tabla según los permisos r,w se lo permitan.
-
 - Usar un campo folder_id en cada tabla en la que pretendo utilizar folders y usar éste en vez de la combinación entre el user_ud y el nombre del "workspace" como identificador de carpeta.
 
 Objetivo: poder crear recursos de nuestra propiedad en carpetas ajenas donde lógicamente poseemos permisos de lectura y escritura.

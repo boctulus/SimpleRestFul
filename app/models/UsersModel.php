@@ -41,7 +41,7 @@ class UsersModel extends Model
 	];
 
 	protected $rules = [
-		'username'	=> ['min'=>2, 'max'=>15, 'type' => 'regex:/^[a-zA-Z0-9]+$/'],
+		'username'	=> ['min'=>2, 'max'=>15, 'type' => 'regex:/^[a-zA-Z0-9_]+$/'], 
 		'email' 	=> ['type'=>'email'],
 	];
 
