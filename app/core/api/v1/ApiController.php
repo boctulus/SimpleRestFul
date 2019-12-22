@@ -19,18 +19,20 @@ use simplerest\core\exceptions\InvalidValidationException;
 
 abstract class ApiController extends Controller
 {
+    static protected $guest_access = false;  
+    static protected $owned = true;
+    static protected $folder_field;
+    static protected $soft_delete = true;
+
     protected $scope;
     protected $callable = [];
     protected $config;
     protected $modelName;
     protected $model_table;
-    protected $soft_delete;
     protected $auth_payload = null;
     protected $uid;
     protected $is_admin = false;
     protected $roles = [];
-    protected $folder_field;
-    protected $guest_root_access = false;
     protected $default_headers = [
         'access-control-allow-Methods' => 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
         'access-control-allow-credentials' => 'true',
@@ -118,6 +120,9 @@ abstract class ApiController extends Controller
         }    
     }
 
+    static function get_owned(){
+        return static::$owned;
+    }
     
     /**
      * setheaders
@@ -310,17 +315,17 @@ abstract class ApiController extends Controller
 
                 if (empty($folder)){               
                     // root, by id
-                    if (!$this->is_admin)
+                    if (!$this->is_admin && static::$owned)
                         $_get[] = ['belongs_to', $this->uid];
                 }else{
                     // folder, by id
-                    if (empty($this->folder_field))
+                    if (empty(static::$folder_field))
                         Factory::response()->sendError("folder_field is undefined", 403);
                     
                     if ($this->is_guest() && !$folder_access)
                         Factory::response()->send([]);    
                         
-                    $_get[] = [$this->folder_field, $f_rows[0]['name']];
+                    $_get[] = [static::$folder_field, $f_rows[0]['name']];
                     $_get[] = ['belongs_to', $f_rows[0]['belongs_to']];
                 }
 
@@ -345,6 +350,12 @@ abstract class ApiController extends Controller
    
                 $page  = Arrays::shift($_get,'page');
                 $page_size = Arrays::shift($_get,'pageSize');
+
+                if ($page != null)
+                    $page = (int) $page;
+
+                if ($page_size  != null)
+                    $page_size  = (int) $page_size;
 
                 if ($page != NULL || $page_size != NULL){
                     $get_limit($page_size);
@@ -500,22 +511,22 @@ abstract class ApiController extends Controller
                 if (empty($folder)){
                     // root, sin especificar folder ni id (lista)
                     if ($this->is_guest()){
-                        if (!$this->guest_root_access)
+                        if (!static::$guest_access)
                             Factory::response()->send([]);
                         else
-                            $_get[] =  [$this->folder_field, NULL];        
+                            $_get[] =  [static::$folder_field, NULL];        
                     }else
-                        if (!$this->is_admin)
+                        if (!$this->is_admin && static::$owned)
                             $_get[] = ['belongs_to', $this->uid];        
                 }else{
                     // folder, sin id
-                    if (empty($this->folder_field))
+                    if (empty(static::$folder_field))
                         Factory::response()->sendError("'folder_field' is undefined", 403);
                   
                     if ($this->is_guest() && !$folder_access)
                         Factory::response()->send([]); 
 
-                    $_get[] = [$this->folder_field, $f_rows[0]['name']];
+                    $_get[] = [static::$folder_field, $f_rows[0]['name']];
                     $_get[] = ['belongs_to', $f_rows[0]['belongs_to']];
                 }
 
@@ -604,7 +615,7 @@ abstract class ApiController extends Controller
         
             if ($folder !== null)
             {
-                if (empty($this->folder_field))
+                if (empty(static::$folder_field))
                     Factory::response()->sendError("'folder_field' is undefined", 403);
 
                 $f = DB::table('folders');
@@ -617,7 +628,7 @@ abstract class ApiController extends Controller
                     Factory::response()->sendError("You have not permission for the folder $folder", 403);
 
                 unset($data['folder']);    
-                $data[$this->folder_field] = $f_rows[0]['name'];
+                $data[static::$folder_field] = $f_rows[0]['name'];
                 $data['belongs_to'] = $f_rows[0]['belongs_to'];    
             }    
 
@@ -673,7 +684,7 @@ abstract class ApiController extends Controller
 
             if ($folder !== null)
             {
-                if (empty($this->folder_field))
+                if (empty(static::$folder_field))
                     Factory::response()->sendError("'folder_field' is undefined", 403);
 
                 $f = DB::table('folders')->setFetchMode('ASSOC');
@@ -691,11 +702,11 @@ abstract class ApiController extends Controller
                 $instance2 = new $model();
                 $instance2->setConn($conn)->setFetchMode('ASSOC');
 
-                if (count($instance2->where(['id' => $id, $this->folder_field => $folder_name])->get()) == 0)
+                if (count($instance2->where(['id' => $id, static::$folder_field => $folder_name])->get()) == 0)
                     Factory::response()->code(404)->sendError("Register for id=$id does not exists");
 
                 unset($data['folder']);    
-                $data[$this->folder_field] = $f_rows[0]['name'];
+                $data[static::$folder_field] = $f_rows[0]['name'];
                 $data['belongs_to'] = $f_rows[0]['belongs_to'];    
             } else {
 
@@ -708,7 +719,7 @@ abstract class ApiController extends Controller
                     Factory::response()->code(404)->sendError("Register for id=$id does not exists");
                 }
 
-                if (!$this->is_admin && $rows[0]['belongs_to'] != $this->uid){
+                if  (static::$owned && !$this->is_admin && $rows[0]['belongs_to'] != $this->uid){
                     Factory::response()->send('You are not the owner', 403);
                 }
             }        
@@ -791,7 +802,7 @@ abstract class ApiController extends Controller
 
             if ($folder !== null)
             {
-                if (empty($this->folder_field))
+                if (empty(static::$folder_field))
                     Factory::response()->sendError("'folder_field' is undefined", 403);
 
                 $f = DB::table('folders')->setFetchMode('ASSOC');
@@ -809,15 +820,15 @@ abstract class ApiController extends Controller
                 $instance2 = new $model();
                 $instance2->setConn($conn)->setFetchMode('ASSOC');
 
-                if (count($instance2->where(['id' => $id, $this->folder_field => $folder_name])->get()) == 0)
+                if (count($instance2->where(['id' => $id, static::$folder_field => $folder_name])->get()) == 0)
                     Factory::response()->code(404)->sendError("Register for id=$id does not exists");
 
                 unset($data['folder']);    
-                $data[$this->folder_field] = $f_rows[0]['name'];
+                $data[static::$folder_field] = $f_rows[0]['name'];
                 $data['belongs_to'] = $f_rows[0]['belongs_to'];    
             } else {
-                if (!$this->is_admin && $rows[0]['belongs_to'] != $this->uid){
-                    Factory::response()->sendCode(403);
+                if (static::$owned && !$this->is_admin && $rows[0]['belongs_to'] != $this->uid){
+                    Factory::response()->sendError('You are not the owner', 403);
                 }
             }  
 

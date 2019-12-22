@@ -20,6 +20,8 @@ class TrashCan extends MyApiController
     }
 
     function get(int $id = null){
+        global $api_version;
+        
         try {            
             /////////////////////////////////////////////////////
             $_get  = Factory::request()->getQuery();
@@ -34,6 +36,9 @@ class TrashCan extends MyApiController
             $this->model_table = strtolower($entity);
 
             $model    = 'simplerest\\models\\'. $this->modelName;
+            $api_ctrl = '\simplerest\\controllers\\api\\' . ucfirst($entity);
+
+            $owned = $api_ctrl ::get_owned();
             
             if (!class_exists($model))
                 Factory::response()->sendError("Entity $entity does not exists", 400);
@@ -79,7 +84,7 @@ class TrashCan extends MyApiController
                     ['deleted_at', NULL, 'IS NOT']
                 ];  
 
-                if (!$this->is_admin){  
+                if (!$this->is_admin && $owned){  
                     $_get[] = ['belongs_to', $this->uid];
                 } 
 
@@ -238,11 +243,9 @@ class TrashCan extends MyApiController
                 
                 // root, sin especificar folder ni id (lista)
                 if ($this->is_guest()){
-                    if (!$this->guest_root_access)
-                        Factory::response()->send([]);
-
+                    Factory::response()->send([]);
                 }else
-                    if (!$this->is_admin)
+                    if (!$this->is_admin && $owned)
                         $_get[] = ['belongs_to', $this->uid];        
             
 
@@ -290,7 +293,7 @@ class TrashCan extends MyApiController
                 if ($page +1 <= $page_count){
                     $query['page'] = ($page +1);
 
-                    $next =  Url::protocol() . '//' . $_SERVER['HTTP_HOST'] . '/api/trashCan?entity=' . $this->model_table . '&' . $query = str_replace(['%5B', '%5D'], ['[', ']'], http_build_query($query));
+                    $next =  Url::protocol() . '//' . $_SERVER['HTTP_HOST'] . '/api/' . $api_version . '/trashCan?entity=' . $this->model_table . '&' . $query = str_replace(['%5B', '%5D'], ['[', ']'], http_build_query($query));
                 }else{
                     $next = 'null';
                 }
@@ -343,6 +346,9 @@ class TrashCan extends MyApiController
         $this->model_table = strtolower($entity);
 
         $model    = 'simplerest\\models\\'. $this->modelName;
+        $api_ctrl = '\simplerest\\controllers\\api\\' . ucfirst($entity);
+
+        $owned = $api_ctrl ::get_owned();
 
         if (!class_exists($model))
             Factory::response()->sendError("Entity $entity does not exists", 400);
@@ -374,21 +380,19 @@ class TrashCan extends MyApiController
             if (count($rows) == 0){
                 Factory::response()->code(404)->sendError("Register for id=$id does not exists in trash can");
             }
-         
 
-            if (!$this->is_admin){
+            
+            if (!$this->is_admin && $owned){
                 $_get[] = ['belongs_to', $this->uid];
+
+                if ($rows[0]['belongs_to'] != $this->uid)
+                    Factory::response()->sendError('You are not the owner', 403);
 
                 if (isset($rows[0]['locked']) && $rows[0]['locked'] == 1){
                     Factory::response()->sendError("Locked by Admin", 403);
                 }
             }
                 
-            
-            if (!$this->is_admin && $rows[0]['belongs_to'] != $this->uid){
-                Factory::response()->sendCode(403);
-            }                
-            
             foreach ($data as $k => $v){
                 if (strtoupper($v) == 'NULL' && $instance->isNullable($k)) 
                     $data[$k] = NULL;
@@ -475,6 +479,9 @@ class TrashCan extends MyApiController
             $this->model_table = strtolower($entity);
 
             $model    = 'simplerest\\models\\'. $this->modelName;
+            $api_ctrl = '\simplerest\\controllers\\api\\' . ucfirst($entity);
+
+            $owned = $api_ctrl ::get_owned();
 
             if (!class_exists($model))
                 Factory::response()->sendError("Entity $entity does not exists", 400);
@@ -495,8 +502,8 @@ class TrashCan extends MyApiController
                 Factory::response()->code(404)->sendError("Register for id=$id does not exists in trash");
             }
             
-            if (!$this->is_admin && $rows[0]['belongs_to'] != $this->uid){
-                Factory::response()->sendCode(403);
+            if (!$this->is_admin && $owned && $rows[0]['belongs_to'] != $this->uid){
+                Factory::response()->sendError('You are not the owner', 403);
             }         
                         
             if (isset($rows[0]['locked']) && $rows[0]['locked'] == 1){

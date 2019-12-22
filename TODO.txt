@@ -1,5 +1,26 @@
 # TODO
 
+- Agregar campo created_by además de belongs_to
+
+- Cambiar modified_at por updated_at 
+
+- Si el campo "belongs_to" no existe en la tabla o bien en el modelo hay un $owned = false,
+=> permitir a todos los usuarios registrados poder leer o escribir en esa tabla según los permisos r,w se lo permitan.
+
+- Usar un campo folder_id en cada tabla en la que pretendo utilizar folders y usar éste en vez de la combinación entre el user_ud y el nombre del "workspace" como identificador de carpeta.
+
+Objetivo: poder crear recursos de nuestra propiedad en carpetas ajenas donde lógicamente poseemos permisos de lectura y escritura.
+
+- Chequear:
+
+SI está en un folder y no es de mi propiedad ni soy el admin ni tengo permiso de escritura =>
+NO debebería poder restaurar el registro.***
+
+- Revisar implementación de first() y hacer findOrFail() y firstOrFail()
+
+Más
+https://stackoverflow.com/a/33027466/980631
+
 - Crear reglas de validación personalizadas 
 
 https://documentacion-laravel.com/validation.html
@@ -53,15 +74,6 @@ https://stackoverflow.com/questions/43187735/laravel-5-4-create-model-controller
 
 
 - Vista de correo enviado para cambio de contraseña o confirmación de correo.
-
-- Usar un folder_id en cada entidad en la que pretendo utilizar folders y usar éste en vez de la combinación entre el user_ud y el nombre del "workspace" como identificador de carpeta.
-
-Objetivo: poder crear recursos de nuestra propiedad en carpetas ajenas donde lógicamente poseemos permiso de lectura.
-
-- Chequear:
-
-SI está en un folder y no es de mi propiedad ni soy el admin ni tengo permiso de escritura =>
-NO debebería poder restaurar el registro.***
 
 - Usar archivos .env 
 

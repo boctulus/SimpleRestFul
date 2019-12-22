@@ -13,10 +13,9 @@ class_alias("\simplerest\core\api\\$api_version\ApiController", 'simplerest\cont
 
 class MyApiController extends ApiController
 {
-    protected $folder_field;
-    protected $guest_root_access;
-    protected $soft_delete = true;
-    
+    static protected $folder_field;
+    static protected $guest_access;
+        
     // ACL   
     protected $scope = [
         'guest'      => [],  

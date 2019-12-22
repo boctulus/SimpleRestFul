@@ -425,12 +425,31 @@ Nota:
 
 El framework maneja varias tablas para implementar el ACL, entre ellas `group_permissions` se encarga de mantener los permisos de lectura y escritura concedidos por el usuario (owner del recurso) a cierto grupo de usuarios "miembros" del grupo.
 
+Como regla general un usuario puede solo visualizar aquellos registros que ha creado y por tanto le pertenecen pero si se desea que los registros puedan ser leídos o escritos por los demás usuarios registrados (siempre de acuerdo a sus permisos sobre esa tabla de acuerdo a su rol) se puede especificar la propiedad estática $owned = false como sigue:
+
+class Products extends MyApiController
+{ 
+    static protected $owned = false;
+	// ..
+
 También existen permisos para "otros" o sea para cualquier otro usuario sin necesidad de especificarlo. Los permisos para "otros" pueden ser para invitados ("guest") o sea visitantes que no han entregado credenciales.
 
 Los usuarios no registrados o "invitados" (guest) solo pueden visualizar registros pertenecientes a carpetas compartidas con "otros" especificando acceso para invitados.
 
-Es posible hacer que un invitado visualice todos los registros (que no pertenezcan a carpetas que de por si son privadas excepto se expongan con permisos para grupo y otros) espeficando en la api $guest_root_access = true
+Es posible hacer que un invitado visualice todos los registros (que no pertenezcan a carpetas que de por si son privadas excepto se expongan con permisos para grupo y otros) especificando en la api la propiedad estática $guest_access = true
 
+class Products extends MyApiController
+{ 
+    static protected $guest_access = true;
+	// ...
+
+
+Si se desea que todos los endpoints posean guest_access por ejemplo el lugar adecuado para especificarlo es en ela clase MyApiController
+
+class MyApiController extends ApiController
+{
+    static protected $guest_access = true;
+	// ..
 
 ### Roles
 
@@ -451,9 +470,9 @@ Un "guest" o invitado no puede en principio visualizar registros que no pertenez
 
 Si se necesitara que los invitados pudieran visualizar registros a nivel de root (no folders) creados por cualquier usuario se puede lograr seteando en el ApiController: 
 
-	$guest_root_access = true
+    static protected $guest_access = true;
 
-En principio es mejor que $guest_root_access esté en false ya que sino se daría el caso donde un invitado tiene más nivel de acceso que un usuario registrado ya que podría visualizar registros que no le pertenecen mientras que el usuario registrado no puede. (Podría enmendarse)
+En principio es mejor que $guest_access esté en false ya que sino se daría el caso donde un invitado tiene más nivel de acceso que un usuario registrado ya que podría visualizar registros que no le pertenecen mientras que el usuario registrado no puede. (Podría enmendarse)
 
 
 ### Folders
@@ -468,7 +487,6 @@ Cada folder existe como un registro distinto en la tabla "folders" y se asocia c
 	class Products extends MyApiController
 	{ 
 	    protected $folder_field = 'workspace';
-	    protected $guest_root_access = false;
 
 	    function __construct()
 	    {       

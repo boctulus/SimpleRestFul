@@ -6,8 +6,9 @@ use simplerest\controllers\MyApiController;
 
 class Products extends MyApiController
 { 
-    protected $folder_field = 'workspace';
-    protected $guest_root_access = false;
+    static protected $folder_field = 'workspace';
+    static protected $owned = false;
+    //static protected $guest_access = true;
 
     function __construct()
     {       
