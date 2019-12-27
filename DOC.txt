@@ -654,6 +654,15 @@ Una entidad correspondiente a un endpoint si contiene un campo 'locked' de tipo 
 
 # La API
 
+Por cada entidad (normalmente una tabla en la DB) existe un único endpoint de la forma /api/v1/nombre_entidad sobre el que se puede hacer un get, post, put, patch y delete donde v1 es la versión de la API pero podría ser otra.
+
+Adicionalmente para los usuarios existe un endpoint adicional /api/v1/me que permite obtener información útil y realizar operaciones que en determinadas circunstancias no es posible sobre /api/v1/users/:id
+
+Un usuario (sin ser Admin pero con los permisos correctos) podría crear otros usuarios y éstos le pertencerán así que podrá visualizarlos o modificarlos a su gusto pero como consecuencia de la implementan del ACL, el campo belongs_to apuntará al "creador" y como consecuencia el propio usuario podría no tener permisos suficientes para mpdificar sus propios datos personales. Este problema se soluciona al utilizar el endpoint /api/v1/me
+
+Otro endpoint adicional es /api/v1/trashCan que corresponde a una papelera de registros y se explica en la sección correspondiente. 
+
+
 ### Las respuestas de la API
 
 Una respuesta exitosa a un GET presenta un campo 'data' en la respuesta:
