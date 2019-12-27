@@ -118,17 +118,30 @@ Los campos que pueden ser rellenados al hacer un INSERT o un UPDATE pueden espec
 
 Si un campo puede ser NULL, debe incluirse en el array $nullable.
 
-Los modelos heredan de la clase Model y adquieren así funcionalidad de métodos como:
+Los modelos heredan de la clase Model y adquieren así funcionalidad de métodos como create() delete() update() join() where() having() etc
 
-create()
-delete()
-update()
-join()
-where()
-having()
-get()
-orderBy()
-etc
+
+### Accesors
+
+Se presentan casos donde es necesario hacer una transformación de los datos antes de guardarlos en base de datos. El caso emblemático es cuando se requiere hacer un "hash" del password antes de guardarse ya sea en la creación o edición de un registro.
+
+Es posible definir "accesors" (conocidos también como "mutators") que interceptan esos valores y les aplican una función. Ejemplo:
+
+class UsersModel extends Model
+{ 
+	// ...
+
+    function __construct($db = NULL){
+		
+		$this->accesorRegister([ 
+			'password'  => function($pass){ return password_hash($pass, PASSWORD_DEFAULT); }
+		]);
+
+        parent::__construct($db);
+    }
+}
+
+El procedimiento es registrar los mutators para cada campo del modelo.
 
 
 ### Campos fillables, no-fillables, nullables y ocultos

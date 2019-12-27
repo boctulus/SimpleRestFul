@@ -21,7 +21,7 @@ class UsersModel extends Model
 	*/
 
 	protected $not_fillable = ['confirmed_email'];
-	protected $nullable = ['id', 'firstname', 'lastname', 'deleted_at', 'belongs_to', 'confirmed_email'];
+	protected $nullable = ['firstname', 'lastname', 'confirmed_email'];
 	protected $hidden   = [	'password' ];
 
 	/*
@@ -46,6 +46,11 @@ class UsersModel extends Model
 	];
 
     function __construct($db = NULL){
+		
+		$this->accesorRegister([ 
+			'password'  => function($pass){ return password_hash($pass, PASSWORD_DEFAULT); }
+		]);
+
         parent::__construct($db);
     }
 	

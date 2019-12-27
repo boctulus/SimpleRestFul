@@ -82,7 +82,7 @@ class Model {
 
 		if ($this->fillable == NULL){
 			$this->fillable = $this->properties;
-			$this->unfill([$this->id_name, 'created_at', 'updated_at', 'deleted_at', 'locked']);
+			$this->unfill([$this->id_name, 'locked', 'created_at', 'created_by', 'updated_at', 'updated_by', 'deleted_at', 'deleted_by']);
 		}
 
 		$this->unfill($this->not_fillable);
@@ -95,7 +95,7 @@ class Model {
 		$this->nullable[] = 'deleted_at';
 		$this->nullable[] = 'created_by';
 		$this->nullable[] = 'updated_by';
-
+		$this->nullable[] = 'deleted_by';
 
 		// Validations
 		
@@ -117,6 +117,21 @@ class Model {
 				$this->rules[$field]['required'] = true;
 			}
 		}		
+	}
+
+	function accesorRegister(array $arr){
+		$this->accesors = $arr;
+	}
+	
+	function apply(array $data){
+		$accesor_keys = array_keys($this->accesors);
+		
+		foreach ($data as $k => $dato){
+			if (in_array($k, $accesor_keys))
+				$data[$k] = $this->accesors[$k]($dato);
+		}
+		
+		return $data;
 	}
 
 	function setFetchMode($mode){
@@ -1207,6 +1222,7 @@ class Model {
 		if (!Arrays::is_assoc($data))
 			throw new \InvalidArgumentException('Array of data should be associative');
 
+		$data = $this->apply($data);
 		$vars   = array_keys($data);
 		$values = array_values($data);
 
@@ -1344,13 +1360,14 @@ class Model {
 	function create(array $data)
 	{
 		if ($this->conn == null)
-			throw new \Exception('No conection');
+			throw new \Exception('No connection');
 
 		if (!Arrays::is_assoc($data))
 			throw new \InvalidArgumentException('Array of data should be associative');
-
+		
+		$data = $this->apply($data);
 		$vars = array_keys($data);
-		$vals = array_values($data);		
+		$vals = array_values($data);
 
 		if(!empty($this->fillable) && is_array($this->fillable)){
 			foreach($vars as $var){

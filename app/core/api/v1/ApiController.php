@@ -236,8 +236,11 @@ abstract class ApiController extends Controller
      *
      * @return void
      */
-    function get(int $id = null){
+    function get($id = null){
         global $api_version;
+
+        if ($id != null && !ctype_digit($id))
+             Factory::response()->sendError('Bad request', 400, 'Id should be an integer');
 
         try {            
 
@@ -315,7 +318,7 @@ abstract class ApiController extends Controller
 
                 if (empty($folder)){               
                     // root, by id
-                    if (!$this->is_admin && static::$owned)
+                    if (!$this->is_admin && static::$owned /* && $instance->inSchema(['belongs_to']) */ )
                         $_get[] = ['belongs_to', $this->uid];
                 }else{
                     // folder, by id
@@ -610,9 +613,13 @@ abstract class ApiController extends Controller
             $conn = DB::getConnection();
             $instance->setConn($conn);
 
-            if ($instance->inSchema(['belongs_to']))
-                $data['belongs_to'] = ($this->is_guest() ? -1 : $this->uid); 
-        
+            if ($instance->inSchema(['belongs_to']) && !$this->is_guest())
+                $data['belongs_to'] = $this->uid; 
+
+            if ($instance->inSchema(['created_by'])){
+                $data['created_by'] = $this->uid;
+            }
+            
             if ($folder !== null)
             {
                 if (empty(static::$folder_field))
@@ -637,10 +644,6 @@ abstract class ApiController extends Controller
                 Factory::response()->sendError('Data validation error', 400, $validado);
             }  
 
-            if ($instance->inSchema(['created_by'])){
-                $data['created_by'] = $this->uid;
-            }
-
             if ($instance->create($data)!==false){
                 Factory::response()->send(['id' => $instance->id], 201);
             }	
@@ -659,6 +662,9 @@ abstract class ApiController extends Controller
     { 
         if ($id == null)
             Factory::response()->sendError("Lacks id in request",400);
+
+        if (!ctype_digit($id))
+            Factory::response()->sendError('Bad request', 400, 'Id should be an integer');
 
         $data = Factory::request()->getBody();
 
@@ -762,7 +768,7 @@ abstract class ApiController extends Controller
      *
      * @return void
      */
-    function put(int $id = null){
+    function put($id = null){
         $this->modify($id, true);
     } // 
     
@@ -789,7 +795,10 @@ abstract class ApiController extends Controller
      */
     function delete($id = NULL){
         if($id == NULL)
-            Factory::response()->sendError("Lacks id in request",405);
+            Factory::response()->sendError("Lacks id in request", 400);
+
+        if (!ctype_digit($id))
+            Factory::response()->sendError('Bad request', 400, 'Id should be an integer');
 
         $data = Factory::request()->getBody();        
         $folder = $data['folder'] ?? null;
@@ -850,7 +859,7 @@ abstract class ApiController extends Controller
                 }
             }
        
-            if($instance->delete($this->soft_delete && $instance->inSchema(['deleted_at']) )){
+            if($instance->delete(static::$soft_delete && $instance->inSchema(['deleted_at']) )){
                 Factory::response()->sendJson("OK");
             }	
             else

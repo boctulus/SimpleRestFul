@@ -10,9 +10,9 @@ class Users extends MyApiController
 
     protected $scope = [
         'guest'      => [], 
-        'registered' => ['read', 'write'],
+        'registered' => ['read', 'update', 'delete', 'create'],
         'basic'      => ['read'],
-        'regular'    => ['read', 'write']
+        'regular'    => ['read', 'update', 'delete', 'create']
     ];
 
     function __construct()

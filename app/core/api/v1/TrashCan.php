@@ -19,9 +19,12 @@ class TrashCan extends MyApiController
         parent::__construct();
     }
 
-    function get(int $id = null){
+    function get($id = null){
         global $api_version;
-        
+
+        if ($id != null && !ctype_digit($id))
+             Factory::response()->sendError('Bad request', 400, 'Id should be an integer');
+
         try {            
             /////////////////////////////////////////////////////
             $_get  = Factory::request()->getQuery();
@@ -329,6 +332,9 @@ class TrashCan extends MyApiController
         if ($id == null)
             Factory::response()->code(400)->sendError("Lacks id in request");
 
+        if (!ctype_digit($id))
+            Factory::response()->sendError('Bad request', 400, 'Id should be an integer');
+
         $data = Factory::request()->getBody();
 
         if (empty($data))
@@ -434,7 +440,7 @@ class TrashCan extends MyApiController
      *
      * @return void
      */
-    function put(int $id = null){
+    function put($id = null){
         $this->modify($id, true);
     } // 
     
@@ -461,7 +467,10 @@ class TrashCan extends MyApiController
      */
     function delete($id = NULL){
         if($id == NULL)
-            Factory::response()->sendError("Lacks id in request",405);
+            Factory::response()->sendError("Lacks id in request",400);
+
+        if (!ctype_digit($id))
+            Factory::response()->sendError('Bad request', 400, 'Id should be an integer');
 
         $data = Factory::request()->getBody(); 
 

@@ -224,8 +224,6 @@ class AuthController extends Controller implements IAuth
             if (DB::table('users')->where(['username', $data['username']])->exists())
                 Factory::response()->sendError('Username already exists');
 
-            $data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
-
             $uid = DB::table('users')->setValidator(new Validator())->create($data);
             if (empty($uid))
                 Factory::response()->sendError("Error in user registration", 500, 'Error creating user');

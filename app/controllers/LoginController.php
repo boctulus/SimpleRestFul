@@ -359,7 +359,7 @@ class LoginController extends MyController
 				$rows = DB::table('users')->setFetchMode('ASSOC')->where(['email', $payload->email])->get(['id']);
 				$uid = $rows[0]['id'];
 
-				$affected = DB::table('users')->where(['id', $rows[0]['id']])->update(['password' => password_hash($data['password'], PASSWORD_DEFAULT)]);
+				$affected = DB::table('users')->where(['id', $rows[0]['id']])->update(['password' => $data['password']]);
 
 				// Fetch roles
 				$uid = $rows[0]['id'];
