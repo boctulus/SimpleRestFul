@@ -54,6 +54,7 @@ class Model {
 	protected $pag_vals = [];
 	protected $roles;
 	protected $validator;
+	protected $accesors = [];
 	protected $exec = true;
 	protected $fetch_mode = \PDO::FETCH_OBJ;
 	
@@ -119,8 +120,8 @@ class Model {
 		}		
 	}
 
-	function accesorRegister(array $arr){
-		$this->accesors = $arr;
+	function accesorRegister($field, callable $fn){
+		$this->accesors[$field] = $fn;
 	}
 	
 	function apply(array $data){

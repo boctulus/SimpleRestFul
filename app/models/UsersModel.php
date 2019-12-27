@@ -45,12 +45,8 @@ class UsersModel extends Model
 		'email' 	=> ['type'=>'email'],
 	];
 
-    function __construct($db = NULL){
-		
-		$this->accesorRegister([ 
-			'password'  => function($pass){ return password_hash($pass, PASSWORD_DEFAULT); }
-		]);
-
+    function __construct($db = NULL){		
+		$this->accesorRegister('password', function($pass){ return password_hash($pass, PASSWORD_DEFAULT); });
         parent::__construct($db);
     }
 	
