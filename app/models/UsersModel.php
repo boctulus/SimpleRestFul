@@ -9,17 +9,6 @@ class UsersModel extends Model
  { 
 	protected $table_name = "users";
 	protected $id_name = 'id';
-	/*
-	protected $fillable = [
-							'email',
-							'password',
-							'firstname',
-							'lastname',
-							'deleted_at',
-							'belongs_to'
-	];
-	*/
-
 	protected $not_fillable = ['confirmed_email'];
 	protected $nullable = ['firstname', 'lastname', 'confirmed_email'];
 	protected $hidden   = [	'password' ];

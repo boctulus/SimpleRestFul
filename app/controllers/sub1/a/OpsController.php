@@ -15,10 +15,12 @@ class OpsController extends Controller
         parent::__construct();
     }
 
+    // php index.php sub1 a ops
     function index(){
         return 'INDEX';
     }
 
+    // php index.php sub1 a ops inc 6
     function inc($a){
         return (int) (++$a);
     }
