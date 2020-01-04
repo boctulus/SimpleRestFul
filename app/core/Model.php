@@ -98,6 +98,10 @@ class Model {
 		$this->nullable[] = 'updated_by';
 		$this->nullable[] = 'deleted_by';
 
+		$this->fillable[] = 'created_by';
+		$this->fillable[] = 'updated_by';
+
+
 		// Validations
 		
 		if (!empty($this->rules)){
@@ -1222,6 +1226,9 @@ class Model {
 			
 		if (!Arrays::is_assoc($data))
 			throw new \InvalidArgumentException('Array of data should be associative');
+
+		if (isset($data['created_by']))
+			unset($data['created_by']);
 
 		$data = $this->apply($data);
 		$vars   = array_keys($data);
