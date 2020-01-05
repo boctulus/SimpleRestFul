@@ -20,9 +20,9 @@ IN / NOT IN
 
 ### String comparisons   
 
-    contains
-    notContains
-    startsWith
+    contains 
+    notContains 
+    startsWith  
     notStartsWith
     endsWith   
     notEndsWith
@@ -42,7 +42,7 @@ Example
 
 Example:  
     
-    GET /api/v1/products?cost[gteq]=100&cost[lteq]=25
+    GET /api/v1/products?cost[gteq]=25&cost[lteq]=100
 
 ### BETWEEN
 
