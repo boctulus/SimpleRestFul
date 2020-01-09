@@ -113,12 +113,13 @@ https://laravel.com/docs/5.8/pagination
 
 - Intentar habilitar el ACL para Controllers != ApiController
 
-- Hacer un OR JOIN similar al OR WHERE u OR HAVING
+- Implementar "where anidados" como en Laravel con callbacks
+
+https://stackoverflow.com/a/25129805/980631
+
+- Debe haber orJoin() como orWhere() y orHaving() 
 
 https://stackoverflow.com/a/36074909/980631
-
-<-- eso implicaría mantener una interfaz simular a la de where() que recibe un array de where(s) y opcionalmente una conjunción.
-
 https://laravel.com/docs/5.8/queries#where-exists-clauses
 
 
