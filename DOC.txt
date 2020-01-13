@@ -10,7 +10,7 @@ SimpleRest utiliza la arquitectura MVC donde modelos y controladores se implemen
 │   ├── controllers               # Controllers directory 
 │   ├── models                    # Models directory
 │   ├── views                     # Views directory
-│   ├── api                       # Resource controller Directory
+│   ├── api                       # API controller Directory
 │   ├── libs                      
 │   ├── locale                    # i18n translations
 │   └── core                      # Core directory
@@ -75,7 +75,35 @@ En la terminal nos cambiamos al directorio "public" y ejecutamos:
 
 	php index.php dumb add 1 6
 
-* Hay soporte para sub-directorios o sub-sub-(sub)-directorios 
+Hay soporte para sub-directorios o sub-sub-(sub)-directorios 
+
+Resource Controller:
+
+Un ResourceController es un tipo de controlador que mediante un Authorization header identifica al usuario y su rol.
+
+Ejemplo:
+
+class DumbAuthController extends ResourceController
+{
+    function __construct()
+    {
+        parent::__construct();
+    }
+
+    function super_cool_action($a)
+    {
+        if (!$this->hasAnyRole(['cajero', 'gerente']))
+            Factory::response()->sendError('Unauthorized', 401);
+
+        // acción cualquiera:
+        return ++$a;
+    }       
+}
+
+Api Controller:
+
+Un ApiController es un tipo de ResourceController que sirve para procesar un endpoint y por tanto sus métodos son los verbos correspondientes: get, post, put, patch, delete, head
+
 
 ### Modelo
 
@@ -253,138 +281,7 @@ La salida en caso de fracaso es un array conteniendo las reglas rotas para cada 
 		string(20) "usuario es requerido"
 		}
 	}
-	["celular"]=>
-	array(1) {
-		[0]=>
-		array(3) {
-		["dato"]=>
-		string(6) "321530"
-		["error"]=>
-		string(4) "type"
-		["error_msg"]=>
-		string(7) "invalid"
-		}
-	}
-	["correo"]=>
-	array(1) {
-		[0]=>
-		array(3) {
-		["dato"]=>
-		string(3) "a@b"
-		["error"]=>
-		string(4) "type"
-		["error_msg"]=>
-		string(17) "correo no válido"
-		}
-	}
-	["calle"]=>
-	array(1) {
-		[0]=>
-		array(3) {
-		["dato"]=>
-		string(1) "0"
-		["error"]=>
-		string(3) "min"
-		["error_msg"]=>
-		string(18) "el mínimo es de 1"
-		}
-	}
-	["observaciones"]=>
-	array(1) {
-		[0]=>
-		array(3) {
-		["dato"]=>
-		string(51) "la vida es complicada y bla bla bla bla bla bla bla"
-		["error"]=>
-		string(3) "max"
-		["error_msg"]=>
-		string(27) "la longitud maxima es de 40"
-		}
-	}
-	["fecha"]=>
-	array(1) {
-		[0]=>
-		array(3) {
-		["dato"]=>
-		string(10) "32-09-2019"
-		["error"]=>
-		string(4) "type"
-		["error_msg"]=>
-		string(15) "fecha inválida"
-		}
-	}
-	["hora"]=>
-	array(1) {
-		[0]=>
-		array(3) {
-		["dato"]=>
-		string(8) "24:00:17"
-		["error"]=>
-		string(4) "type"
-		["error_msg"]=>
-		string(14) "hora inválida"
-		}
-	}
-	["fuerza"]=>
-	array(1) {
-		[0]=>
-		array(3) {
-		["dato"]=>
-		string(7) "100.xxx"
-		["error"]=>
-		string(4) "type"
-		["error_msg"]=>
-		string(16) "no es un número"
-		}
-	}
-	["felicidad"]=>
-	array(1) {
-		[0]=>
-		array(3) {
-		["dato"]=>
-		string(4) "0.25"
-		["error"]=>
-		string(4) "type"
-		["error_msg"]=>
-		string(24) "no es un número válido"
-		}
-	}
-	["hora_almuerzo"]=>
-	array(1) {
-		[0]=>
-		array(3) {
-		["dato"]=>
-		string(8) "13:30:00"
-		["error"]=>
-		string(3) "max"
-		["error_msg"]=>
-		string(15) "maximo 10:15:00"
-		}
-	}
-	["hora_cena"]=>
-	array(1) {
-		[0]=>
-		array(3) {
-		["dato"]=>
-		string(8) "18:00:00"
-		["error"]=>
-		string(3) "min"
-		["error_msg"]=>
-		string(16) "mínimo 19:00:00"
-		}
-	}
-	["fecha_nac"]=>
-	array(1) {
-		[0]=>
-		array(3) {
-		["dato"]=>
-		string(10) "10-12-1902"
-		["error"]=>
-		string(3) "min"
-		["error_msg"]=>
-		string(18) "mínimo 01-01-1980"
-		}
-	}
+	...	
 	["frutas_favoritas"]=>
 	array(1) {
 		[0]=>
@@ -461,6 +358,7 @@ class MyApiController extends ApiController
 {
     static protected $guest_access = true;
 	// ..
+
 
 ### Roles
 
@@ -657,6 +555,8 @@ Una entidad correspondiente a un endpoint si contiene un campo 'locked' de tipo 
 Por cada entidad (normalmente una tabla en la DB) existe un único endpoint de la forma /api/v1/nombre_entidad sobre el que se puede hacer un get, post, put, patch y delete donde v1 es la versión de la API pero podría ser otra.
 
 Adicionalmente para los usuarios existe un endpoint adicional /api/v1/me que permite obtener información útil y realizar operaciones que en determinadas circunstancias no es posible sobre /api/v1/users/:id
+
+Los endpoints se sirven mediante clases que extienden a ApiController, un tipo de ResourceController.
 
 Un usuario (sin ser Admin pero con los permisos correctos) podría crear otros usuarios y éstos le pertencerán así que podrá visualizarlos o modificarlos a su gusto pero como consecuencia de la implementan del ACL, el campo belongs_to apuntará al "creador" y como consecuencia el propio usuario podría no tener permisos suficientes para mpdificar sus propios datos personales. Este problema se soluciona al utilizar el endpoint /api/v1/me
 

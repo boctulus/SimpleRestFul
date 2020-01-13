@@ -111,8 +111,6 @@ https://laravel.com/docs/5.8/pagination
     ];
 
 
-- Intentar habilitar el ACL para Controllers != ApiController
-
 - Implementar "where anidados" como en Laravel con callbacks
 
 https://stackoverflow.com/a/25129805/980631

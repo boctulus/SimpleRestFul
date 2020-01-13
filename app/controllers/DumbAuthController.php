@@ -21,7 +21,5 @@ class DumbAuthController extends ResourceController
 
         // acción cualquiera:
         return ++$a;
-    }
-
-       
+    }       
 }
