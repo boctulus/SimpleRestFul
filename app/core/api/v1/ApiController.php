@@ -2,7 +2,7 @@
 
 namespace simplerest\core\api\v1;
 
-use simplerest\core\Controller;
+use simplerest\core\ResourceController;
 use simplerest\core\interfaces\IAuth;
 use simplerest\libs\Factory;
 use simplerest\libs\Arrays;
@@ -17,7 +17,7 @@ use simplerest\libs\Validator;
 use simplerest\core\exceptions\InvalidValidationException;
 
 
-abstract class ApiController extends Controller
+abstract class ApiController extends ResourceController
 {
     static protected $guest_access = false;  
     static protected $owned = true;
@@ -29,10 +29,6 @@ abstract class ApiController extends Controller
     protected $config;
     protected $modelName;
     protected $model_table;
-    protected $auth_payload = null;
-    protected $uid;
-    protected $is_admin = false;
-    protected $roles = [];
     protected $default_headers = [
         'access-control-allow-Methods' => 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
         'access-control-allow-credentials' => 'true',
@@ -42,77 +38,52 @@ abstract class ApiController extends Controller
 
     function __construct(array $headers = [], IAuth $auth_object = null) 
     {        
+        parent::__construct();
+
         $this->config = include CONFIG_PATH . 'config.php';
 
         if ($this->config['debug_mode'] == false)
             set_exception_handler([$this, 'exception_handler']);
-
-        if ($this->config['enabled_auth']){ //       
-
-            $operations = [ 
-                'read'   => ['get'],
-                'create' => ['post'],
-                'update' => ['put', 'patch'],
-                'delete' => ['delete'],
-                'write'  => ['post', 'put', 'patch', 'delete']
-            ];           
-
-            $this->auth_payload = $auth_object->check();
-
-            if (!empty($this->auth_payload)){
-                $this->uid = $this->auth_payload->uid; 
-                //Debug::dd($this->uid, 'UID:');
-
-                $r = new RolesModel();
-                $this->roles  = $this->auth_payload->roles;              
-
-                $this->is_admin = false;
-                foreach ($this->roles as $role){
-                    if ($r->is_admin($role)){
-                        $this->is_admin = true;
-                        break;
-                    }
-                }                
-            }else{
-                $this->uid = null;
-                $this->is_admin = false;
-                $this->roles = ['guest'];
-            }
-
-            //var_export($this->roles);
-            //exit;
-
-            // y si ya se que es admin....
-            if ($this->is_admin){
-                $this->callable = ['get', 'post', 'put', 'patch', 'delete'];
-            }else{
-                foreach ($this->roles as $role){
-                    if (isset($this->scope[$role])){
-                        $cruds = $this->scope[$role];
         
-                        if (!empty($this->scope[$role])){
-                            foreach ($operations as $op => $verbs) {
-                                if (in_array($op, $cruds))
-                                    $this->callable = array_merge($this->callable, $verbs);
-                            }
-                        } 
-                    }                       
-                }    
-            }
+        $operations = [ 
+            'read'   => ['get'],
+            'create' => ['post'],
+            'update' => ['put', 'patch'],
+            'delete' => ['delete'],
+            'write'  => ['post', 'put', 'patch', 'delete']
+        ];           
 
-            //var_export($this->callable);
-            //exit;
-
-            if (empty($this->callable))
-                Factory::response()->sendError('You are not authorized',403);
-
-            $this->callable = array_merge($this->callable,['head','options']);
+        // y si ya se que es admin....
+        if ($this->isAdmin()){
+            $this->callable = ['get', 'post', 'put', 'patch', 'delete'];
+        }else{
+            foreach ($this->roles as $role){
+                if (isset($this->scope[$role])){
+                    $cruds = $this->scope[$role];
     
-            // headers
-            $verbos = array_merge($this->callable, ['options']);            
-            $headers = array_merge($headers, ['access-control-allow-Methods' => implode(',',array_map( function ($e){ return strtoupper($e); },$verbos)) ]);
-            $this->setheaders($headers);            
-        }    
+                    if (!empty($this->scope[$role])){
+                        foreach ($operations as $op => $verbs) {
+                            if (in_array($op, $cruds))
+                                $this->callable = array_merge($this->callable, $verbs);
+                        }
+                    } 
+                }                       
+            }    
+        }
+
+        //var_export($this->callable);
+        //exit;
+
+        if (empty($this->callable))
+            Factory::response()->sendError('You are not authorized',403);
+
+        $this->callable = array_merge($this->callable,['head','options']);
+
+        // headers
+        $verbos = array_merge($this->callable, ['options']);            
+        $headers = array_merge($headers, ['access-control-allow-Methods' => implode(',',array_map( function ($e){ return strtoupper($e); },$verbos)) ]);
+        $this->setheaders($headers);            
+        
 
         if (preg_match('/([A-Z][a-z0-9_]+[A-Z]*[a-z0-9_]*[A-Z]*[a-z0-9_]*[A-Z]*[a-z0-9_]*)/', get_called_class(), $matchs)){
             $this->modelName = $matchs[1] . 'Model';

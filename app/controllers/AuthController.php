@@ -304,7 +304,7 @@ class AuthController extends Controller implements IAuth
         $auth = $headers['Authorization'] ?? $headers['authorization'] ?? null;
         
         if (empty($auth))
-            return false;
+            return NULL;  // prev was false (!)
             
         list($jwt) = sscanf($auth, 'Bearer %s');
 

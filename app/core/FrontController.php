@@ -125,9 +125,8 @@ class FrontController
                 
         $controller_obj = new $class_name();
 
-       
         // Only for API Rest
-        if ($config['enabled_auth'] && $_params[0]=='api'){
+        if ($_params[0]=='api'){
             if (!in_array($method, $controller_obj->getCallable())){
                 Response::getInstance()->send("Not authorized for $controller:$method", 403);
             }
