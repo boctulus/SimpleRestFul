@@ -12,14 +12,13 @@ class PermissionsModel extends Model
 	protected $schema = [
 		'id' => 'INT',
 		'tb' => 'STR',
+		'user_id' => 'INT',
 		'can_create' => 'INT',
 		'can_read' => 'INT',
 		'can_update' => 'INT',
 		'can_delete' => 'INT', 
-		'user_id' => 'INT',
 		'created_at' => 'STR',
-		'updated_at' => 'STR',
-		'deleted_at' => 'STR'
+		'updated_at' => 'STR'
 	];
 
 	protected $rules = [

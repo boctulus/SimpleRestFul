@@ -89,6 +89,7 @@ class FacebookController extends Controller
     
                 // exits	
                 $rows = $u->where(['email', $email])->get(['id']);
+
                 if (count($rows)>0){
                     
                     // Email already exists
@@ -103,6 +104,14 @@ class FacebookController extends Controller
                         foreach ($rows as $row){
                             $roles[] = $r->getRoleName($row['role_id']);
                         }
+                    }
+
+                    $_permissions = DB::table('permissions')->setFetchMode('ASSOC')->select(['tb', 'can_create as c', 'can_read as r', 'can_update as u', 'can_delete as d'])->where(['user_id' => $uid])->get();
+
+                    $perms = [];
+                    foreach ($_permissions as $p){
+                        $tb = $p['tb'];
+                        $perms[$tb] = $p['c'] * 8 + $p['r'] * 4 + $p['u'] * 2 + $p['d'];
                     }
                 }else{
                     $data['email'] = $email;
@@ -146,12 +155,14 @@ class FacebookController extends Controller
                     $id = $ur->create([ 'user_id' => $uid, 'role_id' => $r->get_role_id($role) ]);  // registered or other            
             
                     $roles = [$role];
+                    $perms = [];
                 }  
                 
                 $my_payload = [
                     'uid' => $uid, 
                     'roles' => $roles,
-                    'confirmed_email' => 1
+                    'confirmed_email' => 1,
+                    'permissions' => $perms
                 ];
 
                 //Debug::dd($my_payload); ////
@@ -172,8 +183,6 @@ class FacebookController extends Controller
             }catch(\Exception $e){
                 return ['error' => $e->getMessage(), 'code' => 500];
             }	
-
-
 
 			
 		} else {
