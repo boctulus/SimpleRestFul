@@ -33,7 +33,7 @@ class Response
     }
     
     function redirect(string $url){
-        if (!headers_sent($filename, $line)) {
+        if (!headers_sent()) {
             header("Location: $url");
             exit;
         }else
@@ -69,9 +69,8 @@ class Response
         return static::getInstance();
     }
 
-    function encode($data){
-        if (static::$pretty)
-            $options = static::$options | JSON_PRETTY_PRINT;
+    function encode($data){        
+        $options = static::$pretty ? static::$options | JSON_PRETTY_PRINT : static::$pretty;
             
         return json_encode($data, $options);  
     }

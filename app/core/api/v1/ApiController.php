@@ -30,10 +30,10 @@ abstract class ApiController extends ResourceController
     protected $modelName;
     protected $model_table;
     protected $default_headers = [
-        'access-control-allow-Methods' => 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-        'access-control-allow-credentials' => 'true',
-        'access-control-allow-headers' => 'AccountKey,x-requested-with, Content-Type, origin, authorization, accept, client-security-token, host, date, cookie, cookie2',
-        'content-type' => 'application/json; charset=UTF-8',
+        'Access-Control-Allow-Methods' => 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+        'Access-Control-Allow-Credentials' => 'true',
+        'Access-Control-Allow-Headers' => 'AccountKey,x-requested-with, Content-Type, Origin, Authorization, Accept, Client-Security-Token, Host, Date, Cookie, Cookie2',
+        'Content-Type' => 'application/json; charset=UTF-8',
     ];
 
     function __construct(array $headers = [], IAuth $auth_object = null) 
@@ -45,6 +45,13 @@ abstract class ApiController extends ResourceController
         if ($this->config['debug_mode'] == false)
             set_exception_handler([$this, 'exception_handler']);
         
+        if (preg_match('/([A-Z][a-z0-9_]+[A-Z]*[a-z0-9_]*[A-Z]*[a-z0-9_]*[A-Z]*[a-z0-9_]*)/', get_called_class(), $matchs)){
+            $this->modelName = $matchs[1] . 'Model';
+            $this->model_table = strtolower($matchs[1]);
+        }   
+
+        $perms = $this->getPermissions($this->model_table);
+
         $operations = [ 
             'read'   => ['get'],
             'create' => ['post'],
@@ -68,9 +75,27 @@ abstract class ApiController extends ResourceController
                         }
                     } 
                 }                       
-            }    
+            }  
+            
+            // permisos por usuario
+            if ($perms != NULL){
+                if ($perms & 8)
+                    $this->callable = array_merge($this->callable, $operations['create']); 
+
+                if ($perms & 4)
+                    $this->callable = array_merge($this->callable, $operations['read']);   
+                    
+                if ($perms & 2)
+                    $this->callable = array_merge($this->callable, $operations['update']); 
+
+                if ($perms & 1)
+                    $this->callable = array_merge($this->callable, $operations['delete']); 
+            }
         }
 
+        //var_dump($perms);
+        //var_export($this->scope);
+        //var_export($cruds);
         //var_export($this->callable);
         //exit;
 
@@ -81,14 +106,10 @@ abstract class ApiController extends ResourceController
 
         // headers
         $verbos = array_merge($this->callable, ['options']);            
-        $headers = array_merge($headers, ['access-control-allow-Methods' => implode(',',array_map( function ($e){ return strtoupper($e); },$verbos)) ]);
+        $headers = array_merge($headers, ['Access-Control-Allow-Methods' => implode(',',array_map( function ($e){ return strtoupper($e); },$verbos)) ]);
         $this->setheaders($headers);            
         
-
-        if (preg_match('/([A-Z][a-z0-9_]+[A-Z]*[a-z0-9_]*[A-Z]*[a-z0-9_]*[A-Z]*[a-z0-9_]*)/', get_called_class(), $matchs)){
-            $this->modelName = $matchs[1] . 'Model';
-            $this->model_table = strtolower($matchs[1]);
-        }    
+ 
     }
 
     static function get_owned(){
@@ -231,6 +252,8 @@ abstract class ApiController extends ResourceController
             //var_export($data);
             //exit;
 
+            $owned = static::get_owned() && $instance->inSchema(['belongs_to']);
+
             // patch for Nginx
             $_q      = Arrays::shift($_get,'q');
             
@@ -289,7 +312,7 @@ abstract class ApiController extends ResourceController
 
                 if (empty($folder)){               
                     // root, by id
-                    if (!$this->is_admin && static::$owned /* && $instance->inSchema(['belongs_to']) */ )
+                    if (!$this->is_admin && $owned)
                         $_get[] = ['belongs_to', $this->uid];
                 }else{
                     // folder, by id
@@ -490,7 +513,7 @@ abstract class ApiController extends ResourceController
                         else
                             $_get[] =  [static::$folder_field, NULL];        
                     }else
-                        if (!$this->is_admin && static::$owned)
+                        if (!$this->is_admin && $owned)
                             $_get[] = ['belongs_to', $this->uid];        
                 }else{
                     // folder, sin id
@@ -653,6 +676,8 @@ abstract class ApiController extends ResourceController
             $instance = new $model();
             $instance->setConn($conn)->setFetchMode('ASSOC');
 
+            $owned = static::get_owned() && $instance->inSchema(['belongs_to']);
+
             if (!$this->is_admin){
                 if (isset($data['belongs_to']))
                     unset($data['belongs_to']);
@@ -700,7 +725,7 @@ abstract class ApiController extends ResourceController
                     Factory::response()->code(404)->sendError("Register for id=$id does not exists");
                 }
 
-                if  (static::$owned && !$this->is_admin && $rows[0]['belongs_to'] != $this->uid){
+                if  ($owned && !$this->is_admin && $rows[0]['belongs_to'] != $this->uid){
                     Factory::response()->send('You are not the owner', 403);
                 }
             }        
@@ -782,6 +807,8 @@ abstract class ApiController extends ResourceController
             $instance = (new $model($conn))->setFetchMode('ASSOC');
             $instance->fill(['deleted_at']); //
 
+            $owned = static::get_owned() && $instance->inSchema(['belongs_to']);
+
             $rows = $instance->where(['id', $id])->get();
             
             if (count($rows) == 0){
@@ -815,7 +842,7 @@ abstract class ApiController extends ResourceController
                 $data[static::$folder_field] = $f_rows[0]['name'];
                 $data['belongs_to'] = $f_rows[0]['belongs_to'];    
             } else {
-                if (static::$owned && !$this->is_admin && $rows[0]['belongs_to'] != $this->uid){
+                if ($owned && !$this->is_admin && $rows[0]['belongs_to'] != $this->uid){
                     Factory::response()->sendError('You are not the owner', 403);
                 }
             }  

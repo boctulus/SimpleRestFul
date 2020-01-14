@@ -15,7 +15,7 @@ class FoldersModel extends Model
 	*/
 	protected $schema = [
 		'id' => 'INT',
-		'resource_table' => 'STR',
+		'tb' => 'STR',
 		'name' => 'STR',
 		'belongs_to' => 'INT'	
 	];

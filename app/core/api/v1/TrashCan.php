@@ -15,7 +15,7 @@ class TrashCan extends MyApiController
 {   
     function __construct()
     {
-        $this->scope['guest'] = [];        
+        $this->scope['guest'] = [];   
         parent::__construct();
     }
 
@@ -40,14 +40,17 @@ class TrashCan extends MyApiController
 
             $model    = 'simplerest\\models\\'. $this->modelName;
             $api_ctrl = '\simplerest\\controllers\\api\\' . ucfirst($entity);
-
-            $owned = $api_ctrl ::get_owned();
-            
+          
             if (!class_exists($model))
                 Factory::response()->sendError("Entity $entity does not exists", 400);
 
             $conn = DB::getConnection();
             $instance = (new $model($conn))->setFetchMode('ASSOC'); 
+            
+            if (!$instance->inSchema(['deleted_at']))
+                Factory::response()->sendError('Not implemented', 501, "Trashcan not implemented for $entity");
+
+            $owned = $api_ctrl::get_owned() && $instance->inSchema(['belongs_to']);
             ////////////////////////////////////////////////////
             
             $fields  = Arrays::shift($_get,'fields');
@@ -353,14 +356,17 @@ class TrashCan extends MyApiController
 
         $model    = 'simplerest\\models\\'. $this->modelName;
         $api_ctrl = '\simplerest\\controllers\\api\\' . ucfirst($entity);
-
-        $owned = $api_ctrl ::get_owned();
-
+        
         if (!class_exists($model))
             Factory::response()->sendError("Entity $entity does not exists", 400);
         
         $conn = DB::getConnection();
         $instance = (new $model($conn))->setFetchMode('ASSOC'); 
+
+        if (!$instance->inSchema(['deleted_at']))
+                Factory::response()->sendError('Not implemented', 501, "Trashcan not implemented for $entity");
+
+        $owned = $api_ctrl::get_owned() && $instance->inSchema(['belongs_to']);
         ////////////////////////////////////////////////////
 
         ///
@@ -490,13 +496,16 @@ class TrashCan extends MyApiController
             $model    = 'simplerest\\models\\'. $this->modelName;
             $api_ctrl = '\simplerest\\controllers\\api\\' . ucfirst($entity);
 
-            $owned = $api_ctrl ::get_owned();
-
             if (!class_exists($model))
                 Factory::response()->sendError("Entity $entity does not exists", 400);
             
             $conn = DB::getConnection();
             $instance = (new $model($conn))->setFetchMode('ASSOC'); 
+
+            if (!$instance->inSchema(['deleted_at']))
+                Factory::response()->sendError('Not implemented', 501, "Trashcan not implemented for $entity");
+            
+            $owned = $api_ctrl::get_owned() && $instance->inSchema(['belongs_to']);
             ////////////////////////////////////////////////////
 
             $instance->fill(['deleted_at']); //

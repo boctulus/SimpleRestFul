@@ -60,7 +60,7 @@ return [
 		]
 	],
 
-	'pretty' => true,	
+	'pretty' => false,	
 	
 	'paginator' => ['max_limit' => 50,
 					'default_limit' => 10

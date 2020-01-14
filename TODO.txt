@@ -1,5 +1,14 @@
 # TODO
 
+- Implementar permisos individuales que modifiquen los de los roles
+
+=> serán cargados al momento de hacer el login (AuthController) en el payload
+=> posiblemente deba hacer algo en ResourceController 
+
+- Fractal es una librería que permite devolver modelos en forma de respuestas json, y Transformers son las clases que utiliza esta librería para convertir esos modelos en arrays qye internamente convertirá en objetos json. No es específica de Laravel, vale para cualquier framework que permita respuestas json, y para php puro, la verdad es que merece el nombre que tiene, es realmente potente
+
+https://medium.com/@haydar_ai/how-to-start-using-transformers-in-laravel-4ff0158b325f
+
 - Usar un campo folder_id en cada tabla en la que pretendo utilizar folders y usar éste en vez de la combinación entre el user_ud y el nombre del "workspace" como identificador de carpeta.
 
 Objetivo: poder crear recursos de nuestra propiedad en carpetas ajenas donde lógicamente poseemos permisos de lectura y escritura.

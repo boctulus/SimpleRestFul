@@ -27,6 +27,7 @@ abstract class ResourceController extends Controller
             
         if (!empty($this->auth_payload)){
             $this->uid = $this->auth_payload->uid; 
+            $this->permissions = $this->auth_payload->permissions ?? NULL;
 
             $r = new RolesModel();
             $this->roles  = $this->auth_payload->roles;              
@@ -47,8 +48,20 @@ abstract class ResourceController extends Controller
         parent::__construct();
     }
 
+    public function getRoles(){
+        return $this->roles;
+    }
+
+    public function getPermissions(string $table = NULL){
+        return isset($table) && isset($this->permissions->$table) ? $this->permissions->$table : $this->permissions;
+    }
+
     public function isGuest(){
         return $this->roles == ['guest'];
+    }
+
+    public function isRegistered(){
+        return !$this->isGuest();
     }
 
     public function isAdmin(){

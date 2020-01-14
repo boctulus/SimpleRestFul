@@ -1,0 +1,39 @@
+<?php
+namespace simplerest\models;
+
+use simplerest\core\Model;
+
+
+class PermissionsModel extends Model 
+{
+	protected $table_name = "permissions";
+	protected $id_name = 'id';
+
+	protected $schema = [
+		'id' => 'INT',
+		'tb' => 'STR',
+		'can_create' => 'INT',
+		'can_read' => 'INT',
+		'can_update' => 'INT',
+		'can_delete' => 'INT', 
+		'user_id' => 'INT',
+		'created_at' => 'STR',
+		'updated_at' => 'STR',
+		'deleted_at' => 'STR'
+	];
+
+	protected $rules = [
+	];
+
+    function __construct($db = NULL){
+		parent::__construct($db);
+	}
+
+}
+
+
+
+
+
+
+

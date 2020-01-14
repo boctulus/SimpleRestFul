@@ -226,7 +226,7 @@ class DumbController extends Controller
                         //->join('roles', 'user_role.role_id', '=', 'roles.id') 
                         ->where([
                             ['guest', 1],
-                            ['resource_table', 'products'],
+                            ['table', 'products'],
                             ['r', 1]
                         ])->exists());
     }
@@ -877,7 +877,7 @@ class DumbController extends Controller
                     ->join('user_roles', 'users.id', '=', 'user_roles.user_id')
                     ->where([
                         ['guest', 1],
-                        ['resource_table', 'products'],
+                        ['table', 'products'],
                         ['r', 1]
                     ])
                     ->orderByRaw('users.id DESC')

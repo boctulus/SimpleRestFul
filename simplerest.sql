@@ -43,7 +43,7 @@ CREATE TABLE `emails` (
 
 CREATE TABLE `folders` (
   `id` int(11) NOT NULL,
-  `resource_table` varchar(40) NOT NULL,
+  `table` varchar(40) NOT NULL,
   `name` varchar(40) NOT NULL,
   `belongs_to` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -52,7 +52,7 @@ CREATE TABLE `folders` (
 -- Volcado de datos para la tabla `folders`
 --
 
-INSERT INTO `folders` (`id`, `resource_table`, `name`, `belongs_to`) VALUES
+INSERT INTO `folders` (`id`, `table`, `name`, `belongs_to`) VALUES
 (9, 'products', 'comparto', 4),
 (10, 'products', 'electricos', 125),
 (11, 'products', 'jardineria', 125),
@@ -523,7 +523,7 @@ ALTER TABLE `emails`
 --
 ALTER TABLE `folders`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `resource_table` (`resource_table`,`name`,`belongs_to`),
+  ADD UNIQUE KEY `table` (`table`,`name`,`belongs_to`),
   ADD KEY `owner` (`belongs_to`);
 
 --

@@ -544,12 +544,12 @@ class ModelTest extends TestCase
               ->join('user_roles', 'users.id', '=', 'user_roles.user_id')
               ->where([
                   ['guest', 1],
-                  ['resource_table', 'products'],
+                  ['table', 'products'],
                   ['r', 1]
               ])
               ->orderByRaw('users.id DESC')
               ->get();
-    $this->assertEquals(DB::getQueryLog(), "SELECT * FROM other_permissions as op INNER JOIN folders ON op.folder_id=folders.id INNER JOIN users ON folders.belongs_to=users.id INNER JOIN user_roles ON users.id=user_roles.user_id WHERE (guest = 1 AND resource_table = 'products' AND r = 1) ORDER BY users.id DESC");
+    $this->assertEquals(DB::getQueryLog(), "SELECT * FROM other_permissions as op INNER JOIN folders ON op.folder_id=folders.id INNER JOIN users ON folders.belongs_to=users.id INNER JOIN user_roles ON users.id=user_roles.user_id WHERE (guest = 1 AND table = 'products' AND r = 1) ORDER BY users.id DESC");
 
     //  
     DB::table('products')->where(['workspace', null])->get();  
