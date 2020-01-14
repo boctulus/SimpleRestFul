@@ -8,9 +8,9 @@ class Foo extends MyApiController
 { 
     protected $scope = [
         'guest'      => [],  
-        'registered' => ['read'],
+        'registered' => ['create'],
         'basic'      => [],
-        'regular'    => []
+        'regular'    => ['read']
     ];
 
     function __construct()

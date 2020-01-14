@@ -53,7 +53,13 @@ abstract class ResourceController extends Controller
     }
 
     public function getPermissions(string $table = NULL){
-        return isset($table) && isset($this->permissions->$table) ? $this->permissions->$table : $this->permissions;
+        if ($table == NULL)
+            return $this->permissions->$table;
+
+        if (!isset($this->permissions->$table))
+            return NULL;
+
+        return $this->permissions->$table;
     }
 
     public function isGuest(){

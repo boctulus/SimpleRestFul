@@ -325,13 +325,7 @@ $validado = (new Validator())->setRequired(false)->validate($rules,$data);
 
 # ACL
 
-La implementación del ACL es parecido al de Linux, habiendo permisos a nivel de rol, para un "grupo" de usuarios y para "otros".
-
-Nota:
-
-    Cada entidad que se desee exponer a través de un endpoint debe tener un su modelo asociado un campo tipo entero `belongs_to` -idealmente una FK- que almacenará el id del usuario dueño del recurso. Este es un requisito para el funcionamiento correcto del ACL.
-
-El framework maneja varias tablas para implementar el ACL, entre ellas `group_permissions` se encarga de mantener los permisos de lectura y escritura concedidos por el usuario (owner del recurso) a cierto grupo de usuarios "miembros" del grupo.
+La implementación del ACL incluye "roles" y permisos individuales para cada usuario sobre cada tabla expuesta a través de la API.
 
 Como regla general un usuario puede solo visualizar aquellos registros que ha creado y por tanto le pertenecen pero si se desea que los registros puedan ser leídos o escritos por los demás usuarios registrados (siempre de acuerdo a sus permisos sobre esa tabla de acuerdo a su rol) se puede especificar la propiedad estática $owned = false como sigue:
 
@@ -339,8 +333,6 @@ class Products extends MyApiController
 { 
     static protected $owned = false;
 	// ..
-
-También existen permisos para "otros" o sea para cualquier otro usuario sin necesidad de especificarlo. Los permisos para "otros" pueden ser para invitados ("guest") o sea visitantes que no han entregado credenciales.
 
 Los usuarios no registrados o "invitados" (guest) solo pueden visualizar registros pertenecientes a carpetas compartidas con "otros" especificando acceso para invitados.
 
@@ -358,7 +350,6 @@ class MyApiController extends ApiController
 {
     static protected $guest_access = true;
 	// ..
-
 
 ### Roles
 
@@ -381,7 +372,16 @@ Si se necesitara que los invitados pudieran visualizar registros a nivel de root
 
     static protected $guest_access = true;
 
-En principio es mejor que $guest_access esté en false ya que sino se daría el caso donde un invitado tiene más nivel de acceso que un usuario registrado ya que podría visualizar registros que no le pertenecen mientras que el usuario registrado no puede. (Podría enmendarse)
+
+### Permisos individuales
+
+Los roles son permisos que se asignan masivamente (por igual) a todos los usuarios que poseen ese rol. Los roles se puden "sumar" obteniendo la suma de los permisos de cada rol.
+
+Si se desea que un usuario particular tenga permisos distintos para una entidad particular que sean distintos de los del rol al que pertenece se pueden especificar "permisos indivuduales" creando un registro para ese usuario y esa tabla referida en la tabla "permissions". Solo puede haber una entrada en "permissions" para cada par (usuario, tabla).
+
+Los cambios en los permisos indivuduales al igual que los roles solo se aplican cuando el usuario "inicia sessión" o sea.. cuando obtiene los tokens.
+
+Como los roles y permisos viajan en el payload de los tokens y son transferidos desde el refresh token al nuevo access token cuando es renovado la única oportunidad de actualización es cuando el usuario vuelva a obtener estos tokens. 
 
 
 ### Folders

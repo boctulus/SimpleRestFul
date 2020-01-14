@@ -51,6 +51,7 @@ abstract class ApiController extends ResourceController
         }   
 
         $perms = $this->getPermissions($this->model_table);
+        //var_export($perms); exit; ///
 
         $operations = [ 
             'read'   => ['get'],
@@ -64,36 +65,43 @@ abstract class ApiController extends ResourceController
         if ($this->isAdmin()){
             $this->callable = ['get', 'post', 'put', 'patch', 'delete'];
         }else{
-            foreach ($this->roles as $role){
-                if (isset($this->scope[$role])){
-                    $cruds = $this->scope[$role];
-    
-                    if (!empty($this->scope[$role])){
-                        foreach ($operations as $op => $verbs) {
-                            if (in_array($op, $cruds))
-                                $this->callable = array_merge($this->callable, $verbs);
-                        }
-                    } 
-                }                       
-            }  
-            
-            // permisos por usuario
-            if ($perms != NULL){
-                if ($perms & 8)
+            if ($perms !== NULL){
+
+                $create = ($perms & 8) AND 1;
+                $read   = ($perms & 4) AND 1; 
+                $update = ($perms & 2) AND 1; 
+                $delete = ($perms & 1) AND 1;
+
+                // individual permissions *replaces* role permissions
+
+                if ($create)
                     $this->callable = array_merge($this->callable, $operations['create']); 
 
-                if ($perms & 4)
+                if ($read)
                     $this->callable = array_merge($this->callable, $operations['read']);   
                     
-                if ($perms & 2)
+                if ($update)
                     $this->callable = array_merge($this->callable, $operations['update']); 
 
-                if ($perms & 1)
+                if ($delete)
                     $this->callable = array_merge($this->callable, $operations['delete']); 
+            }else{
+                foreach ($this->roles as $role){
+                    if (isset($this->scope[$role])){
+                        $cruds = $this->scope[$role];
+        
+                        if (!empty($this->scope[$role])){
+                            foreach ($operations as $op => $verbs) {
+                                if (in_array($op, $cruds))
+                                    $this->callable = array_merge($this->callable, $verbs);
+                            }
+                        } 
+                    }                       
+                }  
             }
         }
 
-        //var_dump($perms);
+        //var_dump(['perms' => $perms]);
         //var_export($this->scope);
         //var_export($cruds);
         //var_export($this->callable);
