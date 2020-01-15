@@ -71,6 +71,10 @@ class DB {
 	}
 
 	public static function beginTransaction(){
+		/* 
+		  Not much to it! Forcing PDO to throw exceptions instead errors is the key to being able to use the try / catch which simplifies the logic needed to perform the rollback.
+		*/
+		static::getConnection()->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 		static::getConnection()->beginTransaction();
 	}
 

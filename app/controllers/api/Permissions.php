@@ -45,37 +45,14 @@ class Permissions extends MyApiController
                 Factory::response()->sendError('Data validation error', 400, $validado);
             }  
 
-           
-            //DB::transaction(function() use($data, $instance){                
+            DB::transaction(function() use($data, $instance){                
                 $ok = DB::table('permissions')->where(['tb' => $data['tb'], 'user_id' => $data['user_id']])->delete(false);
 
-                if ($instance->create($data)!==false){
-                    Factory::response()->send(['id' => $instance->id], 201);
-                }	
-                else
-                    Factory::response()->sendError("Error: creation of resource fails!");
-            //});     
+                $instance->create($data);
+            });
+            
+            Factory::response()->send(['id' => $instance->id], 201);
            
-            /*
-            DB::beginTransaction();
-
-            try {
-                $ok = DB::table('permissions')->where(['tb' => $data['tb'], 'user_id' => $data['user_id']])->delete(false);
-
-                if ($instance->create($data)!==false){
-                    Factory::response()->send(['id' => $instance->id], 201);
-                }
-
-                DB::commit();
-    
-            } catch (\Exception $e) {
-                DB::rollback();
-                throw $e;
-            } catch (\Throwable $e) {
-                DB::rollback(); 
-                throw $e;           
-            }   
-            */
 
         } catch (InvalidValidationException $e) { 
             Factory::response()->sendError('Validation Error', 400, json_decode($e->getMessage()));
