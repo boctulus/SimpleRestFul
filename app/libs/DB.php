@@ -91,10 +91,7 @@ class DB {
 		{
 			$result = $callback();
 			static::commit();
-		}
-
-		catch (\Exception $e)
-		{
+		}catch (\Exception $e){
 			static::rollBack();
 			throw $e;
 		}

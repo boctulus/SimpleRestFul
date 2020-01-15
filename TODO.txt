@@ -1,9 +1,6 @@
 # TODO
 
-- Implementar permisos individuales que modifiquen los de los roles
-
-=> serán cargados al momento de hacer el login (AuthController) en el payload
-=> posiblemente deba hacer algo en ResourceController 
+- Revisar Transacciones
 
 - Fractal es una librería que permite devolver modelos en forma de respuestas json, y Transformers son las clases que utiliza esta librería para convertir esos modelos en arrays qye internamente convertirá en objetos json. No es específica de Laravel, vale para cualquier framework que permita respuestas json, y para php puro, la verdad es que merece el nombre que tiene, es realmente potente
 

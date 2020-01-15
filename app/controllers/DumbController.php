@@ -85,21 +85,23 @@ class DumbController extends Controller
 
             $id = DB::table('products')->create([ 
                 'name' => $name, 
-                'description' => 'Esto es una prueba', 
+                'description' => 'Esto es una prueba!!!', 
                 'size' => rand(1,5).'L',
                 'cost' => rand(0,500),
                 'belongs_to' => 90
             ]);   
 
-            DB::table('products')->where(['id' => $id + 1])->update(['description' => 'editado *']);
-            
+            throw new Exception("AAA"); 
+
             DB::commit();
 
         } catch (\Exception $e) {
+            echo 'ACA';
             DB::rollback();
             throw $e;
-        //} catch (\Throwable $e) {
-        //    DB::rollback();            
+        } catch (\Throwable $e) {
+            echo 'ACA 2';
+            DB::rollback();            
         }            
     }
 
@@ -118,7 +120,7 @@ class DumbController extends Controller
                 'belongs_to' => 90
             ]);   
 
-            DB::table('products')->where(['id' => $id + 1])->update(['description' => 'editado *']);
+            throw new Exception("AAA"); 
         });      
     }
 
@@ -1271,7 +1273,10 @@ class DumbController extends Controller
     }
 
     function test(){
-        echo 'Hello';
+        $data = ['tb' => 'foo', 'user_id' => 50];
+
+        $ok = DB::table('permissions')->where(['tb' => $data['tb'], 'user_id' => $data['user_id']])->dd();
+        var_dump($ok);
     }
        
 }

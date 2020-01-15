@@ -600,7 +600,7 @@ abstract class ApiController extends ResourceController
      *
      * @return void
      */
-    function post(){
+    function post() : void {
         $data = Factory::request()->getBody();
 
         if (empty($data))
