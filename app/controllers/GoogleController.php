@@ -129,7 +129,7 @@ class GoogleController extends Controller
                 $uid = $rows[0]['id'];
 
                 $ur = (new UserRolesModel($conn))->setFetchMode('ASSOC');
-                $rows = $ur->where(['user_id', $uid])->get(['role_id']);
+                $rows = $ur->where(['belongs_to', $uid])->get(['role_id']);
 
                 $roles = [];
                 if (count($rows) > 0){         
@@ -186,7 +186,7 @@ class GoogleController extends Controller
                 $role = $this->config['registration_role'];
 
                 $ur = new UserRolesModel($conn);
-                $id = $ur->create([ 'user_id' => $uid, 'role_id' => $r->get_role_id($role) ]);  // registered or other            
+                $id = $ur->create([ 'belongs_to' => $uid, 'role_id' => $r->get_role_id($role) ]);  // registered or other            
         
                 $roles = [$role];
                 $perms = [];

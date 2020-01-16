@@ -226,7 +226,7 @@ class LoginController extends MyController
 			if ($affected_rows === false)
 				Factory::response()->sendError('Error', 500);
 
-			$rows = DB::table('user_roles')->setFetchMode('ASSOC')->where(['user_id', $uid])->get(['role_id as role']);	
+			$rows = DB::table('user_roles')->setFetchMode('ASSOC')->where(['belongs_to', $uid])->get(['role_id as role']);	
 
 			$r = new RolesModel();
 
@@ -363,7 +363,7 @@ class LoginController extends MyController
 
 				// Fetch roles
 				$uid = $rows[0]['id'];
-				$rows = DB::table('user_roles')->setFetchMode('ASSOC')->where(['user_id', $uid])->get(['role_id as role']);	
+				$rows = DB::table('user_roles')->setFetchMode('ASSOC')->where(['belongs_to', $uid])->get(['role_id as role']);	
 				
 				$r = new RolesModel();
 

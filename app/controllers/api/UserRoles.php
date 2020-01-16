@@ -8,9 +8,9 @@ class UserRoles extends MyApiController
 {     
     protected $scope = [
         'guest'      => [], 
-        'registered' => [],
-        'basic'      => [],
-        'regular'    => []
+        'registered' => ['read'],
+        'basic'      => ['read'],
+        'regular'    => ['read']
     ];
 
     function __construct()

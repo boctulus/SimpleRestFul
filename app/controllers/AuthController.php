@@ -98,7 +98,7 @@ class AuthController extends Controller implements IAuth
     
             // Fetch roles
             $uid = (int) $row['id'];
-            $rows = DB::table('user_roles')->setFetchMode('ASSOC')->where(['user_id', $uid])->get(['role_id as role']);	
+            $rows = DB::table('user_roles')->setFetchMode('ASSOC')->where(['belongs_to', $uid])->get(['role_id as role']);	
             
             $r = new RolesModel();
 
@@ -243,7 +243,7 @@ class AuthController extends Controller implements IAuth
                 $r  = new RolesModel();
                 $ur = DB::table('userRoles');
 
-                $ur_id = $ur->create([ 'user_id' => $uid, 'role_id' => $r->get_role_id($role) ]);  
+                $ur_id = $ur->create([ 'belongs_to' => $uid, 'role_id' => $r->get_role_id($role) ]);  
 
                 if (empty($ur_id))
                     Factory::response()->sendError("Error in user registration", 500, 'Error registrating user role');  

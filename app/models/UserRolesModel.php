@@ -9,16 +9,9 @@ class UserRolesModel extends Model
  {
 	protected $table_name = "user_roles";
 	protected $id_name = 'id';
-	//protected $fillable = [ 'user_id', 'role_id', 'created_at', 'modification_date'];
+	//protected $fillable = [ 'belongs_to', 'role_id', 'created_at', 'modification_date'];
 	protected $hidden = [ ];
 	protected $nullable = ['created_at', 'modification_date'];
-
-	/*
-		Unique constraints
-	*/
-	//static protected $unique = [
-	//	['user_id', 'role_id']
-	//];
 
 	/*
 		Types are INT, STR and BOOL among others
@@ -26,7 +19,7 @@ class UserRolesModel extends Model
 	*/
 	protected $schema = [
 		'id' => 'INT',
-		'user_id' => 'INT',
+		'belongs_to' => 'INT',
 		'role_id' => 'INT',
 		'created_at'  => 'STR',
 		'modification_date'  => 'STR'
