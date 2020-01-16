@@ -1,10 +1,72 @@
 # TODO
 
-- Revisar Transacciones
+- Incluir sub-Resources, ej:
 
-- Fractal es una librería que permite devolver modelos en forma de respuestas json, y Transformers son las clases que utiliza esta librería para convertir esos modelos en arrays qye internamente convertirá en objetos json. No es específica de Laravel, vale para cualquier framework que permita respuestas json, y para php puro, la verdad es que merece el nombre que tiene, es realmente potente
+/api/v1/users?include=rol
+
+protected $availableIncludes = [
+      'role'
+];
+
+public function includeRole(User $user)
+{
+      return $this->item($user->role, App::make(RoleTransformer::class));
+}
+
+When including a sub-resource, we can nest relations by using the a dot notation. Let’s say every role has a list of permissions stored in a separate table and we wanted to list users with their role and permissions. We can do it like this: include=role.permissions.
+
+Sometimes, we are required to include some necessary relations by default, like an address relation for example. We can do that by using the $defaultIncludes property inside the transformer:
+
+protected $defaultIncludes = [
+        'address'
+];
+
+Los include parameters se pueden parametrizar (o sea pueden aceptar parámetros), ej:
+
+public function includeUsers(Role $role, ParamBag $paramBag)
+{
+    list($orderCol, $orderBy) = $paramBag->get('order') ?: ['created_at', 'desc'];
+
+    $users = $role->users()->orderBy($orderCol, $orderBy)->get();
+
+    return $this->collection($users, App::make(UserTransformer::class));
+}
+
+
+Leer en detalle:
+https://www.sitepoint.com/php-fractal-make-your-apis-json-pretty-always/
+
+
+- Usar métodos encadenados para simplificar la creación de reglas que actualmente se hace escribiendo directamente el array $rules en el modelo.
+
+protected $rules = [
+        'fullname' 	  => ['min'=>3, 'max'=>40],
+        'username'	  => ['min'=>2, 'max'=>15, 'type' => 'regex:/^[a-zA-Z0-9_]+$/'], 
+		    'email'     	=> ['type'=>'email'],
+               
+]
+
+Podría en su lugar......
+
+function __construct(){
+  // ..
+
+  $this->rules = new Validator()
+                  ->field('fullname)->min(3)->max(40)->string()
+                  ->field('username')->min(2)->max(50)->regex('/^[a-zA-Z0-9_]+$/')
+                  ->field('email')->email()
+                  ...
+                  ->getRules();
+}
+
+Obviamente que los tipos string e int siguen siendo opcionales si ya están definidos en el SCHEMA.
+
+- Transformers 
+
+Fractal es una librería que permite devolver modelos en forma de respuestas json, y Transformers son las clases que utiliza esta librería para convertir esos modelos en arrays qye internamente convertirá en objetos json. No es específica de Laravel, vale para cualquier framework que permita respuestas json, y para php puro, la verdad es que merece el nombre que tiene, es realmente potente
 
 https://medium.com/@haydar_ai/how-to-start-using-transformers-in-laravel-4ff0158b325f
+https://github.com/themsaid/laravel-model-transformer
 
 - Usar un campo folder_id en cada tabla en la que pretendo utilizar folders y usar éste en vez de la combinación entre el user_ud y el nombre del "workspace" como identificador de carpeta.
 
@@ -40,8 +102,18 @@ https://github.com/robsonvn/laravel-couchdb
 	DELETE = GET + X-HTTP-Method-Override: DELETE
 	Alternatively, you can also override the HTTP method by using the _method query string parameter.
 
+- Agregar más información en el paginador comoo en Laravel
 
-- El AuthController y el FrontController deben poder ser extendidos
+    "pagination": {
+            "total": 50,
+            "count": 10,
+            "per_page": 10,
+            "current_page": 1,
+            "total_pages": 5,
+            "links": {
+                "nextUrl": "http://demo.vaprobash.dev/users?page=2"
+            }
+    }
 
 - Subconsultas:
 
@@ -219,6 +291,7 @@ https://docs.phalcon.io/3.4/en/acl
 
 Se deben poder especificar para cada endpoint
 
+https://github.com/dingo/api/wiki/Rate-Limiting
 https://developer.twitter.com/en/docs/basics/rate-limiting
 https://stackoverflow.com/questions/16022624/examples-of-http-api-rate-limiting-http-response-headers
 https://apisyouwonthate.com/blog/what-is-api-rate-limiting-all-about

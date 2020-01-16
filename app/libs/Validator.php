@@ -46,7 +46,9 @@ class Validator implements IValidator
 		if (empty($tipo))
 			throw new \InvalidArgumentException('Data type is undefined');
 
-		if ($tipo == 'int' || $tipo == 'integer'){
+		if ($tipo == 'bool'){
+			return $dato == 0 || $dato == 1;
+		}elseif ($tipo == 'int' || $tipo == 'integer'){
 			return preg_match('/^(-?[0-9]+)+$/',trim($dato)) == 1;
 		}elseif($tipo == 'decimal' || $tipo == 'float' || $tipo == 'double'){
 			$dato = trim($dato);

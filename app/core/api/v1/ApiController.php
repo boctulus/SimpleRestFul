@@ -583,6 +583,7 @@ abstract class ApiController extends ResourceController
                 $pg = ['pages' => $page_count, 'nextUrl' => $next];   
                           
                 $rows = $instance->where($_get)->get($fields, $order, $limit, $offset);
+                //Debug::dd($instance->getLastPrecompiledQuery());
                 Factory::response()->setPretty($pretty)->code(200)->setPaginator($pg)->send($rows);
         
             }
@@ -620,6 +621,10 @@ abstract class ApiController extends ResourceController
 
             if ($instance->inSchema(['created_by'])){
                 $data['created_by'] = $this->uid;
+            }
+
+            if ($this->is_admin){               
+                $instance->fillAll();
             }
             
             if ($folder !== null)
@@ -693,7 +698,8 @@ abstract class ApiController extends ResourceController
                 if (isset($data['deleted_at']))
                     unset($data['deleted_at']);
             }else{
-                $instance->fill(['deleted_at']);
+                //$instance->fill(['deleted_at']);
+                $instance->fillAll();
             }
 
             if ($folder !== null)

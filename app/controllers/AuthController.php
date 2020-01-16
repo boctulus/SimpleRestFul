@@ -90,9 +90,12 @@ class AuthController extends Controller implements IAuth
             if (!password_verify($password, $hash))
                 Factory::response()->sendError('Incorrect username / email or password', 401);
 
-            $confirmed_email = $row['confirmed_email']; 
-            $username = $row['username'];           
+            if ($row['active'] == 0)
+                Factory::response()->sendError('Non authorized', 403, 'Unactivated or deactivate account');
 
+            $confirmed_email = $row['confirmed_email']; 
+            $username = $row['username'];   
+    
             // Fetch roles
             $uid = (int) $row['id'];
             $rows = DB::table('user_roles')->setFetchMode('ASSOC')->where(['user_id', $uid])->get(['role_id as role']);	

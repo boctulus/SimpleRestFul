@@ -9,8 +9,8 @@ class UsersModel extends Model
  { 
 	protected $table_name = "users";
 	protected $id_name = 'id';
-	protected $not_fillable = ['confirmed_email'];
-	protected $nullable = ['firstname', 'lastname', 'confirmed_email'];
+	protected $not_fillable = ['confirmed_email', 'active'];
+	protected $nullable = ['firstname', 'lastname', 'active', 'confirmed_email'];
 	protected $hidden   = [	'password' ];
 
 	/*
@@ -20,6 +20,7 @@ class UsersModel extends Model
 	protected $schema = [
 		'id' => 'INT',
 		'username' => 'STR',
+		'active' => 'INT',
 		'email' => 'STR',
 		'confirmed_email' => 'INT',
 		'password' => 'STR',
@@ -30,6 +31,7 @@ class UsersModel extends Model
 	];
 
 	protected $rules = [
+		'active' 	=> ['type' => 'bool'],
 		'username'	=> ['min'=>2, 'max'=>15, 'type' => 'regex:/^[a-zA-Z0-9_]+$/'], 
 		'email' 	=> ['type'=>'email'],
 	];

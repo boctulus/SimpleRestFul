@@ -15,6 +15,7 @@ class FooModel extends Model
 	];
 
 	protected $rules = [
+		'bar' => ['type' => 'alpha']
 	];
 
     function __construct($db = NULL){

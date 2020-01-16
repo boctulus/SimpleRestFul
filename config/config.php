@@ -34,9 +34,11 @@ return [
 		'encryption' => 'HS256'	
 	],
 
-	// aditional role to 'registered' after being registered
-	// leave empty for none
-	'registration_role' => 'regular',
+	/* 
+		aditional role to the implicit 'registered' after being registered
+		leave empty for none
+	*/
+	//'registration_role' => 'regular',
 
 	// seconds
 	'email' => [

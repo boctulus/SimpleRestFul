@@ -225,6 +225,13 @@ class Model {
 		return $this;	
 	}
 
+	/*
+		Make all fields fillable
+	*/
+	function fillAll(){
+		$this->fillable = $this->properties;
+		return $this;	
+	}
 	
 	/**
 	 * unfill
@@ -1237,7 +1244,7 @@ class Model {
 		if(!empty($this->fillable) && is_array($this->fillable)){
 			foreach($vars as $var){
 				if (!in_array($var,$this->fillable))
-					throw new \InvalidArgumentException("update: $var is no fillable");
+					throw new \InvalidArgumentException("update: $var is not fillable");
 			}
 		}
 
