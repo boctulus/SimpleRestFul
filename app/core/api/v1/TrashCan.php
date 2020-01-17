@@ -319,7 +319,7 @@ class TrashCan extends MyApiController
         }	    
     } // 
 
-    function post(){
+    function post() : void {
         Factory::response()->sendError('You can not create a trashcan resource',405);
     }        
 
@@ -524,8 +524,8 @@ class TrashCan extends MyApiController
                 Factory::response()->sendError('Forbidden', 403, 'You are not the owner');
             }         
                         
-            if (isset($rows[0]['locked']) && $rows[0]['locked'] == 1){
-                Factory::response()->sendError("Locked by Admin", 403);
+            if (!$this->is_admin && isset($rows[0]['locked']) && $rows[0]['locked'] == 1){
+                Factory::response()->sendError("Forbidden", 403, "Locked by Admin");
             }
 
             if($instance->delete(false)){

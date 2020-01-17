@@ -8,16 +8,9 @@ use simplerest\core\Model;
 class RolesModel {
 
 	protected $roles = [
-		0 => ['name'  => 'guest',      'is_admin' => false],
-		1 => ['name'  => 'registered', 'is_admin' => false],
-
-		/*
-			Edit from here -->
-		*/
-
-		2 => ['name'  => 'basic',     'is_admin' => false],
-		3 =>  ['name' => 'regular',   'is_admin' => false],
-		100 => ['name'=> 'admin',     'is_admin' => true]
+		2 => 	['name'  => 'basic',	'is_admin' => false],
+		3 =>  	['name' => 'regular',   'is_admin' => false],
+		100 => 	['name'=> 'admin',		'is_admin' => true]
 	];
 
 	function get_role_id($name){
@@ -39,6 +32,8 @@ class RolesModel {
 	function is_admin(string $role_name){
 		if ($role_name == 'admin')
 			return true;
+		elseif ($role_name == 'guest' || $role_name == 'registered')
+			return false;
 
 		foreach ($this->roles as $r){
 			if ($r['name'] == $role_name)

@@ -34,7 +34,7 @@ abstract class ResourceController extends Controller
 
             $this->is_admin = false;
             foreach ($this->roles as $role){
-                if ($r->is_admin($role)){
+                if ($role != 'registered' && $role != 'guest' && $r->is_admin($role)){
                     $this->is_admin = true;
                     break;
                 }

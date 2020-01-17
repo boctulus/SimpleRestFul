@@ -66,7 +66,7 @@ class Validator implements IValidator
 				return filter_var($dato, FILTER_VALIDATE_EMAIL);
 		}elseif($tipo == 'date'){
 				return get_class()::isValidDate($dato);
-		}elseif($tipo == 'datetime'){
+		}elseif($tipo == 'sql_datetime'){
 				return preg_match('/[1-2][0-9]{3}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-5][0-9]/',$dato)== 1;		
 		}elseif($tipo == 'time'){
 				return get_class()::isValidDate($dato,'H:i:s');	

@@ -38,10 +38,7 @@ class ProductsModel extends Model
         'name' 			=> ['min'=>3, 'max'=>40],
 		'description' 	=> ['max'=>50],
 		'size' 			=> ['max'=>20],
-        'workspace'		=> ['max'=>20],
-		'created_at' 	=> ['type'=>'datetime'],
-		'updated_at' 	=> ['type'=>'datetime'],
-		'deleted_at' 	=> ['type'=>'datetime'],
+        'workspace'		=> ['max'=>20]
 	];
 
     function __construct($db = NULL){

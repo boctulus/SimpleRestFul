@@ -332,9 +332,6 @@ class AuthController extends Controller implements IAuth
                     $payload->roles = ['registered'];
                 }
 
-                //var_export($payload->roles);
-                //exit; ///
-
                 if ($payload->exp < time())
                     Factory::response()->sendError('Token expired',401);
 

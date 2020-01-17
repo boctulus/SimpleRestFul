@@ -343,6 +343,19 @@ class Products extends MyApiController
     static protected $guest_access = true;
 	// ...
 
+Cabe señalar que es necesario que el rol "guest" tenga acceso de lectura y que $guest_access=true es necesario pero no suficiente.
+
+class Products extends MyApiController
+{ 
+	static protected $guest_access = true;
+
+    function __construct()
+    {       
+        $this->scope['guest']      = ['read'];
+        //..
+        parent::__construct();
+    }
+     
 
 Si se desea que todos los endpoints posean guest_access por ejemplo el lugar adecuado para especificarlo es en ela clase MyApiController
 
@@ -364,11 +377,37 @@ Para cada endpoint es posible especificar un conjunto de permisos para cada rol 
 	    'admin'   => ['read', 'write']
 	];
 
-El rol "guest" se obtiene al hacer consulta a un endpoint sin haber presentado antes credenciales (estar autenticado).
 
-Un "guest" o invitado no puede en principio visualizar registros que no pertenezcan a folders con permiso de lectura para "otros" especificando que sea también para guests.
+### Rol de Admin
 
-Si se necesitara que los invitados pudieran visualizar registros a nivel de root (no folders) creados por cualquier usuario se puede lograr seteando en el ApiController: 
+El rol de "admin" está definido en modelo RolesModel y es muy especial porque aunque es posible asignar permisos adicionales a cualquier rol, hay tareas administrativas que solo puede realizar un admin. 
+
+Ejemplos:
+
+- Bloquear un registro (locked=1)
+- Desbloquear un registro (locked=0)
+- Modificar un registro bloqueado
+- Borrar un registro bloqueado
+- Borrar definitivamente un registro bloqueado
+- Restaurar (undelete) un registro bloqueado
+- Acceder a registros en folders no-compartidos
+- Llenar cualquier campo incluso los no-fillables
+- Cambiar la propiedad (ownership) de un registro (campo belongs_to)
+etc.
+
+### Roles virtuales
+
+El sistema tiene 2 roles que son virtuales: "guest" y "registered".
+
+El rol "guest" se obtiene al hacer request a un endpoint sin haber presentado antes credenciales (autenticarse).
+
+Por otro lado, todo usuario registrado goza del rol "registered" aunque no se le hayan asignado roles. Se lo puede ver como el padre de todos de todos los roles, excepto de "guest".
+
+Cabe notar que los roles virtuales NO son vistos en el endpoint para roles de usuario /api/v1/userRoles y por tanto un usuario invitado o registrado sin roles no mostrará roles.
+
+Respecto del acceso a "folders", un "guest" o invitado no puede en principio visualizar registros que no pertenezcan a folders con permiso de lectura para "otros" especificando que sea también para guests.
+
+Si se necesitara que los invitados pudieran visualizar registros no-privados (sin folders asignados) creados por cualquier usuario se puede lograr seteando en el ApiController: 
 
     static protected $guest_access = true;
 
@@ -606,6 +645,9 @@ GET /api/v1/products?belongs_to[neq]=me
 GET /api/v1/products?belongs_to=90,me,1  
 GET /api/v1/products?belongs_to[notIn]=90,me,1
 ...
+GET /api/v1/userRoles?belongs_to=me
+...
+
 
 # NGINX web server
 
