@@ -592,6 +592,21 @@ En cambio una respuesta que contiene un error, puede o no poseer cuerpo pudiendo
     "error_detail": "Register for id=1850 does not exists"
 }
 
+### created_by=me, update_by=me o belongs_to=me
+
+Puede darse el caso de que un usuario sea el owner de ciertos registros pero que no hayan sido creados por él sino por otro usuario con permisos (por ejemplo un Admin).
+
+Es posible filtrar facilmente los registros creados, actualizados o pertenecientes al usuario que hace el request colocando 'me' en lugar del id del propio usuario. 
+
+Ejemplos:
+
+GET /api/v1/products?created_by=me
+GET /api/v1/products?created_by[neq]=me
+GET /api/v1/products?belongs_to[neq]=me
+GET /api/v1/products?belongs_to=90,me,1  
+GET /api/v1/products?belongs_to[notIn]=90,me,1
+...
+
 # NGINX web server
 
 Agregar en el bloque lo siguiente:

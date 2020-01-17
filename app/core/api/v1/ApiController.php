@@ -250,11 +250,20 @@ abstract class ApiController extends ResourceController
                     if ($_get[$f] == 'me')
                         $_get[$f] = $this->uid;
                     elseif (is_array($_get[$f])){
-                        foreach ($_get[$f] as $op => $idx){
-                            var_export($idx);
-                            if ($idx == 'me')
+                        foreach ($_get[$f] as $op => $idx){                            
+                            if ($idx == 'me'){
                                 $_get[$f][$op] = $this->uid;
+                            }else{      
+                                $p = explode(',',$idx);
+                                if (count($p)>1){
+                                foreach ($p as $ix => $idy){
+                                    if ($idy == 'me')
+                                        $p[$ix] = $this->uid;
+                                    }
+                                }
+                                $_get[$f][$op] = implode(',',$p);
                             }
+                        }
                     }else{
                         $p = explode(',',$_get[$f]);
                         if (count($p)>1){
