@@ -37,7 +37,6 @@ class RolesModel {
 	 * @return bool
 	 */
 	function is_admin(string $role_name){
-
 		if ($role_name == 'admin')
 			return true;
 

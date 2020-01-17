@@ -44,15 +44,21 @@ abstract class ResourceController extends Controller
             $this->is_admin = false;
             $this->roles = ['guest'];
         }
+
+        //var_export($this->roles);
                     
         parent::__construct();
     }
 
-    public function getRoles(){
+    protected function is_admin(){
+        return $this->is_admin;
+    }
+
+    protected function getRoles(){
         return $this->roles;
     }
 
-    public function getPermissions(string $table = NULL){
+    protected function getPermissions(string $table = NULL){
         if ($table == NULL)
             return $this->permissions->$table;
 
@@ -62,23 +68,23 @@ abstract class ResourceController extends Controller
         return $this->permissions->$table;
     }
 
-    public function isGuest(){
+    protected function isGuest(){
         return $this->roles == ['guest'];
     }
 
-    public function isRegistered(){
+    protected function isRegistered(){
         return !$this->isGuest();
     }
 
-    public function isAdmin(){
+    protected function isAdmin(){
         return $this->is_admin;
     }
 
-    public function hasRole(string $role){
+    protected function hasRole(string $role){
         return in_array($role, $this->roles);
     }
 
-    public function hasAnyRole(array $authorized_roles){
+    protected function hasAnyRole(array $authorized_roles){
         $authorized = false;
         foreach ((array) $this->roles as $role)
             if (in_array($role, $authorized_roles))

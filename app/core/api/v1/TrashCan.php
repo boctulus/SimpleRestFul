@@ -398,7 +398,7 @@ class TrashCan extends MyApiController
                 $_get[] = ['belongs_to', $this->uid];
 
                 if ($rows[0]['belongs_to'] != $this->uid)
-                    Factory::response()->sendError('You are not the owner', 403);
+                    Factory::response()->sendError('Forbidden', 403, 'You are not the owner');
 
                 if (isset($rows[0]['locked']) && $rows[0]['locked'] == 1){
                     Factory::response()->sendError("Locked by Admin", 403);
@@ -521,7 +521,7 @@ class TrashCan extends MyApiController
             }
             
             if (!$this->is_admin && $owned && $rows[0]['belongs_to'] != $this->uid){
-                Factory::response()->sendError('You are not the owner', 403);
+                Factory::response()->sendError('Forbidden', 403, 'You are not the owner');
             }         
                         
             if (isset($rows[0]['locked']) && $rows[0]['locked'] == 1){

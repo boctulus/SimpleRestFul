@@ -138,6 +138,7 @@ class FacebookController extends Controller
                     $data['username'] = $username;
                     ///
                 
+                    // Debo hacer Transacción aquí:
                     $uid = $u->create($data);
                     if (empty($uid))
                         return ['error' => 'Error in user registration!', 'code' => 500];
@@ -152,7 +153,7 @@ class FacebookController extends Controller
                     $role = $this->config['registration_role'];
 
                     $ur = new UserRolesModel($conn);
-                    $id = $ur->create([ 'belongs_to' => $uid, 'role_id' => $r->get_role_id($role) ]);  // registered or other            
+                    $id = $ur->create([ 'belongs_to' => $uid, 'role_id' => $r->get_role_id($role) ]); 
             
                     $roles = [$role];
                     $perms = [];

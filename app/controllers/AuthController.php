@@ -107,9 +107,9 @@ class AuthController extends Controller implements IAuth
                 foreach ($rows as $row){
                     $roles[] = $r->getRoleName($row['role']);
                 }
-            }else
-                $roles[] = 'registered';
-
+            }
+            //else
+            //    $roles[] = 'registered';
 
             $_permissions = DB::table('permissions')->setFetchMode('ASSOC')->select(['tb', 'can_create as c', 'can_read as r', 'can_update as u', 'can_delete as d'])->where(['user_id' => $uid])->get();
 
@@ -247,9 +247,10 @@ class AuthController extends Controller implements IAuth
 
                 if (empty($ur_id))
                     Factory::response()->sendError("Error in user registration", 500, 'Error registrating user role');  
-            }else{
-                $role = ['registered'];
             }
+            //else{
+            //    $role = ['registered'];
+            //}
         
             $permissions = [];
 
@@ -326,22 +327,17 @@ class AuthController extends Controller implements IAuth
 
                 if (empty($payload->uid))
                     Factory::response()->sendError('uid is needed',400);                
-
+               
                 if (empty($payload->roles)){
-                    Factory::response()->sendError('Undefined roles',400);
+                    $payload->roles = ['registered'];
                 }
 
-                //if (empty($payload->permissions)){
-                //    Factory::response()->sendError('Undefined permissions',400);
-                //}
+                //var_export($payload->roles);
+                //exit; ///
 
                 if ($payload->exp < time())
                     Factory::response()->sendError('Token expired',401);
 
-                // Overwrite
-                if (!$payload->confirmed_email)
-                    $payload->roles = ['registered'];
-                
                 return ($payload);
 
             } catch (\Exception $e) {

@@ -245,31 +245,28 @@ abstract class ApiController extends ResourceController
             $_get    = Factory::request()->getQuery();
             $data    = [];
             
-            foreach (['created_by', 'updated_by', 'belongs_to'] as $f){
-                if (isset($_get[$f])){
-                    if ($_get[$f] == 'me')
-                        $_get[$f] = $this->uid;
-                    elseif (is_array($_get[$f])){
-                        foreach ($_get[$f] as $op => $idx){
-                            var_export($idx);
-                            if ($idx == 'me')
-                                $_get[$f][$op] = $this->uid;
-                            }
-                    }else{
-                        $p = explode(',',$_get[$f]);
-                        if (count($p)>1){
-                        foreach ($p as $ix => $idx){
-                            if ($idx == 'me')
-                                $p[$ix] = $this->uid;
-                            }
+            if (isset($_get['belongs_to'])){
+                if ($_get['belongs_to'] == 'me')
+                    $_get['belongs_to'] = $this->uid;
+                elseif (is_array($_get['belongs_to'])){
+                    foreach ($_get['belongs_to'] as $op => $idx){
+                        if ($idx == 'me')
+                            $_get['belongs_to'][$op] = $this->uid;    
                         }
-                        $_get[$f] = implode(',',$p);
                     }
+                }else{
+                    echo 222;
+                    $p = explode(',',$idx);
+                            
+                    if (count($p)>1){
+                        echo '***';
+                    } 
+
                 }
-            }
-    
-            //var_export($_get);
-            //exit; ////
+            }         
+            
+            var_export($_get);
+            exit; ////
 
             if (isset($_get['created_by']) && $_get['created_by'] == 'me')
                 $_get['created_by'] = $this->uid;
