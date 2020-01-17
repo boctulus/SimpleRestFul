@@ -23,7 +23,7 @@ class Permissions extends MyApiController
         parent::__construct();
     }
 
-    function post() : void {
+    function post(){
         $data = Factory::request()->getBody();
 
         if (empty($data))

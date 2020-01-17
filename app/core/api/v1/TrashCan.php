@@ -19,7 +19,7 @@ class TrashCan extends MyApiController
         parent::__construct();
     }
 
-    function get($id = null){
+    function get($id = null) {
         global $api_version;
 
         if ($id != null && !ctype_digit($id))
@@ -319,7 +319,7 @@ class TrashCan extends MyApiController
         }	    
     } // 
 
-    function post() : void {
+    function post() {
         Factory::response()->sendError('You can not create a trashcan resource',405);
     }        
 
@@ -446,7 +446,7 @@ class TrashCan extends MyApiController
      *
      * @return void
      */
-    function put($id = null){
+    function put($id = null) {
         $this->modify($id, true);
     } // 
     
@@ -458,7 +458,7 @@ class TrashCan extends MyApiController
      *
      * @return void
      */
-    function patch($id = NULL)
+    function patch($id = NULL) 
     { 
         $this->modify($id);
     } //
@@ -471,7 +471,7 @@ class TrashCan extends MyApiController
      *
      * @return void
      */
-    function delete($id = NULL){
+    function delete($id = NULL) {
         if($id == NULL)
             Factory::response()->sendError("Lacks id in request",400);
 

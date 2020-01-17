@@ -176,7 +176,7 @@ abstract class ApiController extends ResourceController
      *
      * @return void
      */
-    function options(){
+    function options() {
     }
  
     /**
@@ -223,7 +223,7 @@ abstract class ApiController extends ResourceController
         }
 
         return false;
-    }
+    } 
     
     /**
      * get
@@ -232,7 +232,7 @@ abstract class ApiController extends ResourceController
      *
      * @return void
      */
-    function get($id = null){
+    function get($id = null) {
         global $api_version;
 
         try {            
@@ -633,7 +633,7 @@ abstract class ApiController extends ResourceController
      *
      * @return void
      */
-    function post() : void {
+    function post() {
         $data = Factory::request()->getBody();
 
         if (empty($data))
@@ -821,7 +821,7 @@ abstract class ApiController extends ResourceController
      *
      * @return void
      */
-    function put($id = null){
+    function put($id = null) {
         $this->modify($id, true);
     } // 
     
@@ -833,8 +833,7 @@ abstract class ApiController extends ResourceController
      *
      * @return void
      */
-    function patch($id = NULL)
-    { 
+    function patch($id = NULL) { 
         $this->modify($id);
     } //
 
@@ -846,7 +845,7 @@ abstract class ApiController extends ResourceController
      *
      * @return void
      */
-    function delete($id = NULL){
+    function delete($id = NULL) {
         if($id == NULL)
             Factory::response()->sendError("Lacks id in request", 400);
 
