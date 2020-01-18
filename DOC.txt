@@ -14,7 +14,6 @@ Algunas características:
 - Sistema de permisos personalizados que decoran los roles
 - Papelera de reciclaje
 
-
 # Estructura del proyecto
 
 ```
@@ -60,7 +59,7 @@ Se especifica la versión en la url y esto tiene como efecto cargar una versión
 	GET /api/v2/products
 	GET /api/v3/products
 
-En el primer por ejemplo caso carga la clase /app/core/api/v1/v1/ApiController
+En el primer por ejemplo caso carga la clase /app/core/api/v1/ApiController
 
 La clase MyApiController en /app/controllers es la responsable de seleccionar la versión solicitada de la API.
 
@@ -89,7 +88,7 @@ En la terminal nos cambiamos al directorio "public" y ejecutamos:
 
 Hay soporte para sub-directorios o sub-sub-(sub)-directorios 
 
-Resource Controller:
+### Resource Controller:
 
 Un ResourceController es un tipo de controlador que mediante un Authorization header identifica al usuario y su rol.
 
@@ -120,7 +119,6 @@ Un ApiController es un tipo de ResourceController que sirve para procesar un end
 ### Modelo
 
 	Cada modelo es definido en una clase en /app/models que extiende a Model y donde se define el schema y algunas propiedades de los campos. Ejemplo:
-
 
 	class ProductsModel extends Model 
 	{
@@ -180,7 +178,6 @@ class UsersModel extends Model
 }
 
 El procedimiento es registrar los mutators para cada campo del modelo.
-
 
 ### Campos fillables, no-fillables, nullables y ocultos
 
@@ -313,6 +310,28 @@ La salida en caso de fracaso es un array conteniendo las reglas rotas para cada 
 	}
 	}
 
+### Tipos
+
+Los tipos (type) admitidos son:
+
+bool
+int
+float
+number
+string
+alpha
+notnum
+email
+date
+sql_datetime
+time
+array
+regex:/expresión/
+
+El tipo 'time' es 'H:i:s' y el 'date' es 'd-m-Y' aunque siempre es posible crear un tipo personalizado con una expresión regular que se ajuste a las necesidades.
+
+### Validaciones en los modelos
+
 Para efectuar la validación sobre las operaciones CRUD con los modelos es tan simple como incluir una instancia de la clase Validator:
 
 	$u = DB::table('products')->setValidator(new Validator());
@@ -340,8 +359,8 @@ La clase Validator admite las siguientes restricciones:
 
 required 	# el campo es requerido
 type 		# por tipo incluidos nuevos tipos creados con expresiones regulares
-min 		# valor mínimo
-max			# valor máximo
+min 		# valor mínimo o longitud mínima para un string
+max			# valor máximo o longitud máxima para un string
 in 			# el valor debe estar dentro de un array de valores
 between		# el valor debe estar entre dos valores; es un rango que incluye ambos extremos
 
