@@ -25,6 +25,10 @@ class UserRolesModel extends Model
 		'modification_date'  => 'STR'
 	];
 
+	protected $rules = [
+		'role_id'	=> ['in' => [2,3,100], 'messages' => ['in' => 'Invalid role_id'] ] 
+	];
+
     function __construct($db = NULL){
         parent::__construct($db);
     }

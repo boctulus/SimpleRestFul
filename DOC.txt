@@ -1,16 +1,28 @@
 DOCUMENTACION 
 -------------
 
-SimpleRest utiliza la arquitectura MVC donde modelos y controladores se implementan con clases y las vistas con archivos planos.
+SimpleRest utiliza la arquitectura MVC, está orientado a API Restful y es un framework para desarrollo rápido de aplicaciones (RAD).
+
+Algunas características:
+
+- Arquitectura MVC
+- APIs funcionan out-the-box o sea sin escribir nada de código ***
+- Login por usuario / email y contraseña
+- Login con Facebook
+- Login con Google
+- Sistema de roles 
+- Sistema de permisos personalizados que decoran los roles
+- Papelera de reciclaje
+
 
 # Estructura del proyecto
 
 ```
 ├── app                           # Main MVC file structure directory
 │   ├── controllers               # Controllers directory 
+|   |   └── api                   # API controllers  
 │   ├── models                    # Models directory
 │   ├── views                     # Views directory
-│   ├── api                       # API controller Directory
 │   ├── libs                      
 │   ├── locale                    # i18n translations
 │   └── core                      # Core directory
@@ -199,7 +211,7 @@ Por último tenemos los campos ocultos:
 
 El framework incluye un validador que está integrado a nivel de la API Rest y puede también incluirse a nivel de los modelos o bien usarse de forma aislada.
 
-Para mostrar el funcionamiento de la clase Validator consideremos el siguiente ejemplo:
+Para mostrar el funcionamiento de la clase Validator consideremos el siguiente ejemplo donde usamos directamente la clase validator para procesar errores de un formulario por ejemplo:
 
 	$data = [
 				'nombre'=>'Pablo1',
@@ -322,6 +334,32 @@ $data  = [ ..., ... , ...];
 $rules = [ ..., ... , ...];
 $validado = (new Validator())->setRequired(false)->validate($rules,$data);
 
+### Constraints
+
+La clase Validator admite las siguientes restricciones:
+
+required 	# el campo es requerido
+type 		# por tipo incluidos nuevos tipos creados con expresiones regulares
+min 		# valor mínimo
+max			# valor máximo
+in 			# el valor debe estar dentro de un array de valores
+between		# el valor debe estar entre dos valores; es un rango que incluye ambos extremos
+
+### Mensajes personalizados
+
+Para cualquier restricción es posible crear un mensaje personalizable (traducible con i18n) para el error en caso de que falle.
+
+Ejemplo:"
+
+protected $rules = [
+        'name' 			=> ['min'=>3, 'max'=>40, 'messages' => [
+			'min' => 'Please enter at least 3 chars', 
+			'max' => 'Please don't exceed 40 chars' ]
+		],
+		'active'		=> ['type' => 'bool', 'messages' => [
+			'type' => 'Value should be 0 or 1'] 
+		]
+	];
 
 ### Custom validation
 
@@ -381,7 +419,7 @@ class MyApiController extends ApiController
 
 ### Roles
 
-Se pueden crear distintos roles que son mantenidos en la tabla 'roles' y cuyo fin es limitar las acciones CRUD que puedan realizar.
+Se pueden crear distintos roles que son mantenidos en el modelo 'RolesModel' y cuyo fin es limitar las acciones CRUD que puedan realizar.
 
 Para cada endpoint es posible especificar un conjunto de permisos para cada rol ya sea 'read', 'write' o inclusive ser más específico con 'create', 'read', 'delete' y 'update'.
 

@@ -123,8 +123,6 @@ class Validator implements IValidator
 			
 		$msg = [];
 		foreach($rules as $field => $rule){
-
-			
 			//Debug::dd($rule, "RULE $field :");
 			
 			//var_export(array_diff(array_keys($rule), ['messages']));
@@ -183,6 +181,20 @@ class Validator implements IValidator
 					}						
 				}	
 				
+				if (isset($rule['in'])){
+					$err = (isset($msg[$field]['in'])) ? $msg[$field]['in'] :  "$dato is not one of the allowed values";
+					if (!in_array($dato, $rule['in'])){
+						$push_error($field,['data'=>$dato, 'error'=>'in', 'error_detail' => sprintf(_($err), $field)],$errores);
+					}					
+				}
+
+				if (isset($rule['between'])){
+					if ($dato > $rule['between'][1] || $dato < $rule['between'][0]){
+						$err = (isset($msg[$field]['between'])) ? $msg[$field]['between'] :  "$dato is not between {$rule['between'][0]} and {$rule['between'][1]}";
+						$push_error($field,['data'=>$dato, 'error'=>'between', 'error_detail' => sprintf(_($err), $field)],$errores);
+					}					
+				}
+
 				if (isset($rule['type']) && in_array($rule['type'],['numeric','number','int','integer','float','double','decimal']) && trim($dato)=='')
 					$avoid_type_check = true;
 				

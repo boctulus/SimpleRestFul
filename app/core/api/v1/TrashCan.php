@@ -248,7 +248,7 @@ class TrashCan extends MyApiController
                 }
                 
                 // root, sin especificar folder ni id (lista)
-                if ($this->is_guest()){
+                if ($this->isGuest()){
                     Factory::response()->send([]);
                 }else
                     if (!$this->is_admin && $owned)

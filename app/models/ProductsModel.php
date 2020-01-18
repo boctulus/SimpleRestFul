@@ -38,7 +38,8 @@ class ProductsModel extends Model
         'name' 			=> ['min'=>3, 'max'=>40],
 		'description' 	=> ['max'=>50],
 		'size' 			=> ['max'=>20],
-        'workspace'		=> ['max'=>20]
+		'workspace'		=> ['max'=>20],
+		'active'		=> ['type' => 'bool', 'messages' => [ 'type' => 'Value should be 0 or 1'] ]
 	];
 
     function __construct($db = NULL){
