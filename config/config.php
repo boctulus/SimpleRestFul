@@ -34,6 +34,11 @@ return [
 		'encryption' => 'HS256'	
 	],
 
+	'method_override' => [
+		'by_url' => true,
+		'by_header' => true
+	],
+
 	/* 
 		aditional role to the implicit 'registered' after being registered
 		leave empty for none

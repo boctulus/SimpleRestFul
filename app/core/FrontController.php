@@ -57,7 +57,19 @@ class FrontController
                 $namespace = 'simplerest\\controllers\\api\\';
 
             $class_name = $namespace . ucfirst($controller); //
-            $method = strtolower($_SERVER['REQUEST_METHOD']);
+  
+            ///
+            $asked_method = NULL;
+            if ($config['method_override']['by_url']){
+                $asked_method  =  $req->shift('_method');
+            }
+
+            if ($asked_method == NULL && $config['method_override']['by_header']){
+                $asked_method  =  $req->header('X-HTTP-Method-Override'); 
+            }
+
+            $method = $asked_method != NULL ? strtolower($asked_method) : strtolower($_SERVER['REQUEST_METHOD']);
+            ///
         }else{
             //Debug::dd($_params, 'PARAMS:');
 

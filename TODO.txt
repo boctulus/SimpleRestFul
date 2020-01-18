@@ -98,14 +98,7 @@ https://github.com/robsonvn/laravel-couchdb
 
 	ini_set('zlib.output_compression_level', 4);
 
-- Permitir "method override" ya sea via header X-HTTP-Method-Override o bien mediante parámetro ?method=
-
-	If your REST client does not support certain requests, you can use the X-HTTP-Method-Override header:
-
-	PUT = POST + X-HTTP-Method-Override: PUT
-	DELETE = GET + X-HTTP-Method-Override: DELETE
-	Alternatively, you can also override the HTTP method by using the _method query string parameter.
-
+	
 - Agregar más información en el paginador comoo en Laravel
 
     "pagination": {

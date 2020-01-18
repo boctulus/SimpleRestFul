@@ -674,7 +674,7 @@ Un usuario (sin ser Admin pero con los permisos correctos) podría crear otros u
 
 Otro endpoint adicional es /api/v1/trashCan que corresponde a una papelera de registros y se explica en la sección correspondiente. 
 
-Vista general de las APIs:
+# Lo que obtines out-the-box de la API
 
 ## GET <READ>
 
@@ -897,6 +897,21 @@ GET /api/v1/products?belongs_to[notIn]=90,me,1
 GET /api/v1/userRoles?belongs_to=me
 ...
 
+# Method override
+
+Si en el servidor estuvieran desactivados PUT, PATCH o DELETE aún es posible utilizarlos haciendo un "method override".
+
+If your REST client does not support certain requests, you can use the X-HTTP-Method-Override header:
+
+PUT = POST + X-HTTP-Method-Override: PUT
+PATCH = POST + X-HTTP-Method-Override: PUT
+DELETE = GET + X-HTTP-Method-Override: DELETE
+
+Alternatively, you can also override the HTTP method by using the _method query string parameter.
+
+GET /api/v1/products/126?_method=patch
+GET /api/v1/products/126?_method=put
+GET /api/v1/products/126?_method=delete
 
 # NGINX web server
 
