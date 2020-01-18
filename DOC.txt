@@ -353,6 +353,7 @@ $data  = [ ..., ... , ...];
 $rules = [ ..., ... , ...];
 $validado = (new Validator())->setRequired(false)->validate($rules,$data);
 
+
 ### Constraints
 
 La clase Validator admite las siguientes restricciones:
@@ -364,11 +365,14 @@ max			# valor máximo o longitud máxima para un string
 in 			# el valor debe estar dentro de un array de valores
 between		# el valor debe estar entre dos valores; es un rango que incluye ambos extremos
 
+
 ### Mensajes personalizados
 
-Para cualquier restricción es posible crear un mensaje personalizable (traducible con i18n) para el error en caso de que falle.
+Para cualquier restricción es posible crear un mensaje personalizable (traducible con i18n) para el error en caso de que falle. 
 
-Ejemplo:"
+Los mensajes se crean para cualquier restricción como required, type, min, max, in o between
+
+Ejemplo:
 
 protected $rules = [
         'name' 			=> ['min'=>3, 'max'=>40, 'messages' => [
@@ -380,18 +384,14 @@ protected $rules = [
 		]
 	];
 
-### Custom validation
-
-Es posible crear mensajes de error personalizados para cada "constraint" ya sea type, min, max o required
-
-Ejemplo:
+Otro ejemplo:
 
 protected $rules = [
 		'active' 	=> ['type' => 'bool'],
 		'username'	=> ['min' => 2, 'max'=> 15, 'type' => 'regex:/^[a-zA-Z0-9_]+$/', 
 			'messages' => ['type' => 'Invalid characters'] ], 
 		'email' 	=> ['type'=>'email'],
-		'password'  => ['type'=> 'string', 'messages'=> ['required' => 'Contraseña es requerida'] ]
+		'password'  => ['type'=> 'string', 'messages'=> ['required' => 'You must provide a password'] ]
 ];
 
 
@@ -435,6 +435,7 @@ class MyApiController extends ApiController
 {
     static protected $guest_access = true;
 	// ..
+
 
 ### Roles
 
@@ -597,7 +598,7 @@ Mismo para borrar un registro perteneciente a un folder es necesario estar "dent
 	}
 
 
-### Soft delete y el la papelera
+### Soft delete y la papelera
 
 En cada endpoint se puede definir si se habilita el "soft" delete mediante la propiedad $soft_delete en la api. Ejemplo:
 
