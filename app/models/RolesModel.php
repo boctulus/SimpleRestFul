@@ -8,9 +8,9 @@ use simplerest\core\Model;
 class RolesModel {
 
 	protected $roles = [
-		2 => 	['name'  => 'basic',	'is_admin' => false],
-		3 =>  	['name' => 'regular',   'is_admin' => false],
-		100 => 	['name'=> 'admin',		'is_admin' => true]
+		2 => 	['name' => 'basic',	 'is_admin' => false],
+		3 =>  	['name' => 'regular','is_admin' => false],
+		100 => 	['name' => 'admin',  'is_admin' => true]
 	];
 
 	function get_roles(){

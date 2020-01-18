@@ -1,5 +1,7 @@
 # TODO
 
+- Reglas personalizadas en Validator
+
 - Analizar si volver a una tabla `roles` ya que al mantener un array luego `user_roles` no tiene el chequeo de "integridad referencial" y permite agregar roles que no existen en la tabla roles !!!
 
 - Incluir sub-Resources, ej:

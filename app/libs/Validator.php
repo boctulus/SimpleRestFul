@@ -84,6 +84,7 @@ class Validator implements IValidator
 			throw new \InvalidArgumentException(sprintf(_('Invalid data type for %s'), $dato));	
 	}	
 
+
 	/*
 		@param array $rules
 		@param array $data
@@ -120,22 +121,29 @@ class Validator implements IValidator
 			}	
 		};
 			
+		$msg = [];
 		foreach($rules as $field => $rule){
 
-			/*
-			Debug::dd($rule, "RULE $field :");
 			
-			if (isset($data[$field]))			
-				Debug::dd($data[$field], 'VALOR:');			
+			//Debug::dd($rule, "RULE $field :");
 			
-			echo "---------------------------------<p/>\n";
-			*/
+			//var_export(array_diff(array_keys($rule), ['messages']));
+			if (isset($rules[$field]['messages'])){
+				$msg[$field] = $rule['messages'];
+			}				
+
+			//if (isset($data[$field]))			
+			//	Debug::dd($data[$field], 'VALOR:');			
+
+			//echo "---------------------------------<p/>\n";
+			
 
 			// multiple-values for each field
 
 			if (!isset($data[$field])){
 				if ($this->required && isset($rule['required']) && $rule['required']){
-					$push_error($field,['data'=> null, 'error'=> 'required', 'error_detail' =>sprintf(_('%s is required'), $field)],$errores);
+					$err = (isset($msg[$field]['required'])) ? $msg[$field]['required'] :  "%s is required";
+					$push_error($field,['data'=> null, 'error'=> 'required', 'error_detail' =>sprintf(_($err), $field)],$errores);
 				}	
 				
 				continue;
@@ -144,11 +152,18 @@ class Validator implements IValidator
 			foreach ((array) $data[$field] as $dato){
 				//Debug::dd(['field' => $field, 'data' => $dato]);
 
+				//var_export($rules[$field]['messages']);
+				//var_export(array_diff(array_keys($rule), ['messages']));
+
+				//$constraints = array_diff(array_keys($rule), ['messages']);
+				//var_export($constraints);
+
 				if (!isset($dato) || $dato == '' || $dato == null){
 					//var_export(['field' =>$dato, 'required' => $rule['required']]);
 	
 					if ($this->required && isset($rule['required']) && $rule['required']){
-						$push_error($field,['data'=> null, 'error'=> 'required', 'error_detail' =>sprintf(_('%s is required'), $field)],$errores);
+						$err = (isset($msg[$field]['required'])) ? $msg[$field]['required'] :  "%s is required";
+						$push_error($field,['data'=> null, 'error'=> 'required', 'error_detail' =>sprintf(_($err), $field)],$errores);
 					}
 	
 					continue 2;
@@ -163,7 +178,8 @@ class Validator implements IValidator
 				$avoid_type_check = false;
 				if($rule['required']){
 					if(trim($dato)==''){
-						$push_error($field,['data'=>$dato, 'error'=>'required', 'error_detail' => sprintf(_('%s is required'), $field)],$errores);
+						$err = (isset($msg[$field]['required'])) ? $msg[$field]['required'] :  "%s is required";
+						$push_error($field,['data'=>$dato, 'error'=>'required', 'error_detail' => sprintf(_($err), $field)],$errores);
 					}						
 				}	
 				
@@ -171,8 +187,10 @@ class Validator implements IValidator
 					$avoid_type_check = true;
 				
 				if (isset($rule['type']) && !$avoid_type_check)
-					if (!get_class()::isType($dato, $rule['type']))
-						$push_error($field,['data'=>$dato, 'error'=>'type', 'error_detail' => _("It's not a valid {$rule['type']}")],$errores);
+					if (!get_class()::isType($dato, $rule['type'])){
+						$err =  (isset($msg[$field]['type'])) ? $msg[$field]['type'] : "It's not a valid {$rule['type']}";
+						$push_error($field,['data'=>$dato, 'error'=>'type', 'error_detail' => _($err)],$errores);
+					}						
 					
 						
 				if(isset($rule['type'])){	
@@ -180,14 +198,19 @@ class Validator implements IValidator
 							
 							if(isset($rule['min'])){ 
 								$rule['min'] = (int) $rule['min'];
-								if(strlen($dato)<$rule['min'])
-									$push_error($field,['data'=>$dato, 'error'=>'min', 'error_detail' => sprintf(_('Minimum length is %d'),$rule['min'])],$errores);
+								if(strlen($dato)<$rule['min']){
+									$err = (isset($msg[$field]['min'])) ? $msg[$field]['min'] :  "Minimum length is %d";
+									$push_error($field,['data'=>$dato, 'error'=>'min', 'error_detail' => sprintf(_($err),$rule['min'])],$errores);
+								}									
 							}
 							
 							if(isset($rule['max'])){ 
 								$rule['max'] = (int) $rule['max'];
-								if(strlen($dato)>$rule['max'])
-									$push_error($field,['data'=>$dato, 'error'=>'max', 'error_detail' => sprintf(_('Maximum length is %d'), $rule['max'])],$errores);
+								if(strlen($dato)>$rule['max']){
+									$err = (isset($msg[$field]['max'])) ? $msg[$field]['max'] :  'Maximum length is %d';
+									$push_error($field,['data'=>$dato, 'error'=>'max', 'error_detail' => sprintf(_($err), $rule['max'])],$errores);
+								}
+									
 							}
 					}	
 					
@@ -195,14 +218,20 @@ class Validator implements IValidator
 							
 							if(isset($rule['min'])){ 
 								$rule['min'] = (int) $rule['min'];
-								if($dato<$rule['min'])
-									$push_error($field,['data'=>$dato, 'error'=>'min', 'error_detail' => sprintf(_('Minimum is %d'), $rule['min'])],$errores);
+								if($dato<$rule['min']){
+									$err = (isset($msg[$field]['min'])) ? $msg[$field]['min'] :  'Minimum is %d';
+									$push_error($field,['data'=>$dato, 'error'=>'min', 'error_detail' => sprintf(_($err), $rule['min'])],$errores);
+								}
+									
 							}
 							
 							if(isset($rule['max'])){ 
 								$rule['max'] = (int) $rule['max'];
-								if($dato>$rule['max'])
-									$push_error($field,['data'=>$dato, 'error'=>'max', 'error_detail' => sprintf(_('Maximum is %d'), $rule['max'])],$errores);
+								if($dato>$rule['max']){
+									$err = (isset($msg[$field]['max'])) ? $msg[$field]['max'] :  'Maximum is %d';
+									$push_error($field,['data'=>$dato, 'error'=>'max', 'error_detail' => sprintf(_($msg), $rule['max'])],$errores);
+								}
+									
 							}
 					}	
 					
@@ -217,31 +246,22 @@ class Validator implements IValidator
 						*/
 	
 						if(isset($rule['min'])){ 
-							if($t0<strtotime($rule['min']))
-								$push_error($field,['data'=>$dato, 'error'=>'min', 'error_detail' => 'Minimum is '.$rule['min']],$errores);
+							if($t0<strtotime($rule['min'])){
+								$err = (isset($msg[$field]['min'])) ? $msg[$field]['min'] :  'Minimum is '.$rule['min'];
+								$push_error($field,['data'=>$dato, 'error'=>'min', 'error_detail' => _($msg)],$errores);
+							}
+								
 						}
 						
 						if(isset($rule['max'])){ 
-							if($t0>strtotime($rule['max']))
-								$push_error($field,['data'=>$dato, 'error'=>'max', 'error_detail' => 'Maximum is '.$rule['max']],$errores);
+							if($t0>strtotime($rule['max'])){
+								$err = (isset($msg[$field]['max'])) ? $msg[$field]['max'] : 'Maximum is '.$rule['max'];
+								$push_error($field,['data'=>$dato, 'error'=>'max', 'error_detail' => _($msg)],$errores);
+							}
+								
 						}
 					}	
 					
-					/*
-					if($rule['type']=='array' && is_array($dato)){
-							$rule['min'] = (int) $rule['min'];
-							if(isset($rule['min'])){ 
-								if(count($dato)<$rule['min'])
-									$push_error($field,['data'=>$dato, 'error'=>'min', 'error_detail' => 'Minimum is '.$rule['min'].' opciones'],$errores);
-							}
-							
-							if(isset($rule['max'])){ 
-							$rule['max'] = (int) $rule['max'];
-								if(count($dato)>$rule['max'])
-									$push_error($field,['data'=>$dato, 'error'=>'min', 'error_detail' => 'Maximum is '.$rule['max'].' opciones'],$errores);
-							}
-					}
-					*/
 				}	
 			}
 							

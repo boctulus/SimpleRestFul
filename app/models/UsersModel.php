@@ -32,8 +32,8 @@ class UsersModel extends Model
 
 	protected $rules = [
 		'active' 	=> ['type' => 'bool'],
-		'username'	=> ['min'=>2, 'max'=>15, 'type' => 'regex:/^[a-zA-Z0-9_]+$/'], 
-		'email' 	=> ['type'=>'email'],
+		'username'	=> ['min' => 2, 'max'=> 15, 'type' => 'regex:/^[a-zA-Z0-9_]+$/', 'messages' => ['type' => 'Invalid characters'] ], 
+		'email' 	=> ['type'=>'email']
 	];
 
     function __construct($db = NULL){		

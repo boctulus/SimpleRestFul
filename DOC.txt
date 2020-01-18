@@ -323,6 +323,21 @@ $rules = [ ..., ... , ...];
 $validado = (new Validator())->setRequired(false)->validate($rules,$data);
 
 
+### Custom validation
+
+Es posible crear mensajes de error personalizados para cada "constraint" ya sea type, min, max o required
+
+Ejemplo:
+
+protected $rules = [
+		'active' 	=> ['type' => 'bool'],
+		'username'	=> ['min' => 2, 'max'=> 15, 'type' => 'regex:/^[a-zA-Z0-9_]+$/', 
+			'messages' => ['type' => 'Invalid characters'] ], 
+		'email' 	=> ['type'=>'email'],
+		'password'  => ['type'=> 'string', 'messages'=> ['required' => 'Contraseña es requerida'] ]
+];
+
+
 # ACL
 
 La implementación del ACL incluye "roles" y permisos individuales para cada usuario sobre cada tabla expuesta a través de la API.

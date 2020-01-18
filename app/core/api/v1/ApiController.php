@@ -649,9 +649,10 @@ abstract class ApiController extends ResourceController
             $instance->setConn($conn);
 
             if ($instance->inSchema(['belongs_to'])){
-                if ($this->is_admin)
-                    $data['belongs_to'] =$data['belongs_to'];
-                elseif (!$this->isGuest())
+                if ($this->is_admin){
+                    if (!isset($data['belongs_to']))
+                        $data['belongs_to'] = $this->uid;
+                }elseif (!$this->isGuest())
                     $data['belongs_to'] = $this->uid; 
             }   
 
