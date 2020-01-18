@@ -36,7 +36,8 @@ class AuthController extends Controller implements IAuth
             'alg' => $this->config[$token_type]['encryption'],
             'typ' => 'JWT',
             'iat' => $time, 
-            'exp' => $time + $this->config[$token_type]['expiration_time']
+            'exp' => $time + $this->config[$token_type]['expiration_time'],
+            'ip'  => $_SERVER['REMOTE_ADDR']
         ];
         
         $payload = array_merge($payload, $props);
@@ -44,7 +45,7 @@ class AuthController extends Controller implements IAuth
         return \Firebase\JWT\JWT::encode($payload, $this->config[$token_type]['secret_key'],  $this->config[$token_type]['encryption']);
     }
 
-    protected function gen_jwt2(string $email, string $secret_key, string $encryption, string $exp_time){
+    protected function gen_jwt2(string $secret_key, string $encryption, string $exp_time){
         $time = time();
 
         $payload = [
@@ -52,8 +53,8 @@ class AuthController extends Controller implements IAuth
             'typ' => 'JWT',
             'iat' => $time, 
             'exp' => $time + $exp_time,
-            'email' => $email
-        ];
+            'ip'  => $_SERVER['REMOTE_ADDR']
+         ];
 
         return \Firebase\JWT\JWT::encode($payload, $secret_key,  $encryption);
     }
@@ -108,9 +109,7 @@ class AuthController extends Controller implements IAuth
                     $roles[] = $r->getRoleName($row['role']);
                 }
             }
-            //else
-            //    $roles[] = 'registered';
-
+            
             $_permissions = DB::table('permissions')->setFetchMode('ASSOC')->select(['tb', 'can_create as c', 'can_read as r', 'can_update as u', 'can_delete as d'])->where(['user_id' => $uid])->get();
 
             $perms = [];
@@ -247,10 +246,9 @@ class AuthController extends Controller implements IAuth
 
                 if (empty($ur_id))
                     Factory::response()->sendError("Error in user registration", 500, 'Error registrating user role');  
-            }
-            //else{
-            //    $role = ['registered'];
-            //}
+            }else{
+                $role = [];
+            }        
         
             $permissions = [];
 
@@ -262,7 +260,7 @@ class AuthController extends Controller implements IAuth
 
             $base_url =  HTTP_PROTOCOL . '://' . $_SERVER['HTTP_HOST'];
     
-            $token = $this->gen_jwt2($data['email'], $this->config['email']['secret_key'], $this->config['email']['encryption'], $this->config['email']['expires_in'] );
+            $token = $this->gen_jwt2($this->config['email']['secret_key'], $this->config['email']['encryption'], $this->config['email']['expires_in'] );
             $url = $base_url . '/login/confirm_email/' . $token . '/' . $exp; 
     
            
@@ -318,12 +316,16 @@ class AuthController extends Controller implements IAuth
         if($jwt != null)
         {
             try{
-                // Checking for token invalidation or outdated token
-                
                 $payload = \Firebase\JWT\JWT::decode($jwt, $this->config['access_token']['secret_key'], [ $this->config['access_token']['encryption'] ]);
                 
                 if (empty($payload))
                     Factory::response()->sendError('Unauthorized!',401);                     
+
+                if (empty($payload->ip))
+                    Factory::response()->sendError('IP is needed',400);
+
+                if ($payload->ip != $_SERVER['REMOTE_ADDR'])
+                    Factory::response()->sendError('Unauthorized!',401, 'IP change'); 
 
                 if (empty($payload->uid))
                     Factory::response()->sendError('uid is needed',400);                

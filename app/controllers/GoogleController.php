@@ -46,7 +46,8 @@ class GoogleController extends Controller
             'alg' => $this->config[$token_type]['encryption'],
             'typ' => 'JWT',
             'iat' => $time, 
-            'exp' => $time + $this->config[$token_type]['expiration_time']
+            'exp' => $time + $this->config[$token_type]['expiration_time'],
+            'ip'  => $_SERVER['REMOTE_ADDR']
         ];
         
         $payload = array_merge($payload, $props);

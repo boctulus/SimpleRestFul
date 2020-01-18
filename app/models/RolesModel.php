@@ -48,6 +48,9 @@ class RolesModel {
 	}
 	
 	function getRoleName($role_id){
+		if (!isset($this->roles[$role_id]['name']))
+			throw new \Exception("role_id is invalid");	
+
 		return $this->roles[$role_id]['name'];
 	}
 }
