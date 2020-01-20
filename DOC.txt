@@ -676,17 +676,17 @@ La única forma de visualizar registros borrados de forma "suave" así como recu
 
 ### La Papelera
 
-Cuando un registro es marcado como borrado aparece en TrashCan, la papelera de reciclaje, que brinda la posibilidad de gestionar todas las operaciones sobre elementos eliminados.
+Cuando un registro es marcado como borrado aparece en trash_can, la papelera de reciclaje, que brinda la posibilidad de gestionar todas las operaciones sobre elementos eliminados.
 
 Para ver elementos en la papelera
 
-	GET /api/v1/TrashCan?entity=products
-	GET /api/v1/TrashCan/157?entity=products
+	GET /api/v1/trash_can?entity=products
+	GET /api/v1/trash_can/157?entity=products
 
 
-Para hacer un "undelete" de un recurso se hace un PATCH o PUT sobre el TrashCan
+Para hacer un "undelete" de un recurso se hace un PATCH o PUT sobre el trash_can
 
-	PATCH /api/v1/TrashCan/157	
+	PATCH /api/v1/trash_can/157	
 
 	{
 		"entity": "Products",
@@ -695,7 +695,7 @@ Para hacer un "undelete" de un recurso se hace un PATCH o PUT sobre el TrashCan
 
 Para eliminar *permanentemente* un recurso se realiza un DELETE sobre el elemento en la papelera:
 
-	DELETE /api/v1/TrashCan/157
+	DELETE /api/v1/trash_can/157
 
 	{
     	"entity": "Products"
@@ -703,7 +703,22 @@ Para eliminar *permanentemente* un recurso se realiza un DELETE sobre el element
 
 La papelera acepta los mismos filtros y los resultados se pueden ordenar igual que con cualquier entidad:
 
-	GET /api/v1/TrashCan?entity=Products&order[deleted_at]=DESC
+	GET /api/v1/trash_can?entity=Products&order[deleted_at]=DESC
+
+
+### Convención de nombres 
+
+Recomendamos separar las palabras con guión bajo (_) en los nombres de las entidades. Ejemplo:
+
+/api/v1/super_cool_table
+/api/v1/trash_can?entity=super_cool_table
+etc.
+
+En vez de usar:
+
+/api/v1/SuperCoolTable
+/api/v1/TrashCan?entity=SuperCoolTable
+etc
 
 
 ### Registros bloqueados
@@ -733,7 +748,7 @@ Los endpoints se sirven mediante clases que extienden a ApiController, un tipo d
 
 Un usuario (sin ser Admin pero con los permisos correctos) podría crear otros usuarios y éstos le pertencerán así que podrá visualizarlos o modificarlos a su gusto pero como consecuencia de la implementan del ACL, el campo belongs_to apuntará al "creador" y como consecuencia el propio usuario podría no tener permisos suficientes para mpdificar sus propios datos personales. Este problema se soluciona al utilizar el endpoint /api/v1/me
 
-Otro endpoint adicional es /api/v1/trashCan que corresponde a una papelera de registros y se explica en la sección correspondiente. 
+Otro endpoint adicional es /api/v1/trash_can que corresponde a una papelera de registros y se explica en la sección correspondiente. 
 
 # Lo que obtines out-the-box de la API
 
@@ -867,7 +882,7 @@ By default pretty print can be enabled or disabled in config/config.php
 
 A record can be effectly deleted in one shot from database or if soft-delete is enabled then be marked as deleted in which case it will be seen as deleted as well.
 
-When a record is softly deleted then it can be seen at TrashCan where is posible to delete it permanently or to be recovered.
+When a record is softly deleted then it can be seen at trash_can where is posible to delete it permanently or to be recovered.
 
 ## PUT  <UPDATE>
 

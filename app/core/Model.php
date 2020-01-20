@@ -3,6 +3,7 @@ namespace simplerest\core;
 
 use simplerest\libs\Debug;
 use simplerest\libs\Arrays;
+use simplerest\libs\Strings;
 use simplerest\libs\Validator;
 use simplerest\core\interfaces\IValidator;
 use simplerest\core\exceptions\InvalidValidationException;
@@ -59,26 +60,24 @@ class Model {
 	protected $fetch_mode = \PDO::FETCH_OBJ;
 	
 	
-	/*
-		Chequear en cada método si hay una conexión 
-	*/
-
 	function __construct(\PDO $conn = null){
+
+		// echo '^'; 
 
 		if($conn){
 			$this->conn = $conn;
 			$this->conn->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 		}
 
-		//if (empty($this->schema))
-		//	throw new \Exception ("Schema is empty!");
+		$this->config = include CONFIG_PATH . 'config.php';
 
 		$this->properties = array_keys($this->schema);
 
 		if (empty($this->table_name)){
 			$class_name = get_class($this);
 			$class_name = substr($class_name, strrpos($class_name, '\\')+1);
-			$this->table_name = strtolower(substr($class_name, 0, strlen($class_name)-5));
+			$str = Strings::fromCamelCase($class_name);
+			$this->table_name = strtolower(substr($str, 0, strlen($str)-6));
 		}			
 
 		if ($this->fillable == NULL){
@@ -1226,7 +1225,7 @@ class Model {
 	 * @return mixed
 	 * 
 	 */
-	function update(array $data)
+	function update(array $data, $set_updated_at = true)
 	{
 		if ($this->conn == null)
 			throw new \Exception('No conection');
@@ -1262,8 +1261,11 @@ class Model {
 		}
 		$set =trim(substr($set, 0, strlen($set)-2));
 
-		if ($this->inSchema(['updated_at'])){
-			$set .= ', updated_at = NOW()';
+		if ($set_updated_at && $this->inSchema(['updated_at'])){
+			$d = new \DateTime(NULL, new \DateTimeZone($this->config['DateTimeZone']));
+			$at = $d->format('Y-m-d G:i:s');
+
+			$set .= ", updated_at = '$at'";
 		}
 
 		$where = implode(' AND ', $this->where);
@@ -1331,7 +1333,7 @@ class Model {
 				throw new \Exception("There is no 'deleted_at' for ".$this->from(). ' schema');
 			} 
 
-			$d = new \DateTime();
+			$d = new \DateTime(NULL, new \DateTimeZone($this->config['DateTimeZone']));
 			$at = $d->format('Y-m-d G:i:s');
 
 			$to_fill = [];
@@ -1343,7 +1345,7 @@ class Model {
 			$data =  array_merge($data, ['deleted_at' => $at]);
 
 			$this->fill($to_fill);
-			return $this->update($data);
+			return $this->update($data, false);
 		}
 
 		$where = implode(' AND ', $this->where);
@@ -1414,8 +1416,11 @@ class Model {
 		$str_vals = implode(', ',$symbols);
 
 		if ($this->inSchema(['created_at'])){
+			$d = new \DateTime(NULL, new \DateTimeZone($this->config['DateTimeZone']));
+			$at = $d->format('Y-m-d G:i:s');
+
 			$str_vars .= ', created_at';
-			$str_vals .= ', NOW()';
+			$str_vals .= ", '$at'";
 		}
 
 		$q = "INSERT INTO " . $this->from() . " ($str_vars) VALUES ($str_vals)";

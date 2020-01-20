@@ -120,6 +120,10 @@ abstract class ApiController extends ResourceController
  
     }
 
+    protected function transform_entity($name){
+        return implode('',array_map('ucfirst',explode('_',$name)));
+    }
+
     static function get_owned(){
         return static::$owned;
     }

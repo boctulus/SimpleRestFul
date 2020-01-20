@@ -50,8 +50,11 @@ class FrontController
             $controller = $_params[2];
             $params = array_slice($_params,3,2);
             $req->setParams($params);    
-            
-            if ($controller == 'trashCan' || $controller == 'TrashCan')
+           
+            // CamelCase to came_case
+            $controller = implode('',array_map('ucfirst',explode('_',$controller)));
+           
+            if ($controller == 'trash_can' || $controller == 'trashCan' || $controller == 'TrashCan')
                 $namespace = 'simplerest\\core\\api\\'. $api_version . '\\';
             else
                 $namespace = 'simplerest\\controllers\\api\\';

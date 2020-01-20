@@ -3,6 +3,36 @@
 namespace simplerest\libs;
 
 class Strings {
+
+	/*
+		WordAnother to word_another
+	*/
+	static function fromCamelCase($str, $sep = '_'){
+		$words = [];
+		$wix   = -1;
+		$len = strlen($str);
+		for ($i=0; $i<$len; $i++){
+			if ($str[$i] >= 'A' && $str[$i] <= 'Z'){
+				$str[$i] = strtolower($str[$i]);
+				$wix++;
+			}
+			
+			if (!isset($words[$wix]))
+				$words[$wix] = $str[$i];
+			else
+				$words[$wix] .= $str[$i];	
+		}
+
+		return implode($sep,$words);
+	}
+
+	/*
+		word_another to WordAnother
+	*/
+	static function toCamelCase($name){
+        return implode('',array_map('ucfirst',explode('_',$name)));
+    }
+
     static function startsWith($needle, $haystack)
     {
         $length = strlen($needle);

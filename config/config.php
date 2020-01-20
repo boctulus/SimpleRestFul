@@ -20,6 +20,8 @@ return [
 		'pass' => 'Hvr0tf9Is'
 	], 
 
+	'DateTimeZone' => 'America/Argentina/Buenos_Aires',
+
 	'debug_mode'   => true,
 
 	'access_token' => [

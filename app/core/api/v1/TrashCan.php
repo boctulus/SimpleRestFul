@@ -5,6 +5,7 @@ namespace simplerest\core\api\v1;
 use simplerest\controllers\MyApiController;
 use simplerest\libs\Factory;
 use simplerest\libs\Arrays;
+use simplerest\libs\Strings;
 use simplerest\libs\DB;
 use simplerest\libs\Validator;
 use simplerest\core\exceptions\InvalidValidationException;
@@ -34,6 +35,8 @@ class TrashCan extends MyApiController
 
             if (empty($entity))
                 Factory::response()->sendError('Entity is required', 400);
+
+            $entity = Strings::toCamelCase($entity);
 
             $this->modelName = ucfirst($entity) . 'Model';
             $this->model_table = strtolower($entity);
@@ -348,8 +351,8 @@ class TrashCan extends MyApiController
 
         if (!isset($data['entity']))
             Factory::response()->sendError('Entity is needed in request body', 400);
-
-        $entity = $data['entity']; 
+   
+        $entity = Strings::toCamelCase($data['entity']); 
        
         $this->modelName = ucfirst($entity) . 'Model';
         $this->model_table = strtolower($entity);
@@ -488,7 +491,7 @@ class TrashCan extends MyApiController
             if (!isset($data['entity']))
                 Factory::response()->sendError('Entity is needed in request body', 400);
 
-            $entity = $data['entity'];    
+            $entity = Strings::toCamelCase($data['entity']);    
            
             $this->modelName = ucfirst($entity) . 'Model';
             $this->model_table = strtolower($entity);
