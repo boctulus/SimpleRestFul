@@ -159,6 +159,67 @@ Si un campo puede ser NULL, debe incluirse en el array $nullable.
 Los modelos heredan de la clase Model y adquieren así funcionalidad de métodos como create() delete() update() join() where() having() etc
 
 
+#### Campos manejados por el framework
+
+Hay una cantidad de campos (que si están presentes en la tabla y declarados en el schema del modelo) que son manejados directamente por el framework. Consideremos la siguiente tabla:
+
+id 				int(11)		
+name			varchar(60)				
+active			tinyint(4)
+belongs_to		int(11)			*	
+created_at		datetime		*			
+created_by		int(11)			*	
+updated_at		datetime		*	
+updated_by		int(11)			*	
+deleted_at 		datetime		*
+deleted_by		tinyint(4)		*
+locked			tinyint(4)		*
+
+belongs_to		apunta directamente al user_id de quien crea el registro. Si el usuario tiene rol de 'admin' puede cambiar ese valor y hacer que apunte a otro usuario. Un caso especial son los registros creados dentro de un 'folder'.
+
+created_by 		apunta indefectiblemente al user_id quien creó el registro.
+
+update_by		apunta indefectiblemente al user_id del último usuario que modificó un registro. 
+
+deleted_by		apunta indefectiblemente al user_id que hizo un borrado suave un registro.
+
+created_at 		apunta indefectiblemente a la fecha-hora en que se creó un registro.
+
+updated_at 		apunta indefectiblemente a la fecha-hora en que se modificó por última vez un registro.
+
+deleted_at 		apunta indefectiblemente a la fecha-hora en que se creó un registro.
+
+locked 			cuando un registro es mofificado por un 'admin' automáticamente se guarda un 1.
+
+
+Los campos created_ay, update_at y deleted_at son rellenados por Model pero al modelo no le compete si hay un sistema de autenticación y que usuario está haciendo el query así que los campos created_by, update_by, deleted_by y belongs_to son manejados a nivel de la API por ApiController al igual que el campo locked.
+
+Nota: no olvides incluir los campos que necesites en las tablas y colocarlos en el schema del modelo correspondiente. Recuerda que los tipos del SCHEMA son INT o STR y se corresponden a los tipos de PDO.
+
+class SuperCoolTableModel extends Model 
+{
+	protected $table_name = "super_cool_table";
+	protected $id_name = 'id';
+
+	protected $schema = [
+		'id'         => 'INT',
+		'name'       => 'STR',
+		'active'     => 'INT',
+		'belongs_to' => 'INT',
+		'created_at' => 'STR',
+		'created_by' => 'INT',
+		'updated_at' => 'STR',
+		'updated_by' => 'INT', 
+		'deleted_at' => 'STR',
+		'deleted_by' => 'INT',
+		'locked'	 => 'INT' 
+	];
+
+	protected $rules = [
+		'active' => ['type' => 'bool']
+	];
+
+
 ### Accesors
 
 Se presentan casos donde es necesario hacer una transformación de los datos antes de guardarlos en base de datos. El caso emblemático es cuando se requiere hacer un "hash" del password antes de guardarse ya sea en la creación o edición de un registro.

@@ -1,8 +1,8 @@
 # TODO
 
-- Reglas personalizadas en Validator
+- Un recurso nunca uso como nombre un camelCase sino separado por un guion “-“ si son palabras compuestas
 
-- Analizar si volver a una tabla `roles` ya que al mantener un array luego `user_roles` no tiene el chequeo de "integridad referencial" y permite agregar roles que no existen en la tabla roles !!!
+<-- chequear!!! porque tengo un trashCan
 
 - Incluir sub-Resources, ej:
 

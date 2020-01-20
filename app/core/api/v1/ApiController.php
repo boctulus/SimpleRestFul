@@ -245,7 +245,7 @@ abstract class ApiController extends ResourceController
             $_get    = Factory::request()->getQuery();
             $data    = [];
             
-            foreach (['created_by', 'updated_by', 'belongs_to'] as $f){
+            foreach (['created_by', 'updated_by', 'deleted_by', 'belongs_to'] as $f){
                 if (isset($_get[$f])){
                     if ($_get[$f] == 'me')
                         $_get[$f] = $this->uid;
@@ -904,17 +904,23 @@ abstract class ApiController extends ResourceController
                 }
             }  
 
+            $extra = [];
+
             if ($this->is_admin){
                 if ($instance->inSchema(['locked'])){
-                    $instance->fill(['locked'])->update(['locked' => 1]);
+                    $extra = array_merge($extra, ['locked' => 1]);
                 }   
             }else {
                 if (isset($rows[0]['locked']) && $rows[0]['locked'] == 1){
                     Factory::response()->sendError("Locked by Admin", 403);
                 }
             }
+
+            if ($instance->inSchema(['deleted_by'])){
+                $extra = array_merge($extra, ['deleted_by' => $this->uid]);
+            }               
        
-            if($instance->delete(static::$soft_delete && $instance->inSchema(['deleted_at']) )){
+            if($instance->delete(static::$soft_delete && $instance->inSchema(['deleted_at']), $extra)){
                 Factory::response()->sendJson("OK");
             }	
             else

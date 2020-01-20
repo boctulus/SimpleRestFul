@@ -1310,9 +1310,10 @@ class Model {
 	 * delete
 	 *
 	 * @param  bool  $soft_delete 
+	 * @param  array $data (aditional fields in case of soft-delete)
 	 * @return mixed
 	 */
-	function delete($soft_delete = true)
+	function delete($soft_delete = true, array $data = [])
 	{
 		if ($this->conn == null)
 			throw new \Exception('No conection');
@@ -1333,8 +1334,16 @@ class Model {
 			$d = new \DateTime();
 			$at = $d->format('Y-m-d G:i:s');
 
-			$this->fill(['deleted_at']);
-			return $this->update(['deleted_at' => $at]);
+			$to_fill = [];
+			if (!empty($data)){
+				$to_fill = array_keys($data);
+			}
+			$to_fill[] = 'deleted_at';
+
+			$data =  array_merge($data, ['deleted_at' => $at]);
+
+			$this->fill($to_fill);
+			return $this->update($data);
 		}
 
 		$where = implode(' AND ', $this->where);
