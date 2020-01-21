@@ -267,62 +267,94 @@ class DumbController extends Controller
     }
 
     function count(){
-        $c = DB::table('users')
-        ->where([ 'belongs_to'=> 160] )
+        $c = DB::table('products')
+        ->where([ 'belongs_to'=> 90] )
         ->count();
 
         var_dump($c);
     }
 
     function count1(){
+        $c = DB::table('products')
+        ->where([ 'belongs_to'=> 90] )
+        ->count('*', 'count');
+
+        var_dump($c);
+    }
+
+    function count1b(){
         // SELECT COUNT(*) FROM products WHERE cost >= 100 AND size = '1L' AND belongs_to = 90 AND deleted_at IS NULL 
 
-        echo DB::table('products')
+        $res =  DB::table('products')
         ->where([ ['cost', 100, '>='], ['size', '1L'], ['belongs_to', 90] ])
         ->count();
 
+        Debug::dd($res);
         Debug::dd(DB::getQueryLog());
     } 
 
     function count2(){
         // SELECT COUNT(DISTINCT description) FROM products WHERE cost >= 100 AND size = '1L' AND belongs_to = 90 AND deleted_at IS NULL  
 
-        echo DB::table('products')
+        $res = DB::table('products')
         ->where([ ['cost', 100, '>='], ['size', '1L'], ['belongs_to', 90] ])
         ->distinct()
         ->count('description');
+
+        Debug::dd($res);
+        Debug::dd(DB::getQueryLog());
+    }
+
+    function count2b(){
+        // SELECT COUNT(DISTINCT description) FROM products WHERE cost >= 100 AND size = '1L' AND belongs_to = 90 AND deleted_at IS NULL  
+
+        $res = DB::table('products')
+        ->where([ ['cost', 100, '>='], ['size', '1L'], ['belongs_to', 90] ])
+        ->distinct()
+        ->count('description', 'count');
+
+        Debug::dd($res);
+        Debug::dd(DB::getQueryLog());
     }
 
     function avg(){
         // SELECT AVG(cost) FROM products WHERE cost >= 100 AND size = '1L' AND belongs_to = 90 AND deleted_at IS NULL; 
 
-        echo DB::table('products')
+        $res = DB::table('products')
         ->where([ ['cost', 100, '>='], ['size', '1L'], ['belongs_to', 90] ])
-        ->avg('cost');
+        ->avg('cost', 'prom');
+
+        var_dump($res);
     }
 
     function sum(){
         // SELECT SUM(cost) FROM products WHERE cost >= 100 AND size = '1L' AND belongs_to = 90 AND deleted_at IS NULL; 
 
-        echo DB::table('products')
+        $res = DB::table('products')
         ->where([ ['cost', 100, '>='], ['size', '1L'], ['belongs_to', 90] ])
-        ->sum('cost');
+        ->sum('cost', 'suma');
+
+        var_dump($res);
     }
 
     function min(){
         // SELECT MIN(cost) FROM products WHERE cost >= 100 AND size = '1L' AND belongs_to = 90 AND deleted_at IS NULL; 
 
-        echo DB::table('products')
+        $res = DB::table('products')
         ->where([ ['cost', 100, '>='], ['size', '1L'], ['belongs_to', 90] ])
-        ->min('cost');
+        ->min('cost', 'minimo');
+
+        var_dump($res);
     }
 
     function max(){
         // SELECT MIN(cost) FROM products WHERE cost >= 100 AND size = '1L' AND belongs_to = 90 AND deleted_at IS NULL; 
 
-        echo DB::table('products')
+        $res =  DB::table('products')
         ->where([ ['cost', 100, '>='], ['size', '1L'], ['belongs_to', 90] ])
-        ->max('cost');
+        ->max('cost', 'maximo');
+
+        var_dump($res);
     }
 
     /*

@@ -372,6 +372,10 @@ abstract class ApiController extends ResourceController
                     Factory::response()->send($rows[0]);
             }else{    
                 // "list
+                
+                $props    = Arrays::shift($_get,'props');
+                $group_by = Arrays::shift($_get,'groupBy');
+                $having   = Arrays::shift($_get,'having');
              
                 $get_limit = function(&$limit){
                     if ($limit == NULL)
@@ -597,34 +601,86 @@ abstract class ApiController extends ResourceController
                 if (!isset($query['pageSize'])) 
                     $query['pageSize'] = $page_size;
 
-                $count = (new $model($conn))->where($_get)->count();
-
-                $page_count = ceil($count / $limit);
-
-                if ($page == NULL)
-                    $page = ceil($offset / $limit) +1;
                 
-                if ($page +1 <= $page_count){
-                    $query['page'] = ($page +1);
-
-                    $next =  Url::protocol() . '//' . $_SERVER['HTTP_HOST'] . '/api/' . $api_version . '/'. $this->model_table . '?' . $query = str_replace(['%5B', '%5D', '%2C'], ['[', ']', ','], http_build_query($query));
-                }else{
-                    $next = 'null';
+                //////////
+    
+                if (preg_match('/(min|max|sum|avg|count)\(([a-z\*]+)\)( as [a-z]+)?/i', $props, $matches)){
+                    $ag_fn = strtolower($matches[1]);
+                    $ag_ff = $matches[2];
+                
+                    if (preg_match('/[a-z]+\([a-z\*]+\) as ([a-z]+)/i', $props, $matches)){
+                        $ag_alias = $matches[1];
+                    }else
+                        $ag_alias = NULL;
                 }
 
-                $pg = ['pages' => $page_count, 'nextUrl' => $next];   
-                          
-                $rows = $instance->where($_get)->get($fields, $order, $limit, $offset);
-                //Debug::dd($instance->getLastPrecompiledQuery());
-                Factory::response()->setPretty($pretty)->code(200)->setPaginator($pg)->send($rows);
-        
-            }
+                if (!empty($fields))
+                    $instance->select($fields);
 
+                $instance->where($_get);
+
+                if ($group_by != NULL){
+                    $group_by = explode(',', $group_by);
+                    $instance->groupBy($group_by);                   
+                }                    
+
+                if ($having!= NULL)
+                    $instance->having($having);
+
+                if ($order !=  NULL)
+                    $instance->orderBy($order);
+                
+                if ($limit != NULL)
+                    $instance->limit($limit);
+
+                if ($offset != NULL)
+                    $instance->offset($offset);
+
+                if (isset($ag_fn)){
+                    $rows = $instance->$ag_fn($ag_ff, $ag_alias);
+                }else                               
+                    $rows = $instance->get();
+                
+                //Debug::dd($instance->getLastPrecompiledQuery());
+
+                $res = Factory::response()->setPretty($pretty)->code(200);
+
+                //  pagino solo sino hay funciones agregativas
+                if (!isset($ag_fn)){
+                    $total = (int) array_values((new $model($conn))->where($_get)->count())[0];
+               
+                    $page_count = ceil($total / $limit);
+
+                    if ($page == NULL)
+                        $page = ceil($offset / $limit) +1;
+                    
+                    if ($page +1 <= $page_count){
+                        $query['page'] = ($page +1);
+
+                        $next =  Url::protocol() . '//' . $_SERVER['HTTP_HOST'] . '/api/' . $api_version . '/'. $this->model_table . '?' . $query = str_replace(['%5B', '%5D', '%2C'], ['[', ']', ','], http_build_query($query));
+                    }else{
+                        $next = 'null';
+                    }        
+
+                    $pg = [ 
+                        'total' => $total,
+                        'count' => count($rows),
+                        'currentPage' => $page,
+                        'totalPages' => $page_count, 
+                        'pageSize' => $page_size,
+                        'nextUrl' => $next                                              
+                    ];  
+
+                    $res->setPaginator($pg);
+                }
+                                        
+                $res->send($rows);       
+            }
         
         } catch (InvalidValidationException $e) { 
             Factory::response()->sendError('Validation Error', 400, json_decode($e->getMessage()));
         } catch (SqlException $e) { 
-            Factory::response()->sendError('SQL error', 500, json_decode($e->getMessage()));   
+            Factory::response()->sendError('SQL Exception', 500, json_decode($e->getMessage()));   
         } catch (\Exception $e) {            
             Factory::response()->sendError($e->getMessage());
         }	    

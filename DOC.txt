@@ -148,7 +148,7 @@ Un ApiController es un tipo de ResourceController que sirve para procesar un end
 
 	}
 
-Cada campo en el schema es de un tipo, el nombre de la tabla se especifica en $table_name aunque se recomienda que coincida con el nombre de la clase modelo en minúsculas. 
+Cada campo en el schema es de un tipo, el nombre de la tabla se especifica opcionalmente en $table_name aunque se recomienda que coincida con el nombre de la clase modelo en minúsculas. 
 
 Todas las tablas deben tener un único id inclusive si son "tablas intermedias" (conocidas también como "tablas puente") y se especifica en la propiedad $id_name.
 
@@ -156,7 +156,55 @@ Los campos que pueden ser rellenados al hacer un INSERT o un UPDATE pueden espec
 
 Si un campo puede ser NULL, debe incluirse en el array $nullable.
 
-Los modelos heredan de la clase Model y adquieren así funcionalidad de métodos como create() delete() update() join() where() having() etc
+Los modelos heredan de la clase Model y adquieren así funcionalidad de métodos como create() delete() update() join() where() having() etc que provee la clase Model.
+
+
+# Debuguear una query
+
+Hay varias formas de hacer un debug de una query pero quizás la más fácil sea evitar que ésta se ejecute y mostrar el SQL compilado resultante. Para esto usamos el método dontExec()
+
+Ejemplo:
+
+$res = DB::table('products')
+	->dontExec()
+	->groupBy(['name'])
+	->having(['c', 3, '>='])
+	->select(['name'])
+	->selectRaw('COUNT(name) as c')
+	->get());
+	
+echo DB::getQueryLog()); 
+
+Otra forma es reemplazar el método get() por dd() tiene la limitación de que no funciona si get() está parametrizado y tampoco funciona si la query es con una función agregativa o sea con min(), max(), count(), sum() y avg() 
+
+$res = DB::table('products')
+	->groupBy(['name'])
+	->having(['c', 3, '>='])
+	->select(['name'])
+	->selectRaw('COUNT(name) as c')
+	->dd());
+
+var_dump($res);
+
+En casos donde se realizan subconsultas se recomienda el uso de getLastPrecompiledQuery() que devuelve el último query antes de ser bindeado con los parámetros.
+
+Ejemplo:
+
+$uno = DB::table('products')->showDeleted()
+	->select(['id', 'name', 'description', 'belongs_to'])
+	->where(['belongs_to', 90]);
+
+	$m2  = DB::table('products')->showDeleted();
+	$dos = $m2
+	->select(['id', 'name', 'description', 'belongs_to'])
+	->where(['belongs_to', 4])
+	->where(['cost', 200, '>='])
+	->union($uno)
+	->orderBy(['id' => 'ASC'])
+	->get();
+
+	Debug::dd($m2->getLastPrecompiledQuery());
+	Debug::dd($dos);
 
 
 #### Campos manejados por el framework
@@ -750,7 +798,7 @@ Un usuario (sin ser Admin pero con los permisos correctos) podría crear otros u
 
 Otro endpoint adicional es /api/v1/trash_can que corresponde a una papelera de registros y se explica en la sección correspondiente. 
 
-# Lo que obtines out-the-box de la API
+# Funcionalidad out-the-box de la API
 
 ## GET <READ>
 
@@ -859,6 +907,57 @@ Response is an array of rows that include a paginator with navigation informatio
     }
 }
     
+# Aggregate Functions – Average, Count, Sum, Max and Min
+
+Examples:
+
+	GET /api/v1/products?props=min(cost)
+	GET /api/v1/products?size=1L&props=avg(cost)
+
+Response is something like:
+
+{
+    "data": {
+        "AVG(cost)": "191.0714"
+    },
+    "error": "",
+    "error_detail": ""
+}
+
+Note that if the field on which you want to calculate is not specified, it is not performed and no error is throw. In the case of count() function if you don't want to specify a field you must pass * as a parameter:
+
+	GET /api/v1/products?props=count(*) as cant
+	
+
+Or with an alias
+
+	GET /api/v1/products?size=1L&props=avg(cost) as media
+
+# Grouping
+
+	GET /api/v1/products?props=count(*) as cant&groupBy=size&fields=size
+
+Example of Response:
+
+{
+    "data": [
+        {
+            "size": "",
+            "cant": "21"
+        },
+        {
+            "size": "0.5L",
+            "cant": "2"
+        },
+        ...
+    ],
+    "error": "",
+    "error_detail": ""
+}
+
+Note: when groupBy is used, you should specify the fields to be selected. 
+
+
 ### Pretty print 
 
     GET /api/v1/products?pretty
@@ -988,6 +1087,19 @@ Alternatively, you can also override the HTTP method by using the _method query 
 GET /api/v1/products/126?_method=patch
 GET /api/v1/products/126?_method=put
 GET /api/v1/products/126?_method=delete
+
+
+#  Funciones agregativas
+
+Es posible calcular directamente en la base de datos las funciones min(), max(), avg() y sum() sobre el campo especificado.
+
+Ejemplos:
+
+GET /api/v1/products?size=2L&props=avg(cost)
+GET /api/v1/products?size=2L&props=avg(cost) as prom
+GET /api/v1/products?size=2L&props=sum(cost) as suma
+etc.
+
 
 # NGINX web server
 

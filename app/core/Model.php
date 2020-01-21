@@ -405,7 +405,7 @@ class Model {
 		return $this;
 	}
 
-	function toSql(array $fields = null, array $order = null, int $limit = NULL, int $offset = null, bool $existance = false, $aggregate_func = null, $aggregate_field = null)
+	function toSql(array $fields = null, array $order = null, int $limit = NULL, int $offset = null, bool $existance = false, $aggregate_func = null, $aggregate_field = null, $aggregate_field_alias = NULL)
 	{		
 		if (!empty($fields))
 			$fields = array_merge($this->fields, $fields);
@@ -494,16 +494,16 @@ class Model {
 						$_f = '';
 
 					if ($this->distinct)
-						$q  = "SELECT $_f $aggregate_func(DISTINCT $aggregate_field)";
+						$q  = "SELECT $_f $aggregate_func(DISTINCT $aggregate_field)" . (!empty($aggregate_field_alias) ? " as $aggregate_field_alias" : '');
 					else
-						$q  = "SELECT $_f $aggregate_func($aggregate_field)";
+						$q  = "SELECT $_f $aggregate_func($aggregate_field)" . (!empty($aggregate_field_alias) ? " as $aggregate_field_alias" : '');
 				}else{
 					if (!empty($fields))
 						$_f = implode(", ", $fields). ',';
 					else
 						$_f = '';
 
-					$q  = "SELECT $_f $aggregate_func($aggregate_field)";
+					$q  = "SELECT $_f $aggregate_func($aggregate_field)" . (!empty($aggregate_field_alias) ? " as $aggregate_field_alias" : '');
 				}
 					
 			}else{
@@ -922,90 +922,89 @@ class Model {
 			return false;	
 	}
 
-	function avg($field){
-		$q = $this->toSql(null, null, null, null, false, 'AVG', $field);
+	function avg($field, $alias = NULL){
+		$q = $this->toSql(null, null, null, null, false, 'AVG', $field, $alias);
 		$st = $this->bind($q);
 
 		if (empty($this->group)){
 			if ($this->exec && $st->execute())
-				return $st->fetch(\PDO::FETCH_NUM)[0];
+				return $st->fetch(\PDO::FETCH_ASSOC);
 			else
 				return false;	
 		}else{
 			if ($this->exec && $st->execute())
-				return $st->fetchAll(\PDO::FETCH_NUM);
+				return $st->fetchAll(\PDO::FETCH_ASSOC);
 			else
 				return false;
 		}	
 	}
 
-	function sum($field){
-		$q = $this->toSql(null, null, null, null, false, 'SUM', $field);
+	function sum($field, $alias = NULL){
+		$q = $this->toSql(null, null, null, null, false, 'SUM', $field, $alias);
 		$st = $this->bind($q);
 
 		if (empty($this->group)){
 			if ($this->exec && $st->execute())
-				return $st->fetch(\PDO::FETCH_NUM)[0];
+				return $st->fetch(\PDO::FETCH_ASSOC);
 			else
 				return false;	
 		}else{
 			if ($this->exec && $st->execute())
-				return $st->fetchAll(\PDO::FETCH_NUM);
+				return $st->fetchAll(\PDO::FETCH_ASSOC);
 			else
 				return false;
 		}	
 	}
 
-	function min($field){
-		$q = $this->toSql(null, null, null, null, false, 'MIN', $field);
+	function min($field, $alias = NULL){
+		$q = $this->toSql(null, null, null, null, false, 'MIN', $field, $alias);
 		$st = $this->bind($q);
 
 		if (empty($this->group)){
 			if ($this->exec && $st->execute())
-				return $st->fetch(\PDO::FETCH_NUM)[0];
+				return $st->fetch(\PDO::FETCH_ASSOC);
 			else
 				return false;	
 		}else{
 			if ($this->exec && $st->execute())
-				return $st->fetchAll(\PDO::FETCH_NUM);
-			else
-				return false;
-		}		
-	}
-
-	function max($field){
-		$q = $this->toSql(null, null, null, null, false, 'MAX', $field);
-		$st = $this->bind($q);
-
-		if (empty($this->group)){
-			if ($this->exec && $st->execute())
-				return $st->fetch(\PDO::FETCH_NUM)[0];
-			else
-				return false;	
-		}else{
-			if ($this->exec && $st->execute())
-				return $st->fetchAll(\PDO::FETCH_NUM);
+				return $st->fetchAll(\PDO::FETCH_ASSOC);
 			else
 				return false;
 		}	
 	}
 
-	function count($field = null){
-		$q = $this->toSql(null, null, null, null, false, 'COUNT', $field);
+	function max($field, $alias = NULL){
+		$q = $this->toSql(null, null, null, null, false, 'MAX', $field, $alias);
 		$st = $this->bind($q);
 
 		if (empty($this->group)){
 			if ($this->exec && $st->execute())
-				return $st->fetch(\PDO::FETCH_NUM)[0];
+				return $st->fetch(\PDO::FETCH_ASSOC);
 			else
 				return false;	
 		}else{
 			if ($this->exec && $st->execute())
-				return $st->fetchAll(\PDO::FETCH_NUM);
+				return $st->fetchAll(\PDO::FETCH_ASSOC);
 			else
 				return false;
-		}
-		
+		}	
+	}
+
+	function count($field = NULL, $alias = NULL){
+		$q = $this->toSql(null, null, null, null, false, 'COUNT', $field, $alias);
+		$st = $this->bind($q);
+
+		if (empty($this->group)){
+			if ($this->exec && $st->execute())
+				return $st->fetch(\PDO::FETCH_ASSOC);
+			else
+				return false;	
+		}else{
+			if ($this->exec && $st->execute())
+				return $st->fetchAll(\PDO::FETCH_ASSOC);
+			else
+				return false;
+		}	
 	}
 
 
