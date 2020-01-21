@@ -7,6 +7,7 @@ use simplerest\libs\Strings;
 use simplerest\libs\Validator;
 use simplerest\core\interfaces\IValidator;
 use simplerest\core\exceptions\InvalidValidationException;
+use simplerest\core\exceptions\SqlException;
 
 class Model {
 
@@ -306,7 +307,7 @@ class Model {
 		$this->randomize = true;
 
 		if (!empty($this->order))
-			throw new \Exception("Random order is not compatible with OrderBy clausule");
+			throw new SqlException("Random order is not compatible with OrderBy clausule");
 
 		return $this;
 	}
@@ -468,8 +469,8 @@ class Model {
 					$paginator->compile();
 
 					$this->pag_vals = $paginator->getBinding();
-				}catch (\Exception $e){
-					throw new \Exception("Pagination error: {$e->getMessage()}");
+				}catch (SqlException $e){
+					throw new SqlException("Pagination error: {$e->getMessage()}");
 				}
 			}else
 				$paginator = null;	
@@ -1025,7 +1026,7 @@ class Model {
 			if(is_array($conditions[Arrays::array_key_first($conditions)])){
 				foreach ($conditions as $cond) {
 					if ($cond[0] == null)
-						throw new \Exception("Table field can not be NULL");
+						throw new SqlException("Table field can not be NULL");
 
 					if(is_array($cond[1]) && (empty($cond[2]) || in_array($cond[2], ['IN', 'NOT IN']) ))
 					{						
@@ -1228,7 +1229,7 @@ class Model {
 	function update(array $data, $set_updated_at = true)
 	{
 		if ($this->conn == null)
-			throw new \Exception('No conection');
+			throw new SqlException('No conection');
 			
 		if (!Arrays::is_assoc($data))
 			throw new \InvalidArgumentException('Array of data should be associative');
@@ -1318,7 +1319,7 @@ class Model {
 	function delete($soft_delete = true, array $data = [])
 	{
 		if ($this->conn == null)
-			throw new \Exception('No conection');
+			throw new SqlException('No conection');
 
 		// Validación
 		if (!empty($this->validator)){
@@ -1330,7 +1331,7 @@ class Model {
 
 		if ($soft_delete){
 			if (!$this->inSchema(['deleted_at'])){
-				throw new \Exception("There is no 'deleted_at' for ".$this->from(). ' schema');
+				throw new SqlException("There is no 'deleted_at' for ".$this->from(). ' schema');
 			} 
 
 			$d = new \DateTime(NULL, new \DateTimeZone($this->config['DateTimeZone']));
@@ -1386,7 +1387,7 @@ class Model {
 	function create(array $data)
 	{
 		if ($this->conn == null)
-			throw new \Exception('No connection');
+			throw new SqlException('No connection');
 
 		if (!Arrays::is_assoc($data))
 			throw new \InvalidArgumentException('Array of data should be associative');

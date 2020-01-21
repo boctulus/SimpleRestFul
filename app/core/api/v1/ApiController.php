@@ -120,10 +120,6 @@ abstract class ApiController extends ResourceController
  
     }
 
-    protected function transform_entity($name){
-        return implode('',array_map('ucfirst',explode('_',$name)));
-    }
-
     static function get_owned(){
         return static::$owned;
     }
@@ -624,8 +620,11 @@ abstract class ApiController extends ResourceController
         
             }
 
+        
         } catch (InvalidValidationException $e) { 
             Factory::response()->sendError('Validation Error', 400, json_decode($e->getMessage()));
+        } catch (SqlException $e) { 
+            Factory::response()->sendError('SQL error', 500, json_decode($e->getMessage()));   
         } catch (\Exception $e) {            
             Factory::response()->sendError($e->getMessage());
         }	    
