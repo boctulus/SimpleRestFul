@@ -666,7 +666,9 @@ abstract class ApiController extends ResourceController
                 }else                               
                     $rows = $instance->get();
                 
-                Debug::dd($instance->getLastPrecompiledQuery());
+
+                ///ebug::dd($instance->getLastPrecompiledQuery());
+
 
                 $res = Factory::response()->setPretty($pretty)->code(200);
 
