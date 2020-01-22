@@ -658,6 +658,10 @@ abstract class ApiController extends ResourceController
 
                 $res = Factory::response()->setPretty($pretty)->code(200);
 
+                /*
+                    Falta paginas cuando hay groupBy & having
+                */
+
                 //  pagino solo sino hay funciones agregativas
                 if (!isset($ag_fn)){
                     $total = (int) array_values((new $model($conn))->where($_get)->count())[0];

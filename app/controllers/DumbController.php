@@ -271,7 +271,7 @@ class DumbController extends Controller
         ->where([ 'belongs_to'=> 90] )
         ->count();
 
-        var_dump($c);
+        Debug::dd($c);
     }
 
     function count1(){
@@ -280,6 +280,7 @@ class DumbController extends Controller
         ->count('*', 'count');
 
         var_dump($c);
+        Debug::dd(DB::getQueryLog());
     }
 
     function count1b(){
@@ -1217,12 +1218,14 @@ class DumbController extends Controller
 
         $conn = DB::getConnection();
 
-        $res = (new \simplerest\core\Model($conn))
+        $main = new \simplerest\core\Model($conn);
+        $res = $main
         ->fromRaw("({$sub->toSql()}) as sub")
         ->mergeBindings($sub)
         ->count();
 
-        Debug::dd($res);    
+        Debug::dd($res); 
+        Debug::dd($main->getLastPrecompiledQuery());   
     }
 
     /*
