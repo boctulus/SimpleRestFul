@@ -605,6 +605,7 @@ abstract class ApiController extends ResourceController
                 
                 //////////
     
+                // MIN, MAX, SUM, COUNT, AVG
                 if (preg_match('/(min|max|sum|avg|count)\(([a-z\*]+)\)( as [a-z]+)?/i', $props, $matches)){
                     $ag_fn = strtolower($matches[1]);
                     $ag_ff = $matches[2];
@@ -615,14 +616,16 @@ abstract class ApiController extends ResourceController
                         $ag_alias = NULL;
                 }
 
+                // WHERE
                 $instance->where($_get);
 
+                // GROUP BY
                 if ($group_by != NULL){
                     $group_by = explode(',', $group_by);
                     $instance->groupBy($group_by);                   
                 }                    
 
-                // tambien chequear si es un alias
+                // HAVING
                 if (preg_match('/([a-z]+)\(([a-z\*]+)\)([><=]+)([0-9\.]+)/i', $having, $matches)){
                     $hv_fn = strtoupper($matches[1]);
                     $hv_ff = $matches[2];
@@ -631,14 +634,23 @@ abstract class ApiController extends ResourceController
 
                     //var_export($matches);                    
                     $instance->having(["$hv_fn($hv_ff)", $hv_vv, $hv_op]);
+                }elseif (preg_match('/([a-z]+)([><=]+)([0-9\.]+)/i', $having, $matches)){
+                    $hv_fn_alias = $matches[1];
+                    $hv_op = $matches[2];
+                    $hv_vv = $matches[3]; 
+
+                    $instance->having([$hv_fn_alias, $hv_vv, $hv_op]);
                 }
 
+                // ORDER BY
                 if ($order !=  NULL)
                     $instance->orderBy($order);
                 
+                // LIMIT
                 if ($limit != NULL)
                     $instance->limit($limit);
 
+                // OFFSET
                 if ($offset != NULL)
                     $instance->offset($offset);
 
@@ -654,12 +666,12 @@ abstract class ApiController extends ResourceController
                 }else                               
                     $rows = $instance->get();
                 
-                //Debug::dd($instance->getLastPrecompiledQuery());
+                Debug::dd($instance->getLastPrecompiledQuery());
 
                 $res = Factory::response()->setPretty($pretty)->code(200);
 
                 /*
-                    Falta paginas cuando hay groupBy & having
+                    Falta paginar cuando hay groupBy & having
                 */
 
                 //  pagino solo sino hay funciones agregativas

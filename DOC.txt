@@ -982,13 +982,15 @@ Example of Response:
     "error_detail": ""
 }
 
+Note: when groupBy is used, you should specify the fields to be selected. 
+
 With having
 
 	GET /api/v1/products?groupBy=size&fields=size&props=avg(cost)&having=avg(cost)>=150
 
+Having with alias 
 
-Note: when groupBy is used, you should specify the fields to be selected. 
-
+	GET /api/v1/products?groupBy=size&fields=size&props=avg(cost) as c&having=c>=150
 
 ### Pretty print 
 

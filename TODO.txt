@@ -1,5 +1,13 @@
 # TODO
 
+- Modificar Request::header() para que obtenga de forma "case-insensitive" los headers de apache_request_headers()
+
+Convertir a minúsculas como hace NodeJs.
+
+https://stackoverflow.com/questions/5258977/are-http-headers-case-sensitive
+
+- Hacer el segmento /api opcional
+
 - Hacer funcionar having en la API
 
 http://simplerest.lan/api/v1/products?groupBy=size&fields=size&props=avg(cost)&having=avg(cost)>=150
