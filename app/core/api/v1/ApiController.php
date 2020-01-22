@@ -300,6 +300,7 @@ abstract class ApiController extends ResourceController
             $fields  = $fields != NULL ? explode(',',$fields) : NULL;
 
             $properties = $instance->getProperties();
+            
             foreach ((array) $fields as $field){
                 if (!in_array($field,$properties))
                     Factory::response()->sendError("Unknown field '$field'", 400);
@@ -614,9 +615,6 @@ abstract class ApiController extends ResourceController
                         $ag_alias = NULL;
                 }
 
-                if (!empty($fields))
-                    $instance->select($fields);
-
                 $instance->where($_get);
 
                 if ($group_by != NULL){
@@ -624,8 +622,16 @@ abstract class ApiController extends ResourceController
                     $instance->groupBy($group_by);                   
                 }                    
 
-                if ($having!= NULL)
-                    $instance->having($having);
+                // tambien chequear si es un alias
+                if (preg_match('/([a-z]+)\(([a-z\*]+)\)([><=]+)([0-9\.]+)/i', $having, $matches)){
+                    $hv_fn = strtoupper($matches[1]);
+                    $hv_ff = $matches[2];
+                    $hv_op = $matches[3];
+                    $hv_vv = $matches[4];                   
+
+                    //var_export($matches);                    
+                    $instance->having(["$hv_fn($hv_ff)", $hv_vv, $hv_op]);
+                }
 
                 if ($order !=  NULL)
                     $instance->orderBy($order);
@@ -635,6 +641,13 @@ abstract class ApiController extends ResourceController
 
                 if ($offset != NULL)
                     $instance->offset($offset);
+
+                /*
+                    Debe incluir los alias 
+                */
+                if (!empty($fields))
+                    $instance->select($fields);
+
 
                 if (isset($ag_fn)){
                     $rows = $instance->$ag_fn($ag_ff, $ag_alias);

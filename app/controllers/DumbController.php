@@ -735,7 +735,19 @@ class DumbController extends Controller
             ])
         ->where(['belongs_to' =>  90])->get());         
     }
-		
+        
+    function having(){  
+        Debug::dd(DB::table('products')
+			//->dontExec()
+            ->groupBy(['size'])
+            ->having(['AVG(cost)', 150, '>='])
+            ->select(['size'])
+			->selectRaw('AVG(cost)')
+			->get());
+			
+		Debug::dd(DB::getQueryLog()); 
+    }  
+
 	/*
 		Array
 		(
@@ -755,7 +767,7 @@ class DumbController extends Controller
 		
 		SELECT COUNT(name) as c, name FROM products WHERE deleted_at IS NULL GROUP BY name HAVING c >= 3
 	*/	
-	function having(){  
+	function having0(){  
         Debug::dd(DB::table('products')
 			//->dontExec()
             ->groupBy(['name'])

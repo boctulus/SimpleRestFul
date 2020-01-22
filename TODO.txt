@@ -1,8 +1,9 @@
 # TODO
 
-- Un recurso nunca uso como nombre un camelCase sino separado por un guion “-“ si son palabras compuestas
+- Hacer funcionar having en la API
 
-<-- chequear!!! porque tengo un trashCan
+http://simplerest.lan/api/v1/products?groupBy=size&fields=size&props=avg(cost)&having=avg(cost)>=150
+http://simplerest.lan/api/v1/Products?groupBy=name&fields=name,c&having=count(name) as c
 
 - Incluir sub-Resources, ej:
 

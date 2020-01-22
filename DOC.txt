@@ -955,6 +955,11 @@ Example of Response:
     "error_detail": ""
 }
 
+With having
+
+	GET /api/v1/products?groupBy=size&fields=size&props=avg(cost)&having=avg(cost)>=150
+
+
 Note: when groupBy is used, you should specify the fields to be selected. 
 
 
