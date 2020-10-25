@@ -17,8 +17,8 @@ function assets($resource){
         $protocol = 'http:';
     }
     
-    $public =  $config['BASE_URL'] == '/' ? '' : 'public';
-    return $protocol . '//' . $_SERVER['HTTP_HOST'].$config['BASE_URL']."$public/assets/".$resource;
+    $public =  $config['BASE_URL'] . 'public';
+    return $protocol . '//' . $_SERVER['HTTP_HOST']. $public. '/assets/'.$resource;
 }
 
 function section($view){

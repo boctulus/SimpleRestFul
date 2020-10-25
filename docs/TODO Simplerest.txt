@@ -1,0 +1,1314 @@
+# TODO
+
+- Mecanismo para evitar dejar fuera de línea una API Restful:
+
+  - Si se desea agregar un campo / tabla a la DB.....
+
+    - Primero se debería agregar en la DB 
+    - Luego en el Schema
+
+    <-- esto lo hace la migración
+
+  - Si se desea borrar un campo / tabla
+
+    - Primero debería desaparecer del Schema
+    - Luego debe desaparecer de la DB
+
+    <-- esto lo hace la migración
+
+  - Si se desea renombrar un campo / tabla,...
+
+    Como hacer ambas cosas al mismo tiempo y es imposible,...
+
+    - En el Modelo indico que verifique si el campo existe con ese nombre en el Schema y de no existir, que intente con un nombre de campo alternativo. (Creo una "transición" en el Modelo)
+    - Renombro el campo en la DB 	 
+    - Habilito un Transformer para cubrir los queries sobre ese campo en caso de estar expuesto en la API. Obviamenre solo cubriría los GET pero podría habilitarse un mapeo de dos vías.
+    - Elimino la "transición" que cree en el Modelo en el primer paso.
+
+
+En general:
+
+  - Un campo se puede agregar                             -- OK. No es problema
+
+  - Un campo se puede eliminar                            -- Solo podría informarse que no E en el Schema
+
+  - Un campo se puede renombrar
+  
+  - Una tabla se puede agregar                            -- OK. No es problema
+
+  - Una tabla se puede eliminar                           -- Solo se podría informar que fue depredicada
+
+  - Una tabla se puede renombrar
+  
+  - Un campo que no era nullable puede volverse nullable  -- OK. No es problema
+  
+  - Un campo que era nullable puede volverse no-nullable 
+  
+  - Un campo puede aumentar un rango                      -- OK. No es problema
+  
+  - Un campo puede disminuir su rango 
+  
+  - Un campo puede cambiar de tipo  
+
+
+Se propone en el Schema donde vaya a haber cambios agregar una transición:
+
+    // cambios críticos
+    function getTransition(){
+      return [
+        // cambia de nombre
+        'table_name' => 'bar_r',
+
+        // renombrado de atributos
+        // old -> new
+        'attributes' => [
+          'price' => 'cost',
+          'email' => 'correo'
+        ],
+
+        // cambio de constante para PDO
+        'attr_types'	=> [
+          'price' => 'INT'
+        ],
+
+        // se vuelven no-nullables
+        'not_nullable'		=> [
+          'updated_at'
+        ],
+
+        // nuevas reglas
+        'rules'	=> [
+          'name' => ['max' => 45], // más restrictiva
+          'email' => ['max' => 100]
+        ]
+
+      ];	
+
+      // <-- también el id_name podría cambiar 
+    }
+
+
+https://blog.staffjoy.com/dont-migrate-databases-automatically-5039ab061365
+
+
+- Leer :
+
+https://docs.djangoproject.com/en/3.1/topics/migrations/
+https://docs.microsoft.com/en-us/ef/ef6/modeling/code-first/migrations/
+
+
+- Evaluar usar PERCONA para hacer cambios de Schema (típicamente via migraciones) en producción sin bloquear lecturas ni escrituras.
+
+https://www.percona.com/doc/percona-toolkit/2.1/pt-online-schema-change.html
+https://federico-razzoli.com/advice-for-mysql-mariadb-live-migrations
+https://medium.com/@gauraangkhurana/percona-pt-online-schema-change-performance-1def5866b43
+
+
+- Si un registro fue bloqueado por un admin (alguien con permiso de lock) no debería siquiera poder verse en la papelera informando: "locked by an admin"
+
+  GET http://az.lan/api/v1/trashCan/160?entity=products
+
+{
+    "data": {
+    },
+    "status_code": 403,
+    "error": "Forbidden",
+    "error_detail": "Locked by an admin"
+}
+
+Casos para un registro bloqueado:
+
+  - Solo con el permiso "lock" se puede ver (ni siquiera con "read_all")
+  - Solo con el permiso "lock" se puede ver (ni siquiera con "read_all") en la papelera
+  - Solo con el permiso "lock" se puede listar (ni siquiera con "read_all")
+  - Solo con el permiso "lock" se puede listar (ni siquiera con "read_all_trashcan"). Requiere lock + read_all_trashcan sino es propio.
+  - Solo con el permiso "lock" puede recuperar de la papelera -- ok
+  - Solo con el permiso "lock" puede borrar de la papelera -- ok
+
+
+- Revisar si es posible acelerar las inserciones
+
+https://dev.mysql.com/doc/refman/8.0/en/insert-optimization.html
+
+- Ser concistente con los campos not_fillables: informo que son no fillables o simplemente hago un unset() silecioso? para belongs_to no estoy informando y para los demás campos si. 
+
+  POST
+  
+  {
+        "uuid": "0b42cfba-a343-4cf1-aaa7-e7ef7bf43171",
+        "name": "BAR",
+        "price": "600.50",
+        "belongs_to": "168"
+    }
+
+- Crear alias entre
+
+  ?orderBy=cost  (incorrecto)
+y 
+  ?orderBy[cost]=ASC (corecto)
+
+
+- Revisar documentos de Fabriiiiiiiiiiiiiiiiiiiiiiiiiiicio
+
+- Make:
+
+  - Permitir que los parámetros puedan ir en cualquier órden:
+
+      make schema SuperAwesome -f 
+      make schema -f SuperAwesome
+      
+      
+  - Hacer que index() tome el lugar de any:
+
+  En vez de 
+
+      make any baz -s -m -a -f
+      make any baz -samf
+
+  sería,..
+
+      make baz -samf
+      make -samf baz 
+
+    
+  - Permitir agrupar parámetros en cualquier combinación posible:
+
+      make -samf baz 
+      make -safm baz
+      make -fams baz 		
+      etc
+
+- Implementación de migraciones:
+
+make schema:  DB -----> Schema [done]
+migration  :  Model --> 
+
+- Mejorar las reglas generadas en el Schema:
+
+  { 
+    "name": "xxxy.00",
+    "price": "AAA"    <--- DECIMAL
+  }
+
+<-- no es culpa de Validator sino del SCHEMA que brinda poca información. 
+
+- Con ayuda del Router mover controllers (con algunas excepción) a otras ubicaciones.
+
+- Descular porque un POST puede tardar 2000 ms y rara vez 60 ms que sería algo "normal" 
+
+  t(FrontController) ?
+  t(Request) ?
+  t(ApiController) ?
+  t(Auth->check()) ?
+  t(ACL) ?
+  t(Modelo) ?
+  t(Response) ?  
+
+Prueba: 
+
+  GET /api/v1/users?fields=email                6 - 13 mili seg  
+
+Valores hallados:
+
+  Resolución de DNS                             0 - 30 mili seg (Windows)
+  Bloqueo                                       0 - 30 mili seg (Windows)
+  
+  FrontController  (sin incluir response)       mediana: 3 mili seg 
+  FrontController (completo)                    4 mili seg aprox
+
+  Factory::request()                            0.5 - 1.5 mili seg
+
+  AuthController instanciación + check()        1 - 3 mili seg  
+
+  Acl (sin cachear)                             ---
+  Acl (cacheado)                                --- seg 
+
+  ApiController (incl. llamadas al modelo)      ---
+  <-- sin incluir Auth ni Acl 
+
+  DB::table('users')->setFetchMode('ASSOC')
+  ->limit(10)->select(['email'])->get()         --- mili seg  (solo el CRUD)
+
+  DB> SELECT email FROM users LIMIT 0,10;       --- - 1 mili seg aprox (en la terminal)
+
+  Factory::response()                           --- - 1.5 mili seg
+
+  Total PHP:                                    ---
+
+
+Se ha concluido que en Windows los valores hallados de tiempo de respuesta son irreproducibles, totalmente fuera de escala.
+
+-  Probar en Linux con el módulo de Apache PHP-FPM (idealmente en Linux) -> habilita opcode caching
+
+  https://kinsta.com/es/blog/nginx-vs-apache/
+  https://www.inmotionhosting.com/support/website/php-fpm-the-future-of-php-handling/
+  https://www.quora.com/What-are-the-advantages-of-using-PHP-FPM-+-Nginx-over-Apache-and-mod_php
+  http://www.orbitale.io/2017/11/11/apache-and-php-fpm-in-windows.html
+
+  Hacer pruebas con el built-in web server
+  
+  https://www.php.net/manual/en/features.commandline.webserver.php
+
+
+- Optimización de web servers 
+https://www.sitepoint.com/apache-vs-nginx-performance-optimization-techniques/
+
+- Usar RTAPI para testear tiempos de latencia:
+
+https://www.nginx.com/blog/api-real-time-test-latency-responsiveness-nginx-rtapi-tool/
+
+- Usar con conexiones http persistentes, por cierto ya es persistente? Si !
+
+https://en.wikipedia.org/wiki/HTTP_persistent_connection
+https://stackoverflow.com/questions/13332883/rest-web-service-and-keep-alive
+https://www.a2hosting.com/kb/developer-corner/apache-web-server/using-keep-alive-connections-to-improve-performance
+https://www.lob.com/blog/use-http-keep-alive
+https://docs.apigee.com/api-platform/antipatterns/disable-persistent-connections
+
+    Backend services should honor and handle HTTP persistent connection in accordance with HTTP 1.1 standards.
+    Backend services should respond with a Connection:keep-alive header if they are able to handle persistent (keep alive) connections.
+    Backend services should respond with a Connection:close header if they are unable to handle persistent connections.
+
+- Ensayar con Apache y con Nginx buscando los mejores tiempos de respuesta.
+
+- VirtualModel extends Model .... con schema on the fly. Esto sería útil para poder en pruebas unitarias hacer una migración para las tablas de prueba, hacer las pruebas sobre el modelo virtual y luego con otra migración regresar la DB al estado anterior.
+
+- Para UUID hay algoritmos más eficientes que otros:
+
+https://github.com/ramsey/uuid
+https://jolicode.com/blog/uuid-generation-in-php
+https://mariadb.com/kb/en/guiduuid-performance/
+https://www.php.net/manual/en/function.uniqid.php
+
+
+- Considerar usar RocksDB en producción
+
+https://mariadb.com/kb/en/myrocks/
+
+
+- Al loguearse o renovar tokens o en otro endpoint poder ver 
+
+{
+	"roles": {
+		...
+		...
+	}
+
+	"permissions": {
+		"sp": { ... },
+		"tb": { 
+			"foo": { 
+				"read_all": false,
+				"read": true,
+				...
+				"write": null
+			}
+		},
+		"combined": {  <--- nuevo !
+			"sp": {
+				"read_all",
+				"write_all",
+				"read_all_collections",
+				"write_all_collections",
+				"read_all_trashcan",
+				"write_all_trashcan",
+				"transfer",
+				"lock",
+				"impersonate"
+			},
+			"tb": {
+				"foo": { 
+					"read_all": false, <-- por tb
+					"read": true,  <-- por tb
+					...
+					"write_all": true  <-- por sp (sin sobreescribir)
+				}				
+			}
+		}
+	}
+}
+
+- Routing: seguir implementando siguiendo como referencia:
+https://laravel.com/docs/8.x/routing
+
+Además de expresiones regulares aceptar constantes como:
+
+  String
+  Int
+  Long
+  Double
+  Float
+  Boolean
+  UUID
+
+- Serializar Route !!!!!!
+
+- Re-escribir Response y .... evitar usar custom headers !
+
+Adding custom headers or using a non-standard content-type forces the browser to issue a preflight ''OPTIONS'' request to determine if these are acceptable or not, and this effectively doubles the latency of fetching data.
+
+Avoid custom HTTP headers, and use standard headers like Accept for content negotiated responses instead.
+
+https://dzone.com/articles/solving-the-options-performance-issue-with-single
+
+
+- Analizar que pasa con OPTIONS !!! no puede ser que demore tanto !
+
+- Probar si la performance no se ve afectada con "named arguments" y aplicar de mínima a la clase Model. 
+
+https://stitcher.io/blog/php-8-named-arguments
+https://dev.to/jopacicdev/what-s-new-in-php-8-and-what-does-that-mean-4kdf
+
+- Probar annotations (attributes) como en ASP.NET en vez de usar Traits
+
+https://docs.microsoft.com/en-us/aspnet/core/security/authorization/simple?view=aspnetcore-5.0
+
+- Probar PHP-Ds como alternativa a arrays en PHP 8 y verificar eficiencia 
+
+https://medium.com/@rtheunissen/efficient-data-structures-for-php-7-9dda7af674cd
+https://github.com/php-ds/ext-ds
+https://www.php.net/manual/en/book.ds.php
+
+
+- Checkboxes de 3 estados donde uno sea null / undefined para mostrar los permisos sobre tb_permissions en caso de hacer un panel de control para estos menesteres
+
+https://es.stackoverflow.com/a/41311/8826
+
+- Es aconsejable agregar por defecto un campo "computed": [ campos que son computados ] al usar un transformer para que el cliente sepa que no puede hacer un POST o PUT incluyendo esos campos. Similarmente podría usarse un mecanismo de doble vía pero igual aclarar que campos fueron mapeados:  "maped": [ campos mapedos bi-direccionalmente ]
+
+- Al mostrar user_roles el paginador muestra el total de registros aún cuando muestra solo uno:
+
+{
+    "data": [
+        {
+            "id": "179",
+            "user_id": "455",
+            "role_id": "3",
+            "created_at": "2020-09-28 14:23:45",
+            "updated_at": null
+        }
+    ],
+    "status_code": 200,
+    "error": "",
+    "error_detail": "",
+    "paginator": {
+        "total": 117, <-- ok 
+        "count": 1,
+        "currentPage": 1, 
+        "totalPages": 12,   <-- mal ?
+        "pageSize": 10,
+        "nextUrl": "http://az.lan/api/v1/user_roles?pageSize=10&page=2" <-- debería ser null
+    }
+}
+
+- Reparar el sistema de "folders" luego de re-escribir el ApiController separando GET en 4 métodos 
+
+- Si intento pasar un id repetido en un POST 
+
+Ej para 'products'
+  
+  {
+      "id": "126",
+      "name": "Uvas ricas",
+      "description": "Espectaculare",
+      "size": "5L",
+      "cost": "52"
+  }
+
+  {
+    "status_code": 500,
+    "error": "Error: creation of resource fails: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry '126' for key 'PRIMARY'",
+    "error_detail": "INSERT INTO products (id, name, description, size, cost, belongs_to, created_by, created_at) VALUES ('126', 'Uvas ricas', 'Espectaculare', '5L', '52', '90', '90', '2020-09-29 21:55:22')"
+}
+
+- No debería poder ver todos los user_roles sino tengo permiso read_all de admin
+    
+- Insertar el rol "registered" con un hook o Midleware en cada cuenta registrada / creada para que nadie tenga en principio menos permisos que un "guest".  
+
+- Inconcistencia: un rol "puro" tiene id y por tanto al filtrar por id puede tener menos visibilidad que un Guest !
+
+- Al momento de "instalarse" mostrar una pantalla de presentación con la adevertencia de que debug=true, mediante comando poder crear un superadmin y servir un panel de admnistración de usuarios, roles y permisos como sucede con Django Rest framework 
+
+https://medium.com/swlh/build-your-first-rest-api-with-django-rest-framework-e394e39a482c
+
+
+- Dar soporte a Postgres y para hacer pruebas migrar la DB de prueba:
+
+https://www.digitalocean.com/community/tutorials/how-to-migrate-mysql-database-to-postgres-using-pgloader
+
+
+- Si un usuario no existe (fue borrado) pero su token está activo:
+
+{
+    "status_code": 500,
+    "error": "Error: creation of resource fails: SQLSTATE[23000]: Integrity constraint violation: 1452 Cannot add or update a child row: a foreign key constraint fails (`az`.`products`, CONSTRAINT `products_ibfk_1` FOREIGN KEY (`belongs_to`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE)",
+    "error_detail": "INSERT INTO products (name, cost, belongs_to, created_by, created_at) VALUES ('JJJ', '199', '453', '453', '2020-09-28 14:19:25')"
+}
+
+- Cuando el tiempo de expiración restante de un access_token sea superior a 15 minutos chequear directamente desde base de datos: si el usuario está activo, tb_permissions y sp_permissions <-- con esto me evito tener que invalidar tokens de larga duración que pudieran haber sido usados en desarrollo.
+
+- Usar Whoops y Monolog. La desventaja de mi exception handler es que no estoy guardando el stack de excepciones previas (con sus códigos de error, # de línea, etc) en caso de ser re-lanzadas.
+
+https://github.com/filp/whoops
+https://filp.github.io/whoops/
+https://stackoverflow.com/questions/59472960/using-monolog-and-whoops  
+https://scoutapm.com/blog/php-advanced-exceptions-tutorial
+
+- Los booleans deben devolverse como true / false sin comillado e igualmente sin comillado los números <-- ver API de ClaroShop
+
+- Usar Midlewares para evitar tener que hardcodear la clase Auth
+
+https://phil.tech/2016/why-care-about-php-middleware/
+http://esbenp.github.io/2015/07/31/implementing-before-after-middleware/
+https://www.sourcefuse.com/blog/rest-api-best-practices/
+
+
+- Corregir:
+
+  - Si el password es un camo oculto revienta el OutputMutator:
+
+    $this->registerOutputMutator('password', function($pass){ return '******'; } );
+
+  - Ante un orderBy mal formateado en la url se produce un error muy feo
+
+    http://az.lan/api/v1/products?orderBy=cost  <-- es incorrecto 
+
+    <b>Fatal error</b>:  Uncaught TypeError: Argument 1 passed to simplerest\core\Model: :orderBy() must be of the type array, string given, called in C:\xampp\htdocs\az\app\core\api\v1\ApiController.php on line 688 and defined in C:\xampp\htdocs\az\app\core\Model.php: 352
+    Stack trace:
+    #0 C:\xampp\htdocs\az\app\core\api\v1\ApiController.php(688): simplerest\core\Model-&gt;orderBy('cost')
+    #1 [internal function
+    ]: simplerest\core\api\v1\ApiController-&gt;get()
+    #2 C:\xampp\htdocs\az\app\core\FrontController.php(162): call_user_func_array(Array, Array)
+    #3 C:\xampp\htdocs\az\public\index.php(11): simplerest\core\FrontController: :resolve()
+    #4 {main
+    }
+      thrown in <b>C:\xampp\htdocs\az\app\core\Model.php</b> on line <b>352</b><br />
+
+- Evitar escalamiento de privilegios !!!! 
+
+	- Haciendo como "admin" un impersonate a "superadmin" por rol / uid
+	- Haciendo como "admin" un impersonate de otro "admin" con menos restricciones por uid
+	- Haciendo como "admin" un impersonate un "admin" por rol
+	- Haciendo uso de 'grant' 
+	- Manipulando las tablas de permisos
+	
+	<-- ningún usuario por admin que sea debe poder hacer un impersonate o por otro medio tener algún permiso que no tenga.
+	
+
+	Podría hacerse con un método restrictImpersonateTo($roles) al ACL.
+
+	Otra opción sería hacer que un usuario pueda hacer un impersonate a otros usuarios cuyos roles sean iguales o interiores al rol padre de quien usa el impersonate. Para eso necesito armar el árbol de genealógico de roles.
+
+
+	{
+		"role": "superadmin"
+	}
+
+	o
+
+	{
+		"uid": "400"  <-- rol de un superadmin
+	}
+
+
+- Analizar en cada request (y en promedio) de cuánto tiempo es la ejecución de cada componente del sistema (FrontController, ApiController, AuthController, Model, DB, etc)
+
+- Hacer algo similar a Faker 
+https://github.com/fzaninotto/Faker
+https://anchetawern.github.io/blog/2016/01/28/generating-fake-data-in-php-with-faker/
+
+
+- Analizar la API con alguna herramineta cono jMeter
+
+https://medium.com/@chamikakasun/rest-api-load-testing-with-apache-jmeter-a4d25ea2b7b6
+https://www.blazemeter.com/blog/rest-api-testing-how-to-do-it-right
+https://developers.redhat.com/blog/2015/04/30/how-to-load-test-and-tune-performance-on-your-api/
+
+- Correr algún test de stress sobre la API Rest.
+
+- Como realizar pruebas de stress 
+
+https://www.sisense.com/blog/rest-api-testing-strategy-what-exactly-should-you-test/
+
+- Posibilidad de serializar Modelos para incrementar performance
+
+https://bezkoder.com/django-mongodb-crud-rest-framework/
+
+- CORS debe no ser por defecto sino habilitarse via Midleware
+
+https://bezkoder.com/django-mongodb-crud-rest-framework/
+
+
+- Actualizar la documentación
+
+- Chequear phpFastCache
+https://www.phpfastcache.com/
+
+- Chequear que no sea posible el escalamiento de privilegios otorgando roles o permisos.
+
+- Chequear el acceso a tablas como permissions, folder_permissions y other_folder_permissions
+
+- Poseer el permiso 'grant' no debería habilitar a que quien lo sea lo otorgue a otros para lo cual haría falta el permiso 'super'.
+
+- Id opcionalmente no autoincrementales por seguridad ! usar UUID(s) en su lugar
+https://www.php.net/manual/en/function.uniqid.php <-- no 
+
+- Migrar a PHP UNIT 9.0
+
+https://laravelshift.com/upgrade-phpunit-9
+
+
+- [ ACL ] Implementar eventos beforeCheckAccess y afterCheckAccess 
+https://docs.phalcon.io/4.0/en/acl
+
+- [ Security ] ¿Qué puedo hacer si hay credenciales comprometidas de un usuario?
+
+Se podría invalidar el access token del usuario y lo bueno es que solo es necesario hacerlo durante el tiempo de duración de los acccess tokens. No hay problema con los refresh tokens ya que solo se utilizan para autenticación y no para autorización.
+
+- [ Security ] ¿Qué puedo hacer para invalidar todos los tokens? ¿Es efectivo?
+
+Aún sin implementar invalidación de tokens es posible expulsar a todos los usuarios y obligarlos a loguearse nuevamente cambiando las secret keys. Advertencia: si alguién se hubiera hecho con un access token podría haber cambiado la contraseña y si posee el refresh token puede volver a loguearse sin problemas. Obviamente si los tokens son de un usuario con elevados privilegios puede haber alterado permisos de mínima sobre registros y folders. 
+
+- Arreglar la falta de normalización de los folders.
+
+- Generar Modelos, Controladores y APIs via comando (sin sobre-escribir existente excepto que se especifique y posiblemente se confimre) basado en plantillas. ***
+
+- DotEnv
+
+- Id opcionalmente no autoincrementales por seguridad !
+
+- Enviar efectivamente correos -prioridad alta-
+
+- Correos con formato. <-- ver como es en Laravel que usa un motor de plantillas.
+
+- En app/libs/Factory.php está mal que en check() se haga referencia a una versión concreta de AuthController ya que está dentro de una librería que no está versionada.
+
+- Dejar tablas de prueba con nombres como foo y bar.
+
+- Generar algún tipo de alerta / warning si en producción el access token estuviera configurado para durar más de 1500 minutos  (poco más de un día). El generar tokens con vencimiento alto sería un problema enorme que obligaría a lidiar con unalista negra.
+
+- Generar una alerta si aumenta el número de usuarios con el rol de "admin". 
+
+- Soft-delete para archivos?
+
+- Testear de nuevo los permisos que decoran los roles ! 
+
+- Modificar sendError() 
+
+Actualmente es así:
+
+  sendError('Unauthorized', 403, 'Please confirm your e-mail');
+
+Y debería ser así:
+
+  sendError('Please confirm your e-mail', 403);  <-- el texto 'Unauthorized' se estandarizaría en base al código de error y solo se agregaria opcionalmente una descripción.
+
+ También sería válido:
+
+  sendError('Please confirm your e-mail') <-- en tal caso el error sería un 500
+
+
+- Cambios en las tablas del ACL:
+
+  - La tabla permissions debería llamarse resource_permissions
+
+  - Los 'roles' deberían ser una tabla en la DB
+
+  - Debería crearse una tabla 'role_permissions' en vez de seguir manteniendo los permisos para cada rol en el archivo .php de de cada api.
+
+  <-- la tabla 'roles' y 'role_permissions' deberían compilarse de alguna forma y ser incluidos dentro del payload del access_token para evitar andar leyéndolas cada vez. ¿O sera que con REDIS lo soluciono realmente?
+
+
+- Conceptos:
+
+  - Los campos hidden deberían de serlo solo para otros usuarios excepto si mismo y un admin. Así se pueden proteger datos sensibles en una cuenta de usuario por ejemplo. Quizás se podría hacer si el campo hidden aceptara un callback que chequera !$owned && !$this->is_admin .... en todo caso el unset() se hace en toSql() dentro de Model.
+
+  - Se podría aplicar un OutputMutator (o un transformer) sobre los campos password y los de una tarjeta de crédito conviertiendo estos en algo como "******" y "1050-xxxxxxxxxxx" respectivamente con lo cual se protege la información sin ocultarla completamente.
+
+  - NO deben almacenarse ni roles ni permisos en los refresh_tokens por seguridad. Un refresh_token solo debe servir para ser autenticación y no para autorización.  -- OK
+
+  - No sería necesario invalidar tokens. Con solo chequear si el usuario que presenta sus credenciales ya sea en el login o al renovar el token tiene autorización es suficiente. Como mucho se está dejando una ventana abierta de oportunidad para hacer daño lo que quede de vida al access_token.
+
+
+- En /api/v1/img_resize/#id
+  ?height=300
+  ?width=500
+  ?size=500x300
+  &ellipse 
+
+Sacar ideas de 
+https://imageresizer.io/demo#resize
+https://kraken.io/docs/image-resizing
+
+
+- Implementar WebHooks (reverse APIs) via /api/v1/hooks  Con un request te suscribes enviando una url de notificación y cuando ocurre el evento de cambio en un recurso que se está escuchando, sos notificado a esa url.
+
+The REST Hook subscriptions are created, updated, and deleted using a REST API
+
+https://restful.io/webhooks-dos-and-dont-s-what-we-learned-after-integrating-100-apis-d567405a3671
+https://www.olioapps.com/blog/rest-hooks/
+https://nordicapis.com/stop-polling-and-consider-using-rest-hooks/
+
+<-- no utiliza WebSockets sino es una alternativa a ellos.
+
+Creación: 
+
+POST  \
+    -H Authenticated: authenticationSolution \
+    -H Content-Type: application/json \
+    -d ‘{"target_url": "https://hooks.zapier.com/hooktest",
+        "Event": "user_created"}’
+
+Eliminación del hook:
+
+DELETE  \
+    -H Authenticated: authenticationSolution \
+    -H Content-Type: application/json \
+
+
+- Investigar API de Claro que tiene hasta relaciones polimorficas mostradas como "atributos"
+https://csapi.dev.claroshop.com/app/v1/product?page_size=5
+
+Sino encuentra el ApiController:
+
+{
+    "errors": [
+        {
+            "message": "An error occurred during execution; please try again later.",
+            "error": "error-controller-not-found",
+            "exception": []
+        }
+    ]
+}
+
+Ante un fallo regresa información de la excepción:
+
+{
+    "errors": [
+        {
+            "message": "An error occurred during execution; please try again later.",
+            "error": "error-exception",
+            "exception": {
+                "class": "Zend\\View\\Exception\\RuntimeException",
+                "file": "/var/www/sites/app-api.dev.claroshop-services.io/vendor/zendframework/zend-view/src/Renderer/PhpRenderer.php",
+                "line": 498,
+                "message": "Zend\\View\\Renderer\\PhpRenderer::render: Unable to render template \"api-manager/v1/product/update\"; resolver could not resolve to a file"... Zend\\Mvc\\Application->run()\n#10 {main}"
+            }
+        }
+    ]
+}
+
+
+En caso de éxito:
+
+{
+    "metadata": {
+        "is_error": false,
+        "http_status": "OK",
+        "http_status_phrase": 200,
+        "time": 1601043305,
+        "message": "Products found"
+    },
+    "data": [
+        {
+            "id": 8308292,
+            "title": "Crema Dental Complete 4 en 1 Crest",
+            "store": {
+                "id": 3496,
+                "name": "Sanborns",
+                "logo": "http://medios.plazavip.com/publicidad/5c3cd792844b8_sanbornssjpeg.jpg"
+            },
+            "images": [
+                {
+                    "order": 1,
+                    "url": "https://www.claroshop.com/imagenes-sanborns-ii/1200/7506195100233.jpg",
+                    "thumbnail": "https://www.claroshop.com/imagenes-sanborns-ii/1200/7506195100233.jpg"
+                }
+            ],
+            "isfree": false,
+            ...
+            ...
+        },          
+        {
+            "id": 8308291,
+            ...
+        }
+    ],
+    "pagination": {
+        "total_items": 791695,
+        "total_pages": 395848,
+        "current_page": 1,
+        "items_per_page": 2
+    }
+}
+
+Algo interesante es que cuando se piden más registros por página del límite utiliza los campos is_error y message para indicar que no hubo error pero que no se pudo cumplir con el requisito de paginación mostrando solo lo una cantidad pre-determinada. 
+
+{
+    "metadata": {
+        "is_error": false,
+        "http_status": "OK",
+        "http_status_phrase": 200,
+        "time": 1601043488,
+        "message": "Can't get more than 500 items!. I return only one :)"
+    },
+    "data": [
+    ...
+    ],
+    "pagination": {
+        "total_items": ....,
+        "total_pages": ....,
+        "current_page": 1,
+        "items_per_page": 1
+    }
+}
+
+
+- Corregir JSON en /v1/files
+
+"failures": [
+            "",
+            ""
+]
+
+<-- no está vacio ! debería incluir nombre_archivo : error  
+
+- Incluir el nombre del proyecto en un salt sobre las secret keys para evitar que un token generado en un proyecto funcione en otro con las mismas secret keys. O sea aplicar una secret_key = fn(secret_key, nombre_proyecto)
+
+- ¿ Cuándo se activa la cache para una petición HTTP? cuando es idempotente? por qué un GET no se cachea????
+
+  <?php
+
+  header('Cache-Control: max-age=2592000, public');
+
+  sleep(1);
+  echo json_encode(['msg'=> 'Some msg']); // +1 seg desp
+
+
+Será que requiero de un proxy?  
+
+https://developer.mozilla.org/en-US/docs/Web/HTTP/Caching
+https://www.mnot.net/cache_docs/
+https://www.imperva.com/learn/performance/cache-control/
+https://developers.google.com/web/fundamentals/performance/get-started/httpcaching-6
+https://www.ibm.com/support/knowledgecenter/SSMAMS/com.ibm.mif.doc/gp_intfrmwk/rest_api/c_rest_get_caching.html
+https://web.dev/http-cache/
+https://tech.ebayinc.com/engineering/caching-http-post-requests-and-responses/
+https://developer.cdn.mozilla.net/es/docs/Web/HTTP/Caching
+
+
+- Implementar una forma sencilla de enviar correos, quizás como en Laravel
+
+  use App\Mail\WelcomeMessage;
+  use Illuminate\Support\Facades\Mail;
+
+  dispatch(function () {
+      Mail::to('taylor@laravel.com')->send(new WelcomeMessage);
+  })->afterResponse();
+
+<-- además utilizan Queues 
+
+- Posiblemente enviar un correo de confirmación con el event hook onCreated() sobre Users.
+
+- Enviar efectivamente correos -prioridad alta-
+
+- Correos con formato. <-- ver como es en Laravel que usa un motor de plantillas.
+
+- En /api/v1/auth/rememberme no debe devolverse el enlace (solo útil para fines de debug) sino que debe enviarse un correo electrónico. <-- arreglar!
+
+{
+    "data": {
+        "link_sent": "http://simplerest.lan//auth/change_pass_by_link/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU5OTg2NDAyNSwiZXhwIjoxNjAwNDY4ODI1LCJpcCI6IjEyNy4wLjAuMSIsInJvbGVzIjpbInJlZ3VsYXIiXSwicGVybWlzc2lvbnMiOnsicHJvZHVjdHMiOjcsImZvbyI6N30sInVpZCI6IjE2OCIsImNvbmZpcm1lZF9lbWFpbCI6IjAifQ.qaZncsDyQKp8KKt7zP25-tE09ANOs7Qpx3_Wjd6venM/1600468825"
+    },
+    "status_code": 200,
+    "error": "",
+    "error_detail": ""
+}
+
+- En /api/v1/auth/register tampoco debe devolverse el enlace  <-- *enviar* el correo y la parte siguiente quitarla de la respuesta:
+
+"email_confirmation_link": "http://simplerest.lan//auth/confirm_email/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU5OTg2NjQ5NSwiZXhwIjoxNjAwNDcxMjk1LCJpcCI6IjEyNy4wLjAuMSIsImVtYWlsIjoiemFyYUBnbWFpbC5jb20ifQ.mCZTE-36xnbmjC8gzLN-OWFbR5RwzB05-eJ_6rWsNSQ/1600471295"
+
+- Debe ser posible *volver* a solicitar un correo con el enlace de confirmación de correo (obviamente se exige que el usuario esté registrado y haya entregado un access token válido)
+
+- Redis con API Rest ? SI ! implementar serializacion del ACL y caché para todo incluidas las consultas 
+https://docs.phalcon.io/4.0/en/acl#serialization
+
+- Redis para el Validator ! si se repite la misma regla + dato o los arrays de datos o datos + reglas, entregar la misma respuesta. Igualmente el validador parece ser bastante eficiente. Usar versión compilada y cacheada de las reglas. 
+
+- Implementar  (colas) como en Laravel para tareas pesadas como enviar correos o procesar imágenes o elaborar reportes en cuyo caso debería devolver Accepted.
+
+https://laravel.com/docs/7.x/queues
+
+- Para las colas usar Supervisor (tal y como lo hace Laravel)
+
+  https://reustle.org/managing-long-running-processes-with-supervisor.html
+  https://medium.com/@lih.verma/model-as-a-service-and-managing-them-via-supervisor-and-nginx-5d730e1254b6
+  https://www.interserver.net/tips/kb/laravel-queue-tutorial-supervisor/
+  https://medium.com/@rohit_shirke/configuring-supervisor-for-laravel-queues-81e555e550c6
+
+
+- Implementar notificaciones push o reverse API.
+
+- Solucionar que applyOutputMutators() requiere que que el fetch mode sea ASSOC. Esto hace que falle first() por ejemplo si el modo es otro.
+
+- Considerar utlizar fastcgi_finish_request (requiere módulo FPM de Apache o similar para NGINX)
+
+https://maslosoft.com/kb/how-to-continue-script-execution-in-background-in-php/
+
+
+- Investigar sobre PDO::FETCH_LAZY que puede ahorrar mucha memoria
+https://phpdelusions.net/pdo/fetch_modes
+https://www.php.net/manual/en/pdostatement.fetch.php
+
+- Leer sobre "long running jobs"
+
+https://farazdagi.com/2014/rest-and-long-running-jobs/
+https://stackoverflow.com/a/5044619/980631
+
+- Digamos que definimos estas operaciones:  <-- relacionado con HATEOAS
+
+    GET /cursos
+    GET /cursos/{codigo}/unidades-didacticas
+
+La primera nos retornará la información de todos los cursos y la segunda información sobre las unidades didácticas de un curso concreto. Un ejemplo de la segunda URL en la que se ha aplicado un valor a la parte variable sería:
+
+    /cursos/introduccion/unidades-didacticas
+
+  GET  /customers/5/orders
+
+<-- lista de órdenes de compra para el cliente con id=5
+
+o...
+
+  GET /customers/1/orders/99/products
+
+<-- productos de la orden 99 del cliente 1
+
+
+https://programar.cloud/post/como-crear-un-api-rest/
+
+
+- Implementar HATEOAS 
+
+https://restfulapi.net/hateoas/
+https://en.wikipedia.org/wiki/HATEOAS
+https://programar.cloud/post/como-implementar-hateoas-en-tus-apis/
+
+
+- Implementar búsquedas complejas como en Magento
+
+https://devdocs.magento.com/guides/v2.3/rest/performing-searches.html
+
+
+- Proveer en el modelo un método para ejecutar raw queries como en Laravel o CI
+
+https://fideloper.com/laravel-raw-queries
+
+- Debería el módulo de autenticación incluir la parte de registro? en Laravel existe un RegisterController aunque el problema que le veo es que tendría que cambiar las rutas porque hoy el registro está en el AuthController en /v1/api/auth y entonces estaría en donde? la ventaja de tener un RegisterController sería hooks específicos como BeforeRegister y AfterRgister
+
+- Modificar Request::header() para que obtenga de forma "case-insensitive" los headers de apache_request_headers()
+
+Convertir a minúsculas como hace NodeJs.
+
+https://stackoverflow.com/questions/5258977/are-http-headers-case-sensitive
+
+
+- Incluir sub-Resources, ej:
+
+/api/v1/users?include=rol
+
+protected $availableIncludes = [
+      'role'
+];
+
+public function includeRole(User $user)
+{
+      return $this->item($user->role, App::make(RoleTransformer::class));
+}
+
+When including a sub-resource, we can nest relations by using the a dot notation. Let’s say every role has a list of permissions stored in a separate table and we wanted to list users with their role and permissions. We can do it like this: include=role.permissions.
+
+Sometimes, we are required to include some necessary relations by default, like an address relation for example. We can do that by using the $defaultIncludes property inside the transformer:
+
+protected $defaultIncludes = [
+        'address'
+];
+
+Los include parameters se pueden parametrizar (o sea pueden aceptar parámetros), ej:
+
+public function includeUsers(Role $role, ParamBag $paramBag)
+{
+    list($orderCol, $orderBy) = $paramBag->get('order') ?: ['created_at', 'desc'];
+
+    $users = $role->users()->orderBy($orderCol, $orderBy)->get();
+
+    return $this->collection($users, App::make(UserTransformer::class));
+}
+
+
+Leer en detalle:
+https://www.sitepoint.com/php-fractal-make-your-apis-json-pretty-always/
+
+
+API Call	                              Action
+----------------------------------------------------------------------------
+GET /users	                            List all users 
+GET /users?name={username}  	          Get user by username
+GET /users/{id}	                        Get user by ID
+GET /users/{id}/configurations	        Get all configurations for user        *
+POST /users/{id}/configurations	        Create a new configuration for user    * 
+DELETE /users/{id}/configurations/{id}	Delete configuration for user          *
+PATCH /users/{id}/configuration/{id}	  Update configuration for user          * 
+
+
+- Usar métodos encadenados para simplificar la creación de reglas que actualmente se hace escribiendo directamente el array $rules en el modelo.
+
+protected $rules = [
+        'fullname' 	  => ['min'=>3, 'max'=>40],
+        'username'	  => ['min'=>2, 'max'=>15, 'type' => 'regex:/^[a-zA-Z0-9_]+$/'], 
+		    'email'     	=> ['type'=>'email'],
+               
+]
+
+Podría en su lugar......
+
+function __construct(){
+  // ..
+
+  $this->rules = new Validator()
+                  ->field('fullname)->min(3)->max(40)->string()
+                  ->field('username')->min(2)->max(50)->regex('/^[a-zA-Z0-9_]+$/')
+                  ->field('email')->email()
+                  ...
+                  ->getRules();
+}
+
+Obviamente que los tipos string e int siguen siendo opcionales si ya están definidos en el SCHEMA.
+
+ Usar un campo folder_id en cada tabla en la que pretendo utilizar folders y usar éste en vez de la combinación entre el user_ud y el nombre del "workspace" como identificador de carpeta.
+
+Objetivo: poder crear recursos de nuestra propiedad en carpetas ajenas donde lógicamente poseemos permisos de lectura y escritura.
+
+- Chequear:
+
+SI está en un folder y no es de mi propiedad ni soy el admin ni tengo permiso de escritura =>
+NO debebería poder restaurar el registro.***
+
+
+- Revisar estos enlaces:
+
+https://github.com/DamianGonzalez27/Ivy/blob/master/Packages/Charger.php
+
+
+- Revisar implementación de first() y hacer findOrFail() y firstOrFail()
+
+Más
+https://stackoverflow.com/a/33027466/980631
+
+- Documentar en Git como en 
+
+https://github.com/robsonvn/laravel-couchdb
+
+- Permitir setear nivel de compresion (1 a 6)
+
+	ini_set('zlib.output_compression_level', 4);
+
+
+- Subconsultas:
+
+  > En el SELECT 
+  > En el FROM -> funciona pero no acepta parámetros para la subconsulta y la forma de ver la consulta es mediante getLastPrecompiledQuery() ya que getQueryLoggetQueryLog() queda apuntando a la consulta "hija".
+  > En el WHERE -> ok
+  > En el HAVING 
+
+  > UNION > funciona pero getQueryLog() no muestra los bindings de la subconsulta
+
+Subconsultas en el SELECT puede implementarse con selectRaw() y en el HAVING con havingRaw()
+
+Leer
+https://www.tutorialesprogramacionya.com/sqlserverya/temarios/descripcion.php?inicio=75&cod=98&punto=92
+https://docs.aws.amazon.com/es_es/redshift/latest/dg/r_Subquery_examples.html
+https://www.mundoracle.com/subconsultas.html?Pg=sql_plsql_6.htm
+  
+- Generador de modelos, controladores y apis (resource controllers) como en Laravel:
+
+Ejemplo:
+
+  php index.php make -mca Products
+
+-m model
+-c controller 
+-a api controller
+
+https://stackoverflow.com/questions/43187735/laravel-5-4-create-model-controller-and-migration-in-single-artisan-command
+
+
+- Usar archivos .env 
+
+  'mysql' => [
+      'driver'    => 'mysql',
+      'host'      => env('DB_HOST', 'localhost'),
+      'database'  => env('DB_DATABASE', 'forge'),
+      'username'  => env('DB_USERNAME', 'forge'),
+      'password'  => env('DB_PASSWORD', ''),
+      'charset'   => 'utf8',
+      'collation' => 'utf8_unicode_ci',
+      'prefix'    => '',
+      'strict'    => false,
+  ],
+
+Más
+https://scotch.io/tutorials/understanding-laravel-environment-variables
+https://medium.com/@hfally/how-to-create-an-environment-variable-file-like-laravel-symphonys-env-37c20fc23e72
+https://laravel.com/docs/5.7/configuration
+https://medium.com/@sagarmaheshwary31/laravel-5-8-from-scratch-config-env-migrations-and-todos-crud-7c771bcac802
+https://github.com/vlucas/phpdotenv
+
+
+- Implementar "where anidados" como en Laravel con callbacks
+
+https://stackoverflow.com/a/25129805/980631
+
+- Debe haber orJoin() como orWhere() y orHaving() 
+
+https://stackoverflow.com/a/36074909/980631
+https://laravel.com/docs/5.8/queries#where-exists-clauses
+
+
+- Considerar usar 'seek method' en vez de OFFSET como método de optimización de queries
+
+Ejemplo (API de Facebook)
+
+"paging": {
+"cursors": {
+  "after": "MTAxNTExOTQ1MjAwNzI5NDE=",
+  "before": "NDMyNzQyODI3OTQw"
+},
+"previous": "https://graph.facebook.com/me/albums?limit=25&before=NDMyNzQyODI3OTQw"
+"next": "https://graph.facebook.com/me/albums?limit=25&after=MTAxNTExOTQ1MjAwNzI5NDE="
+}
+
+https://blog.octo.com/design-a-rest-api/  # -> Paging
+https://www.eversql.com/faster-pagination-in-mysql-why-order-by-with-limit-and-offset-is-slow/
+
+- Máscara de campos y valores accesibles por un usuario según su rol o... hidden y filled con roles 
+a nivel de API
+
+protected $hidden = [
+                      'password',
+                      'active' => ['guest', 'basic'] 
+]
+
+- Restricción de valores 
+
+// UserRole
+protected $constraint = [
+                      'role_id' => [
+                                      'gerente' => [1, 2, 3]
+                                   ] 
+];
+
+<-- de los roles autorizados a acceder a UserRole el gerente posee una restricción que le permite solo crear o actualizar roles dentro del conjunto [1,2,3] no pudiendo así por ejemplo otorgar un permiso de admin (100)
+
+Justificación: un caso de uso sería que un usuario con rol de gerente por ejemplo otorgar roles a usuarios pero nunca pueda ser un rol igual o superior al de gerente. La solución es restringir los valores que puede tomar el rol_id  
+
+- No tiene sentido que un usuario pueda registrarse sin correo *excepto* venga de Facebook en cuyo caso me guardo el fb_id
+
+- Arreglar lo que pasa si un usuario es borrado con soft delete (warnings)
+
+- Posiblemente implementar "Seek pagination" como en Instagram
+
+{
+    ...
+    "pagination": {
+        "next_url": "https://api.instagram.com/v1/self/media/recent?access_token=fb2e77d.47a0479900504cb3ab4a1f626d174d2d&max_id=13872296",
+        "next_max_id": "13872296"
+    }
+}
+
+Más
+https://nordicapis.com/everything-you-need-to-know-about-api-pagination/
+https://www.moesif.com/blog/technical/api-design/REST-API-Design-Filtering-Sorting-and-Pagination/#
+
+
+- Ante una excepción del modelo imprimir la consulta SQL
+
+- Generar fallos intencionalmente en las URLs para ver si se puede mejorar el reporte de errores (hacerlos más comprensibles)
+
+- Pruebas unitarias
+
+ver 
+https://api.akeneo.com/documentation/filter.html
+https://www.ibm.com/support/knowledgecenter/fi/SS42VS_7.2.6/com.ibm.qradar.doc/c_rest_api_filtering.html
+http://lj.platformatyourservice.com/wiki/REST_API:Filter_Expressions_in_REST_APIs
+https://www.ibm.com/support/knowledgecenter/en/SS6KJL_8.6.4/FEB/ref_data_rest_api_list_filter.html
+
+
+- 'OR' operator
+
+  /api/people?q={{"$or": [{"name": "Jane"}, {"name": "Donald"}]}}
+
+Más
+https://restdb.io/docs/querying-with-the-api
+
+- Implementar X-Rate-Limit-Limit, X-Rate-Limit-Remaining y X-Rate-Limit-Reset
+
+Se deben poder especificar para cada endpoint
+
+https://github.com/dingo/api/wiki/Rate-Limiting
+https://developer.twitter.com/en/docs/basics/rate-limiting
+https://stackoverflow.com/questions/16022624/examples-of-http-api-rate-limiting-http-response-headers
+https://apisyouwonthate.com/blog/what-is-api-rate-limiting-all-about
+https://developer.github.com/v3/rate_limit/
+https://developer.vimeo.com/guidelines/rate-limiting
+https://support.exactonline.com/community/s/knowledge-base#All-All-HNO-Simulation-gen-apilimits
+https://stackoverflow.com/a/49611482/980631
+
+- Swagger for Documentation
+
+Swagger is a widely-used tool to document REST APIs that provides a way to explore the use of a specific API, therefore allowing developers to understand the underlying semantic behavior. It’s a declarative way of adding documentation using annotations which further generates a JSON describing APIs and their usage.
+
+- Al generar los modelos..... opcionalmente modificar la tabla correspondiente agregando el campo `deleted_at` y `belongs_to` 
+
+- Eventualmente agregar más comandos a Make como Laravel
+
+https://quickadminpanel.com/blog/list-of-21-artisan-make-commands-with-parameters/
+
+- Ofrecer la forma de filtrado compatible con JSON:API
+
+GET /employees?filter[state]=internal&filter[title]=senior
+GET /employees?filter[id]=1,2
+
+equivalente a...
+
+GET /employees?state=internal&title=senior
+GET /employees?id=1,2
+
+- En vez de devolver solo un mensaje de error y un status, ofrecer tambien un código de error
+
+// 400 Bad Request
+{
+  "errors": [
+    {
+      "status": 400,
+      "detail": "Invalid state. Valid values are 'internal' or 'external'",
+      "code": 352,
+      "links": {
+        "about": "http://www.domain.com/rest/errorcode/352"
+      }
+    }
+  ]
+}
+
+Más 
+https://jsonapi.org/format/#error-objects
+https://phauer.com/2015/restful-api-design-best-practices/
+
+
+- Soportar formatos JSON, XML,  YAML, CSV ...
+
+HTTP/1.1 200 OK
+Content-Type: application/xml
+Content-Length: ...
+
+<?xml version="1.0"?>
+<account>
+    <account_number>12345</account_number>
+    <balance currency="usd">100.00</balance>
+    <link rel="deposit" href="/accounts/12345/deposit" />
+    <link rel="withdraw" href="/accounts/12345/withdraw" /> 
+    <link rel="transfer" href="/accounts/12345/transfer" />
+    <link rel="close" href="/accounts/12345/close" />
+</account>
+ 
+- Simplificar la forma de crear la conexion a la DB como en Laravel Lummen:
+https://lumen.laravel.com/docs/6.x/database
+
+- Generar Modelos con sus schemas a partir de la DB como con CRUDO usando un comando.
+
+- Migrations, seeders,...
+
+En az\docs\etc dejé unas capturas de pantalla pero se puede ver como funciona sobre el final de este vídeo:
+https://www.youtube.com/watch?v=w6u8amnFhSo
+
+- Sanitización a nivel de urls, FILTER_SANITIZE_URL
+
+https://www.w3schools.com/php/php_filter.asp
+
+- Sanitización a nivel de base de datos
+
+- Upload de archivos, devolver:
+
+{
+  "id": "20301",
+  "url": "http://simplerest.lan/api/attachments/:user_id/xxxxxxxxxxxxxxxx.png"   
+}
+
+
+- Aceptar distintos "Accept" y "Content-type" y responder acordemente
+
+- Sacar ideas de: https://dev.targetprocess.com/docs/custom-calculations
+
+* "additional details embedded"
+* Overriding the HTTP method
+* Rate limiting (quotas)
+* Errors
+
+- Securitizar almacenamiento de tokens -- en cookies?
+
+https://stormpath.com/blog/where-to-store-your-jwts-cookies-vs-html5-web-storage
+https://medium.com/@jcbaey/authentication-in-spa-reactjs-and-vuejs-the-right-way-e4a9ac5cd9a3
+https://dev.to/rdegges/please-stop-using-local-storage-1i04
+
+
+- Donde almacenar con seguridad Refresh tokens !!!!!
+
+https://stackoverflow.com/questions/48690373/where-to-store-refresh-token-safely
+https://github.com/IdentityServer/IdentityServer3/issues/2039
+
+- Custom Actions (Nested Resources)
+
+
+- Leer atentamente
+https://blog.octo.com/design-a-rest-api/
+https://docs.microsoft.com/es-es/azure/architecture/best-practices/api-design  !!!
+https://www.vinaysahni.com/best-practices-for-a-pragmatic-restful-api
+https://phauer.com/2015/restful-api-design-best-practices/
+https://www.paradigmadigital.com/dev/oauth-2-0-equilibrio-y-usabilidad-en-la-securizacion-de-apis/
+https://medium.com/crowdbotics/how-to-write-an-api-in-3-lines-of-code-with-django-rest-framework-59b0971edfa4
+https://idratherbewriting.com/learnapidoc/pubapis_openapi_tutorial_overview.html
+https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md
+https://hackernoon.com/designing-rest-api-with-open-api-specification-oas-v2-0-v3-0-using-swagger-11dd4ef8cea6
+
+- Revisar 
+
+https://stackoverflow.com/questions/36514344/how-to-make-use-of-session-in-rest-api/36515140
+
+- Incluir displayName y username en el Payload:
+
+{
+    "iss": "stackoverflow",
+    "sub": "joe",
+    "aud": ["all"],
+    "iat": 1300819370,
+    "exp": 1300819380,
+    "jti": "3F2504E0-4F89-11D3-9A0C-0305E82C3301"
+    "context": {
+        "user": {
+            "key": "joe",
+            "displayName": "Joe Smith"
+        },
+        "roles":["admin","finaluser"]
+    }
+}
+
+iss (issuer): identifies the principal that issued the JWT.
+sub (subject): identifies the principal that is the subject of the JWT. Must be unique
+aud (audience): identifies the recipients that the JWT is intended for (array of strings/uri)
+exp (expiration time): identifies the expiration time (UTC Unix) after which you must no longer accept this token. It should be after the issued-at time.
+nbf(not before): identifies the UTC Unix time before which the JWT must not be accepted
+iat (issued at): identifies the UTC Unix time at which the JWT was issued
+jti (JWT ID): provides a unique identifier for the JWT.
+
+https://stackoverflow.com/questions/38897514/what-to-store-in-a-jwt

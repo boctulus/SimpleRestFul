@@ -7,15 +7,22 @@ use simplerest\core\Request;
 use simplerest\libs\Factory;
 use simplerest\libs\Debug;
 use simplerest\libs\DB;
+use simplerest\core\Model;
+use simplerest\models\BarModel;
 use simplerest\models\UsersModel;
 use simplerest\models\ProductsModel;
 use simplerest\models\UserRolesModel;
 use PHPMailer\PHPMailer\PHPMailer;
 use simplerest\libs\Utils;
+use simplerest\libs\Strings;
 use simplerest\libs\Validator;
-use GuzzleHttp\Client;
+//use GuzzleHttp\Client;
 //use Guzzle\Http\Message\Request;
-//Guzzle\Http\Message\Response
+//use Symfony\Component\Uid\Uuid;
+use simplerest\libs\Files;
+use simplerest\libs\Time;
+use simplerest\core\Schema;
+
 
 class DumbController extends Controller
 {
@@ -58,7 +65,116 @@ class DumbController extends Controller
         $res = (int) $req[0] * (int) $req[1];
         echo "$req[0] + $req[1] = " . $res;
     }
+    */    
+
+    function use_model(){
+        $m = (new Model(true))
+            ->table('products')  // <---------------- 
+            ->select(['id', 'name', 'size'])
+            ->where(['cost', 150, '>=']);
+
+        Debug::dd($m->get());
+
+        // No hay Schema
+        Debug::dd($m->getSchema());
+    }
+
+    function get_bar0(){
+        $m = (new Model(true))
+            ->table('bar')  
+            ->where(['uuid', '0fefc2b1-f0d3-47aa-a875-5dbca85855f9']);
+            
+        Debug::dd($m->get());
+    }
+
+    function get_bar1(){
+        $m = DB::table('bar')
+         // ->assoc()
+        ->where(['uuid', '0fefc2b1-f0d3-47aa-a875-5dbca85855f9']);
+       
+        Debug::dd($m->get());
+    }
+
+    function get_bar2(){
+        $m = (new BarModel())
+        ->connect()
+        // ->assoc()
+        ->where(['uuid', '0fefc2b1-f0d3-47aa-a875-5dbca85855f9']);
+        
+        Debug::dd($m->get());
+    }
+    
+
+    /*
+        Se utiliza un modelo *sin* schema y sobre el cual no es posible hacer validaciones
     */
+    function create_s(){
+        $m = (new Model(true))
+        ->table('super_cool_table');
+
+        // No hay schema ?
+        Debug::dd($m->getSchema());
+        
+        Debug::dd($m->create([
+            'name' => 'SUPER',
+			'age' => 22,
+        ]));
+    }
+
+    /*
+        Se utiliza un modelo *sin* schema y sobre el cual no es posible hacer validaciones
+    */
+    function create_baz0(){
+        $m = (new Model(true))
+        ->table('baz');
+
+        // No hay Schema
+        Debug::dd($m->getSchema());
+        
+        Debug::dd($m->create([
+            'id_baz' => 1800,
+            'name' => 'BAZ',
+			'cost' => '100',
+        ]));
+    }
+
+
+    /*
+        Se utiliza un modelo *sin* schema y sobre el cual no es posible hacer validaciones
+    */
+    function create_bar(){
+        $m = (new Model(true))
+        ->table('bar');
+
+        // No hay Schema
+        Debug::dd($m->getSchema());
+        
+        Debug::dd($m->create([
+            'name' => 'ggg',
+			'price' => '88.90',
+        ]));
+    }
+
+    function create_bar1(){
+        $m = DB::table('bar');
+        $m->setValidator(new Validator());
+
+        // SI hay schema
+        Debug::dd($m->getSchema());
+        
+        Debug::dd($m->create([
+            'name' => 'gggggggggg',
+			'price' => '100',
+        ]));
+    }
+
+    function get_products(){
+        Debug::dd(DB::table('products')->get());
+    }
+
+    function get_products2(){
+        Debug::dd(DB::table('products')->where(['size', '2L'])->get());
+    }
 
     function create_p(){
 
@@ -68,13 +184,37 @@ class DumbController extends Controller
 
         $id = DB::table('products')->create([ 
             'name' => $name, 
-            'description' => 'Esto es una prueba', 
-            'size' => '1L',
+            'description' => 'Esto es una prueba 77', 
+            'size' => '100L',
             'cost' => 66,
             'belongs_to' => 90
-        ]);    
+        ]);   
+        
+        return $id;
     }
 
+    function create_baz($id = null){
+
+        $name = '';
+        for ($i=0;$i<20;$i++)
+            $name .= chr(rand(97,122));
+
+        $data = [ 
+            'name' => $name,
+            'cost' => 100
+        ];
+
+        if ($id != null){
+            $data['id'] = $id;
+        }
+
+        $id = DB::table('baz')->create($data);    
+
+        Debug::dd($id, 'las_inserted_id');
+    }
+
+    
+    // implementada y funcionando en register() 
     function transaction(){
         DB::beginTransaction();
 
@@ -85,22 +225,20 @@ class DumbController extends Controller
 
             $id = DB::table('products')->create([ 
                 'name' => $name, 
-                'description' => 'Esto es una prueba!!!', 
+                'description' => 'bla bla bla', 
                 'size' => rand(1,5).'L',
                 'cost' => rand(0,500),
                 'belongs_to' => 90
             ]);   
 
-            throw new Exception("AAA"); 
+            //throw new \Exception("AAA"); 
 
             DB::commit();
 
         } catch (\Exception $e) {
-            echo 'ACA';
             DB::rollback();
             throw $e;
         } catch (\Throwable $e) {
-            echo 'ACA 2';
             DB::rollback();            
         }            
     }
@@ -120,61 +258,106 @@ class DumbController extends Controller
                 'belongs_to' => 90
             ]);   
 
-            throw new Exception("AAA"); 
+            throw new \Exception("AAA"); 
         });      
     }
+    
+    function output_mutator(){
+        $rows = DB::table('users')
+        ->registerOutputMutator('username', function($str){ return strtoupper($str); })
+        ->get();
 
-    function get_products(){
-        Debug::dd(DB::table('products')->get());
-        //Debug::dd(DB::table('products')->setFetchMode('ASSOC')->get());
+        Debug::dd($rows);
     }
 
+    function output_mutator2(){
+        $rows = DB::table('products')
+        ->registerOutputMutator('size', function($str){ return strtolower($str); })
+        ->groupBy(['size'])
+        ->having(['AVG(cost)', 150, '>='])
+        ->select(['size'])
+        ->selectRaw('AVG(cost)')
+        ->get();
+
+        Debug::dd($rows);
+    }
+
+    /*
+        El problema de los campos ocultos es que rompen los transformers
+        usar when() en su lugar
+
+        https://laravel.com/docs/5.5/eloquent-resources
+    */
+    function transform(){
+        //$this->is_admin = true;
+
+
+        $t = new \simplerest\transformers\UsersTransformer();
+
+        $rows = DB::table('users')
+        ->registerTransformer($t, $this)
+        ->get();
+
+        Debug::dd($rows);
+    }
+
+    function transform_and_output_mutator(){
+        $t = new \simplerest\transformers\UsersTransformer();
+
+        $rows = DB::table('users')
+        ->registerOutputMutator('username', function($str){ return strtoupper($str); })
+        ->registerTransformer($t)
+        ->get();
+
+        Debug::dd($rows);
+    }
+
+    function transform2(){
+        $t = new \simplerest\transformers\ProductsTransformer();
+
+        $rows = DB::table('products')
+        ->where(['size'=>'2L'])
+        ->registerTransformer($t)
+        ->get();
+
+        Debug::dd($rows);
+    }
+
+
     function limit(){
-        Debug::dd(DB::table('products')->offset(20)->limit(10)->get());
-        Debug::dd(DB::getQueryLog());
+        Debug::dd(DB::table('products')
+        ->offset(20)
+        ->select(['id', 'name', 'cost'])
+        ->limit(10)
+        ->get());
+        
+        Debug::dd(DB::getLog());
 
         Debug::dd(DB::table('products')->limit(10)->get());
-        Debug::dd(DB::getQueryLog());
+        Debug::dd(DB::getLog());
+    }
+
+    function limit0(){
+        Debug::dd(DB::table('products')
+        ->offset(20)
+        ->select(['id', 'name', 'cost'])
+        ->limit(10)
+        ->setPaginator(false)
+        ->get());
+        
+        Debug::dd(DB::getLog());
+
+        Debug::dd(DB::table('products')->limit(10)->get());
+        Debug::dd(DB::getLog());
     }
     
     ///
     function limite(){
         DB::table('products')->offset(20)->limit(10)->get();
-        Debug::dd(DB::getQueryLog());
+        Debug::dd(DB::getLog());
 
         DB::table('products')->limit(10)->get();
-        Debug::dd(DB::getQueryLog());
-    }
-
-    function sub1(){
-        // SELECT COUNT(*) FROM (SELECT  name, size FROM products  GROUP BY size ) as sub 
-        $sub = DB::table('products')
-        ->select(['name', 'size'])
-        ->groupBy(['size']);
-    
-        $conn = DB::getConnection();
-    
-        $m = new \simplerest\core\Model($conn);
-        $res = $m->fromRaw("({$sub->toSql()}) as sub")->count();
-    
-        //Debug::dd($sub->toSql());
-        Debug::dd($m->getLastPrecompiledQuery());
-        //Debug::dd(DB::getQueryLog());     
-    }
-
-    function sub1a(){
-        $sub = DB::table('products')
-        ->select(['id', 'name', 'size'])
-        ->where(['cost', 150, '>=']);
-    
-        $conn = DB::getConnection();
-    
-        $m = new \simplerest\core\Model($conn);
-        $res = $m->fromRaw("({$sub->toSql()}) as sub")->count();
-    
-        //Debug::dd($sub->toSql());
-        //Debug::dd($m->getLastPrecompiledQuery());
-        //Debug::dd(DB::getQueryLog());     
+        Debug::dd(DB::getLog());
     }
 
     function distinct(){
@@ -203,8 +386,18 @@ class DumbController extends Controller
         $names = DB::table('products')->pluck('size');
 
         foreach ($names as $name) {
-            echo "$name <br/>";
+            Debug::dd($name);
         }
+    }
+
+    function pluck2($uid) {
+        $perms = DB::table('user_sp_permissions')
+        ->assoc()
+        ->where(['user_id' => $uid])
+        ->join('sp_permissions', 'user_sp_permissions.sp_permission_id', '=', 'sp_permissions.id')
+        ->pluck('name');
+
+        Debug::dd($perms);
     }
 
     function get_product($id){       
@@ -215,22 +408,16 @@ class DumbController extends Controller
     function exists(){
        
         Debug::dd(DB::table('products')->where(['belongs_to' => 103])->exists());
+        //Debug::dd(DB::getLog());
 
         Debug::dd(DB::table('products')->where([ 
             ['cost', 200, '<'],
             ['name', 'CocaCola'] 
         ])->exists());
-
-        $o = DB::table('other_permissions', 'op');
-        Debug::dd($o ->join('folders', 'op.folder_id', '=',  'folders.id')
-                        ->join('users', 'folders.belongs_to', '=', 'users.id')
-                        ->join('user_roles', 'users.id', '=', 'user_roles.user_id')
-                        //->join('roles', 'user_role.role_id', '=', 'roles.id') 
-                        ->where([
-                            ['guest', 1],
-                            ['table', 'products'],
-                            ['r', 1]
-                        ])->exists());
+        //Debug::dd(DB::  getLog());
+		
+        Debug::dd(DB::table('users')->where(['username' => 'boctulus'])->exists());
+        //Debug::dd(DB::  getLog());
     }
            
     function first(){
@@ -242,8 +429,12 @@ class DumbController extends Controller
     }
 
     function value(){
+		Debug::dd(DB::table('products')->where([ 
+            ['cost', 5000, '>=']
+        ])->value('name')); 
+		
         Debug::dd(DB::table('products')->where([ 
-            ['cost', 300, '>='],
+            ['cost', 200, '>='],
             ['cost', 500, '<='],
             ['belongs_to',  90]
         ])->value('name')); 
@@ -261,12 +452,17 @@ class DumbController extends Controller
     
     // random or rand
     function random(){
-        Debug::dd(DB::table('products')->random()->limit(5)->get(['id', 'name']));
+        //Debug::dd(DB::table('products')->random()->get(['id', 'name']), 'ALL');
+        Debug::dd(DB::table('products')->random()->select(['id', 'name'])->get(), 'ALL');
 
-        Debug::dd(DB::table('products')->random()->select(['id', 'name'])->first());
+        Debug::dd(DB::table('products')->random()->limit(5)->get(['id', 'name']), 'N RESULTS');
+
+        Debug::dd(DB::table('products')->random()->select(['id', 'name'])->first(), 'FIRST');
     }
 
     function count(){
+        DB::setConnection('db1');
+
         $c = DB::table('products')
         ->where([ 'belongs_to'=> 90] )
         ->count();
@@ -276,11 +472,12 @@ class DumbController extends Controller
 
     function count1(){
         $c = DB::table('products')
+        //->assoc()
         ->where([ 'belongs_to'=> 90] )
         ->count('*', 'count');
 
-        var_dump($c);
-        Debug::dd(DB::getQueryLog());
+        Debug::dd($c);
+        Debug::dd(DB::getLog());
     }
 
     function count1b(){
@@ -291,7 +488,7 @@ class DumbController extends Controller
         ->count();
 
         Debug::dd($res);
-        Debug::dd(DB::getQueryLog());
+        Debug::dd(DB::getLog());
     } 
 
     function count2(){
@@ -303,7 +500,7 @@ class DumbController extends Controller
         ->count('description');
 
         Debug::dd($res);
-        Debug::dd(DB::getQueryLog());
+        Debug::dd(DB::getLog());
     }
 
     function count2b(){
@@ -315,7 +512,18 @@ class DumbController extends Controller
         ->count('description', 'count');
 
         Debug::dd($res);
-        Debug::dd(DB::getQueryLog());
+        Debug::dd(DB::getLog());
+    }
+
+    function count3(){
+        $uid = 415;
+
+        $count = (int) DB::table('user_roles')
+		->where(['user_id' => $uid])->setFetchMode('COLUMN')
+		->count();
+		
+        Debug::dd($count);
+        Debug::dd(DB::getLog());
     }
 
     function avg(){
@@ -325,7 +533,7 @@ class DumbController extends Controller
         ->where([ ['cost', 100, '>='], ['size', '1L'], ['belongs_to', 90] ])
         ->avg('cost', 'prom');
 
-        var_dump($res);
+        Debug::dd($res);
     }
 
     function sum(){
@@ -335,7 +543,7 @@ class DumbController extends Controller
         ->where([ ['cost', 100, '>='], ['size', '1L'], ['belongs_to', 90] ])
         ->sum('cost', 'suma');
 
-        var_dump($res);
+        Debug::dd($res);
     }
 
     function min(){
@@ -345,7 +553,7 @@ class DumbController extends Controller
         ->where([ ['cost', 100, '>='], ['size', '1L'], ['belongs_to', 90] ])
         ->min('cost', 'minimo');
 
-        var_dump($res);
+        Debug::dd($res);
     }
 
     function max(){
@@ -355,7 +563,7 @@ class DumbController extends Controller
         ->where([ ['cost', 100, '>='], ['size', '1L'], ['belongs_to', 90] ])
         ->max('cost', 'maximo');
 
-        var_dump($res);
+        Debug::dd($res);
     }
 
     /*
@@ -413,6 +621,7 @@ class DumbController extends Controller
     function select_group_count(){
         Debug::dd(DB::table('products')->showDeleted()
         ->groupBy(['size'])->select(['size'])->count());
+		Debug::dd(DB::getLog());
     }
 
     /*
@@ -439,6 +648,14 @@ class DumbController extends Controller
         ])
         ->whereNotNull('description')
         ->get());
+    }
+
+    function testx(){
+        $rows = DB::table('products')
+        ->whereNotNull('name')
+        ->get();
+
+        Debug::dd($rows);
     }
 
     // SELECT * FROM products WHERE name IN ('CocaCola', 'PesiLoca') OR cost IN (100, 200)  OR cost >= 550 AND deleted_at IS NULL
@@ -624,7 +841,7 @@ class DumbController extends Controller
         $email = 'nano@g.c';
         $username = 'nano';
 
-        $rows = DB::table('users')->setFetchMode('ASSOC')->unhide(['password'])
+        $rows = DB::table('users')->assoc()->unhide(['password'])
             ->where([ 'email'=> $email, 
                       'username' => $username 
             ], 'OR') 
@@ -639,7 +856,7 @@ class DumbController extends Controller
         $email = 'nano@g.c';
         $username = 'nano';
 
-        $rows = DB::table('users')->setFetchMode('ASSOC')
+        $rows = DB::table('users')->assoc()
             ->where([ 'email'=> $email ]) 
             ->orWhere(['username' => $username ])
             ->setValidator((new Validator())->setRequired(false))  
@@ -706,7 +923,12 @@ class DumbController extends Controller
     function grouping(){
         Debug::dd(DB::table('products')->where([ 
             ['cost', 100, '>=']
-        ])->orderBy(['size' => 'DESC'])->groupBy(['size'])->select(['size'])->avg('cost'));
+        ])->orderBy(['size' => 'DESC'])
+        ->groupBy(['size'])
+        ->select(['size'])
+        //->take(5)
+        //->offset(5)
+        ->avg('cost'));
     }
 
     function where(){        
@@ -746,7 +968,7 @@ class DumbController extends Controller
 			->selectRaw('AVG(cost)')
 			->get());
 			
-		Debug::dd(DB::getQueryLog()); 
+		Debug::dd(DB::getLog()); 
     }  
 
 	/*
@@ -777,7 +999,7 @@ class DumbController extends Controller
 			->selectRaw('COUNT(name) as c')
 			->get());
 			
-		Debug::dd(DB::getQueryLog()); 
+		Debug::dd(DB::getLog()); 
     }  
 	
 	/*
@@ -814,7 +1036,7 @@ class DumbController extends Controller
 			->selectRaw('COUNT(name) as c')
 			->get());
 			
-		Debug::dd(DB::getQueryLog()); 
+		Debug::dd(DB::getLog()); 
     }  
 
     /*       
@@ -843,7 +1065,7 @@ class DumbController extends Controller
             ->having(['cost', 100])
             ->get(['cost', 'size']));
 		
-		Debug::dd(DB::getQueryLog()); 
+		Debug::dd(DB::getLog()); 
     }    
 	
 	// SELECT cost, size FROM products GROUP BY cost,size HAVING cost = 100
@@ -853,7 +1075,7 @@ class DumbController extends Controller
             ->having(['cost', 100])
             ->get(['cost', 'size']));
 		
-		Debug::dd(DB::getQueryLog()); 
+		Debug::dd(DB::getLog()); 
     }   
 	
     /*
@@ -953,7 +1175,7 @@ class DumbController extends Controller
             ])
         ->where(['belongs_to' =>  90])->get(); 
         
-        Debug::dd(DB::getQueryLog()); 
+        Debug::dd(DB::getLog()); 
     }
 
     /*
@@ -977,7 +1199,7 @@ class DumbController extends Controller
 
     function del_user($id){
         $u = DB::table('users');
-        $ok = (bool) $u->where(['id' => $id])->delete(false);
+        $ok = (bool) $u->where(['id' => $id])->setSoftDelete(false)->delete();
         
         Debug::dd($ok);
     }
@@ -1031,18 +1253,15 @@ class DumbController extends Controller
     }
 
     function fillables(){
-        $str = '';
-        for ($i=0;$i<20;$i++)
-            $str .= chr(rand(97,122));
-
-        $p = DB::table('products');
-        $affected = $p->where(['id' => 121])->update([
-            'id' => 500,
-            'description' => $str
+        $m = DB::table('files');
+        $affected = $m->where(['id' => 240])->update([
+            "filename_as_stored" => "xxxxxxxxxxxxxxxxx.jpg"
         ]);
 
+        Debug::dd($affected, 'Affected:');
+
         // Show result
-        $rows = DB::table('products')->where(['id' => 500])->get();
+        $rows = DB::table('files')->where(['id' => 240])->get();
         Debug::dd($rows);
     }
 
@@ -1062,9 +1281,34 @@ class DumbController extends Controller
         Debug::dd(Utils::send_mail('boctulus@gmail.com', 'Pablo ZZ', 'Pruebita', 'Hola!<p/>Esto es una <b>prueba</b><p/>Chau'));     
     }
 
+    function validation_test(){
+        $rules = [
+            'nombre' => ['type' => 'alpha_spaces_utf8', 'min'=>3, 'max'=>40],
+            'username' => ['type' => 'alpha_dash', 'min'=> 3, 'max' => '15'],
+            'rol' => ['type' => 'int', 'not_in' => [2, 4, 5]],
+            'poder' => ['not_between' => [4,7] ],
+            'edad' => ['between' => [18, 100]],
+            'magia' => [ 'in' => [3,21,81] ],
+            'active' => ['type' => 'bool', 'messages' => [ 'type' => 'Value should be 0 or 1'] ]
+        ];
+        
+        $data = [
+            'nombre' => 'Juan Español',
+            'username' => 'juan_el_mejor',
+            'rol' => 5,
+            'poder' => 6,
+            'edad' => 101,
+            'magia' => 22,
+            'active' => 3
+        ];
+
+        $v = new Validator();
+        Debug::dd($v->validate($rules,$data));
+    }
+
     function validacion(){
         $u = DB::table('users');
-        var_dump($u->where(['username' => 'nano_'])->get());
+        Debug::dd($u->where(['username' => 'nano_'])->get());
     }
 
     function validacion1(){
@@ -1103,7 +1347,7 @@ class DumbController extends Controller
         ->whereRaw('belongs_to IN (SELECT id FROM users WHERE password IS NULL)')
         ->get();
 
-        Debug::dd(DB::getQueryLog());  
+        Debug::dd(DB::getLog());  
         Debug::dd($st);         
     }
 
@@ -1123,7 +1367,7 @@ class DumbController extends Controller
         ->whereRaw("belongs_to IN ({$sub->toSql()})")
         ->get();
 
-        Debug::dd(DB::getQueryLog());
+        Debug::dd(DB::getLog());
         Debug::dd($st);            
     }
 
@@ -1143,7 +1387,7 @@ class DumbController extends Controller
         ->whereRaw("belongs_to IN ({$sub->toSql()})")
         ->get();
 
-        Debug::dd(DB::getQueryLog());
+        Debug::dd(DB::getLog());
         Debug::dd($res);    
     }
 
@@ -1167,7 +1411,7 @@ class DumbController extends Controller
         ->orderBy(['id' => 'desc'])
         ->get();
 
-        Debug::dd(DB::getQueryLog());  
+        Debug::dd(DB::getLog());  
         Debug::dd($res);    
     }
 
@@ -1189,19 +1433,64 @@ class DumbController extends Controller
         Debug::dd($res);    
     }
 
+
     /*
         RAW select
 
-        SELECT COUNT(*)  FROM (SELECT size FROM products GROUP BY size) as sub;
     */
+
     function sub4(){
+        // SELECT COUNT(*) FROM (SELECT  name, size FROM products  GROUP BY size ) as sub 
+        
+        try {
+            $sub = DB::table('products')
+            ->select(['name', 'size'])
+            ->groupBy(['size']);
+
+            $m = new Model(true);
+            $res = $m->fromRaw("({$sub->toSql()}) as sub")
+            ->count();
+
+            Debug::dd($sub->toSql(), 'toSql()');
+            Debug::dd($m->getLastPrecompiledQuery(), 'getLastPrecompiledQuery()');
+            Debug::dd(DB::getLog(), 'getLog()');   
+            Debug::dd($res, 'count');  
+
+        } catch (\Exception $e){
+            Debug::dd($e->getMessage());
+            Debug::dd($m->dd());
+        }
+    }
+
+    function sub4a(){
+        try {
+            $sub = DB::table('products')
+            ->select(['id', 'name', 'size'])
+            ->where(['cost', 150, '>=']);
+        
+            $m = new Model(true);    
+            $res = $m->fromRaw("({$sub->toSql()}) as sub")
+            ->mergeBindings($sub)
+            ->count();
+      
+            Debug::dd($sub->toSql(), 'toSql()');
+            Debug::dd($m->getLastPrecompiledQuery(), 'getLastPrecompiledQuery()');
+            Debug::dd(DB::getLog(), 'getLog()');   
+            Debug::dd($res, 'count'); 
+
+        } catch (\Exception $e){
+            Debug::dd($e->getMessage());
+            Debug::dd($m->dd());
+        }    
+    }
+
+
+    function sub4b(){
         $sub = DB::table('products')->showDeleted()
         ->select(['size'])
         ->groupBy(['size']);
 
-        $conn = DB::getConnection();
-
-        $m = new \simplerest\core\Model($conn);
+        $m = new Model(true);
         $res = $m->fromRaw("({$sub->toSql()}) as sub")->count();
 
         Debug::dd($res);    
@@ -1210,15 +1499,13 @@ class DumbController extends Controller
     /*
         SELECT  COUNT(*) FROM (SELECT  size FROM products WHERE belongs_to = 90 GROUP BY size ) as sub WHERE 1 = 1
     */
-    function sub4a(){
+    function sub4c(){
         $sub = DB::table('products')->showDeleted()
         ->select(['size'])
         ->where(['belongs_to', 90])
         ->groupBy(['size']);
 
-        $conn = DB::getConnection();
-
-        $main = new \simplerest\core\Model($conn);
+        $main = new \simplerest\core\Model(true);
         $res = $main
         ->fromRaw("({$sub->toSql()}) as sub")
         ->mergeBindings($sub)
@@ -1233,7 +1520,7 @@ class DumbController extends Controller
 
         SELECT  COUNT(*) FROM (SELECT  size FROM products WHERE belongs_to = 90 GROUP BY size ) as sub WHERE 1 = 1
     */
-    function sub4b(){
+    function sub4d(){
         $sub = DB::table('products')->showDeleted()
         ->select(['size'])
         ->where(['belongs_to', 90])
@@ -1250,14 +1537,17 @@ class DumbController extends Controller
         Subconsulta (rudimentaria) en el SELECT
     */
     function sub5(){
-        $res = DB::table('products')->showDeleted()
+        $m = DB::table('products')->showDeleted()
         ->select(['name', 'cost'])
         ->selectRaw('cost - (SELECT MAX(cost) FROM products) as diferencia')
-        ->where(['belongs_to', 90])
-        ->get();
+        ->where(['belongs_to', 90]);
 
-        Debug::dd(DB::getQueryLog()); 
+        $res = $m->get();
+
         Debug::dd($res);
+        Debug::dd($m->getLastPrecompiledQuery()); 
+        Debug::dd(DB::getLog()); 
+        
     }
 
     /*
@@ -1295,9 +1585,9 @@ class DumbController extends Controller
         ->orderBy(['id' => 'ASC'])
         ->get();
 
-        //Debug::dd(DB::getQueryLog());
-        Debug::dd($m2->getLastPrecompiledQuery());
-        Debug::dd($dos);
+        //Debug::dd(DB::getLog());
+        //Debug::dd($m2->getLastPrecompiledQuery());
+        //Debug::dd($dos);
     }
 
     /*
@@ -1318,12 +1608,483 @@ class DumbController extends Controller
 
         Debug::dd($dos);
     }
-
-    function test(){
-        $data = ['tb' => 'foo', 'user_id' => 50];
-
-        $ok = DB::table('permissions')->where(['tb' => $data['tb'], 'user_id' => $data['user_id']])->dd();
-        var_dump($ok);
-    }
        
+    function insert_messages() {
+        function get_words($sentence, $count = 10) {
+            preg_match("/(?:\w+(?:\W+|$)){0,$count}/", $sentence, $matches);
+            return $matches[0];
+        }
+
+        $m = DB::table('messages');
+
+        for ($i=0; $i<1500; $i++){
+
+            $name = '';
+            for ($i=0;$i<10;$i++){
+                $name .= chr(rand(97,122));
+            }   
+
+            $email = '';
+            for ($i=0;$i<20;$i++){
+                $email .= chr(rand(97,122));
+            }   
+
+            $email .= '@gmail.com';
+
+            $title = file_get_contents('http://loripsum.net/api/1/short/plaintext/short');
+            $title = get_words($title, 10);
+
+            $content = file_get_contents('http://loripsum.net/api/1/long/plaintext/short');
+
+            $phone = '0000000000';
+
+            $m->create([ 
+                        'name' => $name, 
+                        'email' => $email,
+                        'phone' => $phone,
+                        'subject' => $title,
+                        'content' => $content
+            ]);
+
+        }        
+    }
+
+    // utiliza FPM, sin probar
+    function some_test() {
+       ignore_user_abort(true);
+       fastcgi_finish_request();
+
+       echo json_encode(['data' => 'Proceso terminado']);
+       header('Connection: close');
+
+       sleep(10);
+       file_put_contents('output.txt', date('l jS \of F Y h:i:s A')."\n", FILE_APPEND);
+    }
+
+    function json(){
+        $id = DB::table('collections')->create([
+            'entity' => 'messages',
+            'refs' => json_encode([195,196]),
+            'belongs_to' => 332
+        ]);
+
+        Factory::response()->sendJson($id);
+    }
+
+    function test_get(){
+        Debug::dd(DB::table('products')->first(), 'FIRST'); 
+        Debug::dd(DB::getLog(), 'QUERY');
+    }
+
+    function test_get_raw(){
+        $raw_sql = 'SELECT * FROM baz';
+
+        $conn = DB::getConnection();
+        
+        $st = $conn->prepare($raw_sql);
+        $st->execute();
+
+        $result = $st->fetch(\PDO::FETCH_ASSOC);
+
+        // additional casting
+        $result['cost'] = (float) $result['cost'];
+        
+        echo '<pre>';
+        var_export($result);
+        echo '</pre>';
+    }
+
+    function test_raw(){
+        $res = DB::select('SELECT * FROM baz');
+        Debug::dd($res);
+    }
+
+    function get_role_permissions(){
+        $acl = Factory::acl();
+
+        Debug::dd($acl->hasResourcePermission('show_all', ['guest'], 'products'));
+        //var_export($acl->getRolePermissions());
+    }
+
+    function boom(){
+        throw new \Exception('BOOOOM');
+    }
+
+    function ops(){
+        $this->boom();
+    }
+
+    function hi($name = null){
+        return 'hi ' . $name;
+    }
+
+  
+    function xxx(){ 
+        Debug::dd(Validator::isType('8', 'str'));
+    }
+
+    function speed(){
+        $rules = [
+            'nombre' => ['type' => 'alpha_spaces_utf8', 'min'=>3, 'max'=>40],
+            'username' => ['type' => 'alpha_dash', 'min'=> 3, 'max' => '15'],
+            'rol' => ['type' => 'int', 'not_in' => [2, 4, 5]],
+            'poder' => ['not_between' => [4,7] ],
+            'edad' => ['between' => [18, 100]],
+            'magia' => [ 'in' => [3,21,81] ],
+            'active' => ['type' => 'bool', 'messages' => [ 'type' => 'Value should be 0 or 1'] ]
+        ];
+        
+        $data = [
+            'nombre' => 'Juan Español',
+            'username' => 'juan_el_mejor',
+            'rol' => 5,
+            'poder' => 6,
+            'edad' => 101,
+            'magia' => 22,
+            'active' => 3
+        ];
+
+        Time::setUnit('MILI');
+        $t1 = Time::exec(function() use($data, $rules){ 
+            Factory::validador()->validate($rules,$data);
+        }, 100); 
+        
+        Debug::dd("Time: $t1 ms");
+    }
+
+    function get_con(){
+        DB::setConnection('db2');       
+        $conn = DB::getConnection();
+
+        $m = new \simplerest\models\ProductsModel($conn);
+    }
+
+    /*
+        MySql: show status where `variable_name` = 'Threads_connected
+        MySql: show processlist;
+    */
+    function test_active_connnections(){
+        Debug::dd(DB::countConnections(), 'Number of active connections');
+
+        DB::setConnection('db2');  
+        Debug::dd(DB::table('users')->count(), 'Users DB2:'); 
+
+        DB::setConnection('db1');  
+        Debug::dd(DB::table('users')->count(), 'Users DB1');
+
+        DB::setConnection('db2');  
+        Debug::dd(DB::table('users')->first(), 'Users DB2:');
+
+        Debug::dd(DB::countConnections(), 'Number of active connections'); // 2 y no 3 ;)
+
+        DB::closeConnection();
+        Debug::dd(DB::countConnections(), 'Number of active connections'); // 1
+
+        DB::closeAllConnections();
+        Debug::dd(DB::countConnections(), 'Number of active connections'); // 0
+    }
+
+    function read_table(){
+        $tb = 'products';
+
+        $fields = DB::select("SHOW COLUMNS FROM $tb");
+        
+        $field_names = [];
+        $nullables = [];
+
+        foreach ($fields as $field){
+            $field_names[] = $field['Field'];
+            if ($field['Null']  == 'YES') { $nullables[] = $field['Field']; }
+            if ($field['Extra'] == 'auto_increment') { $not_fillable[] = $field['Field']; }
+        }
+
+        Debug::dd($field_names);
+    }
+
+    function zzz(){
+        $arr = ['el', 'dia', 'que', 'me', 'quieras'];
+        $arr = array_map(function($x){ return "'$x'"; }, $arr);
+        
+        Debug::dd($arr);
+        
+        //echo implode('-', $arr);
+    }
+
+    function speed2(){
+
+        Time::setUnit('MILI');
+        //Time::noOutput();
+        
+        $conn = DB::getConnection();
+        $t = Time::exec(function() use ($conn){         
+            $sql = "INSERT INTO `baz2` (`name`, `cost`) VALUES ('hhh', '789')";
+            $conn->exec($sql);
+        }, 1);  
+        Debug::dd("Time: $t ms");    
+
+        exit;
+
+        $m = (new Model(true))
+        ->table('baz2');
+        $t = Time::exec(function() use ($m){             
+            //$m->setValidator(new Validator());
+            //$m->dontExec();
+
+            $id = $m->create([
+                'name' => 'BAZ',
+                'cost' => '100',
+            ]);
+
+        }, 1);  
+        Debug::dd("Time: $t ms");
+        Debug::dd($m->getLog());
+
+        /*
+        Time::setUnit('MILI');
+        //Time::noOutput();
+
+        $this->model_name  = null;
+        $this->model_table = 'users';
+
+        $t = Time::exec(function(){ 
+            
+            $id = DB::table('collections')->create([
+                'entity' => 'messages',
+                'refs' => json_encode([195,196]),
+                'belongs_to' => 332
+            ]);
+
+        }, 1);       
+        Debug::dd("Time: $t ms");
+        */
+    }
+
+
+    function speed_show()
+    {
+        Time::setUnit('MILI');
+
+        $m = (new Model(true))
+            ->table('bar')  
+            ->where(['uuid', '0fefc2b1-f0d3-47aa-a875-5dbca85855f9'])
+            ->select(['uuid', 'price']);
+
+        //Debug::dd($m->dd());
+        //exit;     
+
+        $t = Time::exec(function() use($m) {
+            $row = $m->get();
+        }, 1);
+
+        //Debug::dd("Time: $t ms");
+        Files::logger("Time(show) : $t ms");
+    }
+
+    function speed_list()
+    {
+        Time::setUnit('MILI');
+
+        $m = (new Model(true))
+            ->table('bar')  
+            ->select(['uuid', 'price'])
+            ->take(10);
+
+        //Debug::dd($m->dd());
+        //exit;         
+
+        $t = Time::exec(function() use($m) {
+            $row = $m->get();
+        }, 1);
+
+        //Debug::dd("Time: $t ms");
+        Files::logger("Time(list) : $t ms");
+    }
+
+    function get_bulk(){
+        $t1a = [];
+        $t2a = [];
+
+        Time::setUnit('MILI');
+
+        $m1 = (new Model(true))
+            ->table('bar')  
+            ->select(['uuid', 'price'])
+            ->take(10);
+
+        $m2 = (new Model(true))
+            ->table('bar')  
+            ->where(['uuid', '0fefc2b1-f0d3-47aa-a875-5dbca85855f9'])
+            ->select(['uuid', 'price']);    
+
+        //Debug::dd($m->dd());
+        //exit;         
+
+        $m3 = DB::select("SELECT AVG(price) FROM bar;");
+
+        for ($i=0; $i<4; $i++){
+            $t1a[] = Time::exec(function() use($m1) {
+                $m1->get();
+            }, 500);
+
+            $t2a[] = Time::exec(function() use($m2) {
+                $m2->get();
+            }, 500);
+        }    
+            
+        foreach ($t1a as $t1){
+            Files::logger("Time(list) : $t1 ms");
+        }
+
+        foreach ($t2a as $t2){
+            Files::logger("Time(show) : $t2 ms");;
+        }    
+    }
+
+    function create(){
+        $m = (new BarModel(true));
+
+        $name = '    ';
+        for ($i=0;$i<46;$i++)
+            $name .= chr(rand(97,122));
+
+        $name = str_shuffle($name);
+
+        $email = '@';
+        $cnt = rand(10,78);
+        for ($i=0;$i<$cnt;$i++)
+            $email .= chr(rand(97,122));    
+
+        $email =  chr(rand(97,122)) . str_shuffle($email);
+
+        $data = [
+            'name' => $name,
+            'price' => rand(5,999) . '.' . rand(0,99),
+            'email' => $email,
+            'belongs_to' => 1
+        ];
+
+        $id = $m->create($data);
+        
+        //Debug::dd($data, 'DATA');
+        //Debug::dd($id, 'ID');
+    }
+
+
+    function create_bulk(){
+        for ($i=0; $i<10000; $i++){
+            $this->create();
+            usleep((450 + rand(50, 150)) * 1000);
+        }
+    }
+
+
+    /*
+
+        https://www.w3resource.com/mysql/mysql-data-types.php
+        https://manuales.guebs.com/mysql-5.0/spatial-extensions.html
+
+    */
+    function create_table()
+    {       
+        $sc = new Schema('facturas');
+
+        $sc->setEngine('InnoDB');
+        $sc->setCharset('utf8');
+        $sc->setCollation('utf8_general_ci');
+
+        $sc->serial('id')->pri();
+        $sc->int('edad')->unsigned();
+        $sc->varchar('firstname');
+        $sc->varchar('lastname')->nullable()->charset('utf8')->collation('utf8_unicode_ci');
+        $sc->varchar('username')->unique();
+        $sc->varchar('password', 128);
+        $sc->char('password_char');
+        $sc->varbinary('texto_vb', 300);
+
+        // BLOB and TEXT columns cannot have DEFAULT values.
+        $sc->text('texto');
+        $sc->tinytext('texto_tiny');
+        $sc->mediumtext('texto_md');
+        $sc->longtext('texto_long');
+        $sc->blob('codigo');
+        $sc->tinyblob('blob_tiny');
+        $sc->mediumblob('blob_md');
+        $sc->longblob('blob_long');
+        $sc->binary('bb', 255);
+        $sc->json('json_str');
+
+        
+        $sc->int('karma')->default(100);
+        $sc->int('code')->zeroFill();
+        $sc->bigint('big_num');
+        $sc->bigint('ubig')->unsigned();
+        $sc->mediumint('medium');
+        $sc->smallint('small');
+        $sc->tinyint('tiny');
+        $sc->decimal('saldo');
+        $sc->float('flotante');
+        $sc->double('doble_p');
+        $sc->real('num_real');
+
+        $sc->bit('some_bits', 3)->index();
+        $sc->boolean('active')->default(1);
+        $sc->boolean('paused')->default(true);
+
+        $sc->set('flavors', ['strawberry', 'vanilla']);
+        $sc->enum('role', ['admin', 'normal']);
+
+
+        /*
+            The major difference between DATETIME and TIMESTAMP is that TIMESTAMP values are converted from the current time zone to UTC while storing, and converted back from UTC to the current time zone when accessd. The datetime data type value is unchanged.
+        */
+
+        $sc->time('hora');
+        $sc->year('birth_year');
+        $sc->date('fecha')->first();
+        $sc->datetime('vencimiento')->nullable()->after('num_real');
+        $sc->timestamp('ts')->currentTimestamp()->comment('some comment')->first(); // solo un first
+
+
+        $sc->softDeletes(); // agrega DATETIME deleted_at 
+        $sc->datetimes();  // agrega DATETIME(s) no-nullables created_at y deleted_at
+
+        $sc->integer('id')->auto()->unsigned()->pri();
+        $sc->varchar('correo')->unique();
+
+        $sc->foreign('factura_id')->references('id')->on('facturas')->onDelete('no action');
+        $sc->foreign('user_id')->references('id')->on('users')->onDelete('cascade')->onUpdate('restrict');
+
+        //Debug::dd($sc->getSchema(), 'SCHEMA');
+        /////exit;
+
+        $sc->create();
+    }    
+
+
+    function alter_table()
+    {       
+        $sc = new Schema('facturas');
+
+        //Debug::dd($sc->getSchema());
+
+        $res = $sc
+        ->timestamp('vencimiento')
+        ->varchar('lastname', 50)->collate('utf8_esperanto_ci')
+        ->varchar('username', 50)
+        ->column('ts')->nullable()
+        ->field('deleted_at')->nullable()
+        //->field('correo')->unique()
+        
+        /*
+        echo $sc->renameColumn('codigo', 'binario');
+        echo $sc->renameIndex('id', 'user_id');
+        echo $sc->dropColumn('geo');
+        echo $sc->dropIndex('bit');
+        echo $sc->dropPrimary('bit');
+        echo $sc->dropTable();
+        */
+        
+        ->change();
+    }
+
 }

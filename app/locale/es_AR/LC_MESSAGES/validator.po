@@ -29,6 +29,9 @@ msgstr  "Tipo de datos indefinido"
 msgid   "%s is required"
 msgstr  "%s es requerido"
 
+msgid   "Field is required"
+msgstr  "El campo es requerido"
+
 msgid   "Invalid regular expression!"
 msgstr  "Expresión regilar inválida"
 
@@ -77,8 +80,8 @@ msgstr  "No es una fecha-hora válida"
 msgid   "It's not a valid time"
 msgstr  "No es una hora válida"
 
-msgid   "Maximum length is %d"
-msgstr  "La longitud máxima es de %d"
+msgid   "The maximum length is %d characters"
+msgstr  "La longitud máxima es de %d caracteres"
 
-msgid   "Minimum length is %d"
-msgstr  "La longitud mínima es de %d"
+msgid   "The minimum length is %d characters"
+msgstr  "La longitud mínima es de %d caracteres"

@@ -3,32 +3,19 @@
 namespace simplerest\models;
 
 use simplerest\core\Model;
+use simplerest\libs\ValidationRules;
+use simplerest\models\schemas\FoldersSchema;
 
-class FoldersModel extends Model 
-{
-	protected $table_name = "folders";
-	protected $id_name = 'id';
+class FoldersModel extends Model
+ { 
+	### TRAITS
+	### PROPERTIES
 
-	/*
-		Types are INT, STR and BOOL among others
-		see: https://secure.php.net/manual/en/pdo.constants.php 
-	*/
-	protected $schema = [
-		'id' => 'INT',
-		'tb' => 'STR',
-		'name' => 'STR',
-		'belongs_to' => 'INT'	
-	];
+	protected $hidden   = [];
+	protected $not_fillable = [];
 
-    function __construct($db = NULL){
-		parent::__construct($db);
-	}
-
+    function __construct(bool $connect = false){
+        parent::__construct($connect, new FoldersSchema());
+	}	
 }
-
-
-
-
-
-
 

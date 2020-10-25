@@ -2,19 +2,14 @@
 
 namespace simplerest\controllers\api;
 
-use simplerest\controllers\MyApiController;
+use simplerest\controllers\MyApiController; 
 
 class Folders extends MyApiController
-{     
-    protected $scope = [
-        'guest'   => [ ],  
-        'basic'   => ['read'],
-        'regular' => ['read', 'write']
-    ];
+{ 
+    static protected $soft_delete = true;
 
     function __construct()
-    {
+    {       
         parent::__construct();
-    }
-        
-} // end class
+    }        
+} 

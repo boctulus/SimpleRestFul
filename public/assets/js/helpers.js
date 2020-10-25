@@ -1,3 +1,24 @@
+/*
+    Core functions
+*/
+
+function assets(filename){
+    load = filename.match(/^\/\//) || filename.match(/^http:/) || filename.match(/^https:/) ? filename : 'assets/' + filename;
+
+    if (filename.match(/\.js$/)){ 
+        var fileref=document.createElement('script')
+        fileref.setAttribute("type","text/javascript")
+        fileref.setAttribute("src", load)
+    }
+    else if (filename.match(/\.css$/)){ 
+        var fileref=document.createElement("link")
+        fileref.setAttribute("rel", "stylesheet")
+        fileref.setAttribute("type", "text/css")
+        fileref.setAttribute("href", load)
+    }
+    if (typeof fileref!="undefined")
+        document.getElementsByTagName("head")[0].appendChild(fileref)
+}
 
 function getSiteRoot()
 {

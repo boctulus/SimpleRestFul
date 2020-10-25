@@ -1,0 +1,69 @@
+Marketplace de apps "comunitaria"
+
+Requerimientos funcionales:
+
+- Tipo de apps que se podrán listar
+	* escritorio
+	* web: es responsive?
+- Incluir requerimientos (de hardware y software) para correr la app.		
+- Debe quedar claro el idioma o idiomas de la aplicación.
+- Posts
+	- CKeditor o similar para crear mini-posts (no permitir enlaces externos excepto el de la DEMO)
+	- Posibilidad de subir varias imágenes de forma simultanea y de poder ordenarlas
+	- Posibilidad de subir un vídeo "demo"
+	- Tags o keywords (que pueden usarse para crear filtros específicos)
+	- Incluir precio (en dólares o euros)
+- Posibilidad de hacer preguntas públicas (estilo MercadoLibre) sobre una app <-- en cuyo caso obviamente el vendedor debe de ser notificado de la pregunta y luego el interesado en la respuesta. El vendedor puede o no aceptar preguntas (en general). El responder preguntas eleva el "karma" del vendedor.
+- Al realizarse la venta el comprador obtendrá los datos del vendedor para evacuar cualquier duda pertinente.
+- Posibilidad de calificar una vez adquirido
+- Vender publicaciones destacadas que venderán en principio en 90 días
+- Dar más visibilidad a los que tengan capturas de pantalla e info más completa 
+- Dar ventaja a usuarios y sistemas con buena reputación y a mis propias apps.
+- Filtrado por tipo de app, precio, reputación del vendedor 
+- Vender posicionamiento (publicaciones "diamante")
+- Posibilidad de comprar procesando los pagos mendiante PayPal / Transferwise / Airtm y MercadoPago.
+- Posibilidad de pagar con Payoneer / PayPal o MercadoPago.
+- Pago a los vendedores en principio por PayPal.
+- TOS muy clara
+	- Se prohibe dar enlaces, correos, teléfonos u otras formas de contacto que permitan bypassear la tienda.
+- Posibilidad de ver ventas realizadas (vendedor) o productos comprados (comprador) y sus estados (pagado, cancelado, etc)
+- Sistema de soporte de incidencias (tickets) disponible para compradores y vendedores.
+- Posibilidad de reportar una aplicación explicando la causa.
+- Posibilidad de incluir soporte mediante un pago mensual adicional que no puede superar el 5% del costo de la app. <-- nos puede representar un 60% adicional al año. El valor pactado no puede modificarse en el trasncurso de 12 meses y de ser modificado (aplicable para un nuevo período) habría que pensar si se cancela el soporte o si se envia al cliente un aviso por correo electrónico 30 días antes diciendo que el precio ha cambiado y como puede hacer para cancelar el servicio.
+- Referidos. Podría ser un porcentaje o un bono con NET90.
+- Módulos
+	- Cuenta de usuario
+		- Datos de básicos usuario (persona natural o empresa), rol
+		- Perfil
+		- Métodos de pago / cobro
+	- Publicaciones
+	- Preguntas (es transversal a todas las publicaciones)
+	- Carrito
+	- Ventas 
+	- Pagos (recibidos / enviados) 
+	- Calificaciones (por publicación y promedio para el vendedor) <-- vamos a permitir multiples pubs de una misma app? es más ingreso pero genera "ruido".
+	- Reclamos (de clientes a vendedores)
+	- Soporte (sistema de tickets con nosotros) 	
+	- Mensajes (promociones, problemas con publicaciones, etc) <-- convergencia de reclamos y soporte
+	- Referidos
+
+
+- Adquirir plantilla para Nuxt
+
+- Editor para los posts? VueEditor (Quill.js) aparentemente no deja editar el HTML y los archivos los encodea y los guarda emebebidos en los posts generando un DB muy pesada y teniendo que recibir todo eso en un request. Es necesaria una alternativa.	
+
+
+Requisitos no-funcionales:
+-------------------------		
+
+
+- Esar Figma para los mockups
+https://www.figma.com/pricing/
+
+- Habilitar OPCache para reducir tiempos
+https://www.cloudways.com/blog/integrate-php-opcache/
+https://www.ibexa.co/blog/php-7.4-opcache-preloading-benchmark-results-note-on-database-extension-crashes
+https://en.wikipedia.org/wiki/List_of_PHP_accelerators
+
+- Implementar demás estrategias para reducir tiempos de respuesta
+https://phoenixnap.com/kb/reduce-server-response-time

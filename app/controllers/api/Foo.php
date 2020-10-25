@@ -6,17 +6,10 @@ use simplerest\controllers\MyApiController;
 
 class Foo extends MyApiController
 { 
-    protected $scope = [
-        'guest'      => [],  
-        'registered' => ['create'],
-        'basic'      => [],
-        'regular'    => ['read']
-    ];
+    static protected $soft_delete = true;
 
     function __construct()
     {       
         parent::__construct();
-    }
-
-        
-} // end class
+    }        
+} 

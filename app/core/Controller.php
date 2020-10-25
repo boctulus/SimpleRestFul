@@ -3,13 +3,21 @@
 namespace simplerest\core;
 
 use simplerest\libs\DB;
+use simplerest\libs\Factory;
+use simplerest\traits\ExceptionHandler;
 
 abstract class Controller
 {
-    protected $callable = [];
+    use ExceptionHandler;
 
+    protected $callable = [];
+    
     function __construct() {
-        $this->config = include CONFIG_PATH . 'config.php';
+        $this->config = Factory::config();
+
+        if ($this->config['error_handling']) {
+            set_exception_handler([$this, 'exception_handler']);
+        }
     }
 
     function view(string $view_path, array $vars_to_be_passed  = null, $layout = 'app_layout.php'){
@@ -23,4 +31,10 @@ abstract class Controller
     function getCallable(){
         return $this->callable;
     }
+
+    function addCallable(string $method){
+        $this->callable = array_unique(array_merge($this->callable, [$method]));
+    }
+
+
 }

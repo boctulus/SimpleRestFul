@@ -12,10 +12,8 @@ class_alias("\simplerest\core\api\\$api_version\MySelf", 'simplerest\controllers
 
 class Me extends MySelf
 { 
-    protected $scope = [
-        'guest'      => [], 
-        'registered' => ['read', 'write'],
-        'basic'      => ['read'],
-        'regular'    => ['read', 'write']
-    ];    
+    function __construct(){
+        parent::__construct();  
+    }
+     
 }  

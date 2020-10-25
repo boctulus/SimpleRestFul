@@ -1,0 +1,2209 @@
+DOCUMENTACION 
+-------------
+
+SimpleRest utiliza la arquitectura MVC, está orientado a API Restful y es un framework para desarrollo rápido de aplicaciones (RAD).
+
+Algunas características:
+
+- Arquitectura MVC 
+- APIs funcionan out--of-the-box o sea sin escribir nada de código ***
+- ACL centralizado con sistema de roles y de permisos personalizados que decoran los roles
+- Posibilidad de "compartir" recursos via "folders"
+- Impersonate
+- Papelera de reciclaje
+- Colecciones para acciones masivas
+- Versionado
+- Internacionalización
+
+(*) A pesar de ser un framework orientado a API Rest es posible servir vistas aunque no posee un motor de plantillas. Es posible que esta característica sea removida en futuras versiones.
+
+# Estructura del proyecto
+
+```
+├── app                           # Main MVC file structure directory
+│   ├── controllers               # Controllers directory 
+|   |   └── api                   # API controllers  
+│   ├── models                    # Models directory
+│   ├── views                     # Views directory
+│   ├── libs                      
+│   ├── locale                    # i18n translations
+│   └── core                      # Core directory
+|
+├── core                          # Basically mvc engine directory
+│   ├── api
+|   |   ├── v1
+|   |   ├── v2
+|   |   └── vN
+│   ├── exceptions
+│   ├── interfaces                          
+│   └── config                    # Configuration directory
+│		├── acl.php 
+│       ├── config.php          
+│       └── constants.php           
+│         
+├── public
+|   ├── assets                     
+│   |   ├── css               
+│   |   ├── img    
+|   |   └── js
+|   ├── .htaccess      
+|   ├──  index.php
+|   └──  favicon.ico
+|
+├─── vendor                    
+└── .htaccess                     
+```
+
+# Requerimientos 
+
+	PHP 7.4+
+	MySQL / MariaDB 
+	Apache Web Server 2.4
+
+Es posible hacer funcionar el framework con Nginx y es muy probable que con pocos ajustes funcione en un motor distinto a MySQL como PostgreeSql.
+
+# Instalación
+
+Se debe configurar el archivo config.php en la carpeta config. Se admiten múltiples bases de datos.
+
+
+# Endpoints que comienzan o no con /api
+
+Las urls comienzan *sin* /api si en /config/config.php 
+
+	'REMOVE_API_SLUG' => true
+
+<-- remover el /api puede dar lugar a colisiones con controladores. Inclusive no funcionarán los resource controllers. 
+
+OJO ! afecta al DownloadController
+
+
+# Creación de usuarios
+
+	POST /api/v1/auth/register	
+
+	{
+    	"name": "Pablo",
+		"username": "crack777",
+		"password" : "xxxxxx"
+	}
+
+<-- campos mínimos
+
+Y se devuelve un JSON como este:
+
+{
+    "data": {
+        "access_token": "eyJInR5cC....4Vhvo",
+        "token_type": "bearer",
+        "expires_in": 900,
+        "refresh_token": "eyJ0e...EKhNjuc",
+        "roles": [
+            []
+        ],
+        "uid": "351",
+        "email_confirmation_link": "http://localhost/incu_users/auth/confirm_email/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU5NzUxNDA1NSwiZXhwIjoxNTk4MTE4ODU1LCJpcCI6Ijo6MSIsImVtYWlsIjoiYWFhQG1haWwuY29tIn0.J2pUPHmmIwpXtlTpgDqu23jb-h0HlAz9ife-4HVfa1c/1598118855"
+    },
+    "error": "",
+    "error_detail": ""
+}
+
+Es posible solicitar un rol (comprador o vendedor por ejemplo) al momento del registro. Es requisito tener definidos los roles como pre-aprobados en config/config.php
+
+Ej:
+	'auto_approval_roles' => ['vendedor'],
+
+Entonces al momento de hacer el registro se puede especificar el o los roles que se desean obtener:
+
+{
+		"username": "super_ventas",
+		"email": "b2@mail.com",
+		"password": "gogogo",
+        "roles": ["vendedor"]
+}
+
+
+# Login 
+
+	POST /api/v1/auth/login
+
+	{
+		"email": "usuario@mail.com",
+		"password": "xxxx"
+	}
+
+Se devuelve un JSON como el siguiente:
+
+{
+    "data": {
+        "access_token": "eyJ0eXAiOiJ.....QwjPRA",
+        "token_type": "bearer",
+        "expires_in": 900,
+        "refresh_token": "eyJ0e....SUxd_dpg-Js",
+        "roles": [
+            "contabilidad",
+            "mercadotecnia"
+        ],
+        "uid": 350
+    },
+    "error": "",
+    "error_detail": ""
+}
+
+# Verficación de correo
+
+Es solo seguir el enlace provisto al momento de registrarse o .........
+
+# Cambiar / establecer contraseña
+
+	POST /api/v1/auth/change_pass
+
+	{
+		"username": "xxxx",
+		"password" : "zzzz"
+	}
+
+# Recordar contraseña
+
+	POST /api/v1/auth/rememberme
+
+	{
+		"email": "usuario@mail.com"
+	}
+
+=> devuelve un JSON con el enlace (request por GET) para cambiar la contraseña 	
+
+Ej:
+
+	{
+		"data": {
+			"link_sent": "http://localhost/incu_users/auth/change_pass_by_link/eyJ0eX...I15SY/1598117791"
+		},
+		"error": "",
+		"error_detail": ""
+	}
+
+Al seguir el enlace se devuelve un nuevo JSON con el access token necesario para poder realizar el cambio de contraseña. Redireccionar a la vista correspondiente es un asunto aparte.
+
+{
+    "data": {
+        "access_token": "eyJ0eXAi.....4fAs",
+        "token_type": "bearer",
+        "expires_in": 900,
+        "uid": "350",
+        "roles": [
+            "contabilidad",
+            "mercadotecnia"
+        ],
+        "permissions": []
+    },
+    "error": "",
+    "error_detail": ""
+}
+
+# Renovación de tokens
+
+	POST /api/v1/auth/token
+
+<-- enviando el refres_token 
+
+Se devolverá un nuevo acccess token en un JSON como este:
+
+{
+    "data": {
+        "access_token": "eyJ0e.....8eXKY",
+        "token_type": "bearer",
+        "expires_in": 900,
+        "roles": [
+        ],
+        "uid": "352"
+    },
+    "error": "",
+    "error_detail": ""
+}
+
+# Impersonate
+
+Es posible asumir la identidad de otro usuario o bien un rol en particular -solo uno a la vez-
+
+POST /api/v1/auth/impersonate que recibe un refresh_token de un Admin y en el body:
+
+	{ 
+		"uid" : "90"  
+	}
+
+Lo cual genera el par access y refresh token como Admin donde dentro un campo "impersonated_by" con el id del admin, ej:
+
+{
+    "data": {
+        "access_token": "eyJ0...",
+        "refresh_token": "eyJ0....",
+        "token_type": "bearer",
+        "expires_in": 90000000,
+        "roles": [
+            "regular"
+        ],
+        "uid": "90",
+        "impersonated_by": 4  <-- id del Admin
+    },
+    "error": "",
+    "error_detail": ""
+}
+
+O bien con un rol que inclusive puede ser "guest"
+
+	POST /api/v1/auth/impersonate que recibe un refresh_token de un Admin y en el body:
+
+	{ 
+		"role": "basic"	
+	}
+
+La ventaja de hacer la impersonalización por roles es que no es necesario tener varias cuentas con diferentes roles para hacer pruebas y tampoco es necesario des-loguearse para simular ser un "guest".
+
+Al hacer un impersonate debe elegirse si se hace por uid o por rol. No tiene mucho sentido enviar un rol y un uid en el mismo request y el resultado puede no ser el esperado.
+
+Para parar la "impersonalización",...
+
+POST /api/v1/auth/stopImpersonate con el access_token del admin que está haciendo uso de impersonate lo cual debe devolver un nuevo token sin impersonate, ej:
+
+{
+    "data": {
+        "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU5OTY5MjYwMCwiZXhwIjoxNjg5NjkyNjAwLCJpcCI6IjEyNy4wLjAuMSIsInVpZCI6NCwicm9sZXMiOlsiYWRtaW4iXSwiY29uZmlybWVkX2VtYWlsIjoxLCJwZXJtaXNzaW9ucyI6W119.5k272dPgzKFZVEYPC9NgKbrsf9qu1EdUe01CTagYrjE",
+        "token_type": "bearer",
+        "expires_in": 90000000,
+        "refresh_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTU5OTY5MjYwMCwiZXhwIjoxOTE1MDUyNjAwLCJpcCI6IjEyNy4wLjAuMSIsInVpZCI6NCwicm9sZXMiOlsiYWRtaW4iXSwiY29uZmlybWVkX2VtYWlsIjoxLCJwZXJtaXNzaW9ucyI6W119.k8SNRcSD4j3JtFlV8Qj3lfVqOiP_2hVYI4bCM0rhWWg",
+        "roles": [
+            "admin"
+        ],
+        "uid": 4
+    },
+    "error": "",
+    "error_detail": ""
+}
+
+Tanto created_by, updated_by y deleted_by reflejan referencian al Admin pero belongs_to al momento de crear un registro es con el usuario con por el que se hace la sustitución.
+
+El token se puede seguir renovando normalmente pero con ciertas limitaciones: al renovar el token de un impersonate hecho "por rol", el rol se pierde volviendo al rol de admin. Esto ocurre porque los roles no viajan en el payload del refres_token que solo se utiliza para autenticación -y no autorización-.
+
+S puede hacer el impersonate al rol de "guest" y en este caso particular se puede seguir renovando el token conservando dicho rol indefinidamente (hasta vencimiento el refres_token)
+
+POST /api/v1/auth/impersonate que recibe un refresh_token de un Admin y en el body:
+
+{ 
+	"role" : "guest"	
+}
+
+Obteniendo algo como
+
+{
+    "data": {
+        "access_token": "eyJ0eXAiOiJ..",
+        "refresh_token": "eyJ0eXAi...",
+        "token_type": "bearer",
+        "expires_in": 90000000,
+        "roles": [
+            "guest"  
+        ],
+        "uid": -1,
+        "impersonated_by": 4
+    },
+    "error": "",
+    "error_detail": ""
+}
+
+<-- observar que el único rol es "guest", el uid es -1 y nuevamente queda habilitada la impersonalización.
+
+Nota: se puede hacer un impersonate con el refresh_token de otro Impersonate.
+
+
+# Confirmación de correo
+
+Al momento de registrarse exitosamente en el JSON de la respuesta se incluye
+
+	"email_confirmation_link": "http://az.lan/api/v1/auth/confirm_email/eyJ0eXA...KDFsI/1600830742"
+
+Y siguiendo ese enlace el correo de la cuenta queda verificado devolviendo:
+
+{
+    "data": {
+        "msg": "Email confirmed - thanks!"
+    },
+    "status_code": 200,
+    "error": "",
+    "error_detail": ""
+}
+
+<-- es posible devolver tokens pero serían inseguro -aunque el recuérdame genera tokens-. 
+
+Luego de confirmar el correo es responsabilidad del usuario volverse a loguear. 
+
+
+# Recuérdame
+
+POST /api/v1/auth/rememberme con el body
+
+	{
+		"email": "algun_usuario@mail.com"
+	}
+
+Debe generar un enlace para cambiar el enlace por GET y en "modo desarrollador" produciría una respuesta como esta: 
+
+	{
+		"data": {
+			"link_sent": "http://az.lan/api/v1/auth/change_pass_by_link/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTYwMDIyNjQxMCwiZXhwIjoxNjAwODMxMjEwLCJpcCI6IjEyNy4wLjAuMSIsInJvbGVzIjpbInJlZ3VsYXIiXSwicGVybWlzc2lvbnMiOnsicHJvZHVjdHMiOjcsImZvbyI6N30sInVpZCI6IjE2OCIsImFjdGl2ZSI6IjEifQ.Z2HsyPGfGflCG1vOq5hwKqd50QOEgLZO5flixz4hMTU/1600831210"
+		},
+		"status_code": 200,
+		"error": "",
+		"error_detail": ""
+	}
+
+<-- en producción no tiene chiste que se lea el enlace a seguir !	
+
+# Versionado
+
+Se especifica la versión en la url y esto tiene como efecto cargar una versión distinta de la clase ApiController en /app/core/api
+
+	GET /api/v1/products
+	GET /api/v2/products
+	GET /api/v3/products
+
+En el primer por ejemplo caso carga la clase /app/core/api/v1/ApiController
+
+La clase MyApiController en /app/controllers es la responsable de seleccionar la versión solicitada de la API.
+
+Las urls comienzan *sin* /api si en /config/config.php 
+
+	'REMOVE_API_SLUG' => true
+
+
+### Controlador
+
+Para demostrar como ejecutar un controlador desde la linea de comandos ejemplificaremos con un simple controlador ubicado en la carpeta controllers:
+
+	<?php
+
+	namespace simplerest\controllers;
+
+	class DumbController extends Controller
+	{
+
+		function add($a, $b){
+			$res = (int) $a + (int) $b;
+			return  "$a + $b = " . $res;
+		}
+
+	}
+
+En la terminal nos cambiamos al directorio "public" y ejecutamos: 
+
+	php index.php dumb add 1 6
+
+Hay soporte para sub-directorios o sub-sub-(sub)-directorios 
+
+
+# Front Controller y Router 
+
+Es posible configurar el uso del Front Controller y/o del Router. El primero es más sencillo pero se aconseja casi exclusivamente para utilizar los controllers desde la terminal. 
+
+El Router tiene la enorme ventaja de permitir filtrar los requests por su verbo HTTP:
+
+	# ruta: /calc/sum/4/5
+	Route::get('calc/sum', function($a, $b){
+		return "La suma de $a y $b da ". ($a + $b);
+	})->where(['a' => '[0-9]+', 'b' =>'[0-9]+']);
+
+	# ruta: /saludador/sp/hi/Juan/Carlos/44
+	Route::get('saludador/sp/hi/', function($nombre, $apellido, $edad){
+		return "Hola ". ($edad > 30 ? 'Sr. ' : '') . "$nombre $apellido";
+	})->where(['edad' => '[0-9]+', 'nombre' =>'[a-zA-Z]+', 'apellido' =>'[a-zA-Z]+']);
+
+	# ruta: /saludador/en/hi/Juan/Carlos/44
+	Route::get('saludador/en/hi/', function($nombre, $apellido, $edad){
+		return "Hello ". ($edad > 30 ? 'Mr. ' : '') . "$apellido $nombre";
+	})->where(['edad' => '[0-9]+', 'nombre' =>'[a-zA-Z]+', 'apellido' =>'[a-zA-Z]+']);
+
+	# ruta: /tonterias
+	Route::get('tonterias',  'DumbController');
+
+	# ruta: /chatbot/hi
+	Route::get('chatbot/hi', 'DumbController@hi')
+	->where(['name' => '[a-zA-Z]+']);  // <-- where() no implementado con controladores !
+
+	# ruta: /cosas/67
+	Route::delete('cosas', function($id){
+		return "Deleting cosa con id = $id";
+	});
+
+
+El router se habilitan desde el archivo config/config.php y se configura desde /config/route.php
+
+
+### Resource Controller:
+
+Un ResourceController es un tipo de controlador que mediante un Authorization header identifica al usuario y su rol.
+
+Ejemplo:
+
+class DumbAuthController extends ResourceController
+{
+    function __construct()
+    {
+        parent::__construct();
+    }
+
+    function super_cool_action($a)
+    {
+        if (!$this->hasAnyRole(['cajero', 'gerente']))
+            Factory::response()->sendError('Unauthorized', 401);
+
+        // acción cualquiera:
+        return ++$a;
+    }       
+}
+
+Api Controller:
+
+Un ApiController es un tipo de ResourceController que sirve para procesar un endpoint y por tanto sus métodos son los verbos correspondientes: get, post, put, patch, delete, head
+
+
+# El Schema
+
+Todas las tablas deben tener un único id inclusive si son "tablas intermedias" (conocidas también como "tablas puente") y se especifica en la propiedad $id_name.
+
+
+# Modelo
+
+Cada modelo es definido en una clase en /app/models que extiende a Model y donde se define el schema y algunas propiedades de los campos. Ejemplo:
+	
+	class BazModel extends Model
+ 	{ 
+
+		protected $hidden   = [];
+		protected $not_fillable = [];
+
+		function __construct(bool $connect = false){
+			parent::__construct($connect, new BazSchema());
+		}	
+	}
+
+Un modelo extendiende a la clase Model que les provee toda la funcionalidad y acepta un schema. Tanto modelos como schemas pueden ser generados por el comando "make".
+
+Los campos que pueden ser rellenados al hacer un INSERT o un UPDATE pueden especificarse dentro del array $fillable. 
+
+Un campo que no sea "fillable" aún puede rellenarse si desde el controlador se incluye el campo en un array de exceptuados usando la función fill()
+
+Ej:
+
+Supongamos que el campo confirmed_email no es fillable, entonces para hacerlo fillable desde un controlador:
+
+	$u = DB::table('users')
+	->fill(['confirmed_email'])
+	// ...
+	->where(['email', $payload->email])
+	->update(['confirmed_email' => 1]);
+
+
+Hay básicamente 3 formas de usar un Model:
+
+a) Instanciando directamente Model en cuyo caso *no* dispondríamos de un schema a menos que se lo inyectemos:
+
+	$m = (new Model(true))
+		->table('products')   
+		->select(['id', 'name', 'size'])
+		->where(['cost', 150, '>=']);
+
+	Debug::dd($m->get());
+
+	Ventajas: 
+
+	- Puede hacerse uso del Query Builder sin un schema lo cual es útil para probar la validez del mismo (pruebas unitarias)
+	- Puede generar las queries sin una conexión a la base de datos (comportamiento por defecto).
+
+	Desventaja:
+
+	- Verboso
+	- En principio no se dispone del Schema sin lo cual no es posible hacer validaciones contra el mismo. 
+
+b) Instanciando una clase Model derivada
+
+	$m = (new ProductsModel(true))
+		->select(['id', 'name', 'size'])
+		->where(['cost', 150, '>=']);
+
+	Debug::dd($m->get());
+
+	Ventajas: 
+
+	- Se dispone del schema si se inyecta en el modelo derivado (así es generado por "make")
+	- Validación out-of-the-box si se inyectando el validator.
+	- Menos verboso: ya no es necesario llamar al método table('nombre_tabla')   
+
+c) Usando la clase DB para obtener la instancia
+
+    $m = DB::table('products')
+		->select(['id', 'name', 'size'])
+		->where(['cost', 150, '>=']);
+    
+	Debug::dd($m->get());
+    
+	Ventajas:
+
+	- Es la opción menos verbosa.
+	- Se dispone del Schema para hacer validaciones.
+
+	Desventajas:
+
+	- Obtiene una conexión a la base de datos aún antes de hacer cualquier tipo de validación.
+
+
+# Fetch modes 
+
+Los modos de obtención de datos pueden setearse  en cualquera de los casos mediante el método setFetchMode() antes de llamar a un método final como get(), first(), min(), avg(), etc 
+
+Ej:
+
+	Debug::dd((new BarModel())
+	->connect()
+	->setFetchMode('ASSOC')
+	->get());
+
+
+# Debuguear una query
+
+Hay varios métodos para hacer un debug de una query comenzando por DB::dd() que ocupa el lugar del método get()
+
+Ejemplo:
+
+	$res = DB::table('products')
+		->groupBy(['name'])
+		->having(['c', 3, '>='])
+		->select(['name'])
+		->selectRaw('COUNT(name) as c')
+		->get());
+
+var_dump($res);
+
+Reemplazando ->get() por ->dd()
+
+	$res = DB::table('products')
+		->groupBy(['name'])
+		->having(['c', 3, '>='])
+		->select(['name'])
+		->selectRaw('COUNT(name) as c')
+		->dd());
+
+var_dump($res);
+
+Resultado:
+
+	SELECT AVG(cost), size FROM products WHERE deleted_at IS NULL GROUP BY size HAVING AVG(cost) >= 150
+
+El problema del método dd() es que no funciona si en su lugar hay una función get() parametrizada -en vez de usar select()- o bien una función agregativa comon min(), max(), count(), sum() y avg() 
+
+Otra función de debug más general es DB::getQueryLog()
+
+Ejemplo:
+
+	$c = DB::table('products')
+		->where([ 'belongs_to'=> 90] )
+		->count('*', 'count');
+
+	Debug::dd(DB::getQueryLog());
+
+Otra función de debug que puede utilizarse es getLastPrecompiledQuery() y devuelve el último query antes de ser bindeado con los parámetros.
+
+Ejemplo:
+
+	$uno = DB::table('products')->showDeleted()
+	->select(['id', 'name', 'description', 'belongs_to'])
+	->where(['belongs_to', 90]);
+
+	$m2  = DB::table('products')->showDeleted();
+	$dos = $m2
+	->select(['id', 'name', 'description', 'belongs_to'])
+	->where(['belongs_to', 4])
+	->where(['cost', 200, '>='])
+	->union($uno)
+	->orderBy(['id' => 'ASC'])
+	->get();
+
+	Debug::dd($m2->getLastPrecompiledQuery());
+
+En cualquier caso es posible realizar un debug sin ejecutar la consulta con el método dontExec()
+
+Ejemplo:
+
+	$res = DB::table('products')
+		->dontExec()
+		->groupBy(['size'])
+		->having(['AVG(cost)', 150, '>='])
+		->select(['size'])
+		->selectRaw('AVG(cost)')
+		->get();
+		
+	Debug::dd(DB::getQueryLog()); 
+	
+Como si fueran pocas funciones de debug existe el método getLog()
+
+	$model = new \simplerest\core\Model($conn);
+	$res = $model->create(['name' => 'Jhon', 'age' => 32]);
+	Debug::dd($model->getLog());
+	
+
+#### Campos manejados por el framework
+
+Hay una cantidad de campos (que si están presentes en la tabla y declarados en el schema del modelo) que son manejados directamente por el framework. Consideremos la siguiente tabla:
+
+id 				int(11)		
+name			varchar(60)				
+active			tinyint(4)
+belongs_to		int(11)			*	
+created_at		datetime		*			
+created_by		int(11)			*	
+updated_at		datetime		*	
+updated_by		int(11)			*	
+deleted_at 		datetime		*
+deleted_by		tinyint(4)		*
+locked			tinyint(4)		*
+
+belongs_to		apunta directamente al user_id de quien crea el registro. Si el usuario tiene el permiso especial 'transfer' puede cambiar ese valor y hacer que apunte a otro usuario. Un caso especial son los registros creados dentro de un 'folder'.
+
+created_by 		apunta indefectiblemente al user_id quien creó el registro.
+update_by		apunta indefectiblemente al user_id del último usuario que modificó un registro. 
+deleted_by		apunta indefectiblemente al user_id que hizo un borrado suave un registro.
+created_at 		apunta indefectiblemente a la fecha-hora en que se creó un registro.
+updated_at 		apunta indefectiblemente a la fecha-hora en que se modificó por última vez un registro.
+deleted_at 		apunta indefectiblemente a la fecha-hora en que se creó un registro.
+locked 			cuando un registro es mofificado por un usuario con permiso de 'lock' automáticamente se guarda un 1.
+
+
+Los campos created_by, update_at y deleted_at son rellenados por Model pero al modelo no le compete si hay un sistema de autenticación y que usuario está haciendo el query así que los campos created_by, update_by, deleted_by y belongs_to son manejados a nivel de la API por ApiController al igual que el campo locked.
+
+Nota: no olvides que los campos que necesites deben estar en las tablas y en el schema del modelo correspondiente. 
+
+
+### Mutators
+
+Se presentan casos donde es necesario hacer una transformación de los datos ya sea antes de enviarlos la query o bien antes de guardarlos en base de datos. 
+
+El caso emblemático es cuando se requiere hacer un "hash" del password antes de guardarse ya sea en la creación o edición de un registro. Entonces usaremos un "input mutator".
+
+Ejemplo
+
+class UsersModel extends Model
+{ 
+	// ...
+
+    function __construct($db = NULL){
+		$this->registerInputMutator('password', function($pass){ 
+			return password_hash($pass, PASSWORD_DEFAULT); 
+		}, function($op, $dato){
+			return ($dato !== null);
+		});
+
+        parent::__construct($db);
+    }
+}
+
+El método registerInputMutator() acepta 3 parámetros:
+
+- El campo cuyo contenido se quiere mutar (condicionalmente)
+- Un callback que transforma el dato de entrada 
+- Un callback (opcional) que determina en que caso se debe aplicar la función de entrada y que es alimentada con el tipo de operación ('UPDATE' o 'CREATE') y el dato de entrada. En caso de omitirse aplica siempre el mutator para ese campo.
+
+El procedimiento es registrar los mutators para cada campo del modelo que los requiera. Otro uso de input mutators es para utilizar UUIDs donde dentro de un Trait podemos tener la funcionalidad de generar el uuid:
+
+	namespace simplerest\traits;
+
+	trait Uuids
+	{
+		protected function boot()
+		{
+			parent::boot();
+
+			$this->registerInputMutator('uuid', function($id){ 
+				return uuid_create(UUID_TYPE_RANDOM); 
+			}, function($op, $dato){
+				return ($op == 'CREATE');
+			}); 
+		}    
+	}
+
+<-- Como sería un efecto indeseado que se auto-generara un UUID reemplazando el actual al hacer un UPDATE, entonces ponemos como condición que se aplique solo en el CREATE.	
+
+En el modelo donde queremos implementar el uuid, debemos declar el campo como string, importamos y hacemos el "use" del Trait:
+
+	<?php
+	namespace simplerest\models;
+
+	use simplerest\core\Model;
+	use simplerest\traits\Uuids;
+
+	class BarModel extends Model 
+	{ 
+		use Uuids;
+		
+		function __construct($db = NULL){
+			parent::__construct($db);
+		}
+	}
+
+Recordar actualizar el Schema donde el campo uuid debe ser un string y pertenecer a los nullables.
+
+Además de los Input Mutators, tenemos también los Output Mutator que permiten aplicar una función sobre la salida de la ejecución de una query. Lógicamente un Output Mutator sobre un campo no es compatible con declarar a ese mismo campo como "hidden". 
+
+Ejemplo:
+
+	$rows = DB::table('users')
+	->registerOutputMutator('username', function($str){ return strtoupper($str); })
+	->get();
+
+Los mutators de salida pueden aplicarse incluso cuando hay funciones agregativas y las cláusulas GROUP BY y HAVING. 
+
+Ejemplo:
+
+	rows = DB::table('products')
+	->registerOutputMutator('size', function($str){ return strtolower($str); })
+	->groupBy(['size'])
+	->having(['AVG(cost)', 150, '>='])
+	->select(['size'])
+	->selectRaw('AVG(cost)')
+	->get();
+
+
+### Transformers
+
+Los transformers se aplican a la salida de la ejecución de una query y en orden después de los "output mutators" si los hubiere.
+
+Una transformación permite (a diferencia de un output mutator) no solo aplicar funciones sobre la salida de cada campo sino también crear campos virtuales, eliminar campos o cambiarles el nombre.
+
+Ejemplo:
+
+	class UsersTransformer 
+	{
+		public function transform(object $user, Controller $controller = NULL)
+		{
+			return [
+				'id' => $user->id,
+				'username' => $user->username,
+				'active' => $user->active,
+				'email' => $user->email,
+				'confirmed_email' => $user->confirmed_email,
+				'password' => $user->password,
+				'firstname' => 'Mr. ' . $user->firstname,
+				'lastname' => $user->lastname,
+				'full_name' => "{$user->firstname} {$user->lastname}",
+				'deleted_at' => $user->deleted_at,
+				'belongs_to' => $user->belongs_to
+			];
+		} 
+		
+		//...
+
+Si un campo del SCHEMA no está presente desaparece de la salida (en caso de estar presente) y si se asigna con otra key, su nombre será otro. Ejemplo:
+
+	family_name' => $user->lastname
+	
+Es importante destacar que no funciona si hay funciones agregativas presentes en la query y tampoco sirve para cambiar datos accediendo por un campo virtual por ejemplo.
+
+Al registrar un transformer cualquier campo oculto se vuelve visible aunque cabe recordar que sino está presente como key del array devuelto desaparece.
+
+Es posible acceder a propiedades del controller que invocó al transformer, ejemplo:
+
+	class UsersTransformer 
+	{
+		public function transform(object $user, $controller = NULL)
+		{
+			return [
+				'id' => $user->id,
+				//...
+				'password' => $controller->is_admin ? $user->password : false,
+			];
+		}
+	}
+
+Y ahora en un Controller paso $this como segundo parámetro a registerTransformer() para brindar acceso a las propieades del controlador:
+
+	$t = new \simplerest\transformers\UsersTransformer();
+
+	$rows = DB::table('users')
+	->registerTransformer($t, $this)
+	->get();
+
+	Debug::dd($rows);
+
+En el ejemplo si el controller tiene un campo is_admin (como sucede con los resource controllers en SimpleRest) entonces según el valor mostrará o no el password.
+ 
+Mutators y transformers pueden usarse juntos, ej:
+
+	$t = new \simplerest\transformers\UsersTransformer();
+
+	$rows = DB::table('users')
+	->registerOutputMutator('username', function($str){ return strtoupper($str); })
+	->registerTransformer($t)
+	->get();
+
+	Debug::dd($rows);
+
+Nota: de momento los Transformers se han probado desde Controllers y no desde las APIs <-- quizás sea posible usarlos de alguna forma si surge una necesidad real.
+
+
+### Campos fillables, no-fillables, nullables y ocultos
+
+Se puede definir un array de campos "fillables" aunque por lo general se lo puede dejar en automático. También es posible definir por el contrario, campos a excluir como "no fillables".
+
+	protected $fillable = [
+							'email',
+							'password',
+							'firstname',
+							'lastname',
+							'deleted_at',
+							'belongs_to'
+	];
+
+	// o ...
+	protected $not_fillable = ['confirmed_email'];
+
+Los campos no-nullables serian los requeridos para las validaciones y se definen de igual modo: 
+
+	protected $nullable = ['id', 'firstname', 'lastname', 'deleted_at', 'belongs_to', 'confirmed_email'];
+
+Por último tenemos los campos ocultos:
+
+	protected $hidden   = [	'password' ];
+
+
+# Event hooks 
+
+Se definen varios event hooks sobre el modelo que se disparan ante una operación CRUD
+
+	protected function onReading() {	}
+	protected function onRead(?int $count) { }
+	
+	protected function onDeleting($soft_delete) { }
+	protected function onDeleted(?int $count) { }
+
+	protected function onCreating(Array $data) {	}
+	protected function onCreated(Array $data, ?int $count) { }
+
+	protected function onUpdating(Array $data) { }
+	protected function onUpdated(Array $data, ?int $count) { }
+
+Un uso práctico de estos eventos es para des-confirmar un email cuando se ha cambiado. En este caso se hace uso de la función isDirty() que acepta como parámetro el campo que necesitamos saber si ha cambiado.
+
+	protected function onUpdating($data) {
+		if ($this->isDirty('email')) {
+			$this->update(['confirmed_email' => 0]);
+		}	
+	}
+
+La función isDirty() acepta un campo o un array de campos o incluso puede estar vacia en cuyo caso verifica si algún campo sería cambiado.
+
+Otro uso práctico de event hooks es para ocultar registros basados en cierta condición. Ej: si un campo definido por el usuario hidden = 1 entonces devolver 404 (No found)
+
+	protected function onReading() {
+		$this->where(['hide' => 0]);
+	}
+
+
+Desde cualquier hook del modelo es posible acceder a propiedades útiles como $w_vars y $w_vals -entre otras- con las que es posible reconstruir el where.
+
+PD: Laravel también incluye los eventos onRestoring() y onRestored() para cuando existe un soft-delete
+
+
+Las APIs que extienden a ApiController también tienen varios event hooks
+
+	protected function onGetting($id) { }
+    protected function onGot($id, $count){ }
+
+    protected function onDeleting($id){ }
+    protected public function onDeleted($id, $affected){ }
+
+    protected function onPosting($id, $data){ }
+    protected function onPost($data, $id){ }
+
+    protected function onPutting($id, $data){ }
+    protected function onPut($id, $data, $affected){ }
+
+
+Existen otros hooks en en ApiController relacionados con el acceso a folders.
+
+### Validaciones
+
+El framework incluye un validador que está integrado a nivel de la API Rest y puede también incluirse a nivel de los modelos o bien usarse de forma aislada.
+
+Para mostrar el funcionamiento de la clase Validator consideremos el siguiente ejemplo donde usamos directamente la clase validator para procesar errores de un formulario por ejemplo:
+
+	$data = [
+				'nombre'=>'Pablo1',
+				'apellido'=>'Bz',
+				'segundo_apellido'=>'San Martín',
+				'usuario'=>'',
+				'celular'=>'321530', 
+				'correo'=>'a@b',
+				'calle'=>'0',
+				'numero_de_casa'=>'',
+				'observaciones'=>'la vida es complicada y bla bla bla bla bla bla bla',
+				'fecha'=>'32-09-2019',
+				'hora'=>'24:00:17',
+				'rol'=>'',
+				'fuerza'=>'100.xxx',
+				'estrato'=>'3',
+				'felicidad'=>'0.25',
+				'energia'=>'.25',
+				'hora_almuerzo'=>'13:30:00',
+				'hora_cena'=>'18:00:00',
+				'fecha_nac'=>'10-12-1902',
+				'frutas_favoritas'=>['bananas','manzanas']  // podria provenir de un grupo de checkboxes
+				
+	];
+
+	$rules = [
+				'nombre' 			=> ['type'=>'alpha','required'=>true],
+				'apellido' 			=> ['type'=>'alpha','required'=>true,'min'=>3,'max'=>30],
+				'segundo_apellido'	=> ['type'=>'alpha','required'=>true,'min'=>3,'max'=>30],
+				'usuario' 			=> ['required'=>true,'min'=>2,'max'=>15],
+				'celular' 			=> ['type'=>'regex:/^[0-9]{10}$/','required'=>true],
+				'correo' 			=> ['type'=>'email','required'=>true], 
+				'calle' 			=> ['type'=>'int','required'=>false, 'min'=>1],
+				'numero_de_casa'    => ['type'=>'numeric','required'=>false],
+				'observaciones' 	=> ['type'=>'string','max'=>40],
+				'fecha' 			=> ['type'=>'date'], 
+				'hora' 				=> ['type'=>'time'], 
+				'rol' 				=> ['type'=>'int','required'=>false], 
+				'fuerza' 			=> ['type'=>'decimal','required'=>false],
+				'estrato' 			=> ['type'=>'int','required'=>false, 'min'=>1, 'max'=>6],
+				'felicidad' 		=> ['type'=>'int','required'=>false, 'min'=>0, 'max'=>100],
+				'energia' 			=> ['type'=>'decimal','required'=>false, 'min'=>0, 'max'=>100],
+				'hora_almuerzo' 	=> ['type'=>'time','min'=>'11:00:00','max'=>'10:15:00'],
+				'hora_cena' 		=> ['type'=>'time','min'=>'19:00:00','max'=>'22:30:00'],
+				'fecha_nac' 		=> ['type'=>'date','min'=>'01-01-1980','max'=>'12-12-2018'],
+				'frutas_favoritas' 	=> ['type'=>'array','min'=>3]
+				
+	];
+
+	$validado = (new Validator())->validate($rules,$data);
+
+	if ($validado !== true)
+		var_dump($validado);
+
+La salida en caso de fracaso es un array conteniendo las reglas rotas para cada campo:
+
+	array(14) {
+	["nombre"]=>
+	array(1) {
+		[0]=>
+		array(3) {
+		["dato"]=>
+		string(10) "Sebastian1"
+		["error"]=>
+		string(4) "type"
+		["error_msg"]=>
+		string(11) "no es alpha"
+		}
+	}
+	["usuario"]=>
+	array(1) {
+		[0]=>
+		array(3) {
+		["dato"]=>
+		string(0) ""
+		["error"]=>
+		string(8) "required"
+		["error_msg"]=>
+		string(20) "usuario es requerido"
+		}
+	}
+	...	
+	["frutas_favoritas"]=>
+	array(1) {
+		[0]=>
+		array(3) {
+		["dato"]=>
+		array(2) {
+			[0]=>
+			string(7) "bananas"
+			[1]=>
+			string(8) "manzanas"
+		}
+		["error"]=>
+		string(3) "min"
+		["error_msg"]=>
+		string(18) "mínimo 3 opciones"
+		}
+	}
+	}
+
+### Tipos
+
+Los tipos (type) admitidos son:
+
+bool
+int
+float
+number
+string
+alpha
+notnum
+email
+date
+sql_datetime
+time
+array
+regex:/expresión/
+
+El tipo 'time' es 'H:i:s' y el 'date' es 'd-m-Y' aunque siempre es posible crear un tipo personalizado con una expresión regular que se ajuste a las necesidades.
+
+
+### Validaciones en los modelos
+
+Para efectuar la validación sobre las operaciones CRUD con los modelos es tan simple como incluir una instancia de la clase Validator:
+
+	$u = DB::table('products')->setValidator(new Validator());
+	$rows = $u->where(['cost' => '100X', 'belongs_to' => 90])->get();
+
+El validador es alimentado con los tipos del $schema y es complementado con un array $rules que puede estar presente opcionalmente en cada modelo.
+
+La clase Validator implementa la interfaz IValidator proveyendo un método validate() que recibe un array de reglas a validar, un array asociativo con los datos y opcionalmente un array de campos sobre los que se deben saltear las validaciones.
+
+	mixed : validate(array $rules, array $data, array $ignored_fields = null, bool $as_string = false)
+
+El método validate() devuelve TRUE si no detectó reglas rotas y caso contrario devolverá un array con los errores como vimos previamente.
+
+Es posible desactivar el chequeo de campos requeridos para todos los campos llamando al método setRequired(false).
+
+Ejemplo:
+
+	$data  = [ ..., ... , ...];
+	$rules = [ ..., ... , ...];
+
+	$validado = (new Validator())->setRequired(false)
+	->validate($rules,$data);
+
+
+### Constraints
+
+La clase Validator admite las siguientes restricciones:
+
+required 	# el campo es requerido
+type 		# por tipo incluidos nuevos tipos creados con expresiones regulares
+min 		# valor mínimo o longitud mínima para un string
+max			# valor máximo o longitud máxima para un string
+in 			# el valor debe estar dentro de un array de valores
+between		# el valor debe estar entre dos valores; es un rango que incluye ambos extremos
+
+
+### Mensajes personalizados
+
+Para cualquier restricción es posible crear un mensaje personalizable (traducible con i18n) para el error en caso de que falle. 
+
+Los mensajes se crean para cualquier restricción como required, type, min, max, in o between
+
+Ejemplo:
+
+	protected $rules = [
+		'id 			=> ['type' => 'int', 'required' => true]
+        'name' 			=> ['min'=>3, 'max'=>40],
+		'description' 	=> ['max'=>50],
+		'size' 			=> ['max'=>20],
+		'workspace'		=> ['max'=>20],
+		'active'		=> ['type' => 'bool', 'messages' => [ 'type' => 'Value should be 0 or 1'] ]
+	];
+
+Es posible utiliza una sintaxis mucho más amigable importando la librería ValidationRules. Así en un modelo podríamos tener el constructor:
+
+	$this->addRules((new ValidationRules())
+		->field('id')->type('int')->required()
+		->field('name')->type('str')->max(40)->min(3)
+		->field('description')->type('str')->max(50)
+		->field('size')->type('str')->max(20)
+		->field('workspace')->type('str')->max(20)
+		->field('active')->type('bool', 'Value should be 0 or 1')
+	);
+
+
+# ACL
+
+La implementación del ACL incluye "roles" y permisos individuales para cada usuario sobre cada tabla expuesta a través de la API.
+
+Se está implentando un ACL centralizado que se configurará en /config/acl.php y si bien es muy flexible una forma es la siguiente:
+
+	$acl = new Acl();
+
+	$acl->addRole('guest', -1)
+	->addResourcePermissions('products', ['read'])
+
+	->addRole('vendedor', 1)
+	->addInherit('guest')
+	->addResourcePermissions('products', ['write'])
+	->addResourcePermissions('foo', ['create', 'list'])
+
+	->addRole('admin', 100)
+	->addInherit('guest')
+	->addSpecialPermissions(['read_all', 'write_all'])
+
+	->addRole('superadmin', 500)
+	->addInherit('admin')
+	->addSpecialPermissions(['lock', 'fill_all']);
+
+
+Y equivale a:
+
+	$acl->addRoles([
+					'guest' => -1,
+					'vendedor' => 1,
+					'admin' => 100,
+					'superadmin' => 500
+	])	
+
+	->addResourcePermissions('products', ['read'], 'guest')	
+
+	->addInherit('guest', 'vendedor')
+	->addResourcePermissions('products', ['write'])	
+	->addResourcePermissions('foo', ['create', 'list'])	
+
+	->addInherit('guest', 'admin')
+	->addSpecialPermissions(['read_all', 'write_all'])
+
+
+	->addInherit('admin', 'superadmin')
+	->addSpecialPermissions(['lock', 'fill_all']);
+
+
+Cabe notar que los addInherit() deben ir *siempre* antes de los permisos que se quieran agregar al rol heredado. 
+
+El rol de 'guest' debe estar definido con ese nombre o con otro. En caso de que se decida cambiar el nombre del rol guest de 'guest' a otro se debe llamar al método estático setGuest() con el nombre alternativo:
+
+	Acl::setGuest('unregistered');
+
+Además de setear el nombre alternativo es su responsabilidad crear el rol correspondiente con el método addRole()
+
+El Acl genera algo como:
+
+	array(4) {
+	["guest"]=>
+	array(3) {
+		["role_id"]=>
+		int(-1)
+		["sp_permissions"]=>
+		array(0) {
+		}
+		["tb_permissions"]=>
+		array(1) {
+		["products"]=>
+		array(1) {
+			[0]=>
+			string(4) "read"
+		}
+		}
+	}
+	["vendedor"]=>
+	array(3) {
+		["role_id"]=>
+		int(1)
+		["sp_permissions"]=>
+		array(0) {
+		}
+		["tb_permissions"]=>
+		array(2) {
+		["products"]=>
+		array(2) {
+			[0]=>
+			string(4) "read"
+			[1]=>
+			string(5) "write"
+		}
+		["foo"]=>
+		array(2) {
+			[0]=>
+			string(6) "create"
+			[1]=>
+			string(4) "list"
+		}
+		}
+	}
+	["admin"]=>
+	array(3) {
+		["role_id"]=>
+		int(100)
+		["sp_permissions"]=>
+		array(2) {
+		[0]=>
+		string(8) "read_all"
+		[1]=>
+		string(9) "write_all"
+		}
+		["tb_permissions"]=>
+		array(1) {
+		["products"]=>
+		array(1) {
+			[0]=>
+			string(4) "read"
+		}
+		}
+	}
+	["superadmin"]=>
+	array(3) {
+		["role_id"]=>
+		int(500)
+		["sp_permissions"]=>
+		array(2) {
+		[0]=>
+		string(8) "read_all"
+		[1]=>
+		string(9) "write_all"
+		}
+		["tb_permissions"]=>
+		array(2) {
+		["products"]=>
+		array(1) {
+			[0]=>
+			string(4) "read"
+		}
+		["permissions"]=>
+		array(2) {
+			[0]=>
+			string(4) "read"
+			[1]=>
+			string(5) "write"
+		}
+		}
+	}
+	}
+
+
+Existen dos tipos de permisos que se pueden asignar a los roles:  "resource permissions" y "special permissions".
+
+Los "resource permissions" se aplican sobre las tablas especificadas mientras que los "special permissions" son de caracter más general y definen la posibilidad de realizar ciertas acciones administrativas típicas de un "admin".
+
+Además sobre "resource permissions" existen ciertos permisos "especiales" -no confundir con "special permissions"- que habilitan a leer registros que no le pertenecen al tenedor del rol:  
+
+show_all	- lee los registros propios y ajenos sobre ese recurso
+list_all	- lista los registros propios y ajenos sobre ese recurso
+read_all	- lista y lee los registros propios y ajenos sobre ese recurso
+
+Estos permisos típicamente se deberían dar a un "guest" para que pueda por ejemplo leer todas las entradas de un blog o las publicaciones de un sitio de ventas. Si por el contrario a un "guest" se le diera un permiso "read" -en vez de "read_all"- entonces podría darse el caso contradictorio de que un "guest" pueda ver las publicaciones de un vendedor y ese mismo vendedor solo pueda ver las suyas propias y no las de otros vendedores.
+
+Por lo anterior se aconseja no dar un permiso "read" a un "guest" sino en todo caso un "read_all" y hacer que directa o interectamente todos los roles deriven de "guest". 
+
+Estos permisos especiales sobre "resource permissions" pueden tener otros usos interesantes como permitirle a un supervisor ver todos los registros de los usuarios y publicaciones de una tienda:
+
+->addRole('supervisor', 502)  
+->addInherit('registered')
+->addResourcePermissions('users', ['read_all'])  // <--
+->addResourcePermissions('products', ['read_all'])  // <--
+
+
+### Permisos
+
+Los permisos sobre los endpoints son en general del tipo CRUD + permiso para listar los recursos: ['show', 'list', 'create', 'update',  'delete']
+
+
+### Rol de Admin
+
+En lugar de definir de forma monolítica los alcances de un "admin" éste se puede construir a partir de combinaciones de los siguientes permisos especiales asignables a cualquier rol
+
+Ejemplos:
+
+- "lock" - bloquear /besbloquear un registro 
+- "lock" - modificar un registro bloqueado
+- "lock" - borrar un registro bloqueado. Requiere también de "write_all_trashcan"
+- "lock" - borrar definitivamente un registro bloqueado
+- "lock" - restaurar (undelete) un registro bloqueado
+- "read_all" - acceder a registros de otros usuarios (no incluye los protegidos en folders)
+- "read_all" - listar registros de otros usuarios (no incluye los protegidos en folders pero si colecciones)
+- "read_all_folders" - acceder a registros en folders que no se nos han compartido 
+- "read_all_folders" - listar registros en folders que no se nos han compartido
+- "read_all_trashcan" - acceder a  registros de otros en papelera
+- "read_all_trashcan" - listar registros de otros en papelera
+- "write_all" - modificar / borrar registros de otros usuarios (sin alterar su ownership)
+- "write_all_folders" - modificar / borrar registros de otros usuarios en folders (sin alterar su ownership)
+- "write_all_trashcan" - borrar definitivamente / restaurar registros de otros usuarios
+- "write_all_collections" - escribir los registros de las colecciones de otros usuarios. 
+- "transfer" - tranferir un registro o sea cambiar la propiedad (ownership) de un registro (campo belongs_to)
+- "fill_all" - modificar la fecha de creación 
+- "fill_all" - llenar cualquier campo incluso los no-fillables
+- "grant" - conceder roles y permisos
+
+Como colorario es posible tener muchos roles con caracteristicas de un admin o superadmin.
+
+
+### Permisos individuales
+
+Los roles son permisos que se asignan masivamente (por igual) a todos los usuarios que poseen ese rol. Los roles se puden "sumar" obteniendo la suma de los permisos de cada rol.
+
+Si se desea que un usuario particular tenga permisos distintos para una entidad particular que sean distintos de los del rol al que pertenece se pueden especificar "permisos indivuduales" creando un registro para ese usuario y esa tabla referida en la tabla "permissions". Solo puede haber una entrada en "permissions" para cada par (usuario, tabla).
+
+Los cambios en los permisos individuales al igual que los roles solo se aplican cuando el usuario "inicia sessión" o sea.. cuando obtiene los tokens y también cuando los tokens son renovados.
+
+
+Hay distintas tablas y por tanto distintos endpoints para manejar distintos aspectos de los permisos:
+
+tabla permisions: 
+- show, list, create, update, delete 
+- Son permisos dados por un Admin sobre las tablas para usuarios específicos.
+
+tabla folder_permissions:
+- read, write
+- Son dados por los usuarios a ciertos usuarios sobre cierto folder de cierta tabla/
+
+folder_other_permissions:
+- read, write
+- Son dados por los usuarios a otros usuarios (sin especificar su id)
+- Puede especificarse el otorgamiento de permisos a usuarios no-registrados (guest)
+
+Los permisos son leídos al momento de "loguearse" o bien cuando se renuevan las credenciales y por tanto los cambios de permisos solo tienen efecto cuando se renueva el access_token y no antes. 
+
+
+Como podría presentarse la información sobre roles y permisos a un administrador:
+
+Para un usuario:
+
+	roles
+
+		superadmin
+
+	Special permissions
+
+		read_all				[del]
+		write_all				[del]	
+		read_all_collections	[del]
+		write_all_collections	[del]
+		read_all_trashcan		[del]
+		write_all_trashcan		[del]
+		transfer				[del]
+		lock					[del]
+		impersonate				[del]
+		
+	[add]
+		
+	<-- los permisos especiales tienen como base los de su rol o roles y pueden ser decorados via tabla `user_sp_permissions`. Esto significa que lo que "se ve" no es la tabla `user_sp_permissions` sino el resultado de aplicar los permisos combinados de distintos roles y a eso los permisos presentes en la tabla `user_sp_permissions` si los hubiere.	
+
+Para otro usuario:
+
+	roles
+
+		accounting
+		supervisor
+
+	Special permissions
+
+		impersonate				[del]
+		read_all				[del]	
+		
+	[add]	
+
+	tb: users					[del]	
+
+	[X]	list_all
+	[X]	show_all
+	[ ]	list
+	[ ]	show
+	[ ]	create
+	[ ]	update
+	[ ]	delete
+
+	tb: sells					[del]
+
+	[X]	list_all
+	[X]	show_all
+	[ ]	list
+	[ ]	show
+	[ ]	create
+	[ ]	update
+	[ ]	delete
+
+	<-- estos permisos sobre-escriben los permisos propios de su rol o roles del usuario y tienen prioridad por sobre los permisos especiales.
+
+
+
+### Folders
+
+Sobre cada recurso se pueden crear espacios virtuales separados llamados "folders" a los cuales se les pueden establecer permisos para que otros usuarios los visualicen. 
+
+Los folders no tienen nada que ver con el sistema de archivos sino que representan un conjunto de registros de una entidad particular sobre los que se pueden establecer permisos de forma unificada. 
+
+Cada folder existe como un registro distinto en la tabla "folders" y se asocia con una determinada entidad (productos, usuarios, etc) y con un campo en esa entidad conteniendo un valor específico. Para cada endpoint se define el nombre del campo que se asocia al folder, ejemplo:
+
+
+	class Products extends MyApiController
+	{ 
+	    protected $folder_field = 'workspace';
+
+	    function __construct()
+	    {       
+	        parent::__construct();
+	    }	        
+	} 
+
+El campo $folder_field almacena el nombre del campo que en el ejemplo es "workspace".
+
+Para acceder a un folder se especifica el id del folder y otros usuarios pueden entonces listar o visualizar recursos que se le hayan compartido.
+
+	GET /api/v1/v1/products?folder=1
+
+Por supuesto pueden aplicarse otros filtros:
+
+	GET /api/v1/products?folder=1&cost=200
+
+Y puede visualizarse un registro en particular (ej: 124) para el que no tendríamos permiso si no especificamos el folder:
+
+	GET /api/v1/products/124?folder=1		
+
+<-- si el folder se nos ha "compartido" por mediode permisos y no se especifica entonces el registro no se hallará devolviendo 404 (Not Found).
+
+Un usuario con rol de administrador en principio obtendrá todos los registros para un endpoint incluidos los que pertenecen a folders privados de otros usuarios:
+
+	GET /api/v1/products
+
+<-- obtiene todos los registros indiscriminadamente
+
+Sin embargo también puede filtrar a un folder en particular:
+
+	GET /api/v1/products?folder=57
+
+Los permisos para los folders se conceden creando entradas en la tabla folder_permissions y es importante notar que debe darse explícitamente permiso al owner (así como a los otros usuarios) para que éste ver registros dentro de ese folder.
+
+Obviamente cada usuario puede listar, editar o borrar sus folders usando el endpoint /api/v1/folders
+
+Igualmente cada usuario puede hacer CRUD sobre los permisos de "grupo" y para "otros" a través de sus respectivos endpoints /api/v1/FolderPermissions y /api/v1/FolderOtherPermissions respectivamente de modo de permitir a otros miembros acceso de lectura y/o escritura de sus registros.
+
+Para crear un registro en un folder del que se ha concedido permiso de escritura se incluye como campo el id del "folder". Ej:
+
+	POST /api/v1/products
+
+	{
+		"name": "Supreme jugo",
+	    "description": "de manzanas exprimidas",
+	    "size": "1L",
+	    "cost": "250",
+	    "folder": "8"
+	}
+
+O bien se especifica en el "campo clave" que hace identifica al folder, en nuestro caso llamado "workspace" con el valor que corresponda para el folder:
+
+	{
+		"name": "Supreme jugo",
+	    "description": "de manzanas exprimidas",
+	    "size": "1L",
+	    "cost": "250",
+	    "workspace": "lista10"
+	}
+
+En el primer caso, si se especifica un folder pero no tenemos acceso recibiremos un mensaje de error como:
+
+	{
+	    "error": "You have not permission for the folder 8"
+	}
+
+En el segundo caso donde especificamos "workspace": "lista10" en vez de "folder": "8", si el folder no existe no habrá advertencia alguna pues solo estamos creando un registro con esa combinación de campos y distintos usuarios pueden tener folders con el mismo nombre así que no hay problema.
+
+Es importante entender que cuando creamos un registro dentro de un folder que no nos pertenece (porque se nos da permiso de escritura), el registro tampoco será de nuestra propiedad aunque podremos leerlo y escribirlo siempre que tengamos los permisos para ello.
+
+Igualmente para modificar un registro de otro usuario que nos ha compartido su folder especificamos el id del folder:
+
+	PUT /api/v1/products/136
+
+	{
+	    "name": "Vodka venezolano",
+	    "description": "de Vzla",
+	    "size": "1L",
+	    "cost": "15",
+	    "folder": "1"
+	}
+
+Mismo para borrar un registro perteneciente a un folder es necesario estar "dentro" haciendo referencia al folder en cuestión:
+
+	DELETE /api/v1/products/136
+
+	{
+    	"folder": "1"
+	}
+
+
+Nota: el acceso a los folders se chequea en base de datos cada vez que se hace un request especificando que el recurso se halla en un folder. No es necesario esperar a que se renueven los tokens para tener acceso a un folder al cual se nos ha concedido permisos. <-- podría cambiarse para incrementar la performance !!!
+
+Similarmente a lo que sucede con Model, la clase ApiController también aporta event hooks en particular para los folders los siguientes:
+
+
+    public function onGettingFolderBeforeCheck($id, $folder){ } 
+    public function onGettingFolderAfterCheck($id, $folder){ }
+    public function onGotFolder($id, $total, $folder){ }
+
+    public function onDeletingFolderBeforeCheck($id, $folder){ }
+    public function onDeletingFolderAfterCheck($id, $folder){ }
+    public function onDeletedFolder($id, $affected, $folder)
+
+    public function onPostingFolderBeforeCheck($id, $data, $folder){ }
+    public function onPostingFolderAfterCheck($id, $data, $folder){ }
+    public function onPostFolder($id, $data, $folder){ }
+
+    public function onPuttingFolderBeforeCheck($id, $data, $folder){ }
+    public function onPuttingFolderAfterCheck($id, $data, $folder){ }
+    public function onPutFolder($id, $data, $folder, $affected){ }
+       
+
+Desde cualquiera de esos métodos es obviamente posible acceder a métodos y propiedades de visibilidad por lo menos protected de la clase Model y en particular a folder y id (del registro). Ej:
+
+	function onGettingFolderBeforeCheck($id, $folder) {
+        echo "Reading folder {$folder} with id={$id}";
+    }
+
+Un uso práctico de estos hooks sería con onGettingFolderBeforeCheck() implementar la funcionalidad de conceder acceso a un folder siguiendo un enlace que como parámetro puede tener un token. Si el token es válido se concede el acceso al usuario que sigue el enlace insertando el permiso correspondiente en la tabla folder_permissions.
+
+Ej: <pseudocódigo>
+
+	function onGettingFolderBeforeCheck() {
+
+        if ($this->isGuest()){
+            // Informar que debe estar "logueado"
+            return;
+        }
+
+        if ($this->isAdmin()){
+            return;
+        }
+
+        $token = \simplerest\libs\Factory::request()->getQuery('token');
+    
+        // decodificar token y si es válido proseguir
+        
+        $uid = $this->auth['uid'];
+
+        // insertar en la tabla folder_permissions el permiso para el usuario con id $uid`
+        // y el folder  $folder
+    }
+
+
+### Soft delete y la papelera
+
+En cada endpoint se puede definir si se habilita el "soft" delete mediante la propiedad $soft_delete en la api. Ejemplo:
+
+class Products extends MyApiController
+{ 
+	// solo hard delete
+    protected $soft_delete = false;
+
+    // ...
+
+
+La única forma de visualizar registros borrados de forma "suave" así como recuperarlos o borrarlos definitivamente es mediante la papelera con la ventaja de que ésta tiene sus propios permisos.
+
+
+### La Papelera
+
+Cuando un registro es marcado como borrado aparece en trash_can, la papelera de reciclaje, que brinda la posibilidad de gestionar todas las operaciones sobre elementos eliminados.
+
+Para ver elementos en la papelera
+
+	GET /api/v1/trash_can?entity=products
+	GET /api/v1/trash_can/157?entity=products
+
+
+Para hacer un "undelete" de un recurso se hace un PATCH o PUT sobre el trash_can
+
+	PATCH /api/v1/trash_can/157	
+
+	{
+		"entity": "Products",
+		"trashed": false
+	}
+
+Para eliminar *permanentemente* un recurso se realiza un DELETE sobre el elemento en la papelera:
+
+	DELETE /api/v1/trash_can/157
+
+	{
+    	"entity": "Products"
+	}
+
+La papelera acepta los mismos filtros y los resultados se pueden ordenar igual que con cualquier entidad:
+
+	GET GET /api/v1/trash_can?entity=Products&orderBy[deleted_at]=DESC
+
+
+### Colecciones
+
+Para realizar acciones masivas se recomienda crear colecciones. Por ejemplo si quisiera afectar 3 registros:
+
+POST /api/v1/collections
+
+{
+	"entity": "products",
+	"refs": [198,199,200]
+}
+
+Luego si por ejemplo quiero realizar una edición masiva de un campo "enabled" poniéndolo en 1 en toda la colección 
+
+PATCH /api/v1/collections/2
+
+{
+    "cost": "99"
+}
+
+Para borrar masivamente
+
+DELETE /api/v1/collections/9
+
+Cabe destacar que las operaciones PATCH y DELETE se efectuan sobre los registros contenidos en la colección de sus respectiva entidad o dicho de otro modo un DELETE sobre una colección no borra solo el registro de la colección sino los registros asociados + el registro de la colección.
+
+Por lo anterior en un PATCH sobre una colección no es posible modificar "refs" ni el "id" de la colección via endpoint.
+
+Son seguras las colecciones?
+
+  - NO debería poder crear una colección de registros que no me pertenecen sino soy "admin" o tengo los permisos correspondientes ? -> no importa porque la verificación se hace al mommento de intentar afectar los registros de la colección.
+  - No debería evitarse poder crear colecciones sobre registros inexistentes ? -> no importa porque al momento de hacer el PATCH o el DELETE sobre la colección solo se afectarán los registros existentes.   
+  - No deberían poder crearse dos colecciones iguales (mismos registros, misma tabla) -> no importa porque tanto PATCH como DELETE son idempotentes.
+  - El permiso write_all no se queda corto si las colecciones se llegaran a crear sobre roles, user_roles, sp_permissions, tb_permissions, folders, folder_permissions, other_folder_permissions, etc ? SI! y por eso se restringe y no se dejan crear colecciones sobre esas tablas.
+
+
+Filtrar colecciones
+
+GET /api/v1/collections?entity=documents
+
+
+### Convención de nombres 
+
+Recomendamos separar las palabras con guión bajo (_) en los nombres de las entidades. Ejemplo:
+
+/api/v1/super_cool_table
+/api/v1/trash_can?entity=super_cool_table
+etc.
+
+En vez de usar:
+
+/api/v1/SuperCoolTable
+/api/v1/TrashCan?entity=SuperCoolTable
+etc
+
+
+### Registros bloqueados
+
+El admin puede colocar un "lock" sobre registros impidiendo que:
+
+- Puedan ser modificados por el propietario. Le arrojará un código 403. 
+- No puedan ser borrados. Le arrojará un código 403. 
+- No puedan ser vistos en la papelera por el propietario. Le arrojará un codigo 403. 
+- No puedan ser recuperados por el propietario. Le arrojará un código 403. 
+- No puedan ser borrados permanentemente por el propietario cuando se hayan en la papelera. 
+
+Cuando un registro es borrado por el Admin éste es bloqueado para el usuario propietario evitando así que pueda modificarlo, recuperarlo o borrarlo permanentemente.
+
+Implementación:
+
+Una entidad correspondiente a un endpoint si contiene un campo 'locked' de tipo "bool" (TINYINT para Mysql) entonces queda habilitada para el mecanismo de "bloqueo".
+
+
+### Seguridad 
+
+Es muy importante tener buen criterio al momento de entregar permisos ya que es potencialmente posible lograr escalarlos manipulando las tablas de permisos, etc.
+
+
+# La API
+
+Por cada entidad (normalmente una tabla en la DB) existe un único endpoint de la forma /api/{version}/nombre_entidad sobre el que se puede hacer un get, post, put, patch y delete donde v1 es la versión de la API pero podría ser otra.
+
+Adicionalmente para los usuarios existe un endpoint adicional /api/{version}/me que permite obtener información útil y realizar operaciones que en determinadas circunstancias no es posible sobre una url como /api/v1/users/:id
+
+Los endpoints se sirven mediante clases que extienden a ApiController, un tipo de ResourceController.
+
+Un usuario (sin ser Admin pero con los permisos correctos) podría crear otros usuarios y éstos le pertencerán así que podrá visualizarlos o modificarlos a su gusto pero como consecuencia de la implementan del ACL, el campo belongs_to apuntará al "creador" y como consecuencia el propio usuario podría no tener permisos suficientes para mpdificar sus propios datos personales. Este problema se soluciona al utilizar el endpoint /api/v1/me
+
+Otro endpoint adicional es /api/v1/trash_can que corresponde a una papelera de registros y se explica en la sección correspondiente. 
+
+# Funcionalidad out-the-box de la API
+
+## GET <READ>
+
+    GET /api/v1/products
+    GET /api/v1/products/83
+
+### Search    
+
+    GET /api/v1/products?name=Vodka
+    GET /api/v1/products?name=Vodka&size=1L
+
+IN / NOT IN
+
+    GET /api/v1/products?name=Vodka,Wisky,Tekila
+    GET /api/v1/products?name[in]=Vodka,Wisky,Tekila
+    GET /api/v1/products?name[notIn]=CocaCola,7up
+
+### String comparisons   
+
+    contains 
+    notContains 
+    startsWith  
+    notStartsWith
+    endsWith   
+    notEndsWith
+    
+Example
+
+    GET /api/v1/products?name[contains]=jugo 
+
+### Other comparators
+
+    =    eq
+    !=   neq
+    >    gt
+    <    lt
+    >=   gteq
+    <=   lteq
+
+Example:  
+    
+    GET /api/v1/products?cost[gteq]=25&cost[lteq]=100
+
+### BETWEEN
+
+    GET /api/v1/products?orderBy[cost]=ASC&cost[between]=200,300
+    GET /api/v1/products?created_at[between]=2019-10-15 00:00:00,2019-09-01 23:59:59
+
+### List of fields to include
+
+    GET /api/v1/products?fields=id,name,cost
+    GET /api/v1/products/83?fields=id,name,cost
+    GET /api/v1/products?fields=id,cost&name=Vodka
+
+### Exclude fields
+
+    GET /api/v1/users?exclude=firstname,lastname
+
+### Select null or not null values
+
+    GET /api/v1/products?description=NULL
+    GET /api/v1/products?description[neq]=NULL
+
+# Pagination
+
+### ORDER BY
+
+    GET /api/v1/products?orderBy[cost]=DESC
+    GET /api/v1/products?orderBy[cost]=DESC&order[name]=ASC
+    GET /api/v1/products?orderBy[cost]=ASC&order[id]=DESC
+
+### LIMIT
+
+    GET /api/v1/products?limit=10
+    GET /api/v1/products?offset=40&limit=10
+    GET /api/v1/products?limit=10&order[name]=ASC&order[cost]=DESC&size=2L
+
+Pagination can be done with page and pageSize
+
+    GET /api/v1/products?page=3
+    GET /api/v1/products?pageSize=20&page=2
+
+Response is an array of rows that include a paginator with navigation information:
+
+{
+    "data": [
+        {
+            "id": "126",
+            "name": "Uvas fermentadas",
+            "description": "Espectacular",
+            ...
+        },
+        {
+            "id": "131",
+            "name": "Vodka",
+            "description": "de Estados Unidos!",
+            ...
+        },
+        ...
+    ],
+    "error": "",
+    "error_detail": "",
+    "paginator": {
+        "pages": 7,
+        "nextUrl": "http://simplerest.lan/api/v1/products?pageSize=10&page=2"
+    }
+}
+    
+# Aggregate Functions – Average, Count, Sum, Max and Min
+
+Examples:
+
+	GET /api/v1/products?props=min(cost)
+	GET /api/v1/products?size=1L&props=avg(cost)
+
+Response is something like:
+
+{
+    "data": {
+        "AVG(cost)": "191.0714"
+    },
+    "error": "",
+    "error_detail": ""
+}
+
+Note that if the field on which you want to calculate is not specified, it is not performed and no error is throw. In the case of count() function if you don't want to specify a field you must pass * as a parameter:
+
+	GET /api/v1/products?props=count(*) as cant
+	
+
+Or with an alias
+
+	GET /api/v1/products?size=1L&props=avg(cost) as media
+
+# Grouping
+
+	GET /api/v1/products?props=count(*) as cant&groupBy=size&fields=size
+
+Example of Response:
+
+{
+    "data": [
+        {
+            "size": "",
+            "cant": "21"
+        },
+        {
+            "size": "0.5L",
+            "cant": "2"
+        },
+        ...
+    ],
+    "error": "",
+    "error_detail": ""
+}
+
+Note: when groupBy is used, you should specify the fields to be selected. 
+
+With having
+
+	GET /api/v1/products?groupBy=size&fields=size&props=avg(cost)&having=avg(cost)>=150
+
+Having with alias 
+
+	GET /api/v1/products?groupBy=size&fields=size&props=avg(cost) as avg&having=c>=150
+
+### Pretty print 
+
+    GET /api/v1/products?pretty
+
+By default pretty print can be enabled or disabled in config/config.php    
+
+
+## POST <CREATE>
+
+    POST /api/v1/products
+
+    {
+        "name": "Vodka",
+        "description": "from Bielorussia",
+        "size": "2L",
+        "cost": "200"
+    }
+
+## DELETE
+
+    DELETE /api/v1/products/100
+
+A record can be effectly deleted in one shot from database or if soft-delete is enabled then be marked as deleted in which case it will be seen as deleted as well.
+
+When a record is softly deleted then it can be seen at trash_can where is posible to delete it permanently or to be recovered.
+
+
+## PUT  <UPDATE>
+
+    PUT /api/v1/products/84
+
+    {
+        "name": "Vodka",
+        "description": "from Russia",
+        "size": "2L",
+        "cost": "200"
+    }
+
+
+## PATCH <PARTIAL UPDATE>
+
+    PUT /api/v1/products/84
+
+    {
+        "description": "from Mongolia",
+        "cost": "230"
+    }
+
+# /me
+
+The simple way to perform CRUD operations on the current user is using /api/v1/me endpoint.
+
+    GET /api/v1/me
+
+    {
+        "data": {
+            "id": "4",
+            "username": "pbozzolo",
+            "email": "pbozzolo@gmail.com",
+            "confirmed_email": "1",
+            "firstname": "Paulinoxxxy",
+            "lastname": "Bozzoxxxy",
+            "deleted_at": null,
+            "belongs_to": "0"
+        },
+        "error": "",
+        "error_detail": ""
+    }
+
+
+### Las respuestas de la API
+
+Una respuesta exitosa a un GET presenta un campo 'data' en la respuesta:
+
+{
+    "data": {
+        "id": "185",
+        "name": "ABC",
+        "description": "",
+        "size": "",
+        "cost": "0",
+        "created_at": "2019-11-03 23:55:18",
+        "updated_at": null,
+        "deleted_at": null,
+        "locked": "0",
+        "workspace": null,
+        "belongs_to": "132"
+    },
+    "error": "",
+    "error_detail": ""
+}
+
+En cambio una respuesta que contiene un error, puede o no poseer cuerpo pudiendo ser solo el código de estaus http o bien incluir también un cuerpo con los campos "error" y "error_detail"
+
+{
+    "error": "Not found",
+    "error_detail": "Register for id=1850 does not exists"
+}
+
+### created_by=me, update_by=me o belongs_to=me
+
+Puede darse el caso de que un usuario sea el owner de ciertos registros pero que no hayan sido creados por él sino por otro usuario con permisos (por ejemplo un Admin).
+
+Es posible filtrar facilmente los registros creados, actualizados o pertenecientes al usuario que hace el request colocando 'me' en lugar del id del propio usuario. 
+
+Ejemplos:
+
+GET /api/v1/products?created_by=me
+GET /api/v1/products?created_by[neq]=me
+GET /api/v1/products?belongs_to[neq]=me
+GET /api/v1/products?belongs_to=90,me,1  
+GET /api/v1/products?belongs_to[notIn]=90,me,1
+...
+GET /api/v1/userRoles?belongs_to=me
+...
+
+
+# Method override
+
+Si en el servidor estuvieran desactivados PUT, PATCH o DELETE aún es posible utilizarlos haciendo un "method override".
+
+If your REST client does not support certain requests, you can use the X-HTTP-Method-Override header:
+
+PUT = POST + X-HTTP-Method-Override: PUT
+PATCH = POST + X-HTTP-Method-Override: PUT
+DELETE = GET + X-HTTP-Method-Override: DELETE
+
+Alternatively, you can also override the HTTP method by using the _method query string parameter.
+
+GET /api/v1/products/126?_method=patch
+GET /api/v1/products/126?_method=put
+GET /api/v1/products/126?_method=delete
+
+
+#  Funciones agregativas
+
+Es posible calcular directamente en la base de datos las funciones min(), max(), avg() y sum() sobre el campo especificado.
+
+Ejemplos:
+
+GET /api/v1/products?size=2L&props=avg(cost)
+GET /api/v1/products?size=2L&props=avg(cost) as prom
+GET /api/v1/products?size=2L&props=sum(cost) as suma
+etc.
+
+
+# Archivos
+
+Se pueden subir archivos al servidor:
+
+POST /api/v1/files 
+
+<-- como "form-data". Admite múltiples archivos en el mismo request.
+
+Resultando en
+
+{
+    "data": {
+        "uploaded": [
+            {
+                "filename": "65394374_10158090117128840_7189038881361100800_o.jpg",
+                "id": "240",
+                "link": "/download/get/240"
+            },
+            {
+                "filename": "78372400_3426368247403784_5430079366526664704_n.jpg",
+                "id": "241",
+                "link": "/download/get/241"
+            }
+        ],
+        "failures": []
+    },
+    "status_code": 201,
+    "error": "",
+    "error_detail": ""
+}
+
+Los archivos se pueden filtrar por múltiples criterios, por ejemplo: extensión
+
+GET /api/v1/files?file_ext=jpg
+
+{
+    "data": [
+        {
+            "id": "240",
+            "filename": "65394374_10158090117128840_7189038881361100800_o.jpg",
+            "file_ext": "jpg",
+            "filename_as_stored": "90-5f5bb828cb06c3.52751786.jpg",
+            "belongs_to": "90",
+            "guest_access": "0",
+            "locked": "0",
+            "created_at": "2020-09-11 14:47:20",
+            "deleted_at": null
+        },
+        {
+            "id": "241",
+            "filename": "78372400_3426368247403784_5430079366526664704_n.jpg",
+            "file_ext": "jpg",
+            "filename_as_stored": "90-5f5bb828e85fe4.62412332.jpg",
+            "belongs_to": "90",
+            "guest_access": "0",
+            "locked": "0",
+            "created_at": "2020-09-11 14:47:21",
+            "deleted_at": null
+        }
+    ],
+    "status_code": 200,
+    "error": "",
+    "error_detail": "",
+    "paginator": {
+        "total": 2,
+        "count": 2,
+        "currentPage": 1,
+        "totalPages": 1,
+        "pageSize": 10,
+        "nextUrl": "null"
+    }
+}
+
+Borrar un archivo 
+
+	DEL /api/v1/files/241
+
+
+# Modelos y esquemas (schemas)
+
+Modelos y schemas se mantienen separado en distintos archivos. El comando 'make' crea modelos y schemas mientras que el comando 'migrate' impactará en la DB reflejando cambios en los schema.
+
+ 
+   								   Api Rest   
+	  	  [make]                      |
+	DB ------------> Schema           |
+							<------ Model (Query Model) <---- ORM
+	 	  migration		
+	   <------------           
+
+
+make schema foo --include-defaults
+make schema all --include-defaults
+make schema * --include-defaults
+
+make schema-change foo --include-defaults
+make schema-change all --include-defaults
+make schema-change * --include-defaults
+make schema-change * --include-defaults --exclude=belongs_to
+make schema-change foo --remove=algun_campo
+
+<-- estos últimos alteran los schema y generan archivos de migración
+
+make schema xxxx
+
+El parámetro --include-defaults crea o agrega los campos manejados automáticamente por el framework:
+
+created_at
+created_by
+...
+...
+..,
+	
+	
+# Make 
+
+Para generar modelos, controladores y apis se utiliza el comando make de la siguiente forma: 
+
+	make schema SuperAwesome [-f | --force]
+    make schema super_awesome  [-f | --force]
+
+    make model SuperAwesomeModel  [-f | --force]
+    make model SuperAwesome [-f | --force]
+    make model super_awesome  [-f | --force]
+
+    make controller SuperAwesome  [-f | --force]
+
+    make api SuperAwesome  [-f | --force]
+    make api super_awesome  [-f | --force]
+
+    make any SuperAwesome  [-s | --schema ] 
+                            [-m | --model] 
+                            [-c | --controller ] 
+                            [-a | --api ] 
+                            [-f | --force]
+
+Ejemplo:
+    
+    make any baz -s -m -a -f
+
+Lo anterior es equivalente a:
+
+	make any baz -samf
+
+<-- solo existen (hasta ahora) los atajos -sam y -samf 
+
+Para controladores es posible especificar una ruta interior a apps\controllers:
+
+	php index.php make controller sub1\a\cosas
+
+<-- el index.php está en la carpeta public
+
+
+Es posible ignorar controladores, api resful controllers, modelos y schemas colocándo sus nombres en el siguiente archivo en /apps:
+
+	.make_ignore
+
+Ejemplo:
+
+	models\UsersModel.php
+	models\FilesModel.php
+	models\schemas\FooSchema.php
+	# models\CollectionsModel.php
+	models\ProductsModel.php
+	controllers\UsersController.php
+	controllers\sub1\a\OpsController.php
+	ProductsController.php
+
+Puede observarse que:
+
+	- Se pueden especificar rutas relativas a /app
+	- Se pueden especificar solo los nombres de los archivos -sin ruta-
+	- Se pueden anular los ignore comentando la línea con una #almohadilla 
+	
+
+# NGINX web server
+
+Agregar en el bloque lo siguiente:
+
+	location /{
+		rewrite ^([^.]*[^/])$ $1/ permanent;
+		try_files $uri $uri/ /index.php?q=$uri&$args;
+	}

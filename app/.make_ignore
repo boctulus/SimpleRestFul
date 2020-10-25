@@ -1,0 +1,30 @@
+# Files to be ignored by Make
+
+
+# Models
+UsersModel.php
+FilesModel.php
+FooModel.php
+
+# Controllers
+UsersController.php
+MyController.php
+MyApiController.php
+MakeController.php
+LoginController.php
+GoogleController.php
+FacebookController.php
+ProductsController.php
+DumbController.php
+DumbAuthController.php
+DownloadController.php
+
+# Apis 
+controllers/api/Me.php
+controllers/api/Products.php
+controllers/api/Roles.php
+controllers/api/UserRoles.php
+controllers/api/UserSpPermissions.php
+controllers/api/UserTbPermissions.php
+
+# Schemas

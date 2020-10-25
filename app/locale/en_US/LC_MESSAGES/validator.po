@@ -29,6 +29,9 @@ msgstr  ""
 msgid   "%s is required"
 msgstr  ""
 
+msgid   "Field is required"
+msgstr  ""
+
 msgid   "Invalid regular expression!"
 msgstr  ""
 
@@ -77,8 +80,8 @@ msgstr  ""
 msgid   "It's not a valid time"
 msgstr  ""
 
-msgid   "Maximum length is %d"
+msgid   "The maximum length is %d characters"
 msgstr  ""
 
-msgid   "Minimum length is %d"
+msgid   "The minimum length is %d characters"
 msgstr  ""

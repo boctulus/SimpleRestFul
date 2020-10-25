@@ -3,34 +3,19 @@
 namespace simplerest\models;
 
 use simplerest\core\Model;
-use simplerest\libs\Factory;
+use simplerest\libs\ValidationRules;
+use simplerest\models\schemas\MessagesSchema;
 
 class MessagesModel extends Model
  { 
-	protected $nullable = ['to_name', 'attempts', 'sent_at'];
+	### TRAITS
+	### PROPERTIES
 
-	protected $schema = [
-		'id' => 'INT',
-		'from_email' => 'STR',
-		'from_name' => 'STR',
-		'to_email' => 'STR',
-		'to_name' => 'STR',
-		'subject' => 'STR',
-		'body'=> 'STR',
-		'created_at' => 'STR',
-		'sent_at' => 'INT'
-	];
+	protected $hidden   = [];
+	protected $not_fillable = [];
 
-	protected $rules = [
-		'from_email' 	=> ['type' => 'email'],
-		'from_name' 	=> ['min'=>3, 'max'=>60],
-		'to_email' 	=> ['type' => 'email'],
-		'to_name' 	=> ['min'=>3, 'max'=>60],
-		'body' => ['min'=> 3]	
-	];
-
-    function __construct($db = NULL){
-        parent::__construct($db);
-    }	
-	
+    function __construct(bool $connect = false){
+        parent::__construct($connect, new MessagesSchema());
+	}	
 }
+

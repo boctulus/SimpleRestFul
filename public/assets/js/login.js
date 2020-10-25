@@ -43,7 +43,7 @@ function register(){
 
 	$.ajax({
 		type : "POST",
-		url: "/auth/register",
+		url: "/api/v1/auth/register",
 		data : JSON.stringify(obj),
 		dataType: 'json',
 		success : function(res) {
@@ -87,7 +87,7 @@ function login(){
 
 	$.ajax({
 		type: "POST",
-		url: '/auth/login',
+		url: '/api/v1/auth/login',
 		data: JSON.stringify(obj),
 		dataType: 'json',
 		success: function(res){
@@ -127,7 +127,7 @@ function renew(){
 
 	$.ajax({
 		type: "POST",
-		url: '/auth/token',
+		url: '/api/v1/auth/token',
 		dataType: 'json',
 		headers: {"Authorization": 'Bearer ' + localStorage.getItem('refresh_token')}, 
 		success: function(res){

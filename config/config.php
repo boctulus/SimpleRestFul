@@ -10,23 +10,44 @@ return [
 	# BASE_URL' => /folder/'
 	#
 	'BASE_URL' => '/',   
-	'HTTPS' => 'Off',
-	'DEFAULT_CONTROLLER' => 'ProductsController',
 
-	'database' => [
-		'host' => 'localhost',
-		'db_name' => 'simplerest', 
-		'user' => 'simplerest', 
-		'pass' => 'Hvr0tf9Is'
+	'ROUTER' => true,
+	'FRONT_CONTROLLER' => true,
+	
+	/*
+		urls start with /api/ if REMOVE_API_SLUG is set to false
+	*/	
+	'REMOVE_API_SLUG' => false, 
+	'HTTPS' => 'Off',
+	'DEFAULT_CONTROLLER' => 'LoginController',
+
+	'db_connections' => [
+		'db1' => [
+			'host'	=> 'localhost',
+			'driver' => 'mysql',
+			'db_name' => 'simplerest', 
+			'user'	=> 'boctulus', 
+			'pass'	=> 'gogogo#*$U&_441@#'
+		],
+		/*
+		'db2' => [
+			'host'	=> 'localhost',
+			'driver' => 'mysql',
+			'db_name' => 'simplerest', 
+			'user'	=> 'boctulus', 
+			'pass'	=> 'gogogo#*$U&_441@#'
+		]
+		*/
 	], 
 
 	'DateTimeZone' => 'America/Argentina/Buenos_Aires',
 
-	'debug_mode'   => true,
+	'error_handling'   => true,
+	'debug'   => true,
 
 	'access_token' => [
 		'secret_key' =>'/`D*x!I<T^SH*_~&<#-&^%s~etN,RX`G_|{<+#"-I<{!}*![[}${([-zC<~pX$,e~#[[h~nyW?~:`ak><_b@>@=|$o=?h}!u+U&[##/\(> []T.Yx_J\x|g{\N`h^})\_a/<D#X( m+qb#|-,i>-~.j~(RG&[_*.,`r^LM,.E<V:`v~?;`~#p&<:W;>\%\]~fE}d~m{!u@,"Jt<b-?}A=m]H$-`|[B&@<.u@FAl:u}@>|ft!?|&|@|=@aTC@v\|Oe Gn|Rg}}; !@\@D+~@.;~<V[&yno^U|>{?{:vc`^[S`W?V<E<|[;}]}{|-{o["|}E[Op&$yL%+*}G}(|]..?,w}!#P+,=a(+`<<*^N.:V#$%.lr(%:!|&zM#%F?";=]ABb.;/[xd)#{^J]!~~|){[>a:*]>`%-"~\Fu}LBUW_},J[+,a$(? G,#" |$}VTS%*}K(|[_&:gm%^I/z+[M_E<(.n|j#$-<|]${*{+$[b_*/}m$m^&T^%>[^&!]|k+L',
-		'expiration_time' => 60 * 15 * 100000,   // seconds (normalmente 60 * 15)
+		'expiration_time' => 60 * 15 * 10000,   // seconds (normalmente 60 * 15)
 		'encryption' => 'HS256'			
 	],
 
@@ -42,10 +63,14 @@ return [
 	],
 
 	/* 
-		aditional role to the implicit 'registered' after being registered
-		leave empty for none
+		Any role listed bellow if it is asked then will be auto-aproved.
 	*/
-	//'registration_role' => 'regular',
+	'auto_approval_roles' => ['basic', 'regular'],
+
+	/*
+		If you need email confirmation then pre_activated should be false
+	*/
+	'pre_activated' => false,
 
 	// seconds
 	'email' => [
@@ -71,7 +96,8 @@ return [
 
 	'pretty' => false,	
 	
-	'paginator' => ['max_limit' => 50,
+	'paginator' => [
+					'max_limit' => 50,
 					'default_limit' => 10
 	],
 
@@ -79,13 +105,13 @@ return [
 		'client_id' => '228180780767-4p8t6nvocukmu44ti57o60n1ck6sokpd.apps.googleusercontent.com',
 		'client_secret' => 'JByioBo6mRiVBkhW3ldylYKD',
 		// https://simplerest.mapapulque.ro/login/google_login
-		'callback' => 'http://simplerest.co/login/google_login'
+		'callback_url' => 'http://simplerest.co/login/google_login'
 	],
 
 	'facebook_auth' => [
 		'app_id' => '533640957216135',
 		'app_secret' => '234a9cf42e8710ed813d45ed9e0fb212', 
-		'callback' => 'https://simplerest.mapapulque.ro/login/fb_login'
+		'callback_url' => 'https://simplerest.mapapulque.ro/login/fb_login'
 	]
 	
 ];

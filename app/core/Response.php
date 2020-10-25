@@ -3,6 +3,7 @@
 namespace simplerest\core;
 
 use simplerest\libs\Factory;
+use simplerest\libs\DB;
 
 class Response
 {
@@ -10,19 +11,25 @@ class Response
     static protected $http_code = NULL;
     static protected $http_code_msg = '';
     static protected $instance = NULL;
-    static protected $version = '1.1';
+    static protected $version = '2';
     static protected $config;
     static protected $pretty;
     static protected $quit = true;
     static protected $paginator;
+    static protected $as_object = false;
+    static protected $fake_status_codes = false; // send 200 instead
     static protected $options = JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES;
-
 
 
     protected function __construct() { 
         static::$config = include CONFIG_PATH . 'config.php';
         static::$pretty = static::$config['pretty'];
     }
+
+    public function __destruct()
+    {
+        DB::closeAllConnections();
+    }    
 
     static function getInstance(){
         
@@ -40,6 +47,10 @@ class Response
             throw new \Exception("Headers already sent in in $filename on line $line. Unable to redirect to $url");
     }
 
+    function asObject(bool $val = true){
+        static::$as_object = $val;
+    }
+
     function addHeaders(array $headers)
     {
         static::$headers = $headers;
@@ -50,6 +61,22 @@ class Response
     {
         static::$headers[] = $header;
         return static::getInstance();
+    }
+
+    /**
+     * sendHeaders
+     *
+     * @param  mixed $headers
+     *
+     * @return void
+     */
+    private function sendHeaders(array $headers = []) {
+        foreach ($headers as $k => $val){
+            if (empty($val))
+                continue;
+            
+            header("${k}:$val");
+        }
     }
 
     function code(int $http_code, string $msg = NULL)
@@ -87,16 +114,15 @@ class Response
     } 
 
     function send($data, int $http_code = NULL){
-        $http_code = $http_code != NULL ? $http_code : static::$http_code;
-        
-        if ($http_code == NULL)
-          static::$http_code;
+        $http_code = $http_code != NULL ? $http_code : (static::$http_code !== null ? static::$http_code : 200);
 
-        if ($http_code != NULL)
+        if (!headers_sent()) {
             header(trim('HTTP/'.static::$version.' '.$http_code.' '.static::$http_code_msg));
-        
-        if (is_array($data) || is_object($data)){
+        }    
+
+        if (static::$as_object || is_object($data) || is_array($data)) {
             $arr = ['data' => $data, 
+                    'status_code' => $http_code,
                     'error' => '', 
                     'error_detail' => '' 
             ];
@@ -105,33 +131,55 @@ class Response
                 $arr['paginator'] = static::$paginator;
 
             $data = $this->encode($arr);
+            header('Content-type:application/json;charset=utf-8');
         }            
 
         //if (Factory::request()->gzip() && strlen($data) > 1000){
         //    $this->addHeader('Content-Encoding: gzip');
         //    $this->zip($data. "\n");
         //}else
-            echo $data. "\n";
+        //    echo $data. "\n";
+
+        echo $data;    
 
         if (static::$quit)
             exit;  	
     }
 
     function sendCode(int $http_code){
-        http_response_code($http_code);
+        echo json_encode(['status_code' => $http_code]);
+          
+        if (!static::$fake_status_codes){    
+            http_response_code($http_code);
+        }    
 
         if (static::$quit)
             exit; 
     }
  
+
+    function sendOK(){
+        if (!headers_sent()) {
+            http_response_code(200);
+        }
+        exit;
+    }
+
     // send as JSON
     function sendJson($data, int $http_code = NULL){
-        $http_code = $http_code != NULL ? $http_code : static::$http_code;
+        $http_code = $http_code != NULL ? $http_code : (static::$http_code !== null ? static::$http_code : 200);
         
-        if ($http_code != NULL)
+        if (!headers_sent()) {
             header(trim('HTTP/'.static::$version.' '.$http_code.' '.static::$http_code_msg));
-       
-        $res =  $this->encode([ 'data' => $data, 'error' => '', 'error_detail' => '' ]). "\n"; 
+            header('Content-type:application/json;charset=utf-8');
+        }
+
+        $res =  $this->encode([ 
+                                'data' => $data, 
+                                'status_code' => $http_code,
+                                'error' => '', 
+                                'error_detail' => ''
+        ]). "\n"; 
         
         if (Factory::request()->gzip() && strlen($res) > 1000){
             $this->addHeader('Content-Encoding: gzip');
@@ -155,17 +203,23 @@ class Response
      * @return void
      */
     function sendError(string $msg_error, int $http_code = NULL, $error_detail= NULL){
-        if ($http_code == NULL)
-            if (static::$http_code != NULL)
-                $http_code = static::$http_code;
-            else
-                $http_code = 500;
-  
-        if ($http_code != NULL)
-            header(trim('HTTP/'.static::$version.' '.$http_code.' '.static::$http_code_msg));
-
+        if (!headers_sent()) {
+            if ($http_code == NULL)
+                if (static::$http_code != NULL)
+                    $http_code = static::$http_code;
+                else
+                    $http_code = 500;
+    
+            if ($http_code != NULL && !static::$fake_status_codes)
+                header(trim('HTTP/'.static::$version.' '.$http_code.' '.static::$http_code_msg));
+                header('Content-type:application/json;charset=utf-8');
+        }    
         
-        $res =  $this->encode(['error' => $msg_error, 'error_detail' => $error_detail], $http_code) . "\n";
+        $res =  $this->encode([ 
+                                'status_code' => $http_code,
+                                'error' => $msg_error,
+                                'error_detail' => $error_detail
+        ], $http_code) . "\n";
         
         if (Factory::request()->gzip() && strlen($res) > 1000){
             $this->addHeader('Content-Encoding: gzip');
@@ -174,7 +228,9 @@ class Response
         else
             echo $res;
         
-        if (static::$quit)
-            exit; 
+        if (static::$quit){
+            exit;
+        }
+             
     }
 }

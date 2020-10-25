@@ -6,17 +6,10 @@ use simplerest\controllers\MyApiController;
 
 class SuperCoolTable extends MyApiController
 { 
-    protected $scope = [
-        'guest'      => [],  
-        'registered' => ['read'],
-        'basic'      => ['read', 'write'],
-        'regular'    => ['read', 'write']
-    ];
+    static protected $soft_delete = true;
 
     function __construct()
     {       
         parent::__construct();
-    }
-
-        
-} // end class
+    }        
+} 

@@ -30,6 +30,9 @@ if (!defined('CORE_PATH'))
 if (!defined('MODELS_PATH'))
     define('MODELS_PATH', APP_PATH . 'models'. DIRECTORY_SEPARATOR);    
 
+if (!defined('SECURITY_PATH'))
+    define('SECURITY_PATH', APP_PATH . 'security'. DIRECTORY_SEPARATOR);    
+
 if (!defined('VIEWS_PATH'))
     define('VIEWS_PATH', APP_PATH .  'views' . DIRECTORY_SEPARATOR);  
 
@@ -37,7 +40,7 @@ if (!defined('CONTROLLERS_PATH'))
     define('CONTROLLERS_PATH', APP_PATH . 'controllers' . DIRECTORY_SEPARATOR);    
 
 if (!defined('API_PATH'))
-    define('API_PATH', APP_PATH  . 'api' . DIRECTORY_SEPARATOR); 
+    define('API_PATH', CONTROLLERS_PATH  . 'api' . DIRECTORY_SEPARATOR); 
 
 if (!defined('LIBS_PATH'))
     define('LIBS_PATH', APP_PATH . 'libs' . DIRECTORY_SEPARATOR);   

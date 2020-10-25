@@ -5,13 +5,6 @@ namespace simplerest\libs;
 use PHPMailer\PHPMailer\PHPMailer;
 
 class Utils {
-	static function logger($data, $file = 'log.txt'){		
-		if (is_array($data) || is_object($data))
-			$data = json_encode($data);
-		
-		return file_put_contents(LOGS_PATH . $file, $data. "\n", FILE_APPEND);
-	}
-
 	static function send_mail(string $to_email, string $to_name, $subject, $body, $alt_body = null){
 		$config = include CONFIG_PATH . 'config.php';
 
@@ -25,7 +18,7 @@ class Utils {
         $mail->setFrom($config['email']['mailer']['from'][0], $config['email']['mailer']['from'][1]);    
         $mail->addAddress($to_email, $to_name);
        
-        $mail->Subject = $subject;
+        $mail->uidject = $subject;
 		$mail->msgHTML($body); 
 		
 		if (!is_null($alt_body))

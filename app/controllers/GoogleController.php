@@ -22,7 +22,7 @@ class GoogleController extends Controller
         $client->setApplicationName('App Name');
         $client->setClientId($this->config['google_auth']['client_id']);
         $client->setClientSecret($this->config['google_auth']['client_secret']);
-        $client->setRedirectUri($this->config['google_auth']['callback']);
+        $client->setRedirectUri($this->config['google_auth']['callback_url']);
 
         $client->setScopes('https://www.googleapis.com/auth/userinfo.email');
         #$client->addScope("https://www.googleapis.com/auth/drive");
@@ -118,37 +118,43 @@ class GoogleController extends Controller
         if (!$payload)
             exit;
 
+
+        DB::beginTransaction();
+
         try 
         {        
             $conn = $this->getConnection();	
-            $u = (new UsersModel($conn))->setFetchMode('ASSOC');
+            $u = (new UsersModel($conn))->assoc();
 
             $rows = $u->where(['email', $payload['email']])->get();
 
             if (count($rows) == 1){
                 // Email already exists
                 $uid = $rows[0]['id'];
-
-                $ur = (new UserRolesModel($conn))->setFetchMode('ASSOC');
+                
+                $ur = (new UserRolesModel($conn))->assoc();
                 $rows = $ur->where(['belongs_to', $uid])->get(['role_id']);
 
                 $roles = [];
                 if (count($rows) > 0){         
                     $r = new RolesModel();           
                     foreach ($rows as $row){
-                        $roles[] = $r->getRoleName($row['role_id']);
+                        $roles[] = $r->get_role_name($row['role_id']);
                     }
                 }
                     
-                $_permissions = DB::table('permissions')->setFetchMode('ASSOC')->select(['tb', 'can_create as c', 'can_read as r', 'can_update as u', 'can_delete as d'])->where(['user_id' => $uid])->get();
+                $_permissions = DB::table('user_tb_permissions')->assoc()->select(['tb', 'can_create as c', 'can_show as r', 'can_update as u', 'can_delete as d', 'can_list as l'])->where(['user_id' => $uid])->get();
 
                 $perms = [];
                 foreach ($_permissions as $p){
                     $tb = $p['tb'];
-                    $perms[$tb] = $p['c'] * 8 + $p['r'] * 4 + $p['u'] * 2 + $p['d'];
+                    $perms[$tb] = $p['la'] * 64 + $p['ra'] * 32 +  $p['l'] * 16 + $p['r'] * 8 + $p['c'] * 4 + $p['u'] * 2 + $p['d'];
                 }
+                
+                $active = $rows[0]['active'];
 
-            }else{
+            } else {
+
                 $data['email'] = $payload['email'];
                 $data['firstname'] = $payload['given_name'] ?? NULL;
                 $data['lastname'] = $payload['family_name'] ?? NULL;
@@ -183,39 +189,67 @@ class GoogleController extends Controller
                     ->update(['belongs_to' => $uid]);
                 }
 
-                $r = new RolesModel();
-                $role = $this->config['registration_role'];
+                /*
+                if (!empty($this->config['registration_role'])){
+                    $role = $this->config['registration_role'];
 
-                $ur = new UserRolesModel($conn);
-                $id = $ur->create([ 'belongs_to' => $uid, 'role_id' => $r->get_role_id($role) ]);  // registered or other            
-        
-                $roles = [$role];
-                $perms = [];
+                    $r  = new RolesModel();
+                    $ur = DB::table('userRoles');
+
+                    $role_id = $r->get_role_id($role);
+
+                    if ($role_id == null){
+                        throw new Exception('Invalid default registration role');
+                    }
+
+                    $id = $ur->create([ 
+                                        'belongs_to' => $uid, 
+                                        'role_id' => $role_id 
+                                        ]);  
+
+                    if (empty($id))
+                        throw new Exception('Error registrating user role');          
+
+                    $roles = [$role];  
+                } else {
+                    $roles = [];
+                }   
+                */
+                
+                $active = $this->config['pre_activated'] ? true : null;
             }  
             
+            $roles = []; //
+            $perms = [];
 
-            $my_payload = [
-                'uid' => $uid, 
-                'roles' => $roles,
-                'confirmed_email' => 1,
-                'permissions' => $perms
-                //'google_auth' => $auth
-            ];
+            $access  = $this->gen_jwt([
+                                        'uid' => $uid, 
+                                        'roles' => $roles,
+                                        'tb_permissions' => $perms,
+                                        'active' => $active
+            ], 'access_token');
 
-            $access  = $this->gen_jwt($my_payload, 'access_token');
-            $refresh = $this->gen_jwt($my_payload, 'refresh_token');
+            $refresh = $this->gen_jwt([
+                            'uid' => $uid
+            ], 'refresh_token');
+
+            // podría incluir google_auth' => $auth en el access_token
+
+            DB::commit();
 
             return ['code' => 200,  
                     'data' => [ 
+                                'uid' => $uid,
                                 'access_token'=> $access,
                                 'token_type' => 'bearer', 
                                 'expires_in' => $this->config['access_token']['expiration_time'],
-                                'refresh_token' => $refresh                                         
-                                // 'scope' => 'read write'
+                                'refresh_token' => $refresh  
                     ],
                     'error' => ''
             ];
         }catch(\Exception $e){
+            DB::rollback();
+
             return ['error' => $e->getMessage(), 'code' => 500];
         }	
 

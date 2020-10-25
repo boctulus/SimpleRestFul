@@ -1,25 +1,35 @@
 <?php
+
 namespace simplerest\core;
 
-use simplerest\libs\Debug;
+use simplerest\libs\DB;
 use simplerest\libs\Arrays;
 use simplerest\libs\Strings;
 use simplerest\libs\Validator;
+use simplerest\libs\ValidationRules;
+use simplerest\libs\Factory;
+use simplerest\libs\Debug;
 use simplerest\core\interfaces\IValidator;
 use simplerest\core\exceptions\InvalidValidationException;
 use simplerest\core\exceptions\SqlException;
+use simplerest\core\interfaces\ITransformer;
+use simplerest\traits\ExceptionHandler;
+
 
 class Model {
+	use ExceptionHandler;
 
-	protected $table_name;
+	// for internal use
 	protected $table_alias = '';
-	protected $id_name = 'id';
-	protected $schema   = [];
-	protected $nullable = [];
+	protected $table_name;
+
+	// Schema
+	protected $schema;
+
 	protected $fillable = [];
 	protected $not_fillable = [];
 	protected $hidden   = [];
-	protected $properties = [];
+	protected $attributes = [];
 	protected $joins  = [];
 	protected $show_deleted = false;
 	protected $conn;
@@ -56,92 +66,251 @@ class Model {
 	protected $pag_vals = [];
 	protected $roles;
 	protected $validator;
-	protected $accesors = [];
+	protected $input_mutators = [];
+	protected $output_mutators = [];
+	protected $transformer;
+	protected $controller;
 	protected $exec = true;
-	protected $fetch_mode = \PDO::FETCH_OBJ;
-	
-	
-	function __construct(\PDO $conn = null){
+	protected $fetch_mode;
+	protected $soft_delete;
+	protected $last_inserted_id;
+	protected $paginator = true;
+	protected $fetch_mode_default = \PDO::FETCH_ASSOC;
+	protected $data = []; 
 
-		// echo '^'; 
-
-		if($conn){
-			$this->conn = $conn;
-			$this->conn->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+	
+	function __construct(bool $connect = false, $schema = null){
+		if ($connect){
+			$this->connect();
 		}
 
-		$this->config = include CONFIG_PATH . 'config.php';
+		if ($schema != null){
+			$this->schema = $schema->get();
+			$this->table_name = $this->schema['table_name'];
+		}
 
-		$this->properties = array_keys($this->schema);
+		$this->config = Factory::config();
 
+		if ($this->config['error_handling']) {
+            set_exception_handler([$this, 'exception_handler']);
+		}
+		
+		/////////////// ***
+		/*
 		if (empty($this->table_name)){
 			$class_name = get_class($this);
 			$class_name = substr($class_name, strrpos($class_name, '\\')+1);
 			$str = Strings::fromCamelCase($class_name);
 			$this->table_name = strtolower(substr($str, 0, strlen($str)-6));
+		}
+		*/
+	
+
+		//Debug::dd($this->table_name, 'table_name:');  // mode <-- por "model" recortado!!
+		
+		if ($this->schema == null){
+			return;
+		}	
+
+		//Debug::dd($this->schema, 'SCHEMA:');
+
+		$this->attributes = array_keys($this->schema['attr_types']);
+		
+		if ($this->schema['id_name'] == NULL){
+			if ($this->inSchema(['id'])){
+				$this->schema['id_name'] = 'id';
+			} else {
+				throw new \Exception("Undefined table identifier for '".$this->table_name. "' Use 'id' or \$id_name to specify another field name");
+			}
 		}			
 
+
 		if ($this->fillable == NULL){
-			$this->fillable = $this->properties;
-			$this->unfill([$this->id_name, 'locked', 'created_at', 'created_by', 'updated_at', 'updated_by', 'deleted_at', 'deleted_by']);
+			$this->fillable = $this->attributes;
+			$this->unfill(['locked', 'created_at', 'created_by', 'updated_at', 'updated_by', 'deleted_at', 'deleted_by']);
 		}
 
 		$this->unfill($this->not_fillable);
 
-		$this->nullable[] = $this->id_name;
-		$this->nullable[] = 'locked';
-		$this->nullable[] = 'belongs_to';
-		$this->nullable[] = 'created_at';
-		$this->nullable[] = 'updated_at';
-		$this->nullable[] = 'deleted_at';
-		$this->nullable[] = 'created_by';
-		$this->nullable[] = 'updated_by';
-		$this->nullable[] = 'deleted_by';
+		// innecesario, debería provenir del propio schema !
+		$this->schema['nullable'][] = 'locked';
+		$this->schema['nullable'][] = 'belongs_to';
+		$this->schema['nullable'][] = 'created_at';
+		$this->schema['nullable'][] = 'updated_at';
+		$this->schema['nullable'][] = 'deleted_at';
+		$this->schema['nullable'][] = 'created_by';
+		$this->schema['nullable'][] = 'updated_by';
+		$this->schema['nullable'][] = 'deleted_by';
 
-		$this->fillable[] = 'created_by';
-		$this->fillable[] = 'updated_by';
+		$to_fill = [$this->schema['id_name']];
 
+		if ($this->inSchema(['created_by'])){
+			$to_fill[] = 'created_by';
+		}
 
-		// Validations
+		if ($this->inSchema(['updated_by'])){
+			$to_fill[] = 'updated_by';
+		}
+
+		$this->fill($to_fill);				
 		
-		if (!empty($this->rules)){
-			foreach ($this->rules as $field => $rule){
-				if (!isset($this->rules[$field]['type']) || empty($this->rules[$field]['type'])){
-					$this->rules[$field]['type'] = strtolower($this->schema[$field]);
+		$this->soft_delete = $this->inSchema(['deleted_at']);
+	
+		/*
+		 Validations
+		*/
+		if (!empty($this->schema['rules'])){
+			foreach ($this->schema['rules'] as $field => $rule){
+				if (!isset($this->schema['rules'][$field]['type']) || empty($this->schema['rules'][$field]['type'])){
+					$this->schema['rules'][$field]['type'] = strtolower($this->schema['attr_types'][$field]);
 				}
 			}
 		}
 		
-		
-		foreach ($this->schema as $field => $type){
-			if (!isset($this->rules[$field])){
-				$this->rules[$field]['type'] = strtolower($type);
+		foreach ($this->schema['attr_types'] as $field => $type){
+			if (!isset($this->schema['rules'][$field])){
+				$this->schema['rules'][$field]['type'] = strtolower($type);
 			}
 
 			if (!$this->isNullable($field)){
-				$this->rules[$field]['required'] = true;
+				$this->schema['rules'][$field]['required'] = true;
 			}
-		}		
-	}
-
-	function accesorRegister($field, callable $fn){
-		$this->accesors[$field] = $fn;
-	}
-	
-	function apply(array $data){
-		$accesor_keys = array_keys($this->accesors);
-		
-		foreach ($data as $k => $dato){
-			if (in_array($k, $accesor_keys))
-				$data[$k] = $this->accesors[$k]($dato);
 		}
 		
+		// event handler
+		$this->boot();
+	}
+
+
+	function addRules(ValidationRules $vr){
+		$this->schema['rules'] = array_merge($this->schema['rules'], $vr->getRules());
+	}
+
+	/*
+		Returns prmary key
+	*/
+	function getKeyName(){
+		return $this->schema['id_name'];
+	}
+
+	/*
+		Turns on / off pagination
+	*/
+	function setPaginator(bool $status){
+		$this->paginator = $status;
+		return $this;
+	}
+
+
+	function registerInputMutator(string $field, callable $fn, ?callable $apply_if_fn){
+		$this->input_mutators[$field] = [$fn, $apply_if_fn];
+		return $this;
+	}
+
+	function registerOutputMutator(string $field, callable $fn){
+		$this->output_mutators[$field] = $fn;
+		return $this;
+	}
+
+	// acepta un Transformer
+	function registerTransformer(ITransformer $t, $controller = NULL){
+		$this->unhideAll();
+		$this->transformer = $t;
+		$this->controller  = $controller;
+		return $this;
+	}
+	
+	function applyInputMutator(array $data, string $current_op){	
+		if ($current_op != 'CREATE' && $current_op != 'UPDATE'){
+			throw new \InvalidArgumentException("Operation '$current_op' is invalid for Input Mutator");
+		}
+
+		foreach ($this->input_mutators as $field => list($fn, $apply_if_fn)){
+			if (!in_array($field, $this->getAttr()))
+				throw new \Exception("Invalid accesor: $field field is not present in " . $this->table_name); 
+
+			$dato = $data[$field] ?? NULL;
+					
+			if ($apply_if_fn == null || $apply_if_fn(...[$current_op, $dato])){				
+				$data[$field] = $fn($dato);
+			} 				
+		}
+
 		return $data;
 	}
 
-	function setFetchMode($mode){
+	/*
+		Es complicado hacerlo funcionar y falla cuando se selecciona un único registro
+		quizás por el FETCH_MODE
+
+		Está confirmado que si el FETCH_MODE no es ASSOC, va a fallar
+	*/
+	function applyOutputMutators($rows){
+		if (empty($rows))
+			return;
+		
+		if (empty($this->output_mutators))
+			return $rows;
+
+		//$by_id = in_array('id', $this->w_vars);	
+		
+		foreach ($this->output_mutators as $field => $fn){
+			if (!in_array($field, $this->getAttr()))
+				throw new \Exception("Invalid transformer: $field field is not present in " . $this->table_name); 
+
+			if ($this->getFetchMode() == \PDO::FETCH_ASSOC){
+				foreach ($rows as $k => $row){
+					$rows[$k][$field] = $fn($row[$field]);
+				}
+			}elseif ($this->getFetchMode() == \PDO::FETCH_OBJ){
+				foreach ($rows as $k => $row){
+					$rows[$k]->$field = $fn($row->$field);
+				}
+			}			
+		}
+		return $rows;
+	}
+	
+	function applyTransformer($rows){
+		if (empty($rows))
+			return;
+		
+		if (empty($this->transformer))
+			return $rows;
+		
+		foreach ($rows as $k => $row){
+			//var_dump($row);
+
+			if (is_array($row))
+				$row = (object) $row;
+
+			$rows[$k] = $this->transformer->transform($row, $this->controller);
+		}
+
+		return $rows;
+	}
+
+
+	function setFetchMode(string $mode){
 		$this->fetch_mode = constant("PDO::FETCH_{$mode}");
 		return $this;
+	}
+
+	function assoc(){
+		$this->fetch_mode = \PDO::FETCH_ASSOC;
+		return $this;
+	}
+
+	protected function getFetchMode($mode_wished = null){
+		if ($this->fetch_mode == NULL){
+			if ($mode_wished != NULL) {
+				return constant("PDO::FETCH_{$mode_wished}");
+			} else {
+				return $this->fetch_mode_default;
+			}
+		} else {
+			return $this->fetch_mode;
+		}
 	}
 
 	function setValidator(IValidator $validator){
@@ -154,10 +323,23 @@ class Model {
 		return $this;
 	}
 
+	// debe remover cualquier condición que involucre a 'deleted_at' en el WHERE !!!!
 	function showDeleted($state = true){
 		$this->show_deleted = $state;
 		return $this;
 	}
+
+	function setSoftDelete(bool $status) {
+		if (!$this->inSchema(['deleted_at'])){
+			if ($status){
+				throw new SqlException("There is no 'deleted_at' for table '".$this->from()."' in the attr_types");
+			}
+		} 
+		
+		$this->soft_delete = $status;
+		return $this;
+	}
+	
 
 	/*
 		Don't execute the query
@@ -167,11 +349,25 @@ class Model {
 		return $this;
 	}
 
-	protected function from(){
-		if (!empty($this->table_raw_q))
-			return $this->table_raw_q. ' ';
+	// set table and alias
+	function table(string $table, $table_alias = null){
+		$this->table_name = $table;
+		$this->table_alias = $table_alias;
+		return $this;		
+	}
 
-		return $this->table_name. ' '.(!empty($this->table_alias) ? 'as '.$this->table_alias : '');
+	protected function from(){
+		if ($this->table_raw_q != null){
+			return $this->table_raw_q;
+		}
+
+		if ($this->table_name == null){
+			throw new \Exception("No table_name defined");
+			$this->table_name = '';
+		}
+
+		$from = $this->table_alias != null ? $this->table_name. ' as '.$this->table_alias : $this->table_name.' ';  
+		return $from;
 	}
 
 		
@@ -193,6 +389,10 @@ class Model {
 		return $this;
 	}
 
+	function unhideAll(){
+		$this->hidden = [];
+		return $this;
+	}
 	
 	/**
 	 * hide
@@ -229,7 +429,7 @@ class Model {
 		Make all fields fillable
 	*/
 	function fillAll(){
-		$this->fillable = $this->properties;
+		$this->fillable = $this->attributes;
 		return $this;	
 	}
 	
@@ -422,7 +622,7 @@ class Model {
 			
 				if (empty($this->select_raw_q)){
 					if (empty($fields) && $aggregate_func == null) {
-						$fields = $this->properties;
+						$fields = $this->attributes;
 					}
 		
 					foreach ($this->hidden as $h){
@@ -436,7 +636,7 @@ class Model {
 
 							
 			if ($this->distinct){
-				$remove = [$this->id_name];
+				$remove = [$this->schema['id_name']];
 
 				if ($this->inSchema(['created_at']))
 					$remove[] = 'created_at';
@@ -451,29 +651,37 @@ class Model {
 					$fields = array_diff($fields, $remove);
 				}else{
 					if (empty($aggregate_func))
-						$fields = array_diff($this->getProperties(), $remove);
+						$fields = array_diff($this->getAttr(), $remove);
 				}
 			} 		
 
-			$order  = (!empty($order) && !$this->randomize) ? array_merge($this->order, $order) : $this->order;
-			$limit  = $limit  ?? $this->limit  ?? null;
-			$offset = $offset ?? $this->offset ?? 0; 
 
-			if($limit>0 || $order!=NULL){
-				try {
-					$paginator = new Paginator();
-					$paginator->limit  = $limit;
-					$paginator->offset = $offset;
-					$paginator->orders = $order;
-					$paginator->properties = $this->properties;
-					$paginator->compile();
+			if ($this->paginator){
+				$order  = (!empty($order) && !$this->randomize) ? array_merge($this->order, $order) : $this->order;
+				$limit  = $limit  ?? $this->limit  ?? null;
+				$offset = $offset ?? $this->offset ?? 0; 
+				
+				if($limit>0 || $order!=NULL){
+					try {
+						$paginator = new Paginator();
+						$paginator->setLimit($limit);
+						$paginator->setOffset($offset);
+						$paginator->setOrders($order);
+						$paginator->setAttr($this->attributes);
+						$paginator->compile();
 
-					$this->pag_vals = $paginator->getBinding();
-				}catch (SqlException $e){
-					throw new SqlException("Pagination error: {$e->getMessage()}");
+						$this->pag_vals = $paginator->getBinding();
+					}catch (SqlException $e){
+						throw new SqlException("Pagination error: {$e->getMessage()}");
+					}
+				}else{
+					$paginator = null;
 				}
-			}else
+							
+			} else {
 				$paginator = null;	
+			}	
+
 		}			
 
 
@@ -577,6 +785,7 @@ class Model {
 			$where = trim($where);
 
 			if (!empty($where)){
+				$where = rtrim($where);
 				$where = "($where) AND ". $implode. ' ';
 			}else{
 				$where = "$implode ";
@@ -590,13 +799,14 @@ class Model {
 				if (empty($where))
 					$where = "deleted_at IS NULL";
 				else
-					$where =  ($where[0]=='(' && $where[strlen($where)-1]==')' ? $where :   ($where) ) . " AND deleted_at IS NULL";
+					$where =  ($where[0]=='(' && $where[strlen($where)-1] ==')' ? $where :   "($where)" ) . " AND deleted_at IS NULL";
 
 			}
 		}
 		
-		if (!empty($where))
-			$q  .= "WHERE $where";
+		if (!empty($where)){
+			$q  .= 'WHERE '.ltrim($where);
+		}
 		
 		$group = (!empty($this->group)) ? 'GROUP BY '.implode(',', $this->group) : '';
 		$q  .= " $group";
@@ -622,6 +832,7 @@ class Model {
 			}			
 
 			if (!empty($having)){
+				$having = rtrim($having);
 				$having = "($having) AND ". $implode. ' ';
 			}else{
 				$having = "HAVING $implode ";
@@ -643,6 +854,12 @@ class Model {
 			$q .= 'UNION '.($this->union_type == 'ALL' ? 'ALL' : '').' '.$this->union_q.' ';
 		}
 
+
+		$q = rtrim($q);
+		$q = Strings::removeRTrim('AND', $q);
+		$q = Strings::removeRTrim('OR',  $q);
+
+
 		// PAGINATION
 		if (!$existance && $paginator!==null){
 			$q .= $paginator->getQuery();
@@ -653,11 +870,18 @@ class Model {
 		if ($existance)
 			$q .= ')';
 
+		
+		/*
+		$q = rtrim($q);
+		$q = String::removeRTrim('AND', $q);
+		$q = String::removeRTrim('OR',  $q);
+		*/
+
 		//Debug::dd($q, 'Query:');
 		//Debug::dd($vars, 'Vars:');
 		//Debug::dd($values, 'Vals:');
-		//exit;
 		//var_dump($q);
+		//exit;
 		//var_export($vars);
 		//var_export($values);
 		
@@ -752,8 +976,8 @@ class Model {
 				
 			if(is_null($val)){
 				$type = \PDO::PARAM_NULL;
-			}elseif(isset($this->w_vars[$ix]) && isset($this->schema[$this->w_vars[$ix]])){
-				$const = $this->schema[$this->w_vars[$ix]];
+			}elseif(isset($this->w_vars[$ix]) && isset($this->schema['attr_types'][$this->w_vars[$ix]])){
+				$const = $this->schema['attr_types'][$this->w_vars[$ix]];
 				$type = constant("PDO::PARAM_{$const}");
 			}elseif(is_int($val))
 				$type = \PDO::PARAM_INT;
@@ -791,8 +1015,8 @@ class Model {
 				
 			if(is_null($val)){
 				$type = \PDO::PARAM_NULL;
-			}elseif(isset($this->h_vars[$ix]) && isset($this->schema[$this->h_vars[$ix]])){
-				$const = $this->schema[$this->h_vars[$ix]];
+			}elseif(isset($this->h_vars[$ix]) && isset($this->schema['attr_types'][$this->h_vars[$ix]])){
+				$const = $this->schema['attr_types'][$this->h_vars[$ix]];
 				$type = constant("PDO::PARAM_{$const}");
 			}elseif(is_int($val))
 				$type = \PDO::PARAM_INT;
@@ -842,8 +1066,8 @@ class Model {
 		foreach($bindings as $ix => $val){			
 			if(is_null($val)){
 				$bindings[$ix] = 'NULL';
-			}elseif(isset($vars[$ix]) && isset($this->schema[$vars[$ix]])){
-				$const = $this->schema[$vars[$ix]];
+			}elseif(isset($vars[$ix]) && isset($this->schema['attr_types'][$vars[$ix]])){
+				$const = $this->schema['attr_types'][$vars[$ix]];
 				if ($const == 'STR')
 					$bindings[$ix] = "'$val'";
 			}elseif(is_int($val)){
@@ -865,47 +1089,93 @@ class Model {
 	}
 
 	// Debug last query
-	function getLog(){
+	function dd2(){		
 		return $this->_dd($this->last_pre_compiled_query, $this->last_bindings);
 	}
 
-	function get(array $fields = null, array $order = null, int $limit = NULL, int $offset = null){
+	// Debug last query
+	function getLog(){
+		return $this->dd2();
+	}
+
+	function get(array $fields = null, array $order = null, int $limit = NULL, int $offset = null, $pristine = false){
+		$this->onReading();
+
 		$q = $this->toSql($fields, $order, $limit, $offset);
 		$st = $this->bind($q);
 
-		if ($this->exec && $st->execute())
-			return $st->fetchAll($this->fetch_mode);
-		else
-			return false;	
+
+		//Debug::dd($q, 'Q'); ////////
+		//var_dump($this->from());
+		//exit;
+
+		$count = null;
+		if ($this->exec && $st->execute()){
+			$output = $st->fetchAll($this->getFetchMode());
+			
+			$count  = $st->rowCount();
+			if (empty($output)) {
+				$ret = [];
+			}else {
+				$ret = $pristine ? $output : $this->applyTransformer($this->applyOutputMutators($output));
+			}
+
+			$this->onRead($count);
+		}else
+			$ret = false;
+				
+		return $ret;	
 	}
 
-	function first(array $fields = null){
-		$q = $this->toSql($fields, NULL, 1);
+	function first(array $fields = null, $pristine = false){
+		$this->onReading();
+
+		$q = $this->toSql($fields, NULL);
 		$st = $this->bind($q);
 
-		if ($this->exec && $st->execute())
-			return $st->fetch($this->fetch_mode);
-		else
-			return false;	
+		$count = null;
+		if ($this->exec && $st->execute()){
+			$output = $st->fetch($this->getFetchMode());
+			$count = $st->rowCount();
+
+			if (empty($output)) {
+				$ret = [];
+			}else {
+				$ret = $pristine ? $output : $this->applyTransformer($this->applyOutputMutators($output));
+			}
+
+			$this->onRead($count);
+		}else
+			$ret = false;
+				
+		return $ret;
 	}
 	
 	function value($field){
+		$this->onReading();
+
 		$q = $this->toSql([$field], NULL, 1);
 		$st = $this->bind($q);
 
-		if ($this->exec && $st->execute())
-			return $st->fetch(\PDO::FETCH_NUM)[0];
-		else
-			return false;	
+		$count = null;
+		if ($this->exec && $st->execute()) {
+			$ret = $st->fetch(\PDO::FETCH_NUM)[0];
+			
+			$count = $st->rowCount();
+			$this->onRead($count);
+		} else
+			$ret = false;
+			
+		return $ret;	
 	}
 
 	function exists(){
 		$q = $this->toSql(null, null, null, null, true);
 		$st = $this->bind($q);
 
-		if ($this->exec && $st->execute())
+		if ($this->exec && $st->execute()){
 			return (bool) $st->fetch(\PDO::FETCH_NUM)[0];
-		else
+		}else
 			return false;	
 	}
 
@@ -916,9 +1186,14 @@ class Model {
 		$q = $this->toSql();
 		$st = $this->bind($q);
 	
-		if ($this->exec && $st->execute())
-			return $st->fetchAll($this->fetch_mode);
-		else
+		if ($this->exec && $st->execute()) {
+			$res = $this->applyTransformer($this->applyOutputMutators($st->fetchAll($this->getFetchMode())));
+			
+			//var_dump($res);
+			//exit;	
+			
+			return $res;
+		} else
 			return false;	
 	}
 
@@ -928,12 +1203,12 @@ class Model {
 
 		if (empty($this->group)){
 			if ($this->exec && $st->execute())
-				return $st->fetch(\PDO::FETCH_ASSOC);
+				return $st->fetch($this->getFetchMode());
 			else
 				return false;	
 		}else{
 			if ($this->exec && $st->execute())
-				return $st->fetchAll(\PDO::FETCH_ASSOC);
+				return $st->fetchAll($this->getFetchMode());
 			else
 				return false;
 		}	
@@ -945,12 +1220,12 @@ class Model {
 
 		if (empty($this->group)){
 			if ($this->exec && $st->execute())
-				return $st->fetch(\PDO::FETCH_ASSOC);
+				return $st->fetch($this->getFetchMode());
 			else
 				return false;	
 		}else{
 			if ($this->exec && $st->execute())
-				return $st->fetchAll(\PDO::FETCH_ASSOC);
+				return $st->fetchAll($this->getFetchMode());
 			else
 				return false;
 		}	
@@ -962,12 +1237,12 @@ class Model {
 
 		if (empty($this->group)){
 			if ($this->exec && $st->execute())
-				return $st->fetch(\PDO::FETCH_ASSOC);
+				return $st->fetch($this->getFetchMode());
 			else
 				return false;	
 		}else{
 			if ($this->exec && $st->execute())
-				return $st->fetchAll(\PDO::FETCH_ASSOC);
+				return $st->fetchAll($this->getFetchMode());
 			else
 				return false;
 		}	
@@ -979,12 +1254,12 @@ class Model {
 
 		if (empty($this->group)){
 			if ($this->exec && $st->execute())
-				return $st->fetch(\PDO::FETCH_ASSOC);
+				return $st->fetch($this->getFetchMode());
 			else
 				return false;	
 		}else{
 			if ($this->exec && $st->execute())
-				return $st->fetchAll(\PDO::FETCH_ASSOC);
+				return $st->fetchAll($this->getFetchMode());
 			else
 				return false;
 		}	
@@ -994,22 +1269,30 @@ class Model {
 		$q = $this->toSql(null, null, null, null, false, 'COUNT', $field, $alias);
 		$st = $this->bind($q);
 
+		//Debug::dd($q, 'Q');
+		//Debug::dd($this->table_raw_q, 'RAW Q');
+		//exit;
+
 		if (empty($this->group)){
-			if ($this->exec && $st->execute())
-				return $st->fetch(\PDO::FETCH_ASSOC);
-			else
+			if ($this->exec && $st->execute()){
+				return $st->fetch($this->getFetchMode('COLUMN'));
+			}else
 				return false;	
 		}else{
-			if ($this->exec && $st->execute())
-				return $st->fetchAll(\PDO::FETCH_ASSOC);
-			else
+			if ($this->exec && $st->execute()){
+				return $st->fetchAll($this->getFetchMode('COLUMN'));
+			}else
 				return false;
 		}	
 	}
 
 
 	function _where($conditions, $group_op = 'AND', $conjunction)
-	{	
+	{
+		if (empty($conditions)){
+			return;
+		}
+
 		if (Arrays::is_assoc($conditions)){
 			$conditions = Arrays::nonassoc($conditions);
 		}
@@ -1025,11 +1308,11 @@ class Model {
 			if(is_array($conditions[Arrays::array_key_first($conditions)])){
 				foreach ($conditions as $cond) {
 					if ($cond[0] == null)
-						throw new SqlException("Table field can not be NULL");
+						throw new SqlException("Field can not be NULL");
 
 					if(is_array($cond[1]) && (empty($cond[2]) || in_array($cond[2], ['IN', 'NOT IN']) ))
 					{						
-						if($this->schema[$cond[0]] == 'STR')	
+						if($this->schema['attr_types'][$cond[0]] == 'STR')	
 							$cond[1] = array_map(function($e){ return "'$e'";}, $cond[1]);   
 						
 						$in_val = implode(', ', $cond[1]);
@@ -1076,10 +1359,11 @@ class Model {
 		////////////////////////////////////////////
 
 		//Debug::dd($this->where);
+		//exit;
 		//Debug::dd($this->w_vars, 'WHERE VARS');	
 		//Debug::dd($this->w_vals, 'WHERE VALS');	
 
-		return $this;
+		return;
 	}
 
 	function where($conditions, $conjunction = 'AND'){
@@ -1098,7 +1382,7 @@ class Model {
 	}
 
 	function find(int $id){
-		return $this->where([$this->id_name => $id])->get();
+		return $this->where([$this->schema['id_name'] => $id])->get();
 	}
 
 	function whereNull(string $field){
@@ -1230,20 +1514,30 @@ class Model {
 		if ($this->conn == null)
 			throw new SqlException('No conection');
 			
-		if (!Arrays::is_assoc($data))
-			throw new \InvalidArgumentException('Array of data should be associative');
+		if (empty($data)){
+			throw new SqlException('There is no data to update');
+		}
 
+		if (!Arrays::is_assoc($data)){
+			throw new SqlException('Array of data should be associative');
+		}
+			
 		if (isset($data['created_by']))
 			unset($data['created_by']);
+	
 
-		$data = $this->apply($data);
+		$data = $this->applyInputMutator($data, 'UPDATE');
 		$vars   = array_keys($data);
 		$values = array_values($data);
+
+		
+		//var_dump($data); ///
+		//exit;
 
 		if(!empty($this->fillable) && is_array($this->fillable)){
 			foreach($vars as $var){
 				if (!in_array($var,$this->fillable))
-					throw new \InvalidArgumentException("update: $var is not fillable");
+					throw new SqlException("update: $var is not fillable");
 			}
 		}
 
@@ -1254,6 +1548,9 @@ class Model {
 				throw new InvalidValidationException(json_encode($validado));
 			} 
 		}
+	
+		$this->data = $data;
+		$this->onUpdating($data);
 		
 		$set = '';
 		foreach($vars as $ix => $var){
@@ -1281,12 +1578,13 @@ class Model {
 		//var_export($q);
 		//var_export($vars);
 		//var_export($values);
+		//exit;
 
 		foreach($values as $ix => $val){			
 			if(is_null($val)){
 				$type = \PDO::PARAM_NULL;
-			}elseif(isset($vars[$ix]) && isset($this->schema[$vars[$ix]])){
-				$const = $this->schema[$vars[$ix]];
+			}elseif(isset($vars[$ix]) && isset($this->schema['attr_types'][$vars[$ix]])){
+				$const = $this->schema['attr_types'][$vars[$ix]];
 				$type = constant("PDO::PARAM_{$const}");
 			}elseif(is_int($val))
 				$type = \PDO::PARAM_INT;
@@ -1302,20 +1600,26 @@ class Model {
 		$this->last_bindings = $values;
 		$this->last_pre_compiled_query = $q;
 	 
-		if($st->execute())
-			return $st->rowCount();
-		else 
-			return false;	
+		if (!$this->exec){
+			return 0;
+		}
+
+		if($st->execute()) {
+			$count = $st->rowCount();
+			$this->onUpdated($data, $count);
+		} else 
+			$count = false;
+			
+		return $count;
 	}
 
 	/**
 	 * delete
 	 *
-	 * @param  bool  $soft_delete 
 	 * @param  array $data (aditional fields in case of soft-delete)
 	 * @return mixed
 	 */
-	function delete($soft_delete = true, array $data = [])
+	function delete(array $data = [])
 	{
 		if ($this->conn == null)
 			throw new SqlException('No conection');
@@ -1328,11 +1632,9 @@ class Model {
 			} 
 		}
 
-		if ($soft_delete){
-			if (!$this->inSchema(['deleted_at'])){
-				throw new SqlException("There is no 'deleted_at' for ".$this->from(). ' schema');
-			} 
+		$this->onDeleting();
 
+		if ($this->soft_delete){
 			$d = new \DateTime(NULL, new \DateTimeZone($this->config['DateTimeZone']));
 			$at = $d->format('Y-m-d G:i:s');
 
@@ -1358,8 +1660,8 @@ class Model {
 		foreach($this->w_vals as $ix => $val){			
 			if(is_null($val)){
 				$type = \PDO::PARAM_NULL;
-			}elseif(isset($vars[$ix]) && isset($this->schema[$vars[$ix]])){
-				$const = $this->schema[$vars[$ix]];
+			}elseif(isset($vars[$ix]) && isset($this->schema['attr_types'][$vars[$ix]])){
+				$const = $this->schema['attr_types'][$vars[$ix]];
 				$type = constant("PDO::PARAM_{$const}");
 			}elseif(is_int($val))
 				$type = \PDO::PARAM_INT;
@@ -1374,10 +1676,13 @@ class Model {
 		$this->last_bindings = $this->getBindings();
 		$this->last_pre_compiled_query = $q;
 
-		if($st->execute())
-			return $st->rowCount();
-		else 
-			return false;		
+		if($this->exec && $st->execute()) {
+			$count = $st->rowCount();
+			$this->onDeleted($count);
+		} else 
+			$count = false;	
+		
+		return $count;	
 	}
 
 	/*
@@ -1390,8 +1695,13 @@ class Model {
 
 		if (!Arrays::is_assoc($data))
 			throw new \InvalidArgumentException('Array of data should be associative');
+	
+		$this->data = $data;	
+
+		//Debug::dd($data, 'DATA');
+		//exit;
 		
-		$data = $this->apply($data);
+		$data = $this->applyInputMutator($data, 'CREATE');
 		$vars = array_keys($data);
 		$vals = array_values($data);
 
@@ -1409,6 +1719,9 @@ class Model {
 				throw new InvalidValidationException(json_encode($validado));
 			} 
 		}
+
+		// Event hook
+		$this->onCreating($data);
 
 		$str_vars = implode(', ',$vars);
 
@@ -1429,8 +1742,8 @@ class Model {
 		foreach($vals as $ix => $val){			
 			if(is_null($val)){
 				$type = \PDO::PARAM_NULL;
-			}elseif(isset($vars[$ix]) && isset($this->schema[$vars[$ix]])){
-				$const = $this->schema[$vars[$ix]];
+			}elseif(isset($vars[$ix]) && $this->schema != NULL && isset($this->schema['attr_types'][$vars[$ix]])){
+				$const = $this->schema['attr_types'][$vars[$ix]];
 				$type = constant("PDO::PARAM_{$const}");
 			}elseif(is_int($val))
 				$type = \PDO::PARAM_INT;
@@ -1439,19 +1752,105 @@ class Model {
 			elseif(is_string($val))
 				$type = \PDO::PARAM_STR;	
 
+			//Debug::dd($type, "TYPE for $val");	
+
 			$st->bindValue($ix+1, $val, $type);
 		}
 
 		$this->last_bindings = $vals;
 		$this->last_pre_compiled_query = $q;
 
+		if (!$this->exec){
+			return NULL;
+		}	
+
 		$result = $st->execute();
+
 		if ($result){
-			return $this->{$this->id_name} = $this->conn->lastInsertId();
-		}else
-			return false;
-	}
+			// sin schema no hay forma de saber la PRI Key. Intento con 'id' 
+			$id_name = ($this->schema != NULL) ? $this->schema['id_name'] : 'id';		
+
+			if (isset($data[$id_name])){
+				$this->last_inserted_id =	$data[$id_name];
+			} else {
+				$this->last_inserted_id = $this->conn->lastInsertId();
+			}
+
+			$this->onCreated($data, $this->last_inserted_id);
+		}else {
+			$this->last_inserted_id = false;	
+		}
+
+		return $this->last_inserted_id;	
 		
+	}
+	
+	/*
+		 to be called inside onUpdating() event hook
+
+		 el problema es que necesito ejecutar el mismo WHERE que el UPDATE en un GET para seleccionar el mismo registro y tener contra que comparar.	
+
+		 https://stackoverflow.com/questions/45702409/laravel-check-if-updateorcreate-performed-update/49350664#49350664
+		 https://stackoverflow.com/questions/48793257/laravel-check-with-observer-if-column-was-changed-on-update/48793801
+	*/	 
+
+	function isDirty($fields = null) 
+	{
+		if ($fields == null){
+			$fields = $this->attributes;
+		}
+
+		if (!is_array($fields)){
+			$fields = [$fields];
+		}
+
+		// to be updated
+		$keys = array_keys($this->data);
+
+		if (!$this->inSchema($fields)){
+			throw new \Exception("A field was not found in table {$this->table_name}");
+		}
+		
+		$old_vals = $this->first($fields);
+		foreach ($fields as $field){	
+			if (!in_array($field, $keys)){
+				continue;
+			}
+
+			$new_val = $this->data[$field];
+			
+			if ($new_val != $old_vals[$field]){
+				return true;
+			}	
+		}
+
+		return false;
+	}
+
+
+	/*
+		Even hooks -podrían estar definidos en clase abstracta o interfaz-
+	*/
+
+	protected function boot() { }
+
+	protected function onReading() { }
+	protected function onRead(?int $count) { }
+	
+	protected function onDeleting() { }
+	protected function onDeleted(?int $count) { }
+
+	protected function onCreating(Array &$data) {	}
+	protected function onCreated(Array &$data, $last_inserted_id) { }
+
+	protected function onUpdating(Array &$data) { }
+	protected function onUpdated(Array &$data, ?int $count) { }
+
+
+	function getSchema(){
+		return $this->schema;
+	}
+
 	/*
 		'''Reflection'''
 	*/
@@ -1466,10 +1865,10 @@ class Model {
 	function inSchema(array $props){
 
 		if (empty($props))
-			throw new \InvalidArgumentException("Properties not found!");
-		
+			throw new \InvalidArgumentException("Attributes not found!");
+
 		foreach ($props as $prop)
-			if (!in_array($prop, $this->properties)){
+			if (!in_array($prop, $this->attributes)){
 				return false; 
 			}	
 		
@@ -1484,28 +1883,28 @@ class Model {
 	 * @return array
 	 */
 	function getMissing(array $fields){
-		$diff =  array_diff($this->properties, array_keys($fields));
-		return array_diff($diff, $this->nullable);
+		$diff =  array_diff($this->attributes, array_keys($fields));
+		return array_diff($diff, $this->schema['nullable']);
 	}
 	
 	/**
-	 * Get schema 
+	 * Get attr_types 
 	 */ 
-	function getProperties()
+	function getAttr()
 	{
-		return $this->properties;
+		return $this->attributes;
 	}
 
 	function getIdName(){
-		return $this->id_name;
+		return $this->schema['id_name'];
 	}
 
 	function getNotHidden(){
-		return array_diff($this->properties, $this->hidden);
+		return array_diff($this->attributes, $this->hidden);
 	}
 
 	function isNullable(string $field){
-		return in_array($field, $this->nullable);
+		return in_array($field, $this->schema['nullable']);
 	}
 
 	function isFillable(string $field){
@@ -1516,16 +1915,28 @@ class Model {
 		return $this->fillable;
 	}
 
+	function setNullables(Array $arr){
+		$this->schema['nullable'] = $arr;
+	}
+
+	function addNullables(Array $arr){
+		$this->schema['nullable'] = array_merge($this->schema['nullable'], $arr);
+	}
+
+	function removeNullables(Array $arr){
+		$this->schema['nullable'] = array_diff($this->schema['nullable'], $arr);
+	}
+
 	function getNullables(){
-		return $this->nullable;
+		return $this->schema['nullable'];
 	}
 
 	function getNotNullables(){
-		return array_diff($this->properties, $this->nullable);
+		return array_diff($this->attributes, $this->schema['nullable']);
 	}
 
 	function getRules(){
-		return $this->rules;
+		return $this->schema['rules'] ?? NULL;
 	}
 
 	/**
@@ -1533,9 +1944,16 @@ class Model {
 	 *
 	 * @return  self
 	 */ 
-	function setConn(\PDO $conn)
+	function connect()
+	{
+		$this->conn = DB::getConnection();
+		return $this;
+	}
+
+	function setConn($conn)
 	{
 		$this->conn = $conn;
 		return $this;
 	}
+
 }

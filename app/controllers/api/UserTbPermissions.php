@@ -9,28 +9,32 @@ use simplerest\libs\Validator;
 use simplerest\core\exceptions\InvalidValidationException;
 use simplerest\libs\Debug;
 
-class Permissions extends MyApiController
+class UserTbPermissions extends MyApiController
 { 
-    protected $scope = [
-        'guest'      => [], 
-        'registered' => [],
-        'basic'      => [],
-        'regular'    => []
-    ];
+    
+    //protected $model_name  = 'UserTbPermissionsModel';
+    //protected $table_name = 'user_tb_permissions';
 
     function __construct()
-    {       
+    {
+
+        // Falta limitar acceso !!!
+        $this->callable = ['post', 'put', 'get', 'put', 'patch'];
+
+        $this->is_listable = true;
+        $this->is_retrievable = true;
+                
         parent::__construct();
     }
 
     function post(){
-        $data = Factory::request()->getBody();
+        $data = Factory::request()->getBody(false);
 
         if (empty($data))
             Factory::response()->sendError('Invalid JSON',400);
         
-        $model    = '\\simplerest\\models\\'.$this->modelName;
-        $instance = DB::table('permissions')->setFetchMode('ASSOC');
+        $model    = '\\simplerest\\models\\'.$this->model_name;
+        $instance = DB::table('user_tb_permissions')->assoc();
 
         try {
             $conn = DB::getConnection();
@@ -46,7 +50,7 @@ class Permissions extends MyApiController
             }  
 
             DB::transaction(function() use($data, $instance){                
-                $ok = DB::table('permissions')->where(['tb' => $data['tb'], 'user_id' => $data['user_id']])->delete(false);
+                $ok = DB::table('user_tb_permissions')->where(['tb' => $data['tb'], 'user_id' => $data['user_id']])->delete(false);
 
                 $instance->create($data);
             });

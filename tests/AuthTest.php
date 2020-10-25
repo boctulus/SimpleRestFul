@@ -12,6 +12,7 @@ use PHPUnit\Framework\TestCase;
 use simplerest\models\UsersModel;
 use simplerest\models\RolesModel;
 use simplerest\libs\DB;
+use simplerest\libs\Factory;
 use simplerest\libs\Debug;
 
 
@@ -23,7 +24,7 @@ class AuthTest extends TestCase
 
 	function __construct() {
 		parent::__construct();
-        $this->config = include 'config/config.php';
+        $this->config = Factory::config();
     }
 
     /*
@@ -148,7 +149,7 @@ class AuthTest extends TestCase
 
         foreach ($role_ids as $role_id){
             $this->assertTrue(
-                in_array($rm->getRoleName($role_id), $rt_payload->roles)
+                in_array($rm->get_role_name($role_id), $rt_payload->roles)
             );
         }
 

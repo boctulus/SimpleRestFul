@@ -1,4 +1,7 @@
-# SimpleRestFul
+# AZ - SimpleRestFul framework
+
+Full doc in /docs/DOC.txt
+
 
 ## Request examples
 

@@ -1,0 +1,52 @@
+
+- Es buena idea -según corresponda- crear índices para: 
+
+    created_at  <-- en especial con UUID
+    updated_at
+    deleted_at
+
+Considerar que se vuelve aún más importante para poder encontrar el último registro creado el campo created_at ya que no hay una PRT KEY autoincremental como es el caso cuando se usa UUID.
+
+- Gráficos con Plotly
+
+https://www.npmjs.com/package/vue-plotly
+
+- Implementar pasarelas de pago bajo el modelo "marketplace". 
+
+https://medium.com/@joelibaceta/integrar-bajo-el-modelo-marketplace-de-mercado-pago-en-3-pasos-f78319f9a9a2
+
+- En MercadoPago implementar también IPN
+
+https://www.mercadopago.com.ar/developers/es/guides/notifications/ipn/
+https://www.facebook.com/groups/507562416093562/permalink/1558175361032257/ 
+https://www.facebook.com/groups/507562416093562/permalink/1559465840903209/
+
+
+- Implementar "botón de arrepentimiento" para compradores del MercoSur
+
+https://www.boletinoficial.gob.ar/detalleAviso/primera/235729/20201005
+
+- No almacenar las cookies en localStorage ! almacenar los JWT en una cookie que tenga estos flags: Secure, HttpOnly, SameSite, Path y Domain
+
+https://dev.to/cotter/localstorage-vs-cookies-all-you-need-to-know-about-storing-jwt-tokens-securely-in-the-front-end-15id
+
+
+- Habilitar TLS para poder usar HTTP/2 y mejorar la performance (requiere más recursos)
+
+https://tecadmin.net/enable-tls-in-modssl-and-apache/
+https://httpd.apache.org/docs/trunk/ssl/ssl_howto.html
+https://httpd.apache.org/docs/2.4/mod/mod_http2.html
+https://serverfault.com/q/751114/261450
+https://docs.microsoft.com/en-us/mem/configmgr/core/plan-design/security/enable-tls-1-2
+https://blog.restcase.com/http2-benefits-for-rest-apis/
+https://blog.cloudflare.com/using-http-2-server-push-with-php/
+
+- Posibles optimizaciones MySQL / MariaDB
+
+https://www.opsview.com/resources/engineering/blog/improving-performance-concurrent-inserts-mysql
+
+- Correr optimizador para MySQL / MariaDB
+
+https://github.com/major/MySQLTuner-perl
+
+

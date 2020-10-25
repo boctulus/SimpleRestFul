@@ -1,0 +1,22 @@
+TODO de proyecto 'Supra'
+
+- Generar vistas para cualquier framework de Front en base a:
+    - lista de vistas y sub-vistas 
+    - componentes especificados
+    - schemas de SimpleRest
+
+- Completar en base a:
+    - Historias de usuario
+    - Diagramas UML 
+
+
+- Crear extensión para FireFox / Chrome que:
+
+    - Detecte el framework de CSS (Bootstrap, Materialize, etc)
+    - Permita seleccionar bloques como sections o divs y extraerlos como "componentes" con todos sus estilos.
+
+https://stackoverflow.com/a/4164148/980631    
+
+
+
+

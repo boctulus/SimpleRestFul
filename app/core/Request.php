@@ -8,6 +8,7 @@ class Request  implements \ArrayAccess, Arrayable
 {
     static protected $query_arr;
     static protected $raw;
+    static protected $body;
     static protected $params;
     static protected $headers;
     static protected $instance = NULL;
@@ -41,7 +42,8 @@ class Request  implements \ArrayAccess, Arrayable
                 if (isset($_SERVER['QUERY_STRING']))
 					parse_str($_SERVER['QUERY_STRING'], static::$query_arr);
 				
-                static::$raw = file_get_contents("php://input");
+                static::$raw  = file_get_contents("php://input");
+                static::$body = json_decode(static::$raw, true);
 
                 if (function_exists('apache_request_headers'))
                     static::$headers = apache_request_headers();
@@ -66,6 +68,14 @@ class Request  implements \ArrayAccess, Arrayable
         return static::$headers[$key] ?? NULL;
     }
 
+    function getAuth(){
+        return static::$headers['Authorization'] ?? static::$headers['authorization'] ?? NULL;
+    }
+
+    function hasAuth(){
+        return static::getAuth() != NULL; 
+    }
+
     function gzip(){
         return in_array('gzip', explode(',', str_replace(' ', '',$this->header('Accept-Encoding'))));
     }
@@ -83,7 +93,7 @@ class Request  implements \ArrayAccess, Arrayable
     }    
 
     // getter destructivo sobre $query_arr
-    function shift($key, $default_value = NULL)
+    function shiftQuery($key, $default_value = NULL)
     {
         $out = static::$query_arr[$key] ?? $default_value;
         unset(static::$query_arr[$key]);
@@ -94,18 +104,25 @@ class Request  implements \ArrayAccess, Arrayable
         return static::$params[$index];
     } 
 
-    function raw()
+    function getBody($as_obj = true)
     {
-        return static::$raw;
-    }
-
-    function getBody($assoc = true)
-    {
-        return json_decode(static::$raw, $assoc);
+        return $as_obj ? (object) static::$body : static::$body;
     }
 
     function getBodyParam($key){
-        return $this->getBody()[$key];
+        return static::$body[$key] ?? NULL;
+    }
+
+    // getter destructivo sobre el body
+    function shiftBodyParam($key){
+        if (!isset(static::$body[$key])){
+            return NULL;
+        }
+
+        $ret = static::$body[$key];
+
+        unset(static::$body[$key]);
+        return $ret;
     }
 
     function getCode(){
@@ -132,6 +149,10 @@ class Request  implements \ArrayAccess, Arrayable
 
     function offsetGet($offset) {
         return isset(static::$params[$offset]) ? static::$params[$offset] : null;
+    }
+
+    function getRequestMethod(){
+        return $_SERVER['REQUEST_METHOD'] ?? NULL;
     }
 
     /* Arrayable Interface */ 

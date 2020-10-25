@@ -1,0 +1,507 @@
+EXPERIMENTOS DE CONCURRENCIA con MYSQL y SIMPLEREST:
+
+### Experimento No 1
+
+Se partió con una tabla sencilla InnoDB en MariaDB, con pocos campos:
+
+mysql> DESCRIBE bar;
++------------+---------------+------+-----+---------+-------+
+| Field      | Type          | Null | Key | Default | Extra |
++------------+---------------+------+-----+---------+-------+
+| uuid       | varchar(36)   | NO   | PRI | NULL    |       |
+| name       | varchar(50)   | NO   |     | NULL    |       |
+| price      | decimal(15,2) | NO   |     | NULL    |       |
+| email      | varchar(80)   | NO   |     | NULL    |       |
+| belongs_to | int(11)       | NO   |     | NULL    |       |
+| updated_at | datetime      | YES  |     | NULL    |       |
++------------+---------------+------+-----+---------+-------+
+6 rows in set (0.00 sec)
+
+Se insertaron poco más de 1,000,000 de registros. El número exacto fue de 1,074,912 registros. 
+
+mysql> SELECT COUNT(*) FROM bar;
++----------+
+| COUNT(*) |
++----------+
+|  1074893 |
++----------+
+1 row in set (0.24 sec)
+
+Se crearon varios hilos que hacen inserciones de registros en muchos casos de forma concurrente dado es escaso tiempo entre INSERT e INSERT.
+
+Detalle: se crearon 5 hilos de un script de PHP con el siguiente código:
+
+    /* 
+        DumbController
+    */
+
+    function create(){
+        $m = (new BarModel(true));
+
+        $name = '    ';
+        for ($i=0;$i<46;$i++)
+            $name .= chr(rand(97,122));
+
+        $name = str_shuffle($name);
+
+        $email = '@';
+        $cnt = rand(10,78);
+        for ($i=0;$i<$cnt;$i++)
+            $email .= chr(rand(97,122));    
+
+        $email =  chr(rand(97,122)) . str_shuffle($email);
+
+        $data = [
+            'name' => $name,
+            'price' => rand(5,999) . '.' . rand(0,99),
+            'email' => $email,
+            'belongs_to' => 1
+        ];
+
+        $id = $m->create($data);
+    }
+
+
+    function create_bulk(){
+        for ($i=0; $i<10000; $i++){
+            $this->create();
+            usleep((450 + rand(50, 150)) * 1000);
+        }
+    }
+
+
+En Bash los hilos se crearon con este script:
+
+    /* 
+        fake.sh
+    */
+
+    #!/bin/bash
+
+    for i in {1..5}; do
+        ./com.sh dumb create_bulk &
+        sleep 2	
+    done
+
+Y se dejó corriendo en segundo plano:
+
+    ./fake.sh &
+
+Se hizo una simple consulta (SELECT COUNT) via la terminal de MariaDB y se verificaron los tiempos de respuesta del motor al query con las inserciones teniendo lugar:
+
+mysql> SELECT COUNT(*) FROM bar;
++----------+
+| COUNT(*) |
++----------+
+|  1074893 |
++----------+
+1 row in set (0.23 sec)
+
+<-- antes de comenzar a hacer INSERTs de forma concomitante.
+
+mysql> SELECT COUNT(*) FROM bar;
++----------+
+| COUNT(*) |
++----------+
+|  1075049 |
++----------+
+1 row in set (0.28 sec)
+
+mysql> SELECT COUNT(*) FROM bar;
++----------+
+| COUNT(*) |
++----------+
+|  1075055 |
++----------+
+1 row in set (0.78 sec)
+
+mysql> SELECT COUNT(*) FROM bar;
++----------+
+| COUNT(*) |
++----------+
+|  1075075 |
++----------+
+1 row in set (0.73 sec)
+
+mysql> SELECT COUNT(*) FROM bar;
++----------+
+| COUNT(*) |
++----------+
+|  1075099 |
++----------+
+1 row in set (0.26 sec)
+
+mysql> SELECT COUNT(*) FROM bar;
++----------+
+| COUNT(*) |
++----------+
+|  1075110 |
++----------+
+1 row in set (0.28 sec)
+
+mysql> SELECT COUNT(*) FROM bar;
++----------+
+| COUNT(*) |
++----------+
+|  1075116 |
++----------+
+1 row in set (0.28 sec)
+
+mysql> SELECT COUNT(*) FROM bar;
++----------+
+| COUNT(*) |
++----------+
+|  1075121 |
++----------+
+1 row in set (0.81 sec)
+
+mysql> SELECT COUNT(*) FROM bar;
++----------+
+| COUNT(*) |
++----------+
+|  1075127 |
++----------+
+1 row in set (0.70 sec)
+
+mysql> SELECT COUNT(*) FROM bar;
++----------+
+| COUNT(*) |
++----------+
+|  1075196 |
++----------+
+1 row in set (0.56 sec)
+
+mysql> SELECT COUNT(*) FROM bar;
++----------+
+| COUNT(*) |
++----------+
+|  1075209 |
++----------+
+1 row in set (0.25 sec)
+
+...
+...
+
+mysql> SELECT COUNT(*) FROM bar;
++----------+
+| COUNT(*) |
++----------+
+|  1077257 |
++----------+
+1 row in set (2.65 sec)
+
+mysql> SELECT COUNT(*) FROM bar;
++----------+
+| COUNT(*) |
++----------+
+|  1077333 |
++----------+
+1 row in set (0.27 sec)
+
+mysql> SELECT COUNT(*) FROM bar;
++----------+
+| COUNT(*) |
++----------+
+|  1077338 |
++----------+
+1 row in set (0.27 sec)
+
+mysql> SELECT COUNT(*) FROM bar;
++----------+
+| COUNT(*) |
++----------+
+|  1077343 |
++----------+
+1 row in set (0.27 sec)
+
+SELECT COUNT(*) FROM bar;
++----------+
+| COUNT(*) |
++----------+
+|  1077453 |
++----------+
+1 row in set (0.35 sec)
+
+mysql> 
+mysql> SELECT COUNT(*) FROM bar;
++----------+
+| COUNT(*) |
++----------+
+|  1077850 |
++----------+
+1 row in set (0.97 sec)
+
+
+El experimento se termina matando todos los hilos relacionados con el mismo:
+
+    killall -r fake ; killall -r sleep ; killall -r php
+
+Se observa que los tiempos de respuesta por momentos son iguales a los del previos a los INSERTs pero tienen picos muy importantes como por ejemplo de 2.65 sec
+
+* Las consultas fueron muestras al azar, y no con un script para que sean verdaderamente random.
+
+* Obviamente a medida que transcurre el experimento el número de registros se fue modificando ligeramente.
+
+
+### Experimento No 1b
+
+Como el SELECT COUNT(*) es dependiente de los INSERTs, se va a repetir el experimento con otro tipo de consultas.
+
+
+Registros:
+
+mysql> SELECT COUNT(*) FROM bar;
++----------+
+| COUNT(*) |
++----------+
+|  1083924 |
++----------+
+1 row in set (0.26 sec)
+
+
+Esta vez las queries que se van a ejecutar son las siguientes:
+
+    // show
+    SELECT uuid, price FROM bar WHERE uuid = '0fefc2b1-f0d3-47aa-a875-5dbca85855f9';
+
+    // list
+    SELECT uuid, price FROM bar LIMIT 0, 10;
+
+Implementación:
+
+    function get_bulk(){
+        $t1a = [];
+        $t2a = [];
+
+        Time::setUnit('MILI');
+
+        $m1 = (new Model(true))
+            ->table('bar')  
+            ->select(['uuid', 'price'])
+            ->take(10);
+
+        $m2 = (new Model(true))
+            ->table('bar')  
+            ->where(['uuid', '0fefc2b1-f0d3-47aa-a875-5dbca85855f9'])
+            ->select(['uuid', 'price']);    
+
+        //Debug::dd($m->dd());
+        //exit;         
+
+        for ($i=0; $i<4; $i++){
+            $t1a[] = Time::exec(function() use($m1) {
+                $m1->get();
+            }, 500);
+
+            $t2a[] = Time::exec(function() use($m2) {
+                $m2->get();
+            }, 500);
+        }    
+            
+        foreach ($t1a as $t1){
+            Files::logger("Time(list) : $t1 ms");
+        }
+
+        foreach ($t2a as $t2){
+            Files::logger("Time(show) : $t2 ms");;
+        }    
+    }
+
+
+Ejecuto:
+
+    ./com.sh dumb get_bulk && cat logs/log.txt 
+
+Resultado:
+
+2020-10-22 13:02:45	Time(list) : 0,056854248046875 ms
+2020-10-22 13:02:45	Time(list) : 0,060418128967285 ms
+2020-10-22 13:02:45	Time(list) : 0,07292366027832 ms
+2020-10-22 13:02:45	Time(list) : 0,064290046691895 ms
+2020-10-22 13:02:45	Time(show) : 0,053524017333984 ms
+2020-10-22 13:02:45	Time(show) : 0,063151836395264 ms
+2020-10-22 13:02:45	Time(show) : 0,062474250793457 ms
+2020-10-22 13:02:45	Time(show) : 0,066226005554199 ms
+
+Disparo los INSERTs concurrentes (y espero 10 segundos a que todos arranquen)
+
+    ./fake.sh &
+
+Ejecuto:
+
+    rm logs/log.txt
+    ./com.sh dumb get_bulk && cat logs/log.txt 
+
+Resultado:
+
+2020-10-22 13:08:06	Time(list) : 0,056841850280762 ms
+2020-10-22 13:08:06	Time(list) : 0,066948413848877 ms
+2020-10-22 13:08:06	Time(list) : 0,064094066619873 ms
+2020-10-22 13:08:06	Time(list) : 0,069821834564209 ms
+2020-10-22 13:08:06	Time(show) : 0,056826114654541 ms
+2020-10-22 13:08:06	Time(show) : 0,061260223388672 ms
+2020-10-22 13:08:06	Time(show) : 0,068126201629639 ms
+2020-10-22 13:08:06	Time(show) : 0,065693855285645 ms
+
+Con 10 veces más hilos para los INSERTs:
+
+2020-10-22 14:08:06	Time(list) : 0,057936191558838 ms
+2020-10-22 14:08:06	Time(list) : 0,052629947662354 ms
+2020-10-22 14:08:06	Time(list) : 0,052609920501709 ms
+2020-10-22 14:08:06	Time(list) : 0,05065393447876 ms
+2020-10-22 14:08:06	Time(show) : 0,05293607711792 ms
+2020-10-22 14:08:06	Time(show) : 0,050581932067871 ms
+2020-10-22 14:08:06	Time(show) : 0,049598217010498 ms
+2020-10-22 14:08:06	Time(show) : 0,048903942108154 ms
+
+En estos casos los tiempos de respuesta parecen no depender demasiado de la concurrencia en los INSERTs. Sin embargo una función agregativa que dependa de la totalidad de los registros se ve fuertemente afectada por la concurrencia de la escritura:
+
+mysql> SELECT AVG(price) FROM bar;
++------------+
+| AVG(price) |
++------------+
+| 503.276202 |
++------------+
+1 row in set (21.57 sec)
+
+
+Los ALTER TABLE en MySQL pueden ser muy demorados si hay bastantes registros ya que es el tiempo para agregar un campo en cada registro:
+
+    ALTER TABLE `bar` ADD `created_at` DATETIME NULL AFTER `belongs_to`;
+
+<-- demoró varios minutos
+
+    ALTER TABLE `bar` ADD INDEX(`created_at`);
+    Query OK, 0 rows affected (24.61 sec)       
+    Records: 0  Duplicates: 0  Warnings: 0
+
+<--- casi 27 segundos
+
+    ALTER TABLE `bar` ADD `deleted_at` DATETIME NULL AFTER `created_at`;
+    Query OK, 0 rows affected (1 min 54.29 sec)
+    Records: 0  Duplicates: 0  Warnings: 0
+
+<-- casi 2 minutos con 1,178,859 registros !
+
+Los tiempos de las siguientes consultas se vieron afectadas por una alta concurrencia en los INSERTs aunque podría deberse a que el motor está ocupado (independientemente de con que), cuello de botella en el disco, etc
+
+    SELECT AVG(price)  FROM bar WHERE created_at IS NOT NULL ORDER BY created_at DESC LIMIT 0,10;
+    SELECT AVG(price)  FROM bar WHERE created_at IS NOT NULL ORDER BY created_at ASC LIMIT 0,10;
+
+
+Luego de crear unos cuantos hilos que hacen INSERTs:
+
+mysql> SELECT AVG(price)  FROM bar WHERE created_at IS NOT NULL ORDER BY created_at DESC LIMIT 0,10;
++------------+
+| AVG(price) |
++------------+
+| 495.887146 |
++------------+
+1 row in set (2.24 sec)
+
+mysql> SELECT AVG(price)  FROM bar WHERE created_at IS NOT NULL ORDER BY created_at DESC LIMIT 0,10;
++------------+
+| AVG(price) |
++------------+
+| 496.025894 |
++------------+
+1 row in set (2.02 sec)
+
+mysql> SELECT AVG(price)  FROM bar WHERE created_at IS NOT NULL ORDER BY created_at ASC LIMIT 0,10;
++------------+
+| AVG(price) |
++------------+
+| 496.613259 |
++------------+
+1 row in set (1.19 sec)
+
+mysql> SELECT AVG(price)  FROM bar WHERE created_at IS NOT NULL ORDER BY created_at ASC LIMIT 0,10;
++------------+
+| AVG(price) |
++------------+
+| 499.550531 |
++------------+
+1 row in set (38.08 sec)
+
+
+Luego de haber parado los INSERTs:
+
+mysql> SELECT AVG(price)  FROM bar WHERE created_at IS NOT NULL ORDER BY created_at DESC LIMIT 0,10;
++------------+
+| AVG(price) |
++------------+
+| 501.097644 |
++------------+
+1 row in set (0.18 sec)
+
+mysql> SELECT AVG(price)  FROM bar WHERE created_at IS NOT NULL ORDER BY created_at ASC LIMIT 0,10;
++------------+
+| AVG(price) |
++------------+
+| 501.097644 |
++------------+
+1 row in set (0.17 sec)
+
+<-- los tiempos bajaron significativamente al detener los INSERTs.
+
+Hipótesis: los tiempos variaron específicamente porque el subconjunto de registros WHERE uuid IS NOT NULL tuvo que ser re-calculado con cada INSERT porque podía hacerlo variar.
+
+
+# Mini-experimento: 
+
+Antes de hacer INSERTs concurrentes:
+
+    SELECT AVG(price) FROM bar WHERE uuid IN (
+
+    '5a9517a4-9854-4cc4-81db-06de2472be84', 
+    'e1b10ca6-59aa-47fb-bea4-f09746f16eac',
+    'bb2cf054-7c82-48f0-9def-eb12e89c5c26',
+    '561eefbe-c815-4b26-a5d3-c879fb0dbc3c',
+    '55154125-aaf9-4576-8927-b0299f9c558b',
+    'ecbc650e-ba5f-4c7d-a4a1-9d9cf3fc46d8',
+    '479e47ec-cbe7-4613-a076-fd8dc119cea1',
+    '5d6f7841-2bfa-494d-8fbe-6c2afa774933',
+    '1ba30886-482e-4a8b-9a05-0d8620955045',
+    '02f54dc4-d0e1-4f79-892d-e83cba614b1c');
+
++------------+
+| AVG(price) |
++------------+
+| 273.181000 |
++------------+
+1 row in set (0.00 sec)
+
+
+Con los INSERTs concurrentes (bastantes hilos) espero que el tiempo de respuesta sea IGUAL porque los uuids son siempre los mismos mientras que la operación se repita en un time-frame muy corto:
+
++------------+
+| AVG(price) |
++------------+
+| 273.181000 |
++------------+
+1 row in set (0.00 sec)
+
+Aunque........ hay "picos" donde los tiempos pueden ser ligeramente superiores que parecen deberse a que luego de esperar varios segundos se limpia una caché interna de MySQL que obliga a re-calcular:
+
++------------+
+| AVG(price) |
++------------+
+| 273.181000 |
++------------+
+1 row in set (0.65 sec)
+
+<-- Sino hay inserciones en la tabla.... tampoco hace re-cálculo de funciones agregativas.
+
+
+Conclusión: se comprueba la hipótesis! Existiría una caché interna en MySQL para funciones agregativas.
+
+
+ 
+
+
+
+
+
+
+
+

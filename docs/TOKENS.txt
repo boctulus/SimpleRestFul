@@ -1,0 +1,83 @@
+{
+    "data": {
+        "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTYwMjQ2Njc3NCwiZXhwIjoxNjExNDY2Nzc0LCJpcCI6IjEyNy4wLjAuMSIsInVpZCI6IjQwMCIsInJvbGVzIjpbInN1cGVyYWRtaW4iXSwicGVybWlzc2lvbnMiOnsidGIiOltdLCJzcCI6W119LCJhY3RpdmUiOiIxIn0.NUviY0ie76fdQFaZvucwsN6QqiAU2vZGYMSut-qdF5E",
+        "token_type": "bearer",
+        "expires_in": 9000000,
+        "refresh_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTYwMjQ2Njc3NCwiZXhwIjoxOTE3ODI2Nzc0LCJpcCI6IjEyNy4wLjAuMSIsInVpZCI6IjQwMCJ9.GpdH2cdyRh2J3681486segCLk-NIinlz7BOAp-4ZhYw",
+        "roles": [
+            "superadmin"
+        ],
+        "uid": "400"
+    },
+    "status_code": 200,
+    "error": "",
+    "error_detail": ""
+}
+
+{
+    "data": {
+        "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTYwMTc0ODE5OCwiZXhwIjoxNjEwNzQ4MTk4LCJpcCI6IjEyNy4wLjAuMSIsInVpZCI6IjE2OCIsInJvbGVzIjpbInJlZ3VsYXIiXSwicGVybWlzc2lvbnMiOnsidGIiOnsicHJvZHVjdHMiOjExLCJiYXIiOjc4fSwic3AiOltdfSwiYWN0aXZlIjoiMSJ9.FRTEUVJEnn-IGn8yQmCecYI_79HMOxzcmHQ_IaMcrq4",
+        "token_type": "bearer",
+        "expires_in": 9000000,
+        "refresh_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTYwMTc0ODE5OCwiZXhwIjoxOTE3MTA4MTk4LCJpcCI6IjEyNy4wLjAuMSIsInVpZCI6IjE2OCJ9.wFCP_gAsu_QsYKtk0m2YzX-Rkoxz784KFpRS6wfma9I",
+        "roles": [
+            "regular"
+        ],
+        "uid": "168"
+    },
+    "status_code": 200,
+    "error": "",
+    "error_detail": ""
+}
+
+
+{
+    "data": {
+        "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTYwMjQ1NTkxNCwiZXhwIjoxNjExNDU1OTE0LCJpcCI6IjEyNy4wLjAuMSIsInVpZCI6IjkwIiwicm9sZXMiOlsiYmFzaWMiXSwicGVybWlzc2lvbnMiOnsidGIiOnsiZm9vIjoyOX0sInNwIjpbImltcGVyc29uYXRlIiwicmVhZF9hbGwiXX0sImFjdGl2ZSI6IjEifQ.FHuAa-g4cTizS4GxqFuXMdN3FHOZ6YXpfndhJSGTIR0",
+        "token_type": "bearer",
+        "expires_in": 9000000,
+        "refresh_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTYwMjQ1NTkxNCwiZXhwIjoxOTE3ODE1OTE0LCJpcCI6IjEyNy4wLjAuMSIsInVpZCI6IjkwIn0.HF0j9oVlThKcbLu0fHfQgEMxSdrgYSxjYw9tGrEp_a4",
+        "roles": [
+            "basic"
+        ],
+        "uid": "90"
+    },
+    "status_code": 200,
+    "error": "",
+    "error_detail": ""
+}
+
+
+{
+    "data": {
+        "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTYwMjQ2NzE2MywiZXhwIjoxNjExNDY3MTYzLCJpcCI6IjEyNy4wLjAuMSIsInVpZCI6IjQ1NiIsInJvbGVzIjpbXSwicGVybWlzc2lvbnMiOnsidGIiOltdLCJzcCI6W119LCJhY3RpdmUiOiIxIn0.S35YplhY85axJgI9-YBFTLvxV9vyIfjKO2gSiDvPXc4",
+        "token_type": "bearer",
+        "expires_in": 9000000,
+        "refresh_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTYwMjQ2NzE2MywiZXhwIjoxOTE3ODI3MTYzLCJpcCI6IjEyNy4wLjAuMSIsInVpZCI6IjQ1NiJ9.9CiNncFkj_VXtSv_OZk7zcml1II2TqJUkpJvsRq77a8",
+        "roles": [],
+        "uid": "456"
+    },
+    "status_code": 200,
+    "error": "",
+    "error_detail": ""
+}
+
+<-- sin roles !
+
+
+{
+    "data": {
+        "uid": "472",
+        "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTYwMjg2OTE0MiwiZXhwIjoxNjExODY5MTQyLCJpcCI6IjEyNy4wLjAuMSIsInVpZCI6IjQ3MiIsInJvbGVzIjpbInJlZ3VsYXIiXSwicGVybWlzc2lvbnMiOnsidGIiOltdLCJzcCI6W119LCJhY3RpdmUiOm51bGx9.TtG8xI9oFxJtYUyZA7H_xK4SYUV5AJNFy2wJyuy1Ih8",
+        "token_type": "bearer",
+        "expires_in": 9000000,
+        "refresh_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTYwMjg2OTE0MiwiZXhwIjoxOTE4MjI5MTQyLCJpcCI6IjEyNy4wLjAuMSIsInVpZCI6IjQ3MiJ9.WynC8oo5-UXQYSoLO3hUB2M9EjpMxvt4lIp69thrRtw",
+        "roles": [
+            "regular"
+        ],
+        "email_confirmation_link": "http://az.lan/api/v1/auth/confirm_email/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTYwMjg2OTE0MiwiZXhwIjoxNjAzNDczOTQyLCJpcCI6IjEyNy4wLjAuMSIsImVtYWlsIjoidmlrNDVAZ21haWwuY29tIiwicm9sZXMiOlsicmVndWxhciJdLCJwZXJtaXNzaW9ucyI6eyJ0YiI6W10sInNwIjpbXX19.D5j6sEw-V6iybEk7sQOI7iDTDyt7-1rpku7Azzs4nNU/1603473942"
+    },
+    "status_code": 200,
+    "error": "",
+    "error_detail": ""
+}
