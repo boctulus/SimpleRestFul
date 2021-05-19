@@ -1,0 +1,1502 @@
+<?php
+
+namespace simplerest\core;
+
+use simplerest\core\Model;
+use simplerest\libs\DB;
+use simplerest\libs\Strings;
+use simplerest\libs\Debug;
+use simplerest\libs\Factory;
+
+/*
+	Migrations
+
+	The following can be useful :P
+	https://hoelz.ro/ref/mysql-alter-table-alter-change-modify-column
+	https://mariadb.com/kb/en/auto_increment/
+*/
+
+class Schema 
+{
+	protected $tables;
+	protected $tb_name;
+
+	protected $engine = 'InnoDB';
+	protected $charset = 'utf8';
+	protected $collation;
+	
+	protected $raw_lines = [];
+	protected $fields  = [];
+	protected $current_field;
+	protected $indices = []; // 'PRIMARY', 'UNIQUE', 'INDEX', 'FULLTEXT', 'SPATIAL'
+	protected $fks = [];
+	
+	protected $prev_schema;
+	protected $commands = [];
+	protected $query;
+
+	// mysql version
+	protected $engine_ver;
+
+
+	function __construct($tb_name){
+		$this->tables = self::getTables();
+		$this->engine_ver = (int) DB::select('SELECT VERSION() AS ver')[0]['ver'];
+		$this->tb_name = $tb_name;
+		$this->fromDB();
+	}
+
+	static function getTables(string $conn_id = null) {	
+		$config = Factory::config();
+		
+		if ($conn_id != null){
+			if (!isset($config['db_connections'][$conn_id])){
+				throw new \Exception("Connection Id '$conn_id' not defined");
+			}			
+		} else {
+			$conn_id = $config['db_connection_default'];
+		}
+
+		$db_name = $config['db_connections'][$conn_id]['db_name'];
+
+		return DB::select("SELECT TABLE_NAME 
+		FROM information_schema.tables
+		WHERE table_schema = '$db_name';", 
+		'COLUMN');
+	}
+
+	static function FKcheck(bool $status){
+		$conn = DB::getConnection();   
+
+		$st = $conn->prepare("SET FOREIGN_KEY_CHECKS=" . ((int) $status) .";");
+		$res = $st->execute();
+	}
+
+	static function enableForeignKeyConstraints(){
+		return self::FKcheck(1);
+	}
+
+	static function disableForeignKeyConstraints(){
+		return self::FKcheck(0);
+	}
+
+	static function hasTable(string $tb_name, string $db_name = null)
+	{
+		if ($db_name == null){
+			$res = DB::select("SHOW TABLES LIKE '$tb_name';");
+		}else {
+			$res = DB::select("SELECT * 
+			FROM information_schema.tables
+			WHERE table_schema = '$db_name' 
+				AND table_name = '$tb_name'
+			LIMIT 1;");
+		}
+
+		return (!empty($res));	
+	} 
+
+	static function hasColumn(string $table, string $column){
+		$conn = DB::getConnection();   
+
+		$res = DB::select("SHOW COLUMNS FROM `$table` LIKE '$column'");
+		return !empty($res);
+	} 
+
+	static function rename(string $ori, string $final){
+		$conn = DB::getConnection();   
+
+		$st = $conn->prepare("RENAME TABLE `$ori` TO `$final`;");
+		return $st->execute();
+	}	
+
+	static function drop(string $table){
+		$conn = DB::getConnection();   
+
+		$st = $conn->prepare("DROP TABLE `{$table}`;");
+		return $st->execute();
+	}
+
+	static function dropIfExists(string $table){
+		$conn = DB::getConnection();   
+
+		$st = $conn->prepare("DROP TABLE IF EXISTS `{$table}`;");
+		return $st->execute();
+	}
+
+
+	function tableExists(){
+		return in_array($this->tb_name, $this->tables);
+	} 
+
+	function columnExists(string $column){
+		return static::hasColumn($this->tb_name, $column);
+	}
+
+	function setEngine(string $val){
+		$this->engine = $val;
+		return $this;
+	}
+
+	function setCharset(string $val){
+		$this->chartset = $val;
+		return $this;
+	}
+
+	function setCollation(string $val){
+		$this->collation = $val;
+		return $this;
+	}
+
+	function column(string $name){
+		$this->current_field = $name;
+		return $this;
+	}
+
+	function field(string $name){
+		$this->column($name);
+		return $this;
+	}
+	
+	// type
+	
+	function int(string $name, int $len = NULL){
+		$this->current_field = $name;
+		$this->fields[$this->current_field] = [];
+		$this->fields[$this->current_field]['type'] = 'INT';
+		
+		if ($len != NULL)
+			$this->fields[$this->current_field]['len'] = $len;
+		
+		return $this;		
+	}	
+	
+	function integer(string $name, int $len = NULL){
+		$this->int($name, $len);
+		return $this;		
+	}	
+	
+	function serial(string $name, int $len = NULL){		
+		$this->current_field = $name;
+		//$this->bigint($name, $len)->unsigned()->auto()->unique();
+		$this->fields[$this->current_field]['type'] = 'SERIAL';
+		return $this;		
+	}	
+	
+	function bigint(string $name){
+		$this->current_field = $name;
+		$this->fields[$this->current_field] = [];
+		$this->fields[$this->current_field]['type'] = 'BIGINT';
+		return $this;		
+	}	
+	
+	function mediumint(string $name){
+		$this->current_field = $name;
+		$this->fields[$this->current_field] = [];
+		$this->fields[$this->current_field]['type'] = 'MEDIUMINT';
+		return $this;		
+	}	
+	
+	function smallint(string $name){
+		$this->current_field = $name;
+		$this->fields[$this->current_field] = [];
+		$this->fields[$this->current_field]['type'] = 'SMALLINT';
+		return $this;		
+	}	
+	
+	function tinyint(string $name){
+		$this->current_field = $name;
+		$this->fields[$this->current_field] = [];
+		$this->fields[$this->current_field]['type'] = 'TINYINT';
+		return $this;		
+	}	
+	
+	function boolean(string $name){
+		$this->current_field = $name;
+		$this->fields[$this->current_field] = [];
+		$this->fields[$this->current_field]['type'] = 'BOOLEAN';
+		return $this;		
+	}	
+	
+	function bool(string $name){
+		$this->boolean($name);
+		return $this;		
+	}
+	
+	function bit(string $name, int $len){
+		$this->current_field = $name;
+		$this->fields[$this->current_field] = [];
+		$this->fields[$this->current_field]['type'] = 'BIT';
+		$this->fields[$this->current_field]['len'] = $len;		
+		return $this;		
+	}
+	
+	function decimal(string $name, int $len = 15, int $len_dec = 4){
+		$this->current_field = $name;
+		$this->fields[$this->current_field] = [];
+		$this->fields[$this->current_field]['type'] = 'DECIMAL';
+		$this->fields[$this->current_field]['len'] = [$len, $len_dec];		
+		return $this;		
+	}	
+	
+	function float(string $name){
+		$this->current_field = $name;
+		$this->fields[$this->current_field] = [];
+		$this->fields[$this->current_field]['type'] = 'FLOAT';
+		return $this;		
+	}	
+	
+	function double(string $name){
+		$this->current_field = $name;
+		$this->fields[$this->current_field] = [];
+		$this->fields[$this->current_field]['type'] = 'DOUBLE';
+		return $this;		
+	}	
+	
+	function real(string $name){
+		$this->current_field = $name;
+		$this->fields[$this->current_field] = [];
+		$this->fields[$this->current_field]['type'] = 'REAL';
+		return $this;		
+	}	
+	
+	function char(string $name){		
+		$this->current_field = $name;
+		$this->fields[$this->current_field] = [];
+		$this->fields[$this->current_field]['type'] = 'CHAR';
+		return $this;		
+	}	
+	
+	function varchar(string $name, int $len = 60){
+		if ($len > 65535)
+			throw new \InvalidArgumentException("Max length is 65535");
+		
+		$this->current_field = $name;
+		$this->fields[$this->current_field] = [];
+		$this->fields[$this->current_field]['type'] = 'VARCHAR';
+		$this->fields[$this->current_field]['len'] = $len;
+		return $this;		
+	}	
+	
+	function text(string $name, int $len = NULL){
+		if ($len > 65535)
+			throw new \InvalidArgumentException("Max length is 65535");
+		
+		$this->current_field = $name;
+		$this->fields[$this->current_field] = [];
+		$this->fields[$this->current_field]['type'] = 'TEXT';
+		
+		if ($len != NULL)
+			$this->fields[$this->current_field]['len'] = $len;
+		
+		return $this;		
+	}	
+	
+	function tinytext(string $name){		
+		$this->current_field = $name;
+		$this->fields[$this->current_field] = [];
+		$this->fields[$this->current_field]['type'] = 'TINYTEXT';
+		return $this;		
+	}
+	
+	function mediumtext(string $name){		
+		$this->current_field = $name;
+		$this->fields[$this->current_field] = [];
+		$this->fields[$this->current_field]['type'] = 'MEDIUMTEXT';
+		return $this;		
+	}
+	
+	function longtext(string $name){		
+		$this->current_field = $name;
+		$this->fields[$this->current_field] = [];
+		$this->fields[$this->current_field]['type'] = 'LONGTEXT';
+		return $this;		
+	}
+	
+	function varbinary(string $name, int $len = 60){
+		if ($len > 65535)
+			throw new \InvalidArgumentException("Max length is 65535");
+		
+		$this->current_field = $name;
+		$this->fields[$this->current_field] = [];
+		$this->fields[$this->current_field]['type'] = 'VARBINARY';
+		$this->fields[$this->current_field]['len'] = $len;
+		return $this;		
+	}
+	
+	function blob(string $name){
+		$this->current_field = $name;
+		$this->fields[$this->current_field] = [];
+		$this->fields[$this->current_field]['type'] = 'BLOB';
+		return $this;		
+	}	
+	
+	function binary(string $name, int $len){
+		if ($len > 255)
+			throw new \InvalidArgumentException("Max length is 65535");
+		
+		$this->current_field = $name;
+		$this->fields[$this->current_field] = [];
+		$this->fields[$this->current_field]['type'] = 'BINARY';
+		$this->fields[$this->current_field]['len'] = $len;
+		return $this;		
+	}
+	
+	function tinyblob(string $name){		
+		$this->current_field = $name;
+		$this->fields[$this->current_field] = [];
+		$this->fields[$this->current_field]['type'] = 'TINYBLOB';
+		return $this;		
+	}
+	
+	function mediumblob(string $name){		
+		$this->current_field = $name;
+		$this->fields[$this->current_field] = [];
+		$this->fields[$this->current_field]['type'] = 'MEDIUMBLOB';
+		return $this;		
+	}
+	
+	function longblob(string $name){		
+		$this->current_field = $name;
+		$this->fields[$this->current_field] = [];
+		$this->fields[$this->current_field]['type'] = 'LONGBLOB';
+		return $this;		
+	}
+	
+	function json(string $name){		
+		$this->current_field = $name;
+		$this->fields[$this->current_field] = [];
+		$this->fields[$this->current_field]['type'] = 'JSON';
+		return $this;		
+	}
+	
+	function set(string $name, array $values){		
+		$this->current_field = $name;
+		$this->fields[$this->current_field] = [];
+		$this->fields[$this->current_field]['type'] = 'SET';
+		$this->fields[$this->current_field]['array'] = $values;
+		return $this;		
+	}
+	
+	function enum(string $name, array $values){		
+		$this->current_field = $name;
+		$this->fields[$this->current_field] = [];
+		$this->fields[$this->current_field]['type'] = 'ENUM';
+		$this->fields[$this->current_field]['array'] = $values;
+		return $this;		
+	}
+	
+	function time(string $name){		
+		$this->current_field = $name;
+		$this->fields[$this->current_field] = [];
+		$this->fields[$this->current_field]['type'] = 'TIME';
+		return $this;		
+	}
+	
+	function year(string $name){		
+		$this->current_field = $name;
+		$this->fields[$this->current_field] = [];
+		$this->fields[$this->current_field]['type'] = 'YEAR';
+		return $this;		
+	}
+	
+	function date(string $name){		
+		$this->current_field = $name;
+		$this->fields[$this->current_field] = [];
+		$this->fields[$this->current_field]['type'] = 'DATE';
+		return $this;		
+	}
+	
+	function datetime(string $name){		
+		$this->current_field = $name;
+		$this->fields[$this->current_field] = [];
+		$this->fields[$this->current_field]['type'] = 'DATETIME';
+		return $this;		
+	}
+	
+	function timestamp(string $name){		
+		$this->current_field = $name;
+		$this->fields[$this->current_field] = [];
+		$this->fields[$this->current_field]['type'] = 'TIMESTAMP';
+		return $this;		
+	}
+	
+	function softDeletes(){		
+		$this->current_field = 'deleted_at';
+		$this->fields[$this->current_field] = [];
+		$this->fields[$this->current_field]['type'] = 'DATETIME';
+		return $this;		
+	}
+	
+	function datetimes(){		
+		$this->current_field = 'created_at';
+		$this->fields[$this->current_field] = [];
+		$this->fields[$this->current_field]['type'] = 'DATETIME';
+		$this->current_field = 'updated_at';
+		$this->fields[$this->current_field] = [];
+		$this->fields[$this->current_field]['type'] = 'DATETIME';
+		return $this;		
+	}
+	
+	function point(string $name){		
+		$this->current_field = $name;
+		$this->fields[$this->current_field] = [];
+		$this->fields[$this->current_field]['type'] = 'POINT';
+		return $this;		
+	}
+	
+	function multipoint(string $name){		
+		$this->current_field = $name;
+		$this->fields[$this->current_field] = [];
+		$this->fields[$this->current_field]['type'] = 'MULTIPOINT';
+		return $this;		
+	}
+	
+	function linestring(string $name){		
+		$this->current_field = $name;
+		$this->fields[$this->current_field] = [];
+		$this->fields[$this->current_field]['type'] = 'LINESTRING';
+		return $this;		
+	}
+	
+	function polygon(string $name){		
+		$this->current_field = $name;
+		$this->fields[$this->current_field] = [];
+		$this->fields[$this->current_field]['type'] = 'POLYGON';
+		return $this;		
+	}
+	
+	function multipolygon(string $name){		
+		$this->current_field = $name;
+		$this->fields[$this->current_field] = [];
+		$this->fields[$this->current_field]['type'] = 'MULTIPOLYGON';
+		return $this;		
+	}
+	
+	function geometry(string $name){		
+		$this->current_field = $name;
+		$this->fields[$this->current_field] = [];
+		$this->fields[$this->current_field]['type'] = 'GEOMETRY';
+		return $this;		
+	}
+	
+	function geometrycollection(string $name){		
+		$this->current_field = $name;
+		$this->fields[$this->current_field] = [];
+		$this->fields[$this->current_field]['type'] = 'GEOMETRYCOLLECTION';
+		return $this;		
+	}	
+	
+	// collation && charset 
+	
+	function collation(string $val){
+		$this->fields[$this->current_field]['collation'] = $val;
+		return $this;		
+	}
+
+	// alias
+	function collate(string $val){
+		$this->collation($val);
+		return $this;		
+	}
+	
+	function charset(string $val){
+		$this->fields[$this->current_field]['charset'] = $val;
+		return $this;		
+	}
+	
+	/* 
+		modifiers
+	*/
+	
+	// autoincrement
+	function auto(bool $val = true){
+		$this->fields[$this->current_field]['auto'] =  $val;
+		return $this;
+	}
+
+	function nullable(bool $value =  true){
+		$this->fields[$this->current_field]['nullable'] =  $value ? 'NULL' : 'NOT NULL';
+		return $this;
+	}
+	
+	function comment($string){
+		$this->fields[$this->current_field]['comment'] =  $string;
+		return $this;
+	}
+	
+	function default($val = NULL){
+		if ($val === NULL) {
+			$val = 'NULL';
+		} elseif ($val === false) {
+			$val = NULL;
+		}
+
+		$this->fields[$this->current_field]['default'] =  $val;
+		return $this;
+	}
+	
+	function dropDefault(){
+		$this->fields[$this->current_field]['default'] =  NULL;
+		return $this;
+	}
+
+	function currentTimestamp(){
+		$this->default('current_timestamp()');	
+		return $this;
+	}
+	
+	protected function setAttr($attr){
+		if (!in_array($attr, ['UNSIGNED', 'UNSIGNED ZEROFILL', 'BINARY'])){
+			throw new \Exception("Attribute '$attr' is not valid.");
+		}
+
+		$this->fields[$this->current_field]['attr'] = $attr;
+	}
+	
+	function unsigned(){
+		$this->setAttr('UNSIGNED');
+		return $this;
+	}
+	
+	function zeroFill(){
+		$this->setAttr('UNSIGNED ZEROFILL');
+		return $this;
+	}
+	
+	function binaryAttr(){
+		$this->setAttr('BINARY');
+		return $this;
+	}
+	
+	// ALTER TABLE `aaa` ADD `ahora` TIMESTAMP on update CURRENT_TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP AFTER `fecha`;
+	function onUpdateCurrent(){
+		$this->setAttr('current_timestamp()');	
+		return $this;
+	}
+	
+	function after(string $field){
+		$this->fields[$this->current_field]['after'] =  $field;
+		return $this;
+	}
+	
+	// ALTER TABLE `aaa` ADD `inicio` INT NOT NULL FIRST;
+	function first(){
+		if (isset($this->fields[$this->current_field]['after']))
+			unset($this->fields[$this->current_field]['after']);
+		
+		foreach ($this->fields as $k => $field){
+			if (isset($this->fields[$k]['first']))
+				unset($this->fields[$k]['first']);
+		}	
+		
+		$this->fields[$this->current_field]['first'] =  true;
+		return $this;
+	}
+	
+	// FKs
+	
+	function foreign(string $field_name){
+		$this->current_field = $field_name;
+		$this->fks[$this->current_field] = [];
+		return $this;
+	}
+
+	// alias
+	function fk(string $field_name){
+		return $this->foreign($field_name);
+	}
+	
+	function references(string $field_name){
+		$this->fks[$this->current_field]['references'] = $field_name;
+		return $this;
+	}
+	
+	function on(string $table){
+		$this->fks[$this->current_field]['on'] = $table;
+		return $this;
+	}
+		
+	function onDelete(string $action){
+		$this->fks[$this->current_field]['on_delete'] = $action;
+		return $this;
+	}
+	
+	function onUpdate(string $action){
+		$this->fks[$this->current_field]['on_update'] = $action;
+		return $this;
+	}
+
+	function constrained(string $constraint_name){
+		$this->fks[$this->current_field]['fk_constraint'] = $constraint_name;
+		return $this;
+	}
+
+	
+	// INDICES >>>
+	
+	function primary(Array $fields, string $constraint = null){
+		if ($constraint == null){
+			$constraint = 'DEFAULT';
+		}
+
+		$this->indices['PRIMARY'][$constraint]['fields'][] = $fields;
+		return $this;
+	}
+	
+	function pri(Array $fields, string $constraint = null){
+		$this->primary($fields, $constraint);
+		return $this;
+	}
+	
+	function unique(Array $fields, string $constraint = null){
+		if ($constraint == null){
+			$constraint = 'DEFAULT';
+		}
+
+		$this->indices['UNIQUE'][$constraint]['fields'][] = $fields;
+		return $this;
+	}
+	
+	function index(Array $fields, string $constraint = null){ 
+		if ($constraint == null){
+			$constraint = 'DEFAULT';
+		}
+
+		$this->indices['INDEX'][$constraint]['fields'][] = $fields;
+		return $this;
+	}
+	
+	function fulltext(Array $fields, string $constraint = null){ 
+		if ($constraint == null){
+			$constraint = 'DEFAULT';
+		}
+
+		$this->indices['FULLTEXT'][$constraint]['fields'][] = $fields;
+		return $this;
+	}
+	
+	function spatial(string $field, string $constraint = null){ 
+		if ($constraint == null){
+			$constraint = 'DEFAULT';
+		}
+
+		$this->indices['SPATIAL'][$constraint]['fields'][] = [$field];
+		return $this;
+	}
+	
+	
+	///////////////////////////////
+	
+	/*
+		`nombre_campo` tipo[(longitud)] [(array_set_enum)] [charset] [collate] [attributos] NULL|NOT_NULL [default] [AUTOINCREMENT]
+	*/
+	function getDefinition($field){
+		$cmd = '';		
+		if (in_array($field['type'], ['SET', 'ENUM'])){
+			$values = implode(',', array_map(function($e){ return "'$e'"; }, $field['array']));	
+			$cmd .= "($values) ";
+		}else{
+			if (isset($field['len'])){
+				$len = implode(',', (array) $field['len']);	
+				$cmd .= "($len) ";
+			}else
+				$cmd .= " ";	
+		}
+		
+		if (isset($field['attr'])){
+			$cmd .= "{$field['attr']} ";
+		}
+		
+		if (isset($field['charset'])){
+			$cmd .= "CHARACTER SET {$field['charset']} ";
+		}
+		
+		if (isset($field['collation'])){
+			$cmd .= "COLLATE {$field['collation']} ";
+		}
+			
+		if (isset($field['nullable'])){
+			$cmd .= "{$field['nullable']} ";
+		}else
+			$cmd .= "NOT NULL ";
+
+		if (isset($field['default'])){
+			$cmd .= "DEFAULT {$field['default']} ";
+		}
+
+		if (isset($field['auto'])){
+			$cmd .= "AUTO_INCREMENT PRIMARY KEY";
+		}
+		
+		return trim($cmd);
+	}
+
+	private function showTable(){
+		$conn = DB::getConnection();
+		
+		$stmt = $conn->query("SHOW CREATE TABLE `{$this->tb_name}`", \PDO::FETCH_ASSOC);
+		$res  = $stmt->fetch();
+		
+		return $res;
+	}
+		
+	// FOREIGN KEY (`abono_id`) REFERENCES `abonos` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+	private function addFKs(){
+		foreach ($this->fks as $name => $fk){
+			$on_delete  = !empty($fk['on_delete'])  ? 'ON DELETE ' .$fk['on_delete']  : '';
+			$on_update  = !empty($fk['on_update'])  ? 'ON UPDATE ' .$fk['on_update']  : '';
+			$constraint = !empty($fk['fk_constraint']) ? 'CONSTRAINT `'.$fk['fk_constraint'].'`' : '';
+			
+			$this->commands[] = trim("ALTER TABLE  `{$this->tb_name}` ADD $constraint FOREIGN KEY (`$name`) REFERENCES `{$fk['on']}` (`{$fk['references']}`) $on_delete $on_update").';';
+		}
+	} 
+
+	function createTable(){
+		if ($this->tableExists()){
+			throw new \Exception("Table {$this->tb_name} already exists");
+		}
+
+		if (empty($this->fields)){
+			throw new \Exception("No fields!");
+		}	
+
+		if ($this->engine == NULL){
+			throw new \Exception("Please specify table engine");
+		}
+		
+		if ($this->charset == NULL){
+			throw new \Exception("Please specify charset");
+		}
+
+		$this->commands = [
+			'SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";',
+			/*
+			'SET AUTOCOMMIT = 0;',
+			'START TRANSACTION;',
+			*/
+			'SET time_zone = "+00:00";'
+		];
+	
+		$cmd = '';
+		foreach ($this->fields as $name => $field){
+			$cmd .= "`$name` {$field['type']} ";			
+			$cmd .= $this->getDefinition($field);	
+			$cmd .= ",\n";
+		}
+		
+		$cmd = substr($cmd,0,strlen($cmd)-2);
+		
+		$cmd = "CREATE TABLE `{$this->tb_name}` (\n$cmd\n) ENGINE={$this->engine} DEFAULT CHARSET={$this->charset};";
+		
+		$this->commands[] = $cmd;
+		
+		// Indices
+		
+		if (count($this->indices) >0)
+		{			
+
+			//dd($this->indices, 'INDICES');
+			//exit;
+
+			$cmd = '';		
+			foreach ($this->indices as $tipo => $ix_arr) {			
+				switch ($tipo){
+					case 'PRIMARY':
+						// PRIMARY can not be "ADDed"
+						break;
+					case 'INDEX':
+						$constraint = (array_key_first($ix_arr) == 'DEFAULT' ? $ix_arr['DEFAULT']['fields'][0][0] : array_key_first($ix_arr));
+						$nombres_ar = $ix_arr[array_key_first($ix_arr)]['fields'][0];
+
+						$nombres = array_map(function($x){ return "`$x`"; }, $nombres_ar);
+						$nombres = implode(',', $nombres);
+
+						//dd($constraint);
+						//dd($nombres);
+						//exit; ////
+
+						$cmd .= "ADD INDEX ($nombres),\n";
+						break;					
+					case 'UNIQUE':
+						dd($ix_arr, 'IX_ARR');
+						exit;
+						
+						foreach ($ix_arr as $ix){
+							$constraint = ($ix == 'DEFAULT' ? $ix_arr['DEFAULT']['fields'][0][0] : $ix);
+							$nombres_ar = $ix_arr[$ix]['fields'][0];
+
+							$nombres = array_map(function($x){ return "`$x`"; }, $nombres_ar);
+							$nombres = implode(',', $nombres);
+
+							//$index_type = "USING BTREE";
+							$cmd .= "ADD UNIQUE KEY `$constraint` ($nombres) $index_type,\n";
+						}						
+						break;
+					case 'SPATIAL':
+						$cmd .= "ADD SPATIAL KEY `$nombre` (`$nombre`),\n";
+						break;
+					case 'FULLTEXT':
+						$cmd .= "ADD FULLTEXT KEY `$nombre` (`$nombre`),\n";  // sin probar
+						break;
+					
+					default:
+						dd($tipo, 'TIPO INVALIDO');
+						throw new \Exception("Invalid index type");
+				}				
+			}
+			
+			$cmd = substr($cmd,0,-2);
+			$cmd = "ALTER TABLE `{$this->tb_name}` \n$cmd;";
+			
+			$this->commands[] = $cmd;
+		}		
+		
+		
+		// FKs		
+		$this->addFKs();
+				
+		//$this->commands[] = 'COMMIT;';		
+		$this->query = implode("\r\n",$this->commands)."\n";
+
+		$conn = DB::getConnection();   
+	  
+		$rollback = function() use ($conn){
+			$st = $conn->prepare("DROP TABLE IF EXISTS `{$this->tb_name}`;");
+			$res = $st->execute();
+		};
+
+		try {
+			foreach($this->commands as $change){     
+				$st = $conn->prepare($change);
+				$res = $st->execute();
+			}
+
+		} catch (\PDOException $e) {
+			dd($change, 'SQL with error');
+			dd($e->getMessage(), "PDO error");
+			$rollback();
+			throw $e;		
+        } catch (\Exception $e) {
+			$rollback();
+            throw $e;
+        } catch (\Throwable $e) {
+            $rollback();
+            throw $e;   
+        }     
+
+		return true;
+	}
+
+	// alias
+	function create(){
+		return $this->createTable();
+	}
+	
+	function dropTable(){
+		$this->commands[] = "DROP TABLE `{$this->tb_name}`;";
+		return $this;
+	}
+
+	function dropTableIfExists(){
+		$this->commands[] = "DROP TABLE IF EXISTS `{$this->tb_name}`;";
+		return $this;
+	}
+
+
+	// TRUNCATE `az`.`xxy`
+	function truncateTable(string $tb){
+		$this->commands[] = "TRUNCATE `{$this->tb_name}`.`$tb`;";
+		return $this;
+	}
+
+
+	// RENAME TABLE `az`.`xxx` TO `az`.`xxy`;
+	function renameTable(string $final){
+		$this->commands[] = "RENAME TABLE `{$this->tb_name}` TO `$final`;";
+		return $this;
+	}	
+
+
+	function dropColumn(string $name){
+		$this->commands[] = "ALTER TABLE `{$this->tb_name}` DROP `$name`;";
+		return $this;
+	}
+
+	// https://popsql.com/learn-sql/mysql/how-to-rename-a-column-in-mysql/
+	function renameColumn(string $ori, string $final){
+		if ((int) $this->engine_ver >= 8){
+			$this->commands[] = "ALTER TABLE `{$this->tb_name}` RENAME COLUMN `$ori` TO `$final`;";
+		} else {
+			if (!isset($this->prev_schema['fields'][$ori])){
+				throw new \InvalidArgumentException("Column '$ori' does not exist in `{$this->tb_name}`");
+			}
+
+			$datatype = $this->prev_schema['fields'][$ori]['type'];
+
+			if (isset($this->prev_schema['fields'][$this->current_field]['array'])){
+				$datatype .= '(' . implode(',', $this->fields[$this->current_field]['array']). ')';
+			} elseif (isset($this->prev_schema['fields'][$this->current_field]['len'])){
+				$datatype .= '(' . $this->prev_schema['fields'][$this->current_field]['len'] . ')';
+			} 
+
+			$this->commands[] = "ALTER TABLE `{$this->tb_name}` CHANGE `$ori` `$final` $datatype;";
+		}
+
+		return $this;
+	}
+	
+	// alias
+	function renameColumnTo(string $final){		
+		$this->commands[] = "ALTER TABLE `{$this->tb_name}` RENAME COLUMN `{$this->current_field}` TO `$final`;";
+		return $this;
+	}
+
+
+
+	function addPrimary(string $column){
+		$this->commands[] = "ALTER TABLE `{$this->tb_name}` ADD PRIMARY KEY(`$column`);";
+		return $this;	
+	}
+		
+	// implica primero remover el AUTOINCREMENT sobre el campo !
+	// ej: ALTER TABLE `super_cool_table` CHANGE `id` `id` INT(11) NOT NULL;
+	function dropPrimary(string $name){
+		if ($this->prev_schema['fields'][$name]['auto']){
+			throw new \Exception("To be able to DROP PRIMARY KEY, first remove AUTO_INCREMENT");
+		}
+
+		$this->commands[] = "ALTER TABLE `{$this->tb_name}` DROP PRIMARY KEY;";
+		return $this;
+	}
+
+
+	function addIndex(string $column){
+		$this->commands[] = "ALTER TABLE `{$this->tb_name}` ADD INDEX(`$column`);";
+		return $this;
+	}
+
+	function dropIndex(string $name){
+		$this->commands[] = "ALTER TABLE `{$this->tb_name}` DROP INDEX `$name`;";
+		return $this;
+	}
+
+	// https://stackoverflow.com/questions/1463363/how-do-i-rename-an-index-in-mysql
+	function renameIndex(string $ori, string $final){
+		$this->commands[] = "ALTER TABLE `{$this->tb_name}` RENAME INDEX `$ori` TO `$final`;";
+		return $this;
+	}
+
+	// alias
+	function renameIndexTo(string $final){
+		$this->commands[] = "ALTER TABLE `{$this->tb_name}` RENAME INDEX `{$this->current_field}` TO `$final`;";
+		return $this;
+	}
+
+
+	function addUnique(string $column){
+		$this->commands[] = "ALTER TABLE `{$this->tb_name}` ADD UNIQUE(`$column`);";
+		return $this;
+	}
+		
+	function dropUnique(string $name){
+		$this->commands[] = $this->dropIndex($name);
+		return $this;
+	}
+
+
+
+	function addSpatial(string $column){
+		$this->commands[] = "ALTER TABLE ADD SPATIAL INDEX(`$column`);";
+		return $this;
+	}
+		
+	function dropSpatial(string $name){
+		$this->commands[] = $this->dropIndex($name);
+		return $this;
+	}
+
+
+	function addFullText(string $column){
+		$this->commands[] = "ALTER TABLE ADD FULLTEXT INDEX(`$column`);";
+		return $this;
+	}
+		
+	function dropFullText(string $name){
+		$this->commands[] = $this->dropIndex($name);
+		return $this;
+	}
+
+
+	function dropForeign(string $name){
+		$this->commands[] = "ALTER TABLE `{$this->tb_name}` DROP FOREIGN KEY `$name`";
+		return $this;
+	}
+
+	// alias
+	function dropFK(string $constraint_name){
+		return $this->dropForeign($constraint_name);
+	}
+
+
+	// From DB 
+	//
+	protected function fromDB(){
+		if (!in_array($this->tb_name, $this->tables)){
+			return;
+		}
+
+		$table_def = $this->showTable();
+
+		if ($table_def == NULL){
+			throw new \Exception("[ Fatal error ] Table definition could not be recovered");
+		}
+
+		$lines = explode("\n", $table_def["Create Table"]);
+		$lines = array_map(function($l){ return trim($l); }, $lines);
+		
+		$last_line     = $lines[count($lines) -1];
+		$this->prev_schema['engine']  = Strings::slice($last_line, '/ENGINE=([a-zA-Z][a-zA-Z0-9_]+)/');
+		$this->prev_schema['charset'] = Strings::slice($last_line, '/CHARSET=([a-zA-Z][a-zA-Z0-9_]+)/');
+
+		$fields = [];
+		$this->prev_schema['indices'] = [];
+	
+		$cnt = count($lines)-1;
+		for ($i=1; $i<$cnt; $i++)
+		{
+			$str = $lines[$i];
+			
+			if ($lines[$i][0] == '`')
+			{
+				$field 		= NULL;
+				$type  		= NULL;
+				$array		= NULL;				
+				$len   		= NULL;
+				$charset  	= NULL;
+				$collation 	= NULL;
+				$nullable	= NULL;
+				$default	= NULL;
+				$auto 		= NULL;
+				$check 		= NULL;
+				
+				$field      = Strings::slice($str, '/`([a-z_]+)`/i');
+				$type       = Strings::slice($str, '/([a-z_]+)/i');
+
+				$this->raw_lines[$field] = $lines[$i];
+
+
+				if ($field == null){
+					throw new \Exception("Field parsing failed");
+				}
+
+				if ($type == 'enum' || $type == 'set'){
+					$array = Strings::slice($str, '/\((.*)\)/i');
+				}else{
+					$len = Strings::slice($str, '/\(([0-9,]+)\)/');					
+				}
+
+
+				$to_lo = function($s){ return strtolower($s); };
+				$to_up = function($s){ return strtoupper($s); };
+
+
+				$charset    = Strings::slice($str, '/CHARACTER SET ([a-z0-9_]+)/');
+				$collation  = Strings::slice($str, '/COLLATE ([a-z0-9_]+)/');				
+				$default    = Strings::slice($str, '/DEFAULT (\'?[a-zA-Z0-9_]+\'?)/');
+	
+				$nullable   = Strings::slice($str, '/(NOT NULL)/') == NULL;
+				$auto       = Strings::slice($str, '/(AUTO_INCREMENT)/') == 'AUTO_INCREMENT';
+
+
+				// Attributes
+				$unsigned = Strings::slice($str, '/(unsigned)/i', $to_lo) == 'unsigned';
+				$zerofill = Strings::slice($str, '/(zerofill)/i', $to_lo) == 'zerofill';
+				$binary   = Strings::slice($str, '/(binary)/i'  , $to_lo) == 'binary';
+	
+				$attr = [];
+
+				if ($unsigned != null){
+					$attr[] = 'unsigned'; 
+				}
+
+				if ($zerofill != null){
+					$attr[] = 'zerofill';
+				}
+
+				if ($binary != null){
+					$attr[] = 'binary';
+				}
+
+				/*		
+				dd($field, "FIELD ($field) ***");
+				dd($this->raw_lines[$field], 'RAW');
+				
+				dd($type, 'TYPE');
+				dd($array, 'ARRAY / SET');
+				dd($len, 'LEN');
+				dd($charset, 'CHARSET');
+				dd($collation, 'COLLATION');
+				dd($nullable, 'NULLBALE');
+				dd($default, 'DEFAULT');
+	
+				dd($auto, 'AUTO');
+				dd($attr, 'ATTR');
+				//dd($check, 'CHECK');
+				echo "-----------\n";
+				exit; //
+				*/			
+								
+
+				$this->prev_schema['fields'][$field]['type'] = strtoupper($type);
+				$this->prev_schema['fields'][$field]['auto'] = $auto; 
+				$this->prev_schema['fields'][$field]['attr'] = $attr;
+				$this->prev_schema['fields'][$field]['len'] = $len;
+				$this->prev_schema['fields'][$field]['array'] = $array;
+				$this->prev_schema['fields'][$field]['nullable'] = $nullable;
+				$this->prev_schema['fields'][$field]['charset'] = $charset;
+				$this->prev_schema['fields'][$field]['collation'] = $collation;
+				$this->prev_schema['fields'][$field]['default'] = $default;
+			}
+
+
+			/*
+
+				Simple:
+					PRIMARY KEY (`id`),
+
+				Compuesta:
+					PRIMARY KEY (`id`,`co`) USING BTREE
+
+				Con nombre: 
+					CONSTRAINT `pk_id` PRIMARY KEY (`id`,`co`) USING BTREE
+
+				
+				https://stackoverflow.com/a/3303836/980631
+
+			*/
+
+			if (strlen($str)<5){ // *
+				continue;
+			}
+
+			$constraint = Strings::slice($str, '/CONSTRAINT `([a-zA-Z0-9_]+)` /', function($s){
+				return ($s != null) ? $s : 'DEFAULT';
+			});
+
+			$primary = Strings::slice($str, '/PRIMARY KEY \(([a-zA-Z0-9_`,]+)\)/');
+			
+			/*
+			
+				Compuesto:
+					UNIQUE KEY `correo` (`correo`,`hora`) USING BTREE,
+
+			*/
+			$unique   = Strings::sliceAll($str, '/UNIQUE KEY `([a-zA-Z0-9_]+)` \(([a-zA-Z0-9_`,]+)\)/');	
+
+			$spatial  = Strings::sliceAll($str, '/SPATIAL KEY `([a-zA-Z0-9_]+)` \(([a-zA-Z0-9_`,]+)\)/');
+
+			$fulltext = Strings::sliceAll($str, '/FULLTEXT KEY `([a-zA-Z0-9_]+)` \(([a-zA-Z0-9_`,]+)\)/');
+			
+			/*
+				IDEM
+
+				https://dev.mysql.com/doc/refman/8.0/en/create-index.html
+			*/
+			$index   = Strings::sliceAll($str, '/KEY `([a-zA-Z0-9_]+)` \(([a-zA-Z0-9_`,]+)\)/');
+
+
+			$ix_type 			= Strings::slice($str, '/USING (BTREE|HASH)/');
+			$algorithm_option	= Strings::slice($str, '/ALGORITHM[ ]?[=]?[ ]?(DEFAULT|INPLACE|COPY)/');
+			$lock_option		= Strings::slice($str, '/LOCK[ ]?[=]?[ ]?(DEFAULT|NONE|SHARED|EXCLUSIVE)/');
+			
+
+			/*
+				CONSTRAINT `facturas_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+
+				--[ CONSTRAINT ]-- 
+				'facturas_ibfk_1'
+
+
+				--[ FK ]-- 
+				'user_id'
+
+
+				--[ REFERENCES ]-- 
+				array (
+				0 => 'users',
+				1 => 'id',
+				)
+
+				--[ ON UPDATE ]-- 
+				NULL
+
+				--[ ON DELETE ]-- 
+				'CASCADE'
+
+			*/
+			$fk            = Strings::slice($str, '/FOREIGN KEY \(`([a-zA-Z0-9_]+)`\)/');
+			$fk_ref        = Strings::sliceAll($str, '/REFERENCES `([a-zA-Z0-9_]+)` \(`([a-zA-Z0-9_]+)`\)/');
+			$fk_on_update  = Strings::slice($str, '/ON UPDATE (RESTRICT|NO ACTION|CASCADE|SET NULL)/');
+			$fk_on_delete  = Strings::slice($str, '/ON DELETE (RESTRICT|NO ACTION|CASCADE|SET NULL)/');
+
+			/*
+			if ($fk != null){
+				dd($fk, 'FK');
+				dd($fk_ref, 'REFERENCES');
+				dd($fk_on_update, 'ON UPDATE');
+				dd($fk_on_delete, 'ON DELETE'); 
+			}
+			*/
+	
+
+			// [CONSTRAINT [symbol]] CHECK (expr) [[NOT] ENFORCED]	
+			$check   = Strings::sliceAll($str, '/CHECK \((.*)\) (ENFORCED|NOT ENFORCED)/');
+			
+			/*
+				Sin probar (req. MySQL 8.0+)
+
+				array(1) {
+					["checks"]=>
+					array(1) {
+						["post_content_check"]=>
+						array(1) {
+						[0]=>
+						array(2) {
+							[0]=>
+							string(94) " CASE WHEN DTYPE = 'Post' THEN CASE WHEN content IS NOT NULL THEN 1 ELSE 0 END ELSE 1 END = 1 "
+							[1]=>
+							string(12) "NOT ENFORCED"
+						}
+						}
+					}
+				}
+
+				https://stackoverflow.com/questions/7522026/how-do-i-add-a-custom-check-constraint-on-a-mysql-table
+			*/	
+			if ($check != null){
+				$prev_schema['checks'] [$constraint] [] = $check;   
+			} else {	
+				$check   = Strings::slice($str, '/CHECK \((.*)\)/');
+			
+				if ($check != null){
+					$prev_schema['checks'] [$constraint] [] = [$check]; 
+				}	
+			}			
+
+			$fn_rl = function($str){
+				return str_replace('`', '', $str);
+			};
+
+
+			/*
+			dd($constraint, 'CONSTRAINT', function($val){
+				return ($val != null);
+			});
+			*/
+			
+			
+			//dd($str, "RESIDUO DE STR for {$lines[$i]}");
+			
+		
+			if ($primary != NULL){	
+				$tmp = explode(',',$primary);
+				$this->prev_schema['indices']['PRIMARY'] [$constraint ] = [
+					'fields' =>	array_map($fn_rl, $tmp)
+				];
+			} elseif ($unique != NULL){
+				$tmp = explode(',',$unique[1]);
+				$this->prev_schema['indices']['UNIQUE']  [$unique[0]  ] = [
+					'fields' => array_map($fn_rl, $tmp),
+					'index_type' => $ix_type,
+					'algorithm_option' => $algorithm_option,
+					'lock_option' => $lock_option
+				];
+			} elseif ($spatial != NULL){
+				$tmp = explode(',',$spatial[1]);
+				$this->prev_schema['indices']['SPATIAL'] [$spatial[0] ] = [
+					'fields' => array_map($fn_rl, $tmp),
+					'index_type' => $ix_type,
+					'algorithm_option' => $algorithm_option,
+					'lock_option' => $lock_option
+				];	
+			} elseif ($fulltext != NULL){
+				$tmp = explode(',',$fulltext[1]);
+				$this->prev_schema['indices']['FULLTEXT'][$fulltext[0]] = [
+					'fields' => array_map($fn_rl, $tmp),
+					'index_type' => $ix_type,
+					'algorithm_option' => $algorithm_option,
+					'lock_option' => $lock_option
+				];	
+			} elseif ($index != NULL){
+				$tmp = explode(',',$index[1]);
+				$this->prev_schema['indices']['INDEX']   [$index[0]   ] = array_map($fn_rl, $tmp);
+			} elseif ($fk != null){	
+				$this->fks[$fk]['references'] = $fk_ref[1];	
+				$this->fks[$fk]['on'] = $fk_ref[0];
+				$this->fks[$fk]['on_delete'] = 	$fk_on_delete ?? 'NO ACTION';
+				$this->fks[$fk]['on_update'] = 	$fk_on_update ?? 'NO ACTION';		
+			}		
+		}
+
+		/*
+		echo "[[[[[]]]]]-----------\r\n";
+		dd($this->prev_schema['indices'], "INDICE RESULTANTE");
+		dd($this->fks, "FKs");
+		dd($this->prev_schema['fields'], 'FIELDS');
+		echo "-----------\r\n\r\n";
+
+		exit; /////
+		*/
+		
+	}
+
+	function dd(){
+		return $this->query;
+	}
+	
+	// ALTER TABLE `users` CHANGE `lastname` `lastname` VARCHAR(80) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL;
+	
+	// ALTER TABLE `users` CHANGE `id` `id` INT(20) UNSIGNED NOT NULL;
+	function change()
+	{	
+		$this->indices = $this->prev_schema['indices'];
+
+		foreach ($this->fields as $name => $field)
+		{
+			if (isset($this->prev_schema['fields'][$name])){
+				$this->fields[$name] = array_merge($this->prev_schema['fields'][$name], $this->fields[$name]);
+			} 		
+		
+			$field = $this->fields[$name];
+
+			//dd($this->fields[$name]);
+			//exit;
+
+			$charset   = isset($field['charset']) ? "CHARACTER SET {$field['charset']}" : '';
+			$collation = isset($field['collation']) ? "COLLATE {$field['collation']}" : '';
+			
+			$def = "{$this->fields[$name]['type']}";		
+			if (in_array($field['type'], ['SET', 'ENUM'])){
+				$values = implode(',', array_map(function($e){ return "'$e'"; }, $field['array']));	
+				$def .= "($values) ";
+			}else{
+				if (isset($field['len'])){
+					$len = implode(',', (array) $field['len']);	
+					$def .= "($len) ";
+				}else
+					$def .= " ";	
+			}
+			
+			if (isset($field['attr'])){
+				$def .= "{$field['attr']} ";
+			}
+			
+			if (in_array($field['type'], ['CHAR', 'VARCHAR', 'TEXT', 'TINYTEXT', 'MEDIUMTEXT', 'LONGTEXT', 'JSON', 'SET', 'ENUM'])){
+				$def .= "$charset $collation ";	
+			}		
+			
+			if (isset($field['nullable']) && $field['nullable'] == 'NULL'){  
+				$def .= "NULL ";
+			} else {		
+				$def .= "NOT NULL ";
+			}	
+
+			//dd($field['nullable'], 'NULLABLE');
+			//dd($field['default'], 'DEFAULT');
+			//exit;
+
+			if (isset($field['nullable']) && $field['nullable'] == 'NOT NULL' && isset($field['default']) && $field['default'] == 'NULL'){
+				throw new \Exception("Column `$name` can not be not nullable but default 'NULL'");
+			}
+				
+			if (isset($field['default'])){
+				$def .= "DEFAULT {$field['default']} ";
+			}
+			
+			if (isset($field['auto']) && $field['auto'] === false){
+				$def = str_replace('AUTO_INCREMENT', '', $def);
+			}
+			
+			if (isset($field['after'])){  
+				$def .= "AFTER {$field['after']}";
+			} elseif (isset($field['first'])){
+				$def .= "FIRST ";
+			}
+
+			$def = trim(preg_replace('!\s+!', ' ', $def));
+			
+
+			if (isset($this->prev_schema['fields'][$name])){
+				$this->commands[] = "ALTER TABLE `{$this->tb_name}` CHANGE `$name` `$name` $def;";
+			} else {
+				$this->commands[] = "ALTER TABLE `{$this->tb_name}` ADD `$name` $def;";
+			}	
+		
+		}
+
+		foreach ($this->indices as $name => $type){			
+			switch($type){
+				case "PRIMARY":
+					$this->commands[] = $this->addPrimary($name);
+				break;
+				case "INDEX":
+					$this->commands[] = $this->addIndex($name);
+				break;				
+				case "UNIQUE": 
+					$this->commands[] = $this->addUnique($name);
+				break;
+				case "SPATIAL": 
+					$this->commands[] = $this->addSpatial($name);
+				break;
+				case "FULLTEXT": 
+					$this->commands[] = $this->addFullText($name);
+				break;
+			}
+		}
+
+		// FKs
+		$this->addFKs();
+
+		$this->query = implode("\r\n",$this->commands);
+
+
+		$conn = DB::getConnection();   
+
+		DB::beginTransaction();
+		try{
+			foreach($this->commands as $change){     
+				$st = $conn->prepare($change);
+				$res = $st->execute();
+			}
+
+			DB::commit();
+		} catch (\PDOException $e) {
+			DB::rollback();
+			dd($change, 'SQL');
+			dd($e->getMessage(), "PDO error");		
+        } catch (\Exception $e) {
+            DB::rollback();
+            throw $e;
+        } catch (\Throwable $e) {
+            DB::rollback();            
+        }     
+	}	
+	
+	// reflexion
+	
+	function getSchema(){
+		return [
+			'engine'	=> $this->engine,
+			'charset'	=> $this->charset,
+			'collation'	=> $this->collation,
+			'fields'	=> $this->fields,
+			'indices'	=> $this->indices,
+			'fks'		=> $this->fks
+		];
+	}
+
+	function getCurrentSchema(){
+		return $this->prev_schema;
+	}
+}
+

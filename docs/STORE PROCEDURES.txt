@@ -1,0 +1,62 @@
+STORE PROCEDURES
+
+Pros
+
+- Data validation:  WHERE role_id IN (3, 100), etc
+
+- Access Control (AC) => se pueden dar permisos de ejecución a usuarios aunque muchos motores como SQL Server permiten sin necesidad de SP hacer eso:
+
+    --// Logged in as 'sa'
+    USE AdventureWorks;
+    GRANT SELECT ON Person.Address(AddressID, AddressLine1) to Matt;
+    GRANT UPDATE ON Person.Address(AddressLine1) to Matt;
+
+    --// Logged in as 'Matt'
+    SELECT * from Person.Address;                       --// Fail
+    SELECT AddressID, AddressLine1 from Person.Address; --// Succeed
+    UPDATE Person.Address SET AddressLine1 = '#____ 2700 Production Way' 
+            WHERE AddressID = 497;                       --// Succeed
+
+- Se evitan problemas del tipo olvidarse un WHERE en un DELETE o UPDATE porque la propia API que se define con los SP lo puede impedir:
+
+"by limiting all access to those stored procs you have established a defined interface to the database, through which all access must occur..." 
+
+- Si se tienen N aplicaciones en distintas tecnologias teniendo que acceder una misma DB y realizando las mismas consultas, en vez de escribir la consulta N veces en las N apps, la escribis en 1 procedimiento y las 4 apps la usan, y cuando tenes que modificar algo modificas en un solo lugar. Se está usando el SP como una API.
+
+Se podría resolver con una API Resful pero.... implica generar la API y armar la forma de consumirla en las N tecnologías que la necesitan.
+
+
+Además.....
+
+- Encapsulan la lógica de negocio como una API en la DB. Puede usarse para concistencia e integridad.
+
+- Minimizan tráfico de red con la DB sobre todo con queries complejas (se envian unos parámetros y no toda la query o queries)
+
+- Proveen estructuras de control => vuelven a SQL un lenguaje imperativo
+
+
+Cons
+
+- Son vendor-specific
+
+- Vesion control
+
+- Pobres herramientas de debugging
+
+
+SP vs "prepared statements" (PS)
+
+- PS no trabajan con variables y son mucho más simples.
+
+- Por su sencillez....... PS son mucho más portables !
+
+
+Estándares
+
+"SQL:1999 and SQL:2003 standards in the part SQL/PSM"
+
+
+Más
+
+https://en.wikipedia.org/wiki/Stored_procedure
+https://softwareengineering.stackexchange.com/questions/75487/how-to-suggest-using-an-orm-instead-of-stored-procedures

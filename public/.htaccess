@@ -2,12 +2,6 @@ Options -MultiViews -Indexes
 RewriteEngine On
 RewriteBase /
 
-RewriteCond %{THE_REQUEST} ^.*/index\.php
-RewriteRule ^index.php(.*)$ /$1 [R=301,L]
-
-# Handle Authorization Header
-RewriteCond %{HTTP:Authorization} .
-RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
 # Redirect Trailing Slashes If Not A Folder...
 RewriteCond %{REQUEST_FILENAME} !-d

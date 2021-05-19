@@ -1,9 +1,5 @@
 TODO de proyecto 'Supra'
 
-- Extraer HTML y CSS y para seleccionar el bloque usar algo como:
-
-	https://bootsnipp.com/builder
-
 - Generar vistas para cualquier framework de Front en base a:
     - lista de vistas y sub-vistas 
     - componentes especificados

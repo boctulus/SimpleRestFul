@@ -1,0 +1,53 @@
+
+Urgente:
+
+.env                                    -- OK
+Terminar Query Builder                  -- OK
+Terminar migraciones
+Solucionar problemas de casting
+Envio de correos                        -- en curso
+Plantilla para envio de correos
+Prubas en NGINX
+
+- pre-Alpha
+
+    .env                                -- OK
+    Seeders
+    Response re-escrito
+    ApiController pullido con una sola instancia y 5 métodos separados
+    Folders normalizados y funcionando correctamente
+
+- Alpha 1 .. 4
+
+    Middlewares
+    Wheres anidados                     -- OK
+    Envio de correos
+    Plantilla para envio de correos
+    X-Rate-Limit-Limit, X-Rate-Limit-Remaining y X-Rate-Limit-Reset    
+
+- Beta 1 .. 2
+
+    Documentación en línea
+    Traducciones del fw + documentación
+    Soporte para REDIS, Memcached, etc
+    Probado en Nginx
+    Pruebas unitarias para todo
+    Corrección de errores
+
+- 1.0
+
+    Hateoas
+    JsonAPI
+    Soporte para SQLite, Postgres       -- OK
+
+- 1.1
+
+    Soporte para MongoDB
+
+- 1.2
+
+    ORM mayormente compatible con Eloquent
+
+- 1.3 
+
+    Soporte PHP 8.0

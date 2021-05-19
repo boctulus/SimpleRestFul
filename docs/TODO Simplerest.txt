@@ -1,5 +1,223 @@
 # TODO
 
+- Investigar microservicios..... y luego ver de reparar el acceso via API KEYs el cual *no* funciona !
+
+Lo siguiente se está volviendo una "bola de nieve":
+
+  /*
+    Si son null, se buscan las tablas localmente
+  */
+  'api-users'       => 'http://hexagon-users.lan/api/v1/users',
+  'api-roles'       => 'http://hexagon-users.lan/api/v1/roles',
+  'api-user_roles'    => 'http://hexagon-users.lan/api/v1/user_roles',
+  'api-sp_permissions'  => 'http://hexagon-users.lan/api/v1/sp_permissions',
+  'api-keys'        => 'http://hexagon-users.lan/api/v1/api_keys',
+
+  /*
+    API KEY para consultar users
+  */
+  'api_key-admin'     => '394e8a89-307e-44b2-a75a-cfe0beecc72a'
+
+<-- cada vez requiero de más tablas allí........
+
+Quizás ... un ACL como "microservicio" podría ser la solución.
+
+
+- Dejar de almacenar constantes de PDO en "schemas" ya que vuelve imposible almacenar por ejemplo un JSON ya que es decodificado como Array pero como constante de PDO será un string así que la validación no lo dejará pasar!!!
+
+Ej:
+
+  {
+      "conditions": {
+          "name": {
+              "contains" : "crypto",
+              "notContains" : ".es"
+          }
+      }    
+  }  
+
+<-- actualmente no puede enviarse eso en el body por las razones antes expuestas. 
+
+
+- Investigar a Hasura -un generador de GraphQL y API Rest Open Source- como competencia.
+
+https://hasura.io/docs/latest/graphql/core/databases/postgres/queries/aggregation-queries.html
+
+
+[ ACL ]
+
+- Métodos como belongsTo() deberían poder ser re-definidos en un modelo permitiendo especificar indirectamente un campo como "idcliente" que *no* es el user_id 
+
+	class RecoleccionModel extends Model
+	{ 
+		// ..
+		protected $belongsTo = 'idcliente';
+
+	Donde en Model,
+	
+	function belongsTo(){
+		return $this->belongsTo;
+	}
+
+
+Lo que habría que hacer es decir que filtre por 'idcliente' a pesar de no ser un user_id pero instruir al modelo a que en vez de ir directo a comparar 'idcliente' con el 'user_id' que devuelve Auth, que convierta ese idclient, ej:
+
+	idcliente = (SELECT cliente_id FROM api_keys WHERE user_id = 108)
+	
+Entonces una Query como:
+
+	SELECT * FROM recoleccion WHERE idcliente = $user_id
+	
+se transformaría en
+
+	SELECT * FROM recoleccion WHERE idcliente = (SELECT cliente_id FROM api_keys WHERE user_id = $user_id);
+
+donde $user_id en el ApiController es $this->uid
+
+
+QUIZAS,... la forma más sencilla de resolver sería crear un hook sobre el AuthController para setear un campo como 'idcliente' en base a una relacion que se pueda especificar (seguir desarrollando la idea) 
+
+Si seteo como campo un 'idcliente' (pensando en la DB 'demo') la comparación se va a hacer contra $this->uid en el ApiController con el uid proviniente de Auth. De alguna forma toca especificar contra que comparar (en este caso contra el 'idcliente' del usuario autenticado)
+
+
+- Agregar los métodos addDescription() y disabled(), enabled() que hace un update sobre la tabla roles.
+
+  ->addRole('basic', 2)
+  ->addDescription('Acceso muy básico')
+  ->disabled()    <------------------------- queda des-habilitado el rol 
+  ->addInherit('registered')
+  ->addResourcePermissions('products', ['write'])
+  
+
+- De forma alternativa a addResourcePermissions() se debe poder usar addScope()
+
+  ->addRole('guest', -1)
+  ->addResourcePermissions('products', ['read_all'])
+  ->addResourcePermissions('baz', ['read'])
+  ->addResourcePermissions('bar', ['read', 'write'])
+
+podría ser también,...
+
+  //..
+  ->addScope('products.read_all')
+  ->addScope('emails.create')
+
+
+- Permitir definir "alias" para los scopes:
+
+  //..
+  ->addScope('products.read_all')->alias('products:read.all')
+  ->addScope('emails.create')->alias('emails:send')
+
+
+Ejemplo de scopes:
+
+https://developer.github.com/apps/building-oauth-apps/understanding-scopes-for-oauth-apps/
+
+
+[ ETC ]
+
+- Hacer script de instalación
+
+
+[ MICROSERVICIOS ]
+
+- Investigar microservicios. Buscar un Hello World. Cómo es la communicación entre microservicios?
+
+Ver tuto:
+
+https://www.youtube.com/watch?v=In6DBL0tq9c  !!!!!!!
+
+
+- "API GATEWAY" se hace a través del "orquestador" y entre otras cosas se encarga del *logging* con lo cual habría que revisar la necesidad de tener un ACL y el AuthController ************* 
+
+
+Elegir un API GATEWAY como por ejemplo Kong Gateway, KrakenD, Goku API Gateway, etc
+
+
+https://www.axway.com/en/products/api-management/gateway
+https://geekflare.com/api-gateway/
+
+
+- Considerar usar Apache ZooKeeper/Kafka
+
+La comunicación entre microservicios debería ser asincrónica para evitar acoplamiento:
+
+"when an employee is deleted through the employee service, how are other services made aware of this deletion? Having the Employee Service call out synchronously to other services interested in employee's would be coupling. Asynchronous messaging provides a way to communicate in a decoupled fashion."
+
+Tener "algo" (un broker) que reciba los mensajes de un "productor" a para los distintos microservicios subscriptos ("consumidores" del mensaje), los encole los sirva a los consumidores.
+
+"Using a durable, resilient messaging system such as ZooKeeper/Kafka (or something equivalent) provides a way to accomplish this. Kafka has a persistent logging mechanism and will replay event messaging history to consumers if they are not available when a message event is raised by a publisher. This supports the independence of a Microservice platform with services moving in and out on an ad-hoc basis."
+
+Cuando el evento se completa se debe enviar una senal hacia quien lo generó para que sepa que ya ha completado:
+
+"Consumer services, such as the Project Service, need to know when an employee is deleted, so it can update a its Project's Resources, in other words, the employee assigned to a project no longer exists. The project service can listen for this Kakfa event topic published from the employee service and react accordingly."
+
+Los mensajes no son empujados (push) del broker a los consumidores sino son jalados (pull) por los consumidores al broker.
+
+
+  [ Productor ] --- push --->  [ Broker ] <--- pull --- [ Consumidor ]
+
+  
+  Producer (producer): news and data generation
+
+  Agent (Broker): caching proxy
+
+  Consumer (consumer): news and data consumers
+
+
+Los mensajes persisten en el broker. Los mensajes no son borrados inmediatamente del broker sino hasta cierto tiempo después para dar tiempo de volver a ser consumidos en caso de que el consumidor falle. 
+
+Kafka forma "clusters" donde cada cluster está especializado en mensajes de un determinado "topico":
+
+"Kafka can run as a cluster on one or more servers that can span multiple data-centers. The Kafka cluster stores streams of records in categories called "topics". For instance, if I have data streams coming from Twitter (refer blog), you can name this topic as 'Tweets'"
+
+
+https://dzone.com/articles/implementing-a-bounded-context
+https://www.slideshare.net/rahuldausa/introduction-to-kafka-and-zookeeper/11
+https://www.dataneb.com/post/apache-kafka-and-zookeeper-installation-sample-pub-sub-model
+https://www.programering.com/a/MTOwkjNwATc.html
+https://beyondcorner.com/learn-apache-kafka-tutorial/is-zookeeper-is-must-in-kafka/
+
+Existe una extensión de PHP que permite usar Apache Kafka
+
+https://blog.programster.org/using-php-with-apache-kafka
+https://github.com/leocavalcante/kafka-phplayground
+
+
+[ MIGRATIONS ]
+
+- Usar la tabla `migrations`  !!!
+
+- En "make migrations from:db" usar la opción --agnostic para que la migración desde la db sea con métodos encadenados en vez de con SQL (CREATE TABLE...)
+
+- Migraciones *sin* el método down() <-- el estado anterior se obtiene del historial de migraciones.
+
+- Absorver la DB de Fabricio con:
+
+  php com make migration --from=db[.table] 
+o
+  php com make migration --from=db[.table] --to=destination_db [--table=some_table]
+o
+  php com make migration --from=db[.table] --to=destination_db[.table]
+
+
+- Poder especificar el campo en vez del nombre de la FK para su remoción
+
+  dropForeignByColumnName() 
+  dropFKByColumnName() --alias--
+
+- Poder especificar la DB además de la tabla en Schema así:
+
+  new Schema('db.table')
+
+<-- obviamente que para que sea válido el nombre de la DB no puede repetirse entre distintas conexiones del archivo config.  
+
+- Squashing Migrations
+
+https://laravel.com/docs/8.x/migrations#squashing-migrations
+ 
+
 - Mecanismo para evitar dejar fuera de línea una API Restful:
 
   - Si se desea agregar un campo / tabla a la DB.....
@@ -91,10 +309,42 @@ Se propone en el Schema donde vaya a haber cambios agregar una transición:
 https://blog.staffjoy.com/dont-migrate-databases-automatically-5039ab061365
 
 
+- Dudas:
+
+  - Un Service Provider en Laravel puede reemplazarse por otro? serviría para cambiar el proveedor de correo (SMTP) ?
+
+  - Qué tipos de Service Provider hay? una librería también se distribuye como SP?
+
+  - JSON:API es compatible con HATEOAS ?
+
+  - JSON:API has agregative functions? parece ser que NO.
+
+
+- NGINX
+
+  location / {
+      try_files $uri $uri/ /index.php?$query_string;
+  }
+
+https://laravel.com/docs/8.x/installation#nginx
+
+
+- Debe haber orJoin() 
+
+https://stackoverflow.com/a/36074909/980631
+https://laravel.com/docs/5.8/queries#where-exists-clauses
+
+
+
 - Leer :
 
 https://docs.djangoproject.com/en/3.1/topics/migrations/
 https://docs.microsoft.com/en-us/ef/ef6/modeling/code-first/migrations/
+
+
+- Leer bien consejos para diseños de APIs !!!
+
+https://blog.octo.com/en/design-a-rest-api/
 
 
 - Evaluar usar PERCONA para hacer cambios de Schema (típicamente via migraciones) en producción sin bloquear lecturas ni escrituras.
@@ -148,8 +398,6 @@ y
   ?orderBy[cost]=ASC (corecto)
 
 
-- Revisar documentos de Fabriiiiiiiiiiiiiiiiiiiiiiiiiiicio
-
 - Make:
 
   - Permitir que los parámetros puedan ir en cualquier órden:
@@ -177,11 +425,6 @@ y
       make -safm baz
       make -fams baz 		
       etc
-
-- Implementación de migraciones:
-
-make schema:  DB -----> Schema [done]
-migration  :  Model --> 
 
 - Mejorar las reglas generadas en el Schema:
 
@@ -255,6 +498,7 @@ https://www.sitepoint.com/apache-vs-nginx-performance-optimization-techniques/
 
 - Usar RTAPI para testear tiempos de latencia:
 
+
 https://www.nginx.com/blog/api-real-time-test-latency-responsiveness-nginx-rtapi-tool/
 
 - Usar con conexiones http persistentes, por cierto ya es persistente? Si !
@@ -310,8 +554,6 @@ https://mariadb.com/kb/en/myrocks/
 				"write_all",
 				"read_all_collections",
 				"write_all_collections",
-				"read_all_trashcan",
-				"write_all_trashcan",
 				"transfer",
 				"lock",
 				"impersonate"
@@ -341,6 +583,31 @@ Además de expresiones regulares aceptar constantes como:
   Boolean
   UUID
 
+- Router:
+
+Es necesario poder especificar el namespace del Controller porque podría no estar en la raiz del directorio app/controllers. Laravel provee varias formas:
+
+  Route::get('/user', 'App\Http\Controllers\UserController@index']); 
+  Route::get('/user', [App\Http\Controllers\UserController::class, 'index']);  
+
+https://laravel.com/docs/8.x/upgrade#routing
+https://medium.com/@litvinjuan/how-to-fix-target-class-does-not-exist-in-laravel-8-f9e28b79f8b4 
+
+- Evaluar generar rutas como
+
+/*
+	 habilita una rutas como
+
+	 /api/photos/{photo_id}/comments
+
+*/	 
+Route::resource('photos.comments', App\Http\Controllers\PhotoController::class);
+
+- Listado de rutas como en Laravel
+  
+  php artisan route:list
+
+
 - Serializar Route !!!!!!
 
 - Re-escribir Response y .... evitar usar custom headers !
@@ -354,7 +621,7 @@ https://dzone.com/articles/solving-the-options-performance-issue-with-single
 
 - Analizar que pasa con OPTIONS !!! no puede ser que demore tanto !
 
-- Probar si la performance no se ve afectada con "named arguments" y aplicar de mínima a la clase Model. 
+- Probar si la performance no se ve afectada con "named arguments" (de PHP 8) y aplicar de mínima a la clase Model. 
 
 https://stitcher.io/blog/php-8-named-arguments
 https://dev.to/jopacicdev/what-s-new-in-php-8-and-what-does-that-mean-4kdf
@@ -499,16 +766,15 @@ https://www.sourcefuse.com/blog/rest-api-best-practices/
 
 	Otra opción sería hacer que un usuario pueda hacer un impersonate a otros usuarios cuyos roles sean iguales o interiores al rol padre de quien usa el impersonate. Para eso necesito armar el árbol de genealógico de roles.
 
-
-	{
-		"role": "superadmin"
-	}
+    {
+      "role": "superadmin"
+    }
 
 	o
 
-	{
-		"uid": "400"  <-- rol de un superadmin
-	}
+    {
+      "uid": "400"  <-- rol de un superadmin
+    }
 
 
 - Analizar en cada request (y en promedio) de cuánto tiempo es la ejecución de cada componente del sistema (FrontController, ApiController, AuthController, Model, DB, etc)
@@ -518,23 +784,25 @@ https://github.com/fzaninotto/Faker
 https://anchetawern.github.io/blog/2016/01/28/generating-fake-data-in-php-with-faker/
 
 
-- Analizar la API con alguna herramineta cono jMeter
+- Testear todo:
 
+https://www.sisense.com/blog/rest-api-testing-strategy-what-exactly-should-you-test/
+https://medium.com/@alicealdaine/top-10-api-testing-tools-rest-soap-services-5395cb03cfa9
+
+
+- Pruebas de stress (JMeter,...)
+
+https://stackoverflow.com/a/3093060/980631
+https://chrome.google.com/webstore/detail/restful-stress/lljgneahfmgjmpglpbhmkangancgdgeb
 https://medium.com/@chamikakasun/rest-api-load-testing-with-apache-jmeter-a4d25ea2b7b6
 https://www.blazemeter.com/blog/rest-api-testing-how-to-do-it-right
 https://developers.redhat.com/blog/2015/04/30/how-to-load-test-and-tune-performance-on-your-api/
 
-- Correr algún test de stress sobre la API Rest.
-
-- Como realizar pruebas de stress 
-
-https://www.sisense.com/blog/rest-api-testing-strategy-what-exactly-should-you-test/
 
 - Posibilidad de serializar Modelos para incrementar performance
 
 https://bezkoder.com/django-mongodb-crud-rest-framework/
 
-- CORS debe no ser por defecto sino habilitarse via Midleware
 
 https://bezkoder.com/django-mongodb-crud-rest-framework/
 
@@ -542,6 +810,7 @@ https://bezkoder.com/django-mongodb-crud-rest-framework/
 - Actualizar la documentación
 
 - Chequear phpFastCache
+
 https://www.phpfastcache.com/
 
 - Chequear que no sea posible el escalamiento de privilegios otorgando roles o permisos.
@@ -571,19 +840,13 @@ Aún sin implementar invalidación de tokens es posible expulsar a todos los usu
 
 - Arreglar la falta de normalización de los folders.
 
-- Generar Modelos, Controladores y APIs via comando (sin sobre-escribir existente excepto que se especifique y posiblemente se confimre) basado en plantillas. ***
-
 - DotEnv
-
-- Id opcionalmente no autoincrementales por seguridad !
 
 - Enviar efectivamente correos -prioridad alta-
 
 - Correos con formato. <-- ver como es en Laravel que usa un motor de plantillas.
 
 - En app/libs/Factory.php está mal que en check() se haga referencia a una versión concreta de AuthController ya que está dentro de una librería que no está versionada.
-
-- Dejar tablas de prueba con nombres como foo y bar.
 
 - Generar algún tipo de alerta / warning si en producción el access token estuviera configurado para durar más de 1500 minutos  (poco más de un día). El generar tokens con vencimiento alto sería un problema enorme que obligaría a lidiar con unalista negra.
 
@@ -606,18 +869,6 @@ Y debería ser así:
  También sería válido:
 
   sendError('Please confirm your e-mail') <-- en tal caso el error sería un 500
-
-
-- Cambios en las tablas del ACL:
-
-  - La tabla permissions debería llamarse resource_permissions
-
-  - Los 'roles' deberían ser una tabla en la DB
-
-  - Debería crearse una tabla 'role_permissions' en vez de seguir manteniendo los permisos para cada rol en el archivo .php de de cada api.
-
-  <-- la tabla 'roles' y 'role_permissions' deberían compilarse de alguna forma y ser incluidos dentro del payload del access_token para evitar andar leyéndolas cada vez. ¿O sera que con REDIS lo soluciono realmente?
-
 
 - Conceptos:
 
@@ -797,6 +1048,20 @@ https://tech.ebayinc.com/engineering/caching-http-post-requests-and-responses/
 https://developer.cdn.mozilla.net/es/docs/Web/HTTP/Caching
 
 
+- Estudiar si implementar Facades
+
+En vez de hacer 
+
+  (new Cache())->put('hello','world', 600);
+
+permite usar la sintaxis
+
+  Cache::put('hello','world', 600);
+
+https://stackoverflow.com/questions/42223986/what-is-facades-used-in-laravel
+https://medium.com/a-young-devoloper/understanding-laravel-facades-4802025899e6
+
+
 - Implementar una forma sencilla de enviar correos, quizás como en Laravel
 
   use App\Mail\WelcomeMessage;
@@ -831,11 +1096,6 @@ https://developer.cdn.mozilla.net/es/docs/Web/HTTP/Caching
 
 - Debe ser posible *volver* a solicitar un correo con el enlace de confirmación de correo (obviamente se exige que el usuario esté registrado y haya entregado un access token válido)
 
-- Redis con API Rest ? SI ! implementar serializacion del ACL y caché para todo incluidas las consultas 
-https://docs.phalcon.io/4.0/en/acl#serialization
-
-- Redis para el Validator ! si se repite la misma regla + dato o los arrays de datos o datos + reglas, entregar la misma respuesta. Igualmente el validador parece ser bastante eficiente. Usar versión compilada y cacheada de las reglas. 
-
 - Implementar  (colas) como en Laravel para tareas pesadas como enviar correos o procesar imágenes o elaborar reportes en cuyo caso debería devolver Accepted.
 
 https://laravel.com/docs/7.x/queues
@@ -866,7 +1126,10 @@ https://www.php.net/manual/en/pdostatement.fetch.php
 https://farazdagi.com/2014/rest-and-long-running-jobs/
 https://stackoverflow.com/a/5044619/980631
 
-- Digamos que definimos estas operaciones:  <-- relacionado con HATEOAS
+
+[ HATEOAS ]
+
+- Digamos que definimos estas operaciones:  
 
     GET /cursos
     GET /cursos/{codigo}/unidades-didacticas
@@ -896,7 +1159,40 @@ https://en.wikipedia.org/wiki/HATEOAS
 https://programar.cloud/post/como-implementar-hateoas-en-tus-apis/
 
 
-- Implementar búsquedas complejas como en Magento
+- Implementar HAL - Hypertext Application Language
+
+http://stateless.co/hal_specification.html 
+https://netflix.github.io/genie/docs/3.0.0/rest/
+https://github.com/blongden/hal
+
+
+HATEOAS Links
+
+  self        the current search
+  first       the first page for this search
+  prev        the previous page for this search
+  next        the next page for this search
+  last        the last page for this search
+
+
+prev, next no tienen aparentemente nada que ver con la paginación (?)
+
+  "page" : {
+    "size" : 64,
+    "totalElements" : 1,
+    "totalPages" : 1,
+    "number" : 0
+  }
+
+https://netflix.github.io/genie/docs/3.0.0/rest/  
+
+
+- Cómo se paginan los sub-recursos anidados en HATEOAS ? 
+
+  Muestro los primeros N? últimos N? por qué criterio los ordeno? (order by)
+
+
+- Implementar búsquedas complejas como en Magento (sino estuvieran cubiertas por HATEOAS)
 
 https://devdocs.magento.com/guides/v2.3/rest/performing-searches.html
 
@@ -907,11 +1203,51 @@ https://fideloper.com/laravel-raw-queries
 
 - Debería el módulo de autenticación incluir la parte de registro? en Laravel existe un RegisterController aunque el problema que le veo es que tendría que cambiar las rutas porque hoy el registro está en el AuthController en /v1/api/auth y entonces estaría en donde? la ventaja de tener un RegisterController sería hooks específicos como BeforeRegister y AfterRgister
 
-- Modificar Request::header() para que obtenga de forma "case-insensitive" los headers de apache_request_headers()
+- Modificar Request::header() para que obtenga de forma "case-insensitive"  headers de apache_request_headers()
 
 Convertir a minúsculas como hace NodeJs.
 
 https://stackoverflow.com/questions/5258977/are-http-headers-case-sensitive
+
+
+- Leer sobre Eager Loading y el "n+1 problem" 
+
+  Lazy-Loading -> lento
+  Eager Loading -> rápido
+
+Es posible hacer uso de "Eager Loading" con un QueryBuilder ?
+
+"Eager loading is the process whereby a query for one type of entity also loads related entities as part of the query. Eager loading is achieved by the use of the Include method."
+
+As I mentioned, ORMs “lazy” load associations. If you intend to use the associated model data you can trim that 101 query total to `2` queries using eager loading. You just need to tell the model what you need it to load eagerly.
+
+
+  SELECT {campos} WHERE id IN(...) como segunda consulta 
+
+Otra Posibilidad es hacer un LEFT OUTER JOIN
+
+Ej:
+
+  SELECT membership.id AS membership_id, membership.user_id AS membership_user_id, membership.company_id AS membership_company_id, membership.role AS membership_role, company_1.id AS company_1_id, company_1.name AS company_1_name, company_1.website AS company_1_website, company_1.address AS company_1_address
+
+  FROM membership 
+  LEFT OUTER JOIN company AS company_1 ON company_1.id = membership.company_id
+  LIMIT %(param_1)
+
+<-- el problema de usar LEFT OUTER JOIN es hay que procesar la salida.......
+
+
+Here’s an example from the Rails Active Record guide on using eager loading. As you can see, the concept is quite similar to Laravel’s eager loading concept.
+
+# Rails
+posts = Post.includes(:author).limit(100)
+
+# Laravel
+$posts = Post::with('author')->limit(100)->get();
+
+
+Más
+https://laravel-news.com/eloquent-eager-loading
 
 
 - Incluir sub-Resources, ej:
@@ -927,7 +1263,9 @@ public function includeRole(User $user)
       return $this->item($user->role, App::make(RoleTransformer::class));
 }
 
-When including a sub-resource, we can nest relations by using the a dot notation. Let’s say every role has a list of permissions stored in a separate table and we wanted to list users with their role and permissions. We can do it like this: include=role.permissions.
+When including a sub-resource, we can nest relations by using the a dot notation. Let’s say every role has a list of permissions stored in a separate table and we wanted to list users with their role and permissions. We can do it like this: 
+
+  include=role.permissions.
 
 Sometimes, we are required to include some necessary relations by default, like an address relation for example. We can do that by using the $defaultIncludes property inside the transformer:
 
@@ -935,20 +1273,51 @@ protected $defaultIncludes = [
         'address'
 ];
 
+The $availableIncludes property tells the transformer that we may need to include some extra data with the response. It will call the includeRole method if the include query parameter is requesting the user roles.
+
+
 Los include parameters se pueden parametrizar (o sea pueden aceptar parámetros), ej:
 
-public function includeUsers(Role $role, ParamBag $paramBag)
+  public function includeUsers(Role $role, ParamBag $paramBag)
+  {
+      list($orderCol, $orderBy) = $paramBag->get('order') ?: ['created_at', 'desc'];
+
+      $users = $role->users()->orderBy($orderCol, $orderBy)->get();
+
+      return $this->collection($users, App::make(UserTransformer::class));
+  }
+
+
+We can now order our included users list by passing parameters (/roles?include=users:order(name|asc)).
+
+
+class UserTransformer extends TransformerAbstract
 {
-    list($orderCol, $orderBy) = $paramBag->get('order') ?: ['created_at', 'desc'];
+    protected $availableIncludes = [
+        'roles'
+    ];
 
-    $users = $role->users()->orderBy($orderCol, $orderBy)->get();
+    public function transform(User $user)
+    {
+        return [
+            'name' => $user->name,
+            'email' => $user->email
+        ];
+    }
 
-    return $this->collection($users, App::make(UserTransformer::class));
+    public function includeRoles(User $user)
+    {
+        if (!$user->role) {
+            return null;
+        }
+
+        return $this->collection($user->roles, App::make(RoleTransformer::class));
+    }
 }
-
 
 Leer en detalle:
 https://www.sitepoint.com/php-fractal-make-your-apis-json-pretty-always/
+https://fractal.thephpleague.com/transformers/
 
 
 API Call	                              Action
@@ -962,33 +1331,199 @@ DELETE /users/{id}/configurations/{id}	Delete configuration for user          *
 PATCH /users/{id}/configuration/{id}	  Update configuration for user          * 
 
 
-- Usar métodos encadenados para simplificar la creación de reglas que actualmente se hace escribiendo directamente el array $rules en el modelo.
+- Otra implementación interesante de inclusión de sub-recursos tipo-HATEOAS es esta:
 
-protected $rules = [
-        'fullname' 	  => ['min'=>3, 'max'=>40],
-        'username'	  => ['min'=>2, 'max'=>15, 'type' => 'regex:/^[a-zA-Z0-9_]+$/'], 
-		    'email'     	=> ['type'=>'email'],
-               
-]
+Para Article:
 
-Podría en su lugar......
+  public function index()
+  {
+      $articles = QueryBuilder::for(Article::class)
+          ->allowedIncludes(['author', 'comments'])
+          ->allowedSorts(['created_at', 'title'])
+          ->paginate();
 
-function __construct(){
-  // ..
+      return new \App\Http\Resources\ArticleCollection($articles)
+  }
 
-  $this->rules = new Validator()
-                  ->field('fullname)->min(3)->max(40)->string()
-                  ->field('username')->min(2)->max(50)->regex('/^[a-zA-Z0-9_]+$/')
-                  ->field('email')->email()
-                  ...
-                  ->getRules();
-}
+  public function show($articleId)
+  {
+      $article = QueryBuilder::for(Article::class)
+          ->allowedIncludes(['author', 'comments', 'comments.author'])
+          ->allowedSorts(['created_at', 'title'])
+          ->findOrFail($articleId);
 
-Obviamente que los tipos string e int siguen siendo opcionales si ya están definidos en el SCHEMA.
+      return new \App\Http\Resources\Article($article);
+  }
 
- Usar un campo folder_id en cada tabla en la que pretendo utilizar folders y usar éste en vez de la combinación entre el user_ud y el nombre del "workspace" como identificador de carpeta.
+<-- Se puede observar que index() y show() no son necesariamente iguales en cuanto a que includes aceptar siendo más permisivos en el show().
 
-Objetivo: poder crear recursos de nuestra propiedad en carpetas ajenas donde lógicamente poseemos permisos de lectura y escritura.
+https://mattstauffer.com/json-api/eloquent-resources/
+
+
+- Sacar ideas de Spatie Query Builder (librería de Laravel para APIs)
+
+https://spatie.be/docs/laravel-query-builder/v3/advanced-usage/extending-query-builder
+
+Entre otras cosas Spatie hace fácil "appending attributes" o sea propieades computadas similar a lo que hace Laravel Fractal con los transformers:
+
+  class User extends Model
+  {
+      public function getFullnameAttribute()
+      {
+          return "{$this->firstname} {$this->lastname}";
+      }
+  }
+
+https://spatie.be/docs/laravel-query-builder/v2/features/appending-attributes
+
+
+- El paquete más completo para creación de APIs en Laravel parece ser laravel-json-api
+
+https://github.com/cloudcreativity/laravel-json-api
+
+Al visitar
+
+  http://opinion-ate.test/api/v1/restaurants/1 
+
+muestra  
+
+  {
+    "data": {
+      "type": "restaurants",
+      "id": "1",
+      "attributes": {
+        "name": "Sushi Place",
+        "address": "123 Main Street",
+        "createdAt": "2020-09-20T12:29:15.000000Z",
+        "updatedAt": "2020-09-20T12:29:15.000000Z"
+      },
+      "relationships": {
+        "dishes": {
+          "links": {
+            "self": "http://opinion-ate.test/api/v1/restaurants/1/relationships/dishes",
+            "related": "http://opinion-ate.test/api/v1/restaurants/1/dishes"
+          }
+        }
+      },
+      "links": {
+        "self": "http://opinion-ate.test/api/v1/restaurants/1"
+      }
+    }
+  }
+
+
+Al visitar
+
+  http://opinion-ate.test/api/v1/restaurants/1/dishes
+
+muestra
+
+  {
+    "data": [
+      {
+        "type": "dishes",
+        "id": "1",
+        "attributes": {
+          "name": "Volcano Roll",
+          "rating": 3,
+          "createdAt": "2020-09-20T14:48:45.000000Z",
+          "updatedAt": "2020-09-20T14:48:45.000000Z"
+        },
+        "relationships": {
+          "restaurant": {
+            "links": {
+              "self": "http://opinion-ate.test/api/v1/dishes/1/relationships/restaurant",
+              "related": "http://opinion-ate.test/api/v1/dishes/1/restaurant"
+            }
+          }
+        },
+        "links": {
+          "self": "http://opinion-ate.test/api/v1/dishes/1"
+        }
+      },
+      {
+        "type": "dishes",
+        "id": "2",
+        "attributes": {
+          "name": "Salmon Nigiri",
+          "rating": 4,
+          "createdAt": "2020-09-20T14:48:45.000000Z",
+          "updatedAt": "2020-09-20T14:48:45.000000Z"
+        },
+        "relationships": {
+          "restaurant": {
+            "links": {
+              "self": "http://opinion-ate.test/api/v1/dishes/2/relationships/restaurant",
+              "related": "http://opinion-ate.test/api/v1/dishes/2/restaurant"
+            }
+          }
+        },
+        "links": {
+          "self": "http://opinion-ate.test/api/v1/dishes/2"
+        }
+      }
+    ]
+  }
+
+Es importante notar la estructura del JSON al *crear* un recurso con POST:
+
+  {
+    "data": {
+      "type": "restaurants",
+      "attributes": {
+        "name": "Spaghetti Place",
+        "address": "789 Third Street"
+      }
+    }
+  }
+
+Responde con "201 (created)" y el siguiente body 
+
+  {
+    "data": {
+      "type": "restaurants",
+      "id": "3",
+      "attributes": {
+        "name": "Spaghetti Place",
+        "address": "789 Third Street",
+        "createdAt": "2020-09-20T14:52:03.000000Z",
+        "updatedAt": "2020-09-20T14:52:03.000000Z"
+      },
+      "relationships": {
+        "dishes": {
+          "links": {
+            "self": "http://opinion-ate.test/api/v1/restaurants/3/relationships/dishes",
+            "related": "http://opinion-ate.test/api/v1/restaurants/3/dishes"
+          }
+        }
+      },
+      "links": {
+        "self": "http://opinion-ate.test/api/v1/restaurants/3"
+      }
+    }
+  }
+
+
+https://howtojsonapi.com/laravel.html
+
+
+- Ver ejemplos de JSON:API !!!
+
+https://jsonapi.org/examples/
+
+
+- Muy buen resumen sobre distintos tipos de paquetes para generar APIs en Laravel:
+
+https://speakerdeck.com/mattstauffer/getting-to-json-api-what-it-is-why-you-should-use-it-and-how-to-use-it-in-laravel?slide=110
+
+
+- Implementar Scopes como los de Eloquent de Laravel
+
+https://codingdriver.com/how-to-use-scopes-in-laravel.html
+https://medium.com/@janaksan_/using-scope-with-laravel-7c80dd6a2c3d
+https://dev.to/bertheyman/the-magic-of-query-scopes-in-laravel-pfp
+https://www.csrhymes.com/2019/12/29/using-eloquent-query-scopes.html
+https://www.techalyst.com/posts/creating-and-using-query-scopes-with-laravel-5
 
 - Chequear:
 
@@ -1031,50 +1566,6 @@ https://www.tutorialesprogramacionya.com/sqlserverya/temarios/descripcion.php?in
 https://docs.aws.amazon.com/es_es/redshift/latest/dg/r_Subquery_examples.html
 https://www.mundoracle.com/subconsultas.html?Pg=sql_plsql_6.htm
   
-- Generador de modelos, controladores y apis (resource controllers) como en Laravel:
-
-Ejemplo:
-
-  php index.php make -mca Products
-
--m model
--c controller 
--a api controller
-
-https://stackoverflow.com/questions/43187735/laravel-5-4-create-model-controller-and-migration-in-single-artisan-command
-
-
-- Usar archivos .env 
-
-  'mysql' => [
-      'driver'    => 'mysql',
-      'host'      => env('DB_HOST', 'localhost'),
-      'database'  => env('DB_DATABASE', 'forge'),
-      'username'  => env('DB_USERNAME', 'forge'),
-      'password'  => env('DB_PASSWORD', ''),
-      'charset'   => 'utf8',
-      'collation' => 'utf8_unicode_ci',
-      'prefix'    => '',
-      'strict'    => false,
-  ],
-
-Más
-https://scotch.io/tutorials/understanding-laravel-environment-variables
-https://medium.com/@hfally/how-to-create-an-environment-variable-file-like-laravel-symphonys-env-37c20fc23e72
-https://laravel.com/docs/5.7/configuration
-https://medium.com/@sagarmaheshwary31/laravel-5-8-from-scratch-config-env-migrations-and-todos-crud-7c771bcac802
-https://github.com/vlucas/phpdotenv
-
-
-- Implementar "where anidados" como en Laravel con callbacks
-
-https://stackoverflow.com/a/25129805/980631
-
-- Debe haber orJoin() como orWhere() y orHaving() 
-
-https://stackoverflow.com/a/36074909/980631
-https://laravel.com/docs/5.8/queries#where-exists-clauses
-
 
 - Considerar usar 'seek method' en vez de OFFSET como método de optimización de queries
 
@@ -1089,6 +1580,7 @@ Ejemplo (API de Facebook)
 "next": "https://graph.facebook.com/me/albums?limit=25&after=MTAxNTExOTQ1MjAwNzI5NDE="
 }
 
+https://www.eversql.com/faster-pagination-in-mysql-why-order-by-with-limit-and-offset-is-slow/
 https://blog.octo.com/design-a-rest-api/  # -> Paging
 https://www.eversql.com/faster-pagination-in-mysql-why-order-by-with-limit-and-offset-is-slow/
 
@@ -1096,9 +1588,11 @@ https://www.eversql.com/faster-pagination-in-mysql-why-order-by-with-limit-and-o
 a nivel de API
 
 protected $hidden = [
-                      'password',
-                      'active' => ['guest', 'basic'] 
+    'password',
+    'active' => ['guest', 'basic'] 
 ]
+
+<-- seguramente puede hacerse con hooks sobre el modelo o con un transformer *
 
 - Restricción de valores 
 
@@ -1152,9 +1646,54 @@ https://www.ibm.com/support/knowledgecenter/en/SS6KJL_8.6.4/FEB/ref_data_rest_ap
 Más
 https://restdb.io/docs/querying-with-the-api
 
+- Implementar ORM 
+
+  Ver API de Larevel y GORM
+
+  Full-Featured ORM
+  Associations (has one, has many, belongs to, many to many, polymorphism, single-table inheritance)
+  Hooks (before/after create/save/update/delete/find)
+  Eager loading with Preload, Joins
+  Transactions, Nested Transactions, Save Point, RollbackTo to Saved Point
+  Context, Prepared Statment Mode, DryRun Mode
+  Batch Insert, FindInBatches, Find/Create with Map, CRUD with SQL Expr and Context Valuer
+  SQL Builder, Upsert, Locking, Optimizer/Index/Comment Hints, Named Argument, SubQuery
+  Composite Primary Key, Indexes, Constraints
+  Auto Migrations
+  Logger
+  Extendable, flexible plugin API: Database Resolver (multiple databases, read/write splitting) / Prometheus…
+  Every feature comes with tests
+  Developer Friendly
+
+https://gorm.io/
+https://developpaper.com/basic-usage-of-golang-gorm-operation-mysql-and-gorm/
+https://www.prisma.io/dataguide/types/relational/comparing-sql-query-builders-and-orms
+https://stackoverflow.com/questions/398134/what-are-the-advantages-of-using-an-orm
+
+"Imaginate Amazon. El desarrollador que está laburando en el algoritmo que ordena los productos según los intereses del comprador no le importa conocer los detalles del WHERE que filtra a los vendedores que hacen envíos al país del comprador. 
+
+El tipo necesita una lista de objetos availableProduct que se encargue de atar la sesión del visitante, los perfiles de los vendedores, la configuración de cada producto, el código que convierte el precio a la moneda preferida del visitante y todo lo demás.
+
+Podés armar una clase availableProduct y escribir los WHEREs vos... O podés usar un ORM y crear un availableProduct que es un product, atado a un vendedor, atado a una condición regional de venta, etcétera. El ORM te ahorra trabajo y te estandariza la sintaxis"
+
+"las bases de datos no SQL más populares hoy en día son documentales (como Mongo). Un ORM es un mapeador de relaciones. Las bases de datos documentales no están diseñadas para trazar relaciones entre los objetos (eso se hace en una capa superior). El equivalente a un ORM documental es un ODM."
+
+- Dar soporte a MongoDB 
+
+https://docs.mongodb.com/manual/tutorial/query-documents/
+
+Sobre Mongo leer:
+
+https://www.tutorialspoint.com/mongodb/index.htm
+https://university.mongodb.com/courses/M001/about?offering_id=M001%2F2020_November_3
+https://www.sitepoint.com/building-simple-blog-app-mongodb-php/
+https://www.roytuts.com/rest-api-crud-example-in-php-and-mongodb/
+
+
+
 - Implementar X-Rate-Limit-Limit, X-Rate-Limit-Remaining y X-Rate-Limit-Reset
 
-Se deben poder especificar para cada endpoint
+En vez de tener que especificar para cada endpoint lo que se usa aquí es una "API GATEWAY" <<<<
 
 https://github.com/dingo/api/wiki/Rate-Limiting
 https://developer.twitter.com/en/docs/basics/rate-limiting
@@ -1164,6 +1703,30 @@ https://developer.github.com/v3/rate_limit/
 https://developer.vimeo.com/guidelines/rate-limiting
 https://support.exactonline.com/community/s/knowledge-base#All-All-HNO-Simulation-gen-apilimits
 https://stackoverflow.com/a/49611482/980631
+
+
+Ejemplos:
+
+Name	                Limits
+------------------------------------------------
+Google Calendar API	  1,000,000 queries per day
+Google Docs API	      Free of charge
+Gmail API	            1,000,000,000 quota units per day
+Sheets API	          500 requests per 100 seconds per project, 100 requests per 100 seconds per user
+
+
+- Posibilidad de aplicar "restricciones" sobre una API
+
+Ej:
+    - None can be used for testing purposes only.
+    - HTTP referrers can be used for API clients which run on a web browser.
+    - IP addresses can be used to limit API key access to some particular IP addresses.
+    - Android apps is there for Android applications. 
+    - iOS apps can restrict API calls to specific iOS bundles. 
+
+
+https://cloud.google.com/docs/authentication/api-keys
+
 
 - Swagger for Documentation
 
@@ -1175,6 +1738,7 @@ Swagger is a widely-used tool to document REST APIs that provides a way to explo
 
 https://quickadminpanel.com/blog/list-of-21-artisan-make-commands-with-parameters/
 
+
 - Ofrecer la forma de filtrado compatible con JSON:API
 
 GET /employees?filter[state]=internal&filter[title]=senior
@@ -1185,56 +1749,110 @@ equivalente a...
 GET /employees?state=internal&title=senior
 GET /employees?id=1,2
 
-- En vez de devolver solo un mensaje de error y un status, ofrecer tambien un código de error
 
-// 400 Bad Request
-{
-  "errors": [
-    {
-      "status": 400,
-      "detail": "Invalid state. Valid values are 'internal' or 'external'",
-      "code": 352,
-      "links": {
-        "about": "http://www.domain.com/rest/errorcode/352"
-      }
+- JSON:API resuelve elegantemente el tema de los objetos anidados:
+
+JSON:API has quite a lot of interesting features. "Compound documents" allow servers to respond to requests with related resources, which mimics a lot of GraphQL’s functionality without making for an overly complex system. Clients can leverage this to traverse the internal resource layout and grab more complex information.
+
+https://jsonapi.org/format/#document-compound-documents
+
+Clients can also request very specific information by using "sparse fieldsets", wherein the client only requests data from a specific resource name and a specific set of desired fields. This makes for much more efficient calls than is otherwise seen in other relational API standards. JSON:API also allows for optionality in features: you can turn anything on or off, with the client being the ultimate source of acceptance or denial.
+
+https://jsonapi.org/format/#fetching-sparse-fieldsets
+
+Más
+https://nordicapis.com/the-benefits-of-using-json-api/
+https://nordicapis.com/how-does-jsonapi-compare-to-rest-and-graphql/
+
+
+- Ejemplo de paginación HAL
+
+
+    "_links": {
+        "self": {
+            "href": "http://example.org/api/user?page=3"
+        },
+        "first": {
+            "href": "http://example.org/api/user"
+        },
+        "prev": {
+            "href": "http://example.org/api/user?page=2"
+        },
+        "next": {
+            "href": "http://example.org/api/user?page=4"
+        },
+        "last": {
+            "href": "http://example.org/api/user?page=133"
+        }
     }
-  ]
+    "count": 3,
+    "total": 498,
+    "_embedded": {
+        "users": [
+            {
+                "_links": {
+                    "self": {
+                        "href": "http://example.org/api/user/mwop"
+                    }
+                },
+                "id": "mwop",
+                "name": "Matthew Weier O'Phinney"
+            },
+            {
+                "_links": {
+                    "self": {
+                        "href": "http://example.org/api/user/mac_nibblet"
+                    }
+                },
+                "id": "mac_nibblet",
+                "name": "Antoine Hedgecock"
+            },
+            {
+                "_links": {
+                    "self": {
+                        "href": "http://example.org/api/user/spiffyjr"
+                    }
+                },
+                "id": "spiffyjr",
+                "name": "Kyle Spraggs"
+            }
+        ]
+    }
 }
 
-Más 
-https://jsonapi.org/format/#error-objects
-https://phauer.com/2015/restful-api-design-best-practices/
+
+https://nordicapis.com/optimizing-the-api-response-package/
 
 
-- Soportar formatos JSON, XML,  YAML, CSV ...
+- JSON:API vs GraphQL vs ...
 
-HTTP/1.1 200 OK
-Content-Type: application/xml
-Content-Length: ...
 
-<?xml version="1.0"?>
-<account>
-    <account_number>12345</account_number>
-    <balance currency="usd">100.00</balance>
-    <link rel="deposit" href="/accounts/12345/deposit" />
-    <link rel="withdraw" href="/accounts/12345/withdraw" /> 
-    <link rel="transfer" href="/accounts/12345/transfer" />
-    <link rel="close" href="/accounts/12345/close" />
-</account>
- 
-- Simplificar la forma de crear la conexion a la DB como en Laravel Lummen:
-https://lumen.laravel.com/docs/6.x/database
+https://stackoverflow.com/questions/44711161/what-is-the-difference-between-odata-jsonapi-graphql
+https://aimeos.org/tips/graphql-vs-jsonapi-for-ecommerce/
 
-- Generar Modelos con sus schemas a partir de la DB como con CRUDO usando un comando.
 
-- Migrations, seeders,...
+- Seeders,...
 
 En az\docs\etc dejé unas capturas de pantalla pero se puede ver como funciona sobre el final de este vídeo:
 https://www.youtube.com/watch?v=w6u8amnFhSo
 
+
 - Sanitización a nivel de urls, FILTER_SANITIZE_URL
 
 https://www.w3schools.com/php/php_filter.asp
+
+Cómo carajos previene un XSS hacer lo siguiente?
+
+  /* prevent XSS. */
+  $_GET   = filter_input_array(INPUT_GET, FILTER_SANITIZE_STRING);
+  $_POST  = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
+
+https://stackoverflow.com/a/4861211
+
+Leer cuidadosamente:
+
+https://www.php.net/manual/en/function.filter-input-array.php
+
 
 - Sanitización a nivel de base de datos
 
@@ -1312,3 +1930,1383 @@ iat (issued at): identifies the UTC Unix time at which the JWT was issued
 jti (JWT ID): provides a unique identifier for the JWT.
 
 https://stackoverflow.com/questions/38897514/what-to-store-in-a-jwt
+
+
+- Leer sobre Flat-file databases
+
+https://en.wikipedia.org/wiki/Flat-file_database
+
+
+- Evaluar usar un motor de plantillas como Twing entre otras cosas para el envio de emails
+
+https://en.wikipedia.org/wiki/Twig_(template_engine)
+
+
+- Dar soporte al manejo de Views (view tables) ya que son readonly y no pueden tratarse como cualquier modelo.
+
+https://stackoverflow.com/questions/36287364/how-to-create-the-migrations-for-database-views-using-php-artisan-in-laravel
+https://programmingarehard.com/2013/11/10/eloquent_and_views.html/
+
+
+- Dar soporte a tablas temporarias ! 
+
+https://alexvanderbist.com/2020/advanced-laravel-migrations-using-temporary-tables/
+
+
+- Implementar algo como "Unit of Work" de Doctrine 2 para minimizar las cantidad de consultas:
+
+https://culttt.com/2014/07/07/doctrine-2-different-eloquent/
+
+
+- Por qué generar las migraciones con métodos encadenados y no simplemente SQL como en Doctrine ?
+
+/**
+ * Auto-generated Migration: Please modify to your needs!
+ */
+  final class Version20180601193057 extends AbstractMigration
+  {
+      public function getDescription() : string
+      {
+          return 'This is my example migration.';
+      }
+
+      public function up(Schema $schema) : void
+      {
+          $this->addSql('CREATE TABLE example_table (id INT AUTO_INCREMENT NOT NULL, title VARCHAR(255) DEFAULT NULL, PRIMARY KEY(id))');
+      }
+
+      public function down(Schema $schema) : void
+      {
+          $this->addSql('DROP TABLE example_table');
+      }
+  }
+
+
+<--- RTA: porque ese SQL solo sería válido para un MOTOR de base de datos en particular ! aunque es más rápido y tiene sentido cuando estás haciendo un CREATE TABLE IF NOT EXISTS
+
+https://www.doctrine-project.org/projects/doctrine-migrations/en/3.0/reference/managing-migrations.html
+
+
+- Implementar comando diff para migraciones como en Doctrine
+
+php com migrations diff
+
+"The command generates a migration by comparing project current database to mapping information. Doctrine provides this command to generate migration classes by changing entity mappings instead of manually adding modifications to migration class."
+
+http://www.laraveldoctrine.org/docs/current/migrations/diff
+
+
+<-- 
+
+"In Laravel we use migration files to create the database schema. In Doctrine 2, the database is automatically created to reflect the meta data in the entity annotations."
+
+
+Doctrine can generate blank migrations for you to modify or it can generate functional migrations for you by comparing the current state of your database schema to your mapping information.
+
+By default the Doctrine Migrations command line tool will only add the "diff" command if the ORM is present. Without the ORM, you'll have to add the diff command to your console application manually, passing in your schema provider implementation to the diff command's constructor   
+
+<-- esto pasa porque solo con el ORM se mantiene un Schema (como annotations) 
+
+
+- También es buena idea que en vez de incluir la descripción como parte del archivo, ésta este dentro de la clase: 
+
+  public function getDescription() : string
+  {
+      return 'This is my example migration.';
+  }
+
+- El versionado en el nombre de la clase de migraciones es muy deseable: 
+
+  final class Version20180601193057 extends AbstractMigration {
+    //...
+  }
+
+- El rollback además del --step=N sea --to=version
+
+https://www.doctrine-project.org/projects/doctrine-migrations/en/3.0/reference/managing-migrations.html
+
+
+- Comando para des-marcar / marcar una migración para "batch" en la tabla de migraciones:
+
+https://www.doctrine-project.org/projects/doctrine-migrations/en/3.0/reference/managing-migrations.html#managing-the-version-table
+
+
+- En Schema agregar
+  
+  ->addSql()
+  ->abortIf()
+  ->addColumn()
+
+- Eventos before / after en las migraciones 
+
+
+- Hacer "inserciones en Bulk" usando colecciones. 
+
+Se puede crear una "colección" con POST (ya implementado) y luego de recibir los IDs ... hacer PUTs sobre cada uno.
+
+https://stackoverflow.com/questions/17292656/how-to-design-a-restful-api-for-bulk-inserts-and-updates
+
+
+- Service Providers - desde el directorio del paquete deben poder cargarse el config, vistas, traducciones,... y hasta migraciones:
+
+  /**
+     * Merge the given configuration with the existing configuration.
+     *
+     * @param  string  $path
+     * @param  string  $key
+     * @return void
+     */
+    protected function mergeConfigFrom($path, $key)
+    {
+        $config = $this->app['config']->get($key, []);
+
+        $this->app['config']->set($key, array_merge(require $path, $config));
+    }
+
+  ...
+
+  /**
+     * Register a database migration path.
+     *
+     * @param  array|string  $paths
+     * @return void
+     */
+    protected function loadMigrationsFrom($paths)
+    {
+        $this->app->afterResolving('migrator', function ($migrator) use ($paths) {
+            foreach ((array) $paths as $path) {
+                $migrator->path($path);
+            }
+        });
+    }
+
+<-- extracto de ServiceProvider.php de Laravel
+
+"Within the boot() method, you may do whatever you like: register event listeners, include a routes file, register filters, or anything else you can imagine.
+
+The register() method should only be used for, you guessed it, registering services with the container”
+
+
+- Evaluar implementar un vendor:publish para los ServiceProviders 
+
+"The vendor folder should not be under revision control as such, it will be overwritten every time you deploy your solution. You use vendor:publish to copy configurable items to your application code base such that any changes you make will not keep being lost."
+
+"vendor:publish command used to copy few configuration file in your application from vendor package file.Like you are using a package where need to create a table on database and need to store few demo data.That time your packages will keep database schema and seeding and when you run vendor:publish those schema and seeding file will copy in your application.After that you just run php artisan migrate and php artisan db:seed"
+
+https://laracasts.com/discuss/channels/laravel/why-do-we-do-a-php-artisan-vendorpublish
+
+
+- Leer sobre Packages
+
+https://laravel.com/docs/8.x/packages
+
+
+- Investigar integraciones como la de PayPal via Serivice Provider
+
+https://www.codechief.org/article/how-to-integrate-paypal-payment-gateway-in-laravel
+https://www.positronx.io/how-to-integrate-paypal-payment-gateway-in-laravel/
+https://github.com/srmklive/laravel-paypal
+https://github.com/srmklive/laravel-paypal-demo
+
+
+- Crear ServiceProvider para envio de Mails 
+
+https://culttt.com/2015/10/12/sending-template-emails-through-mandrill-in-laravel/
+
+
+- Crear un script de instalación o un procedimiento como este:
+
+  Installation
+
+  First simply clone this repo by using following command:
+
+    git clone https://xxxxxxxxxxxxxxxx.git [your-directory]
+
+  Now navigate to the directory you cloned the repo into and run the following command
+
+  composer install
+
+      Create .env file
+
+  mv .env.example .env
+
+  Set application key
+
+    php artisan key:generate
+
+  Set your database credentials.
+
+  Migrate the databases:
+
+    php artisan migrate
+
+
+- Implementar API de Mailchimp, Mailgun o MailTrap como Servicio o Library
+
+https://www.mailgun.com/
+https://mailtrap.io/signin
+
+
+- Probar var_dumper de Symfony
+
+https://symfony.com/doc/current/components/var_dumper.html
+
+
+[ MODELO ] 
+
+  - Agregar updateOrInsert()
+
+  https://laravel.com/docs/8.x/queries#update-or-insert  
+
+  - Agregar soporte para JSON
+
+  - Soporte para "subquery Joins" mediante joinSub, leftJoinSub, and rightJoinSub
+
+  https://laravel.com/docs/8.x/queries#subquery-joins
+
+  - Agregar soporte para "OR JOINs" 
+
+  https://laravel.com/docs/8.x/queries#advanced-join-clauses
+  https://stackoverflow.com/questions/11702294/mysql-inner-join-with-or-condition
+
+  - Seguir el estandar SQL-92 o SQL-89 para garantizar compatibiidad entre distintos motores. Cuál me conviene usar?
+
+  https://en.wikipedia.org/wiki/SQL-92
+
+  - Leer
+
+  https://en.wikipedia.org/wiki/Join_(SQL)    
+
+
+- Implementar features y dar cierta compatibiidad con CodeIgniter
+
+https://codeigniter.com/user_guide/models/model.html
+https://codeigniter.com/user_guide/models/entities.html
+https://codeigniter.com/user_guide/database/index.html
+
+
+- Aplicar buenas prácticas
+
+https://github.com/ryanmcdermott/clean-code-javascript
+https://github.com/thangchung/clean-code-dotnet
+
+
+- Para hacer benchmarks de ejecución de código PHP, probar:
+
+https://github.com/phpbench/
+
+
+- Métricas con telegraf, influxdb y grafana
+
+https://aleson-itc.com/en/free-monitoring-using-influxdb-telegraf-and-grafana/
+
+
+- Prevenir correctamente SQL injections
+
+"SQL injection must exploit a security vulnerability in an application's software, for example, when user input is either incorrectly filtered for string literal escape characters embedded in SQL statements or user input is not strongly typed and unexpectedly executed." =>
+
+	- Validar o castear todo tipo de parámetros (paginación, entidad, etc) no solo los de las queries tanto en las urls como por GET o incluso en los headers
+
+  - No admitir que un parámetro sea '/ OR$/' o '/^OR /' o '/ UNION$/' o '/^UNION /'
+	
+	- Validar idealmente todos los parámetros de controladores
+
+
+https://en.wikipedia.org/wiki/SQL_injection#In_popular_culture
+https://paragonie.com/blog/2015/05/preventing-sql-injection-in-php-applications-easy-and-definitive-guide
+https://www.paladion.net/blogs/are-stored-procedures-safe-against-sql-injection
+
+
+- Autorización "basica" (user y pass) vs API Key vs OAuth
+
+    Basic   is very easy to implement, but would you give your Google account password to someone? (You shouldn't!)
+
+    API Key is as easy to implement, both for the API provider and the developer, but have you ever tried to ask a non-techie to give you their API key?
+    
+    OAuth (especially OAuth2.0) is the best user experience. Your user clicks on a button and that's it. But for developers, implementing an OAuth dance can be tricky!
+
+
+  Using API keys is a way to authenticate an application accessing the API, without referencing an actual user. The app adds the key to each API request, and the API can use the key to identify the application and authorize the request. The key can then be used to perform things like rate limiting, statistics, and similar actions.
+
+  Google Cloud accepts the API key with a query parameter like this:
+
+  curl -X POST https://language.googleapis.com/v1/documents:analyzeEntities?key=API_KEY
+
+  Cloudflare requires the API key to be sent in a custom header:
+
+  curl https://api.cloudflare.com/client/v4/zones/cd7d0123e301230df9514d \
+      -H "Content-Type:application/json" \
+      -H "X-Auth-Key:1234567893feefc5f0q5000bfo0c38d90bbeb" \
+      -H "X-Auth-Email:example@example.com" 
+
+ The API key only identifies the application, not the user of the application. It’s often difficult to keep the key a secret. For server-to-server communication, it’s possible to hide the key using TLS and restrict the access to only be used in backend scenarios.      
+
+https://blog.bearer.sh/the-three-most-common-api-authentication-methods/  
+https://nordicapis.com/the-difference-between-http-auth-api-keys-and-oauth/  
+
+
+- Cuando usar OAuth !
+
+You need OAuth only when you want to enable a user of your service to allow a third-party client application to access his/her data hosted in your service without revealing his/her credentials (ID & password) to the application.
+
+
+- Investigar Laravel Sanctum
+
+https://laravel.com/docs/8.x/sanctum
+
+
+[ OAuth ]
+
+- Intro:
+
+https://www.digitalocean.com/community/tutorials/una-introduccion-a-oauth-2-es?fbclid=IwAR1HP35GfAhLHcSWzA1bSwpvXsoOMQpTOq53vSkvahs4nakyYp5kMUXlKf0
+
+- Estudiar Laravel Passport que está construido sobre league/oauth2-server y permite armar OAuth 
+
+league/oauth2-server is a standards compliant implementation of an OAuth 2.0 authorization server written in PHP which makes working with OAuth 2.0 trivial. You can easily configure an OAuth 2.0 server to protect your API with access tokens, or allow clients to request new access tokens and refresh them.
+
+Out of the box it supports the following grants:
+
+    Authorization code grant
+    Implicit grant
+    Client credentials grant
+    Resource owner password credentials grant
+    Refresh grant
+
+
+https://laravel.com/docs/8.x/passport
+https://github.com/thephpleague/oauth2-server
+https://oauth2.thephpleague.com/
+
+
+[ MODELO ]
+
+- Hay un *bug importante* por el que un usuario "logueado" puede ver menos registros que un "guest".
+
+  GET /v1/products
+
+  eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTYwNTkxOTE2MiwiZXhwIjoxNjE0OTE5MTYyLCJpcCI6IjEyNy4wLjAuMSIsInVpZCI6MTEzLCJyb2xlcyI6WyJyZWd1bGFyIl0sInBlcm1pc3Npb25zIjp7InRiIjpbXSwic3AiOltdfSwiaW1wZXJzb25hdGVkX2J5IjoiNDAwIiwiYWN0aXZlIjoxfQ.acTZs9VbSQcnIsdiiFS_Kd6hGppibYZG3-2kn5CGYJY
+
+  SELECT * FROM products WHERE (belongs_to = 113) AND deleted_at IS NULL LIMIT 0, 10;
+
+  => 1 registro
+
+mientras que ...
+
+  GET /v1/products (guest)
+
+  SELECT * FROM products WHERE (belongs_to IS NULL) AND deleted_at IS NULL LIMIT 0, 10;
+
+  => 2 registros
+
+La razón  es que en el primer caso (para el usuario logueado) en el ApiController debió armarse la consulta así:
+
+  SELECT * FROM products WHERE (belongs_to = 113 OR belongs_to IS NULL) AND deleted_at IS NULL LIMIT 0, 10;
+
+  => 3 registros
+
+La incocistencia se presenta solo si belongs_to es nullable y hay registros con belongs_to NULL.
+
+
+PARCHE: no tener belongs_to como "nullable".
+
+SOLUCION: re-escribir ApiController de forma que genere una estructura de datos (cacheable) y luego aplicar todo al modelo. La estructura de datos podría ser un array asociativo o un "árbol" para evitar re-ordenamientos y poder re-usar prepared statements. Se deben incluir operadores, groupBy, having, etc. *NO* hacer nada hasta no tener pruebas unitarias actualizadas para el ApiController y hacerlo bajo otra versión de Api para poder comparar: /api/v1.1 
+
+
+
+- Cursores
+
+https://www.geeksforgeeks.org/what-is-cursor-in-sql/
+https://docs.microsoft.com/en-us/sql/ado/guide/data/understanding-cursors-and-locks?view=sql-server-ver15
+https://www.sqlshack.com/understanding-cursors-replacing-joins-sql-server/
+https://www.sqlshack.com/using-sql-server-cursors-advantages-and-disadvantages/
+https://dev.mysql.com/doc/refman/8.0/en/cursors.html
+https://www.brainbell.com/tutorials/MySQL/Working_With_Cursors.htm
+
+- Paginación con cursores
+
+https://stackoverflow.com/questions/55744926/offset-pagination-vs-cursor-pagination
+https://dev.to/jackmarchant/offset-and-cursor-pagination-explained-b89
+https://dev.to/rahul_ramfort/understanding-offset-vs-cursor-based-pagination-1582
+
+
+- Calling stored procedures in PHP (PDO)
+
+https://www.ibm.com/support/knowledgecenter/SSEPGG_11.5.0/com.ibm.swg.im.dbclient.php.doc/doc/t0023502.html
+
+
+- Implementar forma adecuada de hacer calls a Store Procedures:
+
+https://stackoverflow.com/questions/34497063/how-to-execute-stored-procedure-from-laravel
+https://medium.com/@smayzes/stored-procedures-in-laravel-60e7cb255fc9
+
+Requiere uso de cursores? hacer un binding con PARAM_el_que_sea | PARAM_LOB ?
+
+"Stored procedures may return result sets, i.e., the results of a SELECT statement. Such result sets can be processed using cursors, by other stored procedures, by associating a result-set locator, or by applications. 
+
+Stored procedures may also contain declared variables for processing data and cursors that allow it to loop through multiple rows in a table."
+
+
+- Implementar un método en el modelo que conviera el Query Builder en un generador de Store Procedures.
+
+Básicamente se construiría un SP a partir de una consulta preparada !
+
+
+- Store Procedures => seguridad
+
+https://www.sqlbook.com/sql-server/why-use-stored-procedures/
+
+
+- Laravel, leer:
+
+https://pineco.de/route-bind-contracts-in-laravel/
+
+
+[ SEGURIDAD ]
+
+- Para generar las "secret keys" del config hacer algo como WordPress que ofrece una url (que podría ser local) donde se generan.
+
+/**#@+
+ * Authentication Unique Keys and Salts.
+ *
+ * Change these to different unique phrases!
+ * You can generate these using the {@link https://api.wordpress.org/secret-key/1.1/salt/ WordPress.org secret-key service}
+ * You can change these at any point in time to invalidate all existing cookies. This will force all users to have to log in again.
+ *
+ * @since 2.6.0
+ */
+define( 'AUTH_KEY',         'put your unique phrase here' );
+define( 'SECURE_AUTH_KEY',  'put your unique phrase here' );
+define( 'LOGGED_IN_KEY',    'put your unique phrase here' );
+define( 'NONCE_KEY',        'put your unique phrase here' );
+define( 'AUTH_SALT',        'put your unique phrase here' );
+define( 'SECURE_AUTH_SALT', 'put your unique phrase here' );
+define( 'LOGGED_IN_SALT',   'put your unique phrase here' );
+define( 'NONCE_SALT',       'put your unique phrase here' );
+
+
+[ API KEY autentication ]
+
+API Key Generation
+
+Since the API key itself is an identity by which to identify the application or the user, it needs to be unique, random and non-guessable. API keys that are generated must also use Alphanumeric and special characters. An example of such an API key is zaCELgL.0imfnc8mVLWwsAawjYr4Rx-Af50DDqtlx.
+
+We don’t need to know the raw API key, but just need to validate that the key is correct. So instead of storing the key in plain text (bad) or encrypting it, we should *store it as a hashed value* within our database. *******
+
+Since we don’t store the original API key, we can show it only once to the user, at the time of creation. *
+
+Another problem is how users identify the right API key in your console if they need to edit or revoke it. This can be solved by adding a prefix to the API key. Notice in the picture above the first 7 characters (that’s our prefix), separated by the dot.
+
+Adjuntar un prefijo para poder identificar distintas API keys para distintas aplicaciones o con distintos scopes:
+
+	API key {prefix}.{hash_of_whole_api_key}.
+	
+Don’t give the API Key all the power
+
+One common mistake that API key providers make is providing one key to access everything, since it’s easy to manage. Don’t do that. Assume that a user just needs to read an email, and generates an API key. But that key now has full access to other services, including deleting records in the database.
+
+The right approach is to allow the end users to properly restrict API Key access and choose specific actions that an API key can carry out. This can be done by providing scopes, where each scope represents a specific permission.
+
+For example,
+
+    if you need an API key to just send emails, you can generate an API key with the scope as “email.send”
+	
+https://www.freecodecamp.org/news/best-practices-for-building-api-keys-97c26eabfea9/	
+	
+
+- Observación: 
+  
+  En la tabla `users` se tomó la desición de hacer que el `password` sea nullable para poder permitir registro a través de la API de Google / Facebook *pero* entonces al hacer un registro "normal" el campo email debe ser obligatorio (estar presente en el schema y no ser nullable) o se podría dar el caso de crear un usuario y sin password y no poder recuperarlo:
+
+  {
+    "username": "vik455",
+    "email": NULL,  
+    "password": NULL
+    "roles": ["regular"]
+  }        
+
+OK:
+  username  valor
+  email     valor
+  password  valor 
+
+OK:
+  username  NULL
+  email     valor
+  password  valor  
+
+OK:
+  username  valor
+  email     NULL 
+  password  valor
+
+<-- el problema es que no es posible recuperar la cuenta sino es con contacto con el admin.
+
+NO!
+  username  valor
+  email     NULL 
+  password  NULL
+
+<-- no es posible loguearse ni "restablecer" un password cuando la cuenta esté pendiente de activación porque se requiere correo para recuperar cuenta (excepto sea via SMS)
+
+De mínima exigir que:  `username` y `email` no puedan ser nullables simultaneamente !
+En alguna parte del proceso de registro sugerir completar el email aunque sea nullable en la tabla
+
+
+- Mejorar enlaces generados en rememberme para hacerlos menos verbosos usando el router
+
+  http://az.lan/api/v1/auth/change_pass_by_link/eyJ0eXAiOiJKV1QiLC.....
+
+podría ser
+
+  http://az.lan/change-pass/eyJ0eXAiOiJKV1QiLC....
+
+
+- Al llamar intentar cambiar el password siguiendo el enlance /api/v1/auth/change_pass_by_link debe darse por verificado el correo. Si el correo se verifica y es estado del usuario es NULL debe pasar a "activo"
+
+    http://az.lan/api/v1/auth/change_pass_by_link/eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCIsImlhdCI6MTYwNTc5NTgyOSwiZXhwIjoxNjA2NDAwNjI5LCJpcCI6IjEyNy4wLjAuMSIsInVpZCI6NDczfQ.ni-DzwD0XF86jGwt9LtexGqiHnISiM61nWtYrWWvcm8/1606400629
+
+
+- Por qué el resultado de funciones agregativas no está casteado?
+
+    php com dumb avg
+
+    array (
+      'prom' => '218.3333',   <-- debe ser 218.3333 (float)
+    )
+
+
+<-- parece ser que es porque PDO maneja float como String
+
+
+- Actualmente (corregir) el ApiController solo está tomando en cuenta los "permisos especiales" del archivo acl.php y no toma en cuenta los especificados en user_sp_permissions
+
+
+- Mediante "API reversa" y si se usa MySQL en el servidor y MySQL / SQLite localmente implementar algo similar a PouchDB / CouchDB.
+
+PouchDB (local)  -----------> [ API REST ] [ CouchDB (server) ]
+
+"CouchDB uses a REST API for interfacing with the database, which means we use HTTP methods like PUT, POST and DELETE to interact with the database."
+
+
+https://www.tutorialspoint.com/pouchdb/pouchdb_synchronization.htm
+https://www.joshmorony.com/offline-syncing-in-ionic-2-with-pouchdb-couchdb/
+https://www.ibm.com/developerworks/library/os-php-couchdb/index.html
+
+Obviamente si el schema en el servidor cambia, debe cambiar localmente => ejecutar migraciones local.
+
+
+- API Gateways
+
+https://www.youtube.com/watch?v=vHQqQBYJtLI
+
+
+[ MODELADO DE APIs y DOCUMANTADORES ]
+
+- Posiblemente generar documentación en lenguaje RAML (RESTful API Modeling Language)
+
+https://raml.org/developers/design-your-api
+https://www.youtube.com/watch?v=vaWvVilZtZw
+https://github.com/raml-org/raml-spec
+https://github.com/mulesoft/api-designer
+
+
+- Generar documentación de una tabla foo con Swagger API (OAS)
+
+  https://www.youtube.com/watch?v=Kziad2G-dkE
+  https://docs.microsoft.com/en-us/dotnet/architecture/microservices/multi-container-microservice-net-applications/data-driven-crud-microservice
+
+
+- Ver documentador de POSTMAN
+
+https://www.postman.com/api-documentation-tool/?
+
+
+- Implementar mecanismo para invalidar access tokens:
+
+  - Para invalidar (revocar) todos los tokens => cambiar la secret key correspondiente
+  - Para invalidar el token de un usuario => para ese user_id, denegar el acceso por el tiempo de duración de ese token. Ej: 15 min <-- obviamente cachearlo.
+
+  /api/auth/revoke <-- en el body pasar el access_token a revocar o el user_id correspondiente 
+
+
+- Implementar "token exechange": en vez de identificar a un usuario que proviene de la API de Facebook o Google por su email (que podría no ser compartido)... usar el refres_token obtenido de esas APIs como user_id :) 
+
+
+- Conceptos de microservicios
+
+		- Romper todas las FKs hacia `users`
+		- Implementar un "global delete" o su alternativa via WebHook para emular el DELETE ON CASCADE
+    - Se necesita un "orquestador" con funciones como:
+
+      - Router (hacia microservices) ***
+      - Balanceador de carga
+      - Cache
+      ...
+
+Duda: cada MS debe implementar REDIS?      
+
+
+[ REDIS ]
+
+- Performance de SQL (cached) vs No-SQL (cached) 
+
+	Si son pocas queries => da "igual"
+	Sino => No-SQL gana por "colas largas": no es posible cachear todas las consultas posibles y obviamente las más complejas sucederán con menor probabilidad individualmente con lo que inclusive podría no tener sentido cachearlas/
+
+- Optimización de consultas:
+
+	- Siempre es mejor cachear lo más upstream que se pueda: request > ORM / ODM > motor de DB
+
+	- Es buena idea invertirle algo de tiempo de procesamiento a ordenar las queries:
+
+		- ?A&B <>  ?B&A 
+		- WHERE A AND B <> WHERE B AND A
+
+		Se podría hacer un ordenamiento alfabético de queries y cuando halla un IN() hacer el ordenamiento también.	  
+
+- Podría implementar REDIS a varios niveles pero sin repetir:
+
+  Si cacheo una query ?A&B no tiene sentido cachear la misma a nivel de SQL: "WHERE A AND B". A nivel de SQL solo debería cachear aquello que pasó de largo por la caché de urls
+
+  Duda importante: para REDIS [A,B] == [B,A] ? porque de serlo... solo necesito enviar un explode() de los parámetros de la url.
+
+<-- RTA: usar un HASHMAP !
+
+Ej: 
+
+  products
+  ?cost[gt]=30
+  &groupBy=size
+  &fields=size
+  &props=avg(cost) as avg
+  &having=avg(cost)>=150
+
+podría ingresarse como
+
+  HSET apiUrl entity "products" filter "cost[gt]=30" groupBy "size" fields "size" props "avg(cost) as avg" having "avg(cost)>=150"
+
+<--- podrá filter se otro objeto ?
+
+Niveles posibles de cache con REDIS:
+
+  - Url tipo /api/v1/products?cost[gt]=30&oderBy[size]=ASC&page=2&pageSize=10
+    para nivel de permisos "compatible" (ACL)
+
+  - Query Builder
+
+    get ([[
+      'cost', 30, '>='
+    ]]), ['size', 'ASC'], 10, 20)
+
+  - SQL (sentencia preparada)
+
+    SELECT * FROM products WHERE cost >= ? ORDER BY ? ? LIMIT ?, ?;
+
+  - SQL compilado
+
+    SELECT * FROM products WHERE cost >= 30 ORDER BY size ASC LIMIT 10, 20;
+
+
+- Cachear los parámetros de una función() es mucho más fácil que cachear una serie de métodos encadenados: particularmente importante para el Query Builder.
+
+  get(array $fields = null, array $order = null, int $limit = NULL, int $offset = null, $pristine = false)
+
+El tema es que habría que tener cuidado:
+
+  - de chequear que estén registrados los mismos mutators y transformers.
+  - de chequear estén aplicados los mismos joins, havings, etc
+  - de seguir ejecutando los event hooks.
+
+
+Instalación de REDIS:
+
+https://www.digitalocean.com/community/tutorials/how-to-install-and-secure-redis-on-ubuntu-18-04
+
+
+Actualizar a REDIS 6.06 o superior <-- ya está la 6.09
+
+https://askubuntu.com/questions/1244058/how-to-install-redis-server-6-0-1-in-ubuntu-20-04
+
+
+- Redis con API Rest ? SI ! implementar serializacion del ACL y caché para todo incluidas las consultas 
+
+https://docs.phalcon.io/4.0/en/acl#serialization
+
+- Redis para el Validator ! si se repite la misma regla + dato o los arrays de datos o datos + reglas, entregar la misma respuesta. Igualmente el validador parece ser bastante eficiente. Usar versión compilada y cacheada de las reglas. 
+
+- Ver como Laravel interfacea con REDIS
+
+https://laravel.com/docs/8.x/redis
+
+
+[ EMAILS]
+
+- Usar mock para probar los correos. Recomendación utilizar los famosos Mocking ya que con esta herramienta puedes emular el envío de correos entre muchas cosas como las colas (queue), simular la subida de un archivo al servidor
+
+https://medium.com/@vivekdhumal/how-to-test-mail-notifications-in-laravel-345528917494
+
+
+- Revisa como funcionan los Resource Controllers en Laravel 8 !!!
+
+Parece ser que simplifica "armar" un HATEOAS
+
+
+[ PRUEBAS UNITARIAS ]
+
+- Actualizar y mantener actualizadas !
+
+- Pruebas unitarias sobre event hooks (modelos, api, etc)
+
+- Comparar resultados del impersonate (roles, permisos) con loguearse con token del usuario o api key.
+
+- Comparar resultados (no queries) de ejecución con el Query Builder de Laravel 
+
+
+[ REFACTORING ]
+
+- Response: simplificar la forma de generar códigos de error http (ver notas). Hay estandar? PSR?
+
+- Response: cambiar los campos para entregar m;as información incluyendo un código de error único que identifique la clase, método y la línea donde se produjo el error (ver notas)
+
+- Midlewares. Hay estadar? PSR?
+
+- Extender el router y simplificar el FrontController
+
+- Acl más eficiente (ver notas) y con otros métodos.
+
+- Simplificar el ApiController 
+  
+  _ Separar el método get() en show() y list()
+
+  _ Aplicar nuevas funciones del Acl
+
+  _ Implementar folders pero como "extensión" via api hooks en Traits
+
+  _ Solo dos hooks por método: before y after.
+
+  _ Implementar filter[] en las urls y simplificar la forma de manejar todo generando una estructura de datos que no rompa los hook.
+
+
+[ CORS ]
+
+- Verificar realmente esté OK
+
+- CORS debe no ser por defecto sino habilitarse via Midleware
+
+- Deben poder configurarse los "trusted domains" (array) en vez de "*"
+
+
+[ SSL ]
+
+- Es posible tenerlo funcionando localmente? dockerizado?
+
+
+[ Redes sociales ]
+
+- Reparar logins
+
+
+[ Panel de control ]
+
+- Hacer un control panel para administrar usuarios y ajustar permisos
+
+--
+
+- En vez de devolver solo un mensaje de error y un status, ofrecer tambien un código de error
+
+// 400 Bad Request
+{
+  "errors": [
+    {
+      "status": 400,
+      "detail": "Invalid state. Valid values are 'internal' or 'external'",
+      "code": 352,
+      "links": {
+        "about": "http://www.domain.com/rest/errorcode/352"
+      }
+    }
+  ]
+}
+
+Más 
+https://jsonapi.org/format/#error-objects
+https://phauer.com/2015/restful-api-design-best-practices/
+
+
+- Investigar API de Claro que tiene hasta relaciones polimorficas mostradas como "atributos"
+https://csapi.dev.claroshop.com/app/v1/product?page_size=5
+
+Sino encuentra el ApiController:
+
+{
+    "errors": [
+        {
+            "message": "An error occurred during execution; please try again later.",
+            "error": "error-controller-not-found",
+            "exception": []
+        }
+    ]
+}
+
+Ante un fallo regresa información de la excepción:
+
+{
+    "errors": [
+        {
+            "message": "An error occurred during execution; please try again later.",
+            "error": "error-exception",
+            "exception": {
+                "class": "Zend\\View\\Exception\\RuntimeException",
+                "file": "/var/www/sites/app-api.dev.claroshop-services.io/vendor/zendframework/zend-view/src/Renderer/PhpRenderer.php",
+                "line": 498,
+                "message": "Zend\\View\\Renderer\\PhpRenderer::render: Unable to render template \"api-manager/v1/product/update\"; resolver could not resolve to a file"... Zend\\Mvc\\Application->run()\n#10 {main}"
+            }
+        }
+    ]
+}
+
+
+En caso de éxito:
+
+{
+    "metadata": {
+        "is_error": false,
+        "http_status": "OK",
+        "http_status_phrase": 200,
+        "time": 1601043305,
+        "message": "Products found"
+    },
+    "data": [
+        {
+            "id": 8308292,
+            "title": "Crema Dental Complete 4 en 1 Crest",
+            "store": {
+                "id": 3496,
+                "name": "Sanborns",
+                "logo": "http://medios.plazavip.com/publicidad/5c3cd792844b8_sanbornssjpeg.jpg"
+            },
+            "images": [
+                {
+                    "order": 1,
+                    "url": "https://www.claroshop.com/imagenes-sanborns-ii/1200/7506195100233.jpg",
+                    "thumbnail": "https://www.claroshop.com/imagenes-sanborns-ii/1200/7506195100233.jpg"
+                }
+            ],
+            "isfree": false,
+            ...
+            ...
+        },          
+        {
+            "id": 8308291,
+            ...
+        }
+    ],
+    "pagination": {
+        "total_items": 791695,
+        "total_pages": 395848,
+        "current_page": 1,
+        "items_per_page": 2
+    }
+}
+
+Algo interesante es que cuando se piden más registros por página del límite utiliza los campos is_error y message para indicar que no hubo error pero que no se pudo cumplir con el requisito de paginación mostrando solo lo una cantidad pre-determinada. 
+
+{
+    "metadata": {
+        "is_error": false,
+        "http_status": "OK",
+        "http_status_phrase": 200,
+        "time": 1601043488,
+        "message": "Can't get more than 500 items!. I return only one :)"
+    },
+    "data": [
+    ...
+    ],
+    "pagination": {
+        "total_items": ....,
+        "total_pages": ....,
+        "current_page": 1,
+        "items_per_page": 1
+    }
+}
+
+
+- Corregir JSON en /v1/files
+
+"failures": [
+            "",
+            ""
+]
+
+<-- no está vacio ! debería incluir nombre_archivo : error  
+
+
+- Adotar (sin forzar) convención para tablas pivote
+
+https://stackoverflow.com/questions/2208186/proper-table-naming-convention-for-a-many-to-many-intersect-table
+
+
+[ COMPATIBILIDAD ]
+
+- Asegurar compatibilidad con:
+
+  - Compatibilidad ante distinto diseno de tablas (convenciones):
+
+    - Tablas sin PK
+    - Tablas con PK múltiple
+    - Distintos campos para:
+
+      created_at
+      created_by
+      ...
+      active 
+      lock
+      users.id
+      users.email
+      users.username
+      users.password
+
+    - Tabla `users` podría tener otro nombre.
+
+    - Tabla `users` (con el nombre que sea) podría estar en una DB distinta al resto de las tablas.
+
+  - MariaDB / MySQL
+
+  - Nginx / Apache
+
+  - PHP versiones 5.6, 7.0, 7.1, 7.2, 7.3 (branches)
+
+- Preparar contenedor docker con Nginx. Desventaja: requiere Docker. 
+
+
+[ VERSIONADO ]
+
+  {major_ver}.{minor_ver}.{patch}
+
+  - Bump the value of X when breaking the existing API.
+  - Bump the value of Y when implementing new features in a backward-compatible way.
+  - Bump the value of Z when fixing bugs.
+
+  Incluir release date:
+
+  Ej: 2.4.1 - release date 20200926
+
+  Incluir Changelog
+
+    2.4.1  
+
+    Release Date - 26 November 2020
+
+    - Fixed....
+    - Updated ....
+
+       
+
+Más 
+https://semver.org/
+https://www.geeksforgeeks.org/introduction-semantic-versioning/
+https://www.elegantthemes.com/blog/wordpress/semantic-versioning
+https://en.wikipedia.org/wiki/Software_release_life_cycle
+
+
+[ MODELO ]
+
+- Terminar auto-joins generando schemas
+
+- Hacer auto-joins a tablas distantes usando mapa
+
+  A-F     A-B-C-D-E-F
+  A-R     A-S-R
+  etc
+  <incluir todas las posibilidades y ordenarlas>
+
+
+- JOINs a base de datos disntintas? JOIN db2.products ?
+
+Si se puede:
+
+  SELECT <...>
+  FROM A.table1 t1 JOIN B.table2 t2 ON t2.column2 = t1.column1;
+
+https://stackoverflow.com/a/5698396
+
+
+- Aceptar que created_at, deleted_at y updated_at (con el nombre que sea) pueda ser también TIMESTAMP
+
+- Implementar INSERTs "tipo-ORM" procesando arrays de arrays en transacción:
+
+  DB::table('users')
+  ->create([
+            'username' => $username
+            'email'=>$email, 
+            'password'=>$password, 
+            'firstname'=>$firstname, 
+            'lastname'=>$lastname,
+            'user_roles' => [
+                'role_id' => 3
+            ]
+  ]);
+
+ // INSERT INTO users (username, email, password, firstname, lastname) VALUES ('pepeeeeee', 'pepeee@gmail.com', '<hashed>', 'Pepe', 'Gonazalez');
+_
+ // INSERT INTO user_roles (role_id, user_id) VALUES (3, $user_id);
+
+
+También debería ser posible hacer:
+          
+DB::table('users')
+->join('roles')
+->create(['email'=>$email, 
+          'password'=>$password, 
+          'firstname'=>$firstname, 
+          'lastname'=>$lastname,
+          'user_roles' => [
+              'name' => 'regular'
+          ]
+]);
+
+
+ // INSERT INTO users (username, email, password, firstname, lastname) VALUES ('pepeeeeee', 'pepeee@gmail.com', '<hashed>', 'Pepe', 'Gonazalez');
+_
+ // INSERT INTO user_roles (role_id, user_id) 
+ // SELECT role_id, $user_id FROM roles INNER JOIN user_roles ON user_roles.role_id = roles.id WHERE name = 'regular';
+
+
+<-- revisar. NO está bien escrito
+
+INSERT INTO Table1 (Field1, Field2)
+SELECT a.Field1, b.Field2
+FROM TableA a 
+INNER JOIN TableB b ON a.ID = b.ID
+
+Más
+https://stackoverflow.com/questions/44469503/sql-insert-into-with-inner-join
+
+
+- Para lidiar con la contrucción de APIs sobre tablas con "PK compuestas" o "múltiples" crear un campo virtual "id" o "id_nombre_tabla" 
+
+  - Reconocer el PK compuesto en el schema como un array
+
+  - Crear un campo virtual 'id' 
+
+
+Intentar con az.students
+
+
+[ API ]
+
+- Agregar ?filter de JSON:API en principio manteniendo compatibilidad con su no-uso
+
+  GET /comments?filter[post]=1 HTTP/1.1
+
+Multiple filter values can be combined in a comma-separated list. For example:
+
+  GET /comments?filter[post]=1,2 HTTP/1.1
+
+Furthermore, multiple filters can be applied to a single request:
+
+  GET /comments?filter[post]=1,2&filter[author]=12 HTTP/1.1
+
+
+https://jsonapi.org/recommendations
+https://laravel-json-api.readthedocs.io/en/latest/fetching/filtering/
+
+
+- Incluir links:
+
+https://jsonapi.org/recommendations/#including-links
+
+
+- Hacer que el "method override" sea también por headers:
+
+X-HTTP-Method-Override
+
+https://jsonapi.org/recommendations/#patchless-clients
+
+
+- Hacer que el lenguaje se pueda elegir via headers !
+
+- Leer todas las recommendations
+
+https://jsonapi.org/recommendations
+
+
+- Implementar opcionalmente "cursor pagination"
+
+https://jsonapi.org/profiles/ethanresnick/cursor-pagination/
+https://jsonapi.org/format/#fetching-pagination
+
+- Meditar si implementar la forma de crear recursos como en JSON:API
+
+POST /photos HTTP/1.1
+Content-Type: application/vnd.api+json
+Accept: application/vnd.api+json
+
+{
+  "data": {  <--- "data" es obligatorio
+    "type": "photos",  
+    "attributes": {
+      "title": "Ember Hamster",
+      "src": "http://example.com/images/productivity.png"
+    },
+    "relationships": {
+      "photographer": {  <----------------------- incluye sub-recursos. 
+        "data": { "type": "people", "id": "9" }  
+      }
+    }
+  }
+}
+
+<-- parece pensado para trabajar con un ORM.
+
+https://jsonapi.org/format/#crud  !!!!!!!!!
+
+
+- Implementar withoutWrapping para poder quitar la key "data" como requerimiento en la respuesta y en los requests.
+
+https://laravel.su/docs/8.x/eloquent-resources  !
+
+
+- Securitizar el tenant haciendo de mínima un hash sobre el id de conexión. <-- evitar que sea solo elegir que conexión usar (sin control alguno)
+
+- Sería ideal que los modelos pudieran cargarse desde "cualquier ubicación" lo que permitiría:
+
+  - Que cada versión de API tenga su namespace de modelos
+  - Que distintos endpoints usen distintas DBs
+
+- Exteneder Response y Request y colocar las clases extendidas donde se puedan versionar.  
+
+
+- JSON + CORS vs. JSONP (hack) vs. JSON (sin CORS) usando al server que sirve la API como proxy para acceder a otras APIs
+
+JSON + CORS
+JSONP (es un back)
+JSON usando a la API como proxy server
+XML + CORS
+XML usando a la API como proxy server
+
+
+https://www.youtube.com/watch?v=stvCHJZq5MI
+https://www.web-technology-experts-notes.in/2013/07/difference-between-json-and-jsonp.html
+https://woocommerce.github.io/woocommerce-rest-api-docs/#requirements
+https://www.programmableweb.com/news/258-jsonp-apis-get-your-json-response-anywhere/2011/10/07
+
+
+- Cookies "Http Only"
+
+  - Se guardan en el browser y JS no puede leerlo en browsers modernos.
+  
+  "An http-only cookie cannot be accessed by client-side APIs, such as JavaScript. This restriction eliminates the threat of cookie theft via cross-site scripting (XSS). However, the cookie remains vulnerable to cross-site tracing (XST) and cross-site request forgery (CSRF) attacks. A cookie is given this characteristic by adding the HttpOnly flag to the cookie." 
+
+  https://en.wikipedia.org/wiki/HTTP_cookie#HttpOnly_cookie
+
+  - Desde PHP se puede marcar con el flag "http-only" de varias formas:
+
+    - Desde el web server: en Apache via .htaccess
+
+      <IfModule php5_module>
+        php_flag session.cookie_httponly on
+      </IfModule>
+
+    - Via php.ini
+
+      session.cookie_httponly=On
+      session.cookie_secure=On
+
+    - Antes de session_start() seteando session.cookie_httponly en 1
+
+      ini_set('session.cookie_httponly',1);
+      ini_set('session.use_only_cookies',1);
+      ini_set('session.cookie_secure', 1);
+
+    - Con setcookie() pasando true en el 7mo parámetro
+
+      //None HttpOnly cookie:
+      setcookie("abc", "test", NULL, NULL, NULL, NULL, FALSE); 
+
+      //HttpOnly cookie:
+      setcookie("abc", "test", NULL, NULL, NULL, NULL, TRUE); 
+        
+    - Via header()
+
+      header("Set-Cookie: hidden=value; httpOnly");
+
+    o 
+
+      header("Set-Cookie: key=value; path=/; domain=www.tutorialshore.com; HttpOnly; Secure; SameSite=Strict");
+
+
+Notar que las cookies tienen este órden de parámetros:
+
+  key-value;expiration_date;path;domain;
+
+<-- path podría ser /api
+
+https://www.tutorialshore.com/make-cookie-secure-httponly-php/
+https://stackoverflow.com/questions/36877/how-do-you-set-up-use-httponly-cookies-in-php#8726269
+https://www.sitepoint.com/eat-those-cookies-with-jquery/
+https://www.sitepoint.com/how-to-deal-with-cookies-in-javascript/
+https://github.com/js-cookie/js-cookie
+
+
+Las cookies se envian automáticamente..... así que supongo que en la cookie http-only debería enviar tanto access como refresh tokens......porque no voya poder elegir cual envio EXCEPTO que sean dos cookies distintas con expiraciones distintas... con lo cual la que expira (digamos access_token) ya no se envia!
+
+https://stackoverflow.com/a/39833955/980631
+
+
+- En las migraciones asegurarse que es posible mover un campo de lugar
+
+ALTER TABLE divisas MODIFY COLUMN ISO VARCHAR(10) AFTER id
+
+
+- Benchmarking Tool: wrk
+
+- Para manejar concurrencia:
+
+    - Usar el módulo php-fpm de Apache o fpm de Nginx
+    - Usar "colas" 
+    - Usar "Swoole"  !!!!!!!!!
+
+"Swoole is a production-grade async programming framework for PHP. It is a PHP extension written in pure C language, which enables PHP developers to write high-performance, scalable, concurrent TCP, UDP, Unix socket, HTTP, WebSocket services in PHP without too much knowledge of the non-blocking I/O programming and low-level Linux kernel. You can think of Swoole as something like NodeJS but for PHP, with higher performance."
+    
+https://laravel-news.com/laravel-swoole
+
+
+- Leer sobre gRPC (lo que viene)
+
+"A formal specification for HTTP API with JSON doesn't exist. Developers debate the best format of URLs, HTTP verbs, and response codes.
+
+The gRPC specification is prescriptive about the format a gRPC service must follow. gRPC eliminates debate and saves developer time because gRPC is consistent across platforms and implementations."
+
+"The communication between the microservices over HTTP can be done in multiple ways. The most widely used way is to follow the REST protocol. gRPC is another way to perform this communication. It is built to overcome the limitations of REST in microservice communication."
+
+https://en.wikipedia.org/wiki/GRPC
+https://docs.microsoft.com/en-us/aspnet/core/grpc/comparison?view=aspnetcore-5.0
+https://medium.com/@saboteurkid/apis-solution-debate-rest-vs-grpc-vs-graphql-d9c25e44d6
+https://medium.com/better-programming/understanding-grpc-60737b23e79e
+https://www.gslab.com/blogs/grpc-vs-rest-a-complete-guide
+
+
+- Reemplazar clases Resonse y Request por http_foundation
+
+https://symfony.com/doc/current/create_framework/http_foundation.html
+https://symfony.com/doc/current/components/http_foundation.html
+
+
+- Más adelante migrar a Rust en vez de a Go para APIs
+
+https://blog.discord.com/why-discord-is-switching-from-go-to-rust-a190bbca2b1f
+
+
+
+- Implementar (sin apuro) "Contenedor de dependencias inversas" 
+
+  <?php
+
+  class Service
+  {
+      //
+  }
+
+  Route::get('/', function (Service $service) {
+      die(get_class($service));
+  });
+
+In this example, hitting your application's / route will automatically resolve the Service class and inject it into your route's handler. This is game changing. It means you can develop your application and take advantage of dependency injection without worrying about bloated configuration files.
+
+
+  use Illuminate\Http\Request;
+
+  Route::get('/', function (Request $request) {
+      // ...
+  });
+
+
+"There is no need to bind classes into the container if they do not depend on any interfaces"
+
+"it can automatically resolve these objects using reflection."
+
+
+http://fabien.potencier.org/do-you-need-a-dependency-injection-container.html
+https://laravel.com/docs/8.x/container#binding-basics
+https://stackify.com/dependency-injection/
+https://www.sitepoint.com/how-to-build-your-own-dependency-injection-container/
+
+
+- Migraciones en el ServiceProvider (es sencillo, solo hacen un up)
+
+- FacebookConnect y GoogleConnect deben ser ServiceProviders (que deberían implementar la interfaz del ACL con el fin de poder desacoplarlos)
+
+- Ensayar con Apache y Nginx como correr SimpleRest como carpeta, ej: /api dentro de un proyecto en PHP como alternativa a meter la API en un subdominio
+
+Posibilidades para ofrecer APIs:
+
+  - Como carpeta /api lo cual implicaría:
+
+    1. Que usen MySQL / SQLite o Postgres (aunque tengo soporte limitado)
+    2. Que no usen SPs
+    3. Que el proyecto esté en PHP?  
+    4. Configurar el .htaccess de Apache o su equivalente
+    5. Poder ajustarse a su tabla users con distinto nombre de campos.
+
+  - Como subdominio: podría estar en otro lenguaje pero implica configurarlo.
+
+  - Usando microservicios
+
+
+- Podrian usarse constantes en el modelo para created_at, etc
+
+  const CREATED_AT = 'created_at';
+  const UPDATED_AT = 'updated_at';
+  etc
+  
+Desde el ApiController se accderían como:
+
+  $this->instance::CREATED_AT 
+  etc
+
+
+- El modelo de usuarios (aka: UserModel) debe contener las constantes:
+
+  const USERNAME = 'username';
+  const EMAIL    = 'email';
+  const PASSWORD = 'password';
+  const ACTIVE   = 'active';
+
+- (ver de) reemplazar $soft_delete por una constante:
+
+  static protected $soft_delete = true;
+
+a..
+
+  const $soft_delete = true;
+
+- Reemplazar inSchema : en vez de instanciar el modelo para luego tener que instanciar el Schema correspondiente, tener un schema con solo propiedades estáticas y accederlo directamente saltando al modelo.
+
+  Antes:    $books_reviews->inSchema(['campo'])
+  Debe ser: in_array('campo', simplerest\models\schemas\BookReviewsSchema::attr)
+
+  O mejor con un helper
+
+    hasAtrr('books_reviews', 'campo')
+
+Claramente lo siguiente debe dejarse de hacer:
+
+    use simplerest\models\schemas\BooksSchema;                  
+
+    class BooksModel extends Model
+    { 
+      protected $hidden   = [];
+      protected $not_fillable = [];
+
+        function __construct(bool $connect = false){
+            parent::__construct($connect, new BooksSchema());   <--- no más
+      }	
+    }
+
+
+Para saber que esquemas hay disponibles crear un "libro de schemas" que se debe actualizar con cada "make schema".
+
+
+- Resolver incocistencia con /rememberme ya que en algún caso almacena el nombre del rol y en otros el id del rol en el payload del JWT lo que hace que se rompa el ACL 

@@ -7,7 +7,6 @@ Algunas características:
 
 - Arquitectura MVC 
 - APIs funcionan out--of-the-box o sea sin escribir nada de código ***
-- Autenticación via web tokens al estilo OAuth 2 y API Keys
 - ACL centralizado con sistema de roles y de permisos personalizados que decoran los roles
 - Posibilidad de "compartir" recursos via "folders"
 - Impersonate
@@ -15,13 +14,6 @@ Algunas características:
 - Colecciones para acciones masivas
 - Versionado
 - Internacionalización
-- Query Builder
-- Migrations
-- Multitenant support
-- Service Providers
-- Validator y auto-validaciones en los modelos
-- WebHooks
-
 
 (*) A pesar de ser un framework orientado a API Rest es posible servir vistas aunque no posee un motor de plantillas. Es posible que esta característica sea removida en futuras versiones.
 
@@ -158,11 +150,18 @@ Se devuelve un JSON como el siguiente:
     "error_detail": ""
 }
 
-
 # Verficación de correo
 
 Es solo seguir el enlace provisto al momento de registrarse o .........
 
+# Cambiar / establecer contraseña
+
+	POST /api/v1/auth/change_pass
+
+	{
+		"username": "xxxx",
+		"password" : "zzzz"
+	}
 
 # Recordar contraseña
 
@@ -225,11 +224,9 @@ Se devolverá un nuevo acccess token en un JSON como este:
 
 # Impersonate
 
-Es posible asumir la identidad de otro usuario o bien un rol en particular -solo uno a la vez-. 
+Es posible asumir la identidad de otro usuario o bien un rol en particular -solo uno a la vez-
 
-Esta característica solo está disponible con autenticación via Web Tokens y no otras como API KEY ***
-
-POST /api/v1/auth/impersonate que recibe un *refresh_token* de un admin (usuario con permiso 'impersonate') y en el body:
+POST /api/v1/auth/impersonate que recibe un refresh_token de un Admin y en el body:
 
 	{ 
 		"uid" : "90"  
@@ -379,55 +376,6 @@ Las urls comienzan *sin* /api si en /config/config.php
 	'REMOVE_API_SLUG' => true
 
 
-### La clase Config
-
-Para usar la utilería Config debe hacerse a través de Factory para acceder a la misma instancia:
-
-# Obtener instancia única:
-
-	Factory::config()
-
-
-# Introducir y leer datos (de forma no-persistente)
-
-Se puede escribir mediante el método set() y leer con get() o bien acceder como array ya que se implementa la interfaz ArrayAccess:
-
-	Factory::config()['xxx'] = 'zzz';
-    dd(Factory::config()['xxx']);  // 'zzz'
-
-o
-	
-	Factory::config()->set('xxx','zzz');
-	dd(Factory::config()->get('xxx'));  // 'zzz' 
-
-o
-
-	Factory::config()->set('xxx','zzz');
-	dd(Factory::config()['xxx']);  // 'zzz'   
-
-
-### Autenticación
-
-El framework soporta dos tipos de autenticación, una basada en web tokens y otra en API Keys para backend-to-backend 
-
-Para API KEYs, se deben generar las apis para los usuarios (una por usuario) e insertarlas en la tabla api_keys.
-
-Hay dos formas de pasar la API KEY
-
-1) Via url agregando el parámetro api_key
-
-Ej:
-
-	GET /api/v1/some_resource?api_key=8ZfTPJB3VeCAAkea HTTP/1.1
-
-2) Via header X-API-KEY 
-
-	GET /api/v1/some_resource HTTP/1.1
-	X-API-KEY: 8ZfTPJB3VeCAAkea
-
-Más
-https://swagger.io/docs/specification/authentication/api-keys/
-
 ### Controlador
 
 Para demostrar como ejecutar un controlador desde la linea de comandos ejemplificaremos con un simple controlador ubicado en la carpeta controllers:
@@ -487,7 +435,7 @@ El Router tiene la enorme ventaja de permitir filtrar los requests por su verbo 
 	});
 
 
-El router se habilitan desde el archivo config/config.php y se configura desde /config/routes.php
+El router se habilitan desde el archivo config/config.php y se configura desde /config/route.php
 
 
 ### Resource Controller:
@@ -540,6 +488,21 @@ Cada modelo es definido en una clase en /app/models que extiende a Model y donde
 
 Un modelo extendiende a la clase Model que les provee toda la funcionalidad y acepta un schema. Tanto modelos como schemas pueden ser generados por el comando "make".
 
+Los campos que pueden ser rellenados al hacer un INSERT o un UPDATE pueden especificarse dentro del array $fillable. 
+
+Un campo que no sea "fillable" aún puede rellenarse si desde el controlador se incluye el campo en un array de exceptuados usando la función fill()
+
+Ej:
+
+Supongamos que el campo confirmed_email no es fillable, entonces para hacerlo fillable desde un controlador:
+
+	$u = DB::table('users')
+	->fill(['confirmed_email'])
+	// ...
+	->where(['email', $payload->email])
+	->update(['confirmed_email' => 1]);
+
+
 Hay básicamente 3 formas de usar un Model:
 
 a) Instanciando directamente Model en cuyo caso *no* dispondríamos de un schema a menos que se lo inyectemos:
@@ -549,7 +512,7 @@ a) Instanciando directamente Model en cuyo caso *no* dispondríamos de un schema
 		->select(['id', 'name', 'size'])
 		->where(['cost', 150, '>=']);
 
-	dd($m->get());
+	Debug::dd($m->get());
 
 	Ventajas: 
 
@@ -567,7 +530,7 @@ b) Instanciando una clase Model derivada
 		->select(['id', 'name', 'size'])
 		->where(['cost', 150, '>=']);
 
-	dd($m->get());
+	Debug::dd($m->get());
 
 	Ventajas: 
 
@@ -581,7 +544,7 @@ c) Usando la clase DB para obtener la instancia
 		->select(['id', 'name', 'size'])
 		->where(['cost', 150, '>=']);
     
-	dd($m->get());
+	Debug::dd($m->get());
     
 	Ventajas:
 
@@ -593,426 +556,13 @@ c) Usando la clase DB para obtener la instancia
 	- Obtiene una conexión a la base de datos aún antes de hacer cualquier tipo de validación.
 
 
-# Inserción de registros
-
-El método create() acepta un array asociativo de campos con sus valores y hace el INSERT
-
-	$m = DB::table('super_cool_table'
-	->create([
-		'name' => 'SUPER',
-		'age' => 22,
-	]);
-
-
-# Obtención de registros
-
-	$rows = DB::table('products')
-	->get();
-
-Para filtrar usar where()
-
-	$rows = DB::table('products')
-	->where(['size' => '2L']);
-
-
-Comparar dos campos en el WHERE
-
-	$m = (DB::table('users'))
-	->whereColumn('firstname', 'lastname', '=');  
-
-	dd($m->get()); 
-
-
-# Ocultar y des-ocultar campos
-
-Si existe el modelo y el schema correspondiente para una tabla se pueden suprimir campos:
-
-	class UsersModel extends Model
-	 { 	
-		protected $hidden   = [	'password' ];
-
-		// ...
-
-En este caso password será por defecto suprimido cuando no haya un SELECT o sea cuando sea un SELECT *
-
-Es posible ocultar o desocultar campos programáticamente siempre que se utilice select() o selectRaw() en la consulta:
-
-	$u = DB::table('users');
-    $u->unhide(['password']);
-    $u->hide(['confirmed_email']);
-    $u->where(['id'=>$id]);
-
-    dd($u->get());
-
-
-Si se desea des-ocultar cualquier campo oculto se dispone del método unhideAll()
-
-	$rows = DB::table('users')
-    ->crossJoin('products')
-    ->where(['users.id', 90])
-    ->unhideAll()
-    ->get();
-
-
-# Campos no rellenables 
-
-Del mismo modo que como ocurre con los campos ocultos hay campos que son no-fillables:
-
-	class UsersModel extends Model
-	 { 	
-		protected $hidden   = [	'password' ];
-		protected $not_fillable = ['confirmed_email', 'active'];
-
-		// ...
-
-
-Igualmente hay métodos para programáticamente hacer rellenables o no-rellenables ciertos campos:
-
-	$u = DB::table('users');
-    $u->fill(['email']);
-    $u->unfill(['password']);
-    $id = $u->create([
-    				'email'=>$email, 
-    				'password'=>$password, 
-    				'firstname'=>$firstname, 
-    				'lastname'=>$lastname
-    ]);
-    
-
-
-Borrado "suave"
-
-Si una tabla y su schema dispone de un campo "deleted_at" de tipo DATETIME, al hacer un delete() el registro no es borrado fisicamente sino solo se oculta de los resultados:
-
-	DB::table('products')
-	->where(['id' => $id])
-	->get());
-
-	// SELECT * FROM products WHERE id = $id AND deleted_at IS NULL
-
-En caso de querer des-ocultar registros borrados para que sean visualizados en una consulta usar showDeleted()
-
-	DB::table('products')
-	->where(['id' => $id])
-	->showDeleted()
-	->get());
-
-	// SELECT * FROM products WHERE id = $id 
-
-Si se desea que al momento de borrar el campo se elimine de forma definitiva user ->setSoftDelete(false)
-
-	$u = DB::table('users')
-	->find($id)
-	->setSoftDelete(false)
-	->delete();  
-
-
-Joins
-
-Un INNER JOIN se hace de la siguiente manera:
-
-	$instance->join('table2', 'table2.id', '=',  'table1._id');
-
-El operador puede ser =, >, <, >= o <=
-
-Ej:
-
-	$m = DB::table('products')
-    ->join('products_product_categories', 'products.id', '=',  'products_product_categories.product_id')
-    ->join('product_comments', 'products.id', '=', 'product_comments.product_id');
-
-    dd($m->get());  
-     
-
-Los joins pueden simplificarse como auto-joins de haber un schema para el modelo:
-
-	$m = DB::table('products')
-    ->join('products_product_categories')
-    ->join('product_comments');
-
-    dd($m->get()); 
-
-En el caso de que se desee unir a una tabla con otra mediante más de una FK se haría así:
-
-	$m = DB::table('books')
-	->join('book_reviews', 'book_reviews.book_id', '=',  'books.id')
-	->join('users as authors', 'authors.id', '=', 'books.author_id')
-	->join('users as editors', 'editors.id', '=', 'books.editor_id');
-
-
-Y escrito como auto-joins:
-
-	$m = DB::table('books')
-    ->join('book_reviews')
-    ->join('users as authors')
-    ->join('users as editors');
-
-    dd($m->get()); 
-
-
-Left y Right joins
-
-Ej:
-
-	$users = DB::table('users')->select([
-	    "users.id",
-	    "users.name",
-	    "users.email",
-	    "countries.name as country_name"
-	])
-	->leftJoin("countries", "countries.id", "=", "users.country_id")
-	->get();
-
-Cross y natural joins
-
-	$rows = DB::table('users')
-    ->crossJoin('products')
-    ->where(['users.id', 90])
-    ->unhideAll()
-    ->showDeleted()
-    ->get();
-
-	$rows = (new Model())->table('employee')
-    ->naturalJoin('department')
-    ->unhideAll()
-    ->showDeleted()
-    ->get();
-
-
-Grupos
-
-Para colocar paréntesis en el WHERE del SQL resultante usando el Query Builder existen los "grupos" implementados con el método group()
-
-Ej:
-
-	DB::table('xxxx')
-	->group(function($q){
-		$q->where(condA)
-		->orWhere(condB)
-	})
-	->where(condC);
-
-
-Lo anterior en el WHERE de arma algo como
-
-	WHERE (A OR B) AND C
-
-
-Veamos otro ejemplo:
-
-	DB::table('xxxx')
-	->where(condC)
-	->group(function($q){
-		$q->where(condA)
-		->orWhere(condB)
-	});
-
-Lo anterior equivale a tener en el WHERE algo como
-
-	WHERE C AND (A OR B)
-
-
-La diferencia es que en último caso se está suponiendo que el operador que queremos usar para conectar el grupo con la primera condición (C) es un 'AND' pero podría no ser el caso por lo que se dispone de grupos especiales llamados "conectores" donde se explicita el operador de la conjunción:
-
-Conectores:
-
-	and()
-	or()
-	andNot()
-	orNot()
-
-Ej:
-	A OR (B AND C)
-
-
-En pseudo-código (ver como se usa la función where) sería algo así:	
-
-	DB::table('xxxx')
-	->where(condA)
-	->or(function($q){
-		$q->where(condB)
-		->where(condC);
-	})
-
-o ..
-
-	DB::table('xxxx')
-	->where(condA)
-	->or(function($q){
-		$q->where([
-			condB,
-			condC
-		]);
-	})
-
-
-Es importante tener en cuenta que se abren paréntesis hacia el lado derecho solamente con lo cual,
-
-	DB::table('xxxx')
-	->where(condA)
-	->where(condB)
-	->or(function($q){
-		$q->where([
-			condC
-		]);
-	})
-
-
-Genera en SQL una expresión del tipo "A AND B OR C" y *no* "(A AND B) OR C". En caso de estar buscándo lo anterior podría hacerse de la siguiente manera:
-
-	DB::table('xxxx')
-	->where([
-			condA,
-			condB
-	])
-	->or(function($q){
-		$q->where([
-			condC
-		]);
-	})
-
-Otra opción, más general, es usar un grupo también para "agrupar" las condiciones A y B
-
-	DB::table('xxxx')
-	->group(function($q){
-		$q->where(condA)
-		$q->where(condB);
-	])
-	->or(function($q){
-		$q->where([
-			condC
-		]);
-	})
-
-
-Ejemplo funcional de operadores OR / AND anidados en WHERE con group()
-
-	$m = DB::table('products')
-
-	->group(function($q){  
-		$q->where([
-			['cost', 100, '>'],
-			['id', 50, '<']
-		]) 
-		// OR
-		->orWhere([
-			['cost', 100, '<='],
-			['description', NULL, 'IS NOT']
-		]);  
-	})
-	// AND
-	->where(['belongs_to', 150, '>'])
-	
-	->select(['id', 'cost', 'size', 'description', 'belongs_to']);
-
-	dd($m->get()); 
-
-
-Los grupos / conectores aplican también a having() y havingRaw()
-
-Ej:
-
-	DB::table('products')->showDeleted()
-
-	->groupBy(['cost', 'size', 'belongs_to'])
-	->having(['cost', 100, '>='])
-	->or(function($q){
-		$q->havingRaw('SUM(cost) > ?', [500])
-		->having(['size' => '1L']);
-	})
-	->orderBy(['size' => 'DESC'])
-	->get(['cost', 'size', 'belongs_to']); 
-
-
-Transacciones
-
-	DB::beginTransaction();
-
-	try {
-		$name = '';
-		for ($i=0;$i<20;$i++)
-			$name .= chr(rand(97,122));
-
-		$id = DB::table('products')->create([ 
-			'name' => $name, 
-			'description' => 'bla bla bla', 
-			'size' => rand(1,5).'L',
-			'cost' => rand(0,500),
-			'belongs_to' => 90
-		]);   
-
-		//throw new \Exception("AAA"); 
-
-		DB::commit();
-
-	} catch (\Exception $e) {
-		DB::rollback();
-		throw $e;
-	} catch (\Throwable $e) {
-		DB::rollback();            
-	}            
-
-Otra forma de realizar transacciones es usando una función anómima con transaction()
-
-	DB::transaction(function(){
-		$name = '';
-		for ($i=0;$i<20;$i++)
-			$name .= chr(rand(97,122));
-
-		$id = DB::table('products')->create([ 
-			'name' => $name, 
-			'description' => 'Esto es una prueba', 
-			'size' => rand(1,5).'L',
-			'cost' => rand(0,500),
-			'belongs_to' => 90
-		]);   
-
-		throw new \Exception("AAA"); 
-	});     
-
-
-Output mutators
-
-	$rows = DB::table('users')
-	->registerOutputMutator('username', function($str){ return strtoupper($str); })
-	->get();
-
-Transformers 
-
-	$t = new UsersTransformer();
-
-	$rows = DB::table('users')
-	->registerTransformer($t, $this)
-	->get();
-
-otro ejemplo:
-
-	$t = new \simplerest\transformers\ProductsTransformer();
-
-	$rows = DB::table('products')
-	->where(['size'=>'2L'])
-	// ...
-	->registerTransformer($t)
-	->get();
-
-Son combinables transformers con output mutators:
-
-	$t = new \simplerest\transformers\UsersTransformer();
-
-	$rows = DB::table('users')
-	->registerOutputMutator('username', function($str){ return strtoupper($str); })
-	->registerTransformer($t)
-	->get();
-
-
-
 # Fetch modes 
 
 Los modos de obtención de datos pueden setearse  en cualquera de los casos mediante el método setFetchMode() antes de llamar a un método final como get(), first(), min(), avg(), etc 
 
 Ej:
 
-	dd((new BarModel())
+	Debug::dd((new BarModel())
 	->connect()
 	->setFetchMode('ASSOC')
 	->get());
@@ -1050,7 +600,7 @@ Resultado:
 
 El problema del método dd() es que no funciona si en su lugar hay una función get() parametrizada -en vez de usar select()- o bien una función agregativa comon min(), max(), count(), sum() y avg() 
 
-Otra función de debug más general es DB::getLog()
+Otra función de debug más general es DB::getQueryLog()
 
 Ejemplo:
 
@@ -1058,7 +608,7 @@ Ejemplo:
 		->where([ 'belongs_to'=> 90] )
 		->count('*', 'count');
 
-	dd(DB::getLog());
+	Debug::dd(DB::getQueryLog());
 
 Otra función de debug que puede utilizarse es getLastPrecompiledQuery() y devuelve el último query antes de ser bindeado con los parámetros.
 
@@ -1077,7 +627,7 @@ Ejemplo:
 	->orderBy(['id' => 'ASC'])
 	->get();
 
-	dd($m2->getLastPrecompiledQuery());
+	Debug::dd($m2->getLastPrecompiledQuery());
 
 En cualquier caso es posible realizar un debug sin ejecutar la consulta con el método dontExec()
 
@@ -1091,13 +641,13 @@ Ejemplo:
 		->selectRaw('AVG(cost)')
 		->get();
 		
-	dd(DB::getLog()); 
+	Debug::dd(DB::getQueryLog()); 
 	
 Como si fueran pocas funciones de debug existe el método getLog()
 
 	$model = new \simplerest\core\Model($conn);
 	$res = $model->create(['name' => 'Jhon', 'age' => 32]);
-	dd($model->getLog());
+	Debug::dd($model->getLog());
 	
 
 #### Campos manejados por el framework
@@ -1161,7 +711,56 @@ El método registerInputMutator() acepta 3 parámetros:
 - Un callback que transforma el dato de entrada 
 - Un callback (opcional) que determina en que caso se debe aplicar la función de entrada y que es alimentada con el tipo de operación ('UPDATE' o 'CREATE') y el dato de entrada. En caso de omitirse aplica siempre el mutator para ese campo.
 
-El procedimiento es registrar los mutators para cada campo del modelo que los requiera. Otro uso de input mutators es para utilizar UUIDs donde dentro de un Trait podemos tener la funcionalidad de generar el uuid:
+El procedimiento es registrar los mutators para cada campo del modelo que los requiera. 
+
+Es importante notar que un InputMutator no puede modificar el tipo de dato que se espera recibir de acuerdo a su definición en el schema. Lo siguiente *no* funcionará:
+
+	$this->registerInputMutator('operations', function($val){ 
+		$ret = 0;
+		
+		if (!is_array($val)){
+			return $val;
+		}
+
+		foreach ($val as $v){
+			switch ($v){
+				case 'show':
+					$ret += 8;
+				break;
+				case 'create':
+					$ret += 4;
+				break;	
+				case 'update':
+					$ret += 2;
+				break;	
+				case 'delete':
+					$ret += 1;
+				break;	
+			}
+		}
+		
+		return $ret;			
+	});
+
+
+<-- En este caso el campo 'operations' es de tipo entero (Int) con lo cual al momento de procesar los datos en el ApiController se espera recibir un entero y sino lo es veremos un error en la validación:
+
+	{
+	    "status_code": 400,
+	    "error": "Data validation error",
+	    "error_detail": {
+	        "operations": [
+	            {
+	                "data": 10,
+	                "error": "type",
+	                "error_detail": "It's not a valid str"
+	            }
+	        ]
+	    }
+	}
+
+
+Otro uso de input mutators es para utilizar UUIDs donde dentro de un Trait podemos tener la funcionalidad de generar el uuid:
 
 	namespace simplerest\traits;
 
@@ -1280,7 +879,7 @@ Y ahora en un Controller paso $this como segundo parámetro a registerTransforme
 	->registerTransformer($t, $this)
 	->get();
 
-	dd($rows);
+	Debug::dd($rows);
 
 En el ejemplo si el controller tiene un campo is_admin (como sucede con los resource controllers en SimpleRest) entonces según el valor mostrará o no el password.
  
@@ -1293,7 +892,7 @@ Mutators y transformers pueden usarse juntos, ej:
 	->registerTransformer($t)
 	->get();
 
-	dd($rows);
+	Debug::dd($rows);
 
 Nota: de momento los Transformers se han probado desde Controllers y no desde las APIs <-- quizás sea posible usarlos de alguna forma si surge una necesidad real.
 
@@ -1358,7 +957,7 @@ Otro uso práctico de event hooks es para ocultar registros basados en cierta co
 
 Desde cualquier hook del modelo es posible acceder a propiedades útiles como $w_vars y $w_vals -entre otras- con las que es posible reconstruir el where.
 
-En el caso de Laravel, también se incluyen los eventos onRestoring() y onRestored() para cuando existe un soft-delete
+PD: Laravel también incluye los eventos onRestoring() y onRestored() para cuando existe un soft-delete
 
 
 Las APIs que extienden a ApiController también tienen varios event hooks
@@ -1377,60 +976,6 @@ Las APIs que extienden a ApiController también tienen varios event hooks
 
 
 Existen otros hooks en en ApiController relacionados con el acceso a folders.
-
-
-# Webhooks
-
-Las APIs reversas o webhooks son un mecanismo que evita tener que andar preguntando a un endpoint si un registro fue creado o actualizado. SimpleRest permite crearlos de forma muy sencilla.
-
-Los webhooks se crean via POST como cualquier otro recurso:
-
-	POST /api/v1/hooks 
-
-	{
-		"name": "musk-cryptos", <nullable>
-		"entity": "twitts",
-		"op": "create"			
-		"conditions": "account=eleonmusk&body[containsWord]=BTC,bitcoin,doge,crypto"
-		"callback": "http://hexagon-alerts.lan/feed-reaction"
-	} 
-
-Existen 5 tipos de eventos u "operaciones" a las que reacciona un webhook: "create", "show", "list", "update" y "delete"
-
-Las condiciones son opcionales pero sino las hay entonces se disparará el evento de forma incondicional cada vez que se cree, muestre, liste, actualice o borre un registro.
-
-El webhook se ejecuta *después* de la operación u evento así que si el registro fue borrado físicamente (no hay softdelete) no habrá forma de chequear la condición si se hubiera especificado y tampoco de devolver el registro. 
-
-Para el evento de listado no se chequea por condiciones ya que implicaría revisar cada registro y sería muy costoso.
-
-Los valores que se buscan en las condiciones para el caso de un update son los actualizados así por ejemplo si se acutalizó un campo "categoría" se reaccionará al nuevo valor y no al viejo que pudiera contener.
-
-
-El callback apunta a donde es procesador el request (también un POST ya que lleva body) y éste puede ser tan sencillo como:
-
-	    if ($_SERVER['REQUEST_METHOD'] != 'POST'){
-            exit;
-        }
-
-        $body = Factory::request()->getBody(false);
-        Files::logger($body);
-    
-Notar que no se puede hacer un "vardump()" ya que el procesamiento ocurre en background.
-
-Los operadores implementados son los mismos que para el ApiController más alguno adicional:
-
-	'eq', 'gt', 'gteq', 'lteq', 'lt', 'neq', 'in', 'notIn', 'contains', 'notContains', 'startsWith', 'notStartsWith', 'endsWith', 'notEndsWith', 'containsWord', 'notContainsWord', 'between', 'notBetween'
-
-El operador "in" es opcional siendo equivalentes:
-
-	categoria[in]=7,8,22 
-y
-	categoria=7,8,22
-
-Del mismo modo, 'contains', 'notContains' y 'containsWord', 'notContainsWord' aceptan varios valores delimitados por coma. El operador implícito es un OR.
-
-
-
 
 ### Validaciones
 
@@ -1628,7 +1173,7 @@ Es posible utiliza una sintaxis mucho más amigable importando la librería Vali
 
 # ACL
 
-La implementación del ACL incluye "roles" y permisos individuales (llamados también "scopes") para cada usuario sobre cada tabla expuesta a través de la API.
+La implementación del ACL incluye "roles" y permisos individuales para cada usuario sobre cada tabla expuesta a través de la API.
 
 Se está implentando un ACL centralizado que se configurará en /config/acl.php y si bien es muy flexible una forma es la siguiente:
 
@@ -1704,26 +1249,26 @@ El Acl genera algo como:
 	["vendedor"]=>
 	array(3) {
 		["role_id"]=>
-			int(1)
+		int(1)
 		["sp_permissions"]=>
-			array(0) {
-			}
+		array(0) {
+		}
 		["tb_permissions"]=>
-			array(2) {
-			["products"]=>
-			array(2) {
-				[0]=>
-				string(4) "read"
-				[1]=>
-				string(5) "write"
-			}
-			["foo"]=>
-			array(2) {
-				[0]=>
-				string(6) "create"
-				[1]=>
-				string(4) "list"
-			}
+		array(2) {
+		["products"]=>
+		array(2) {
+			[0]=>
+			string(4) "read"
+			[1]=>
+			string(5) "write"
+		}
+		["foo"]=>
+		array(2) {
+			[0]=>
+			string(6) "create"
+			[1]=>
+			string(4) "list"
+		}
 		}
 	}
 	["admin"]=>
@@ -1774,6 +1319,7 @@ El Acl genera algo como:
 		}
 	}
 	}
+
 
 Existen dos tipos de permisos que se pueden asignar a los roles:  "resource permissions" y "special permissions".
 
@@ -1918,35 +1464,6 @@ Para otro usuario:
 
 	<-- estos permisos sobre-escriben los permisos propios de su rol o roles del usuario y tienen prioridad por sobre los permisos especiales.
 
-
-# Scopes
-
-En OAuth se habla de "scopes" como simil a permisos en un sentido más abstracto pero se puede hacer corresponder a los permisos individuales de la siguiente forma:
-	
-	["tb_permissions"]=> {
-		["products"]=> [
-			"read",
-			"write"
-		],
-		["foo"]=> [
-			"read"
-		]
-	}
-
-equivale a 
-
-	products.read
-	products.write
-	foo.read
-
-
-* Los permisos se presentan de forma simple con la notación recurso.operación
-
-* La granulidad de los permisos suele expresarse para operaciones genéricas como "read", "write" y pueden definirse "alias" para ciertas operaciones como "emails.send" para "emails.create"
-
-* El desarrollador no "ve" -puede listar- permisos especiales (lo que no significa que no existan) 
-
-https://www.freecodecamp.org/news/best-practices-for-building-api-keys-97c26eabfea9/
 
 
 ### Folders
@@ -2141,8 +1658,6 @@ Para hacer un "undelete" de un recurso se hace un PATCH o PUT sobre el trash_can
 		"trashed": false
 	}
 
-* por concistencia, se admite que 'entity' sea especificado en headers, en la query de la url o bien en el body en cualquier caso.
-
 Para eliminar *permanentemente* un recurso se realiza un DELETE sobre el elemento en la papelera:
 
 	DELETE /api/v1/trash_can/157
@@ -2160,24 +1675,24 @@ La papelera acepta los mismos filtros y los resultados se pueden ordenar igual q
 
 Para realizar acciones masivas se recomienda crear colecciones. Por ejemplo si quisiera afectar 3 registros:
 
-	POST /api/v1/collections
+POST /api/v1/collections
 
-	{
-		"entity": "products",
-		"refs": [198,199,200]
-	}
+{
+	"entity": "products",
+	"refs": [198,199,200]
+}
 
 Luego si por ejemplo quiero realizar una edición masiva de un campo "enabled" poniéndolo en 1 en toda la colección 
 
-	PATCH /api/v1/collections/2
+PATCH /api/v1/collections/2
 
-	{
-		"cost": "99"
-	}
+{
+    "cost": "99"
+}
 
 Para borrar masivamente
 
-	DELETE /api/v1/collections/9
+DELETE /api/v1/collections/9
 
 Cabe destacar que las operaciones PATCH y DELETE se efectuan sobre los registros contenidos en la colección de sus respectiva entidad o dicho de otro modo un DELETE sobre una colección no borra solo el registro de la colección sino los registros asociados + el registro de la colección.
 
@@ -2193,7 +1708,7 @@ Son seguras las colecciones?
 
 Filtrar colecciones
 
-	GET /api/v1/collections?entity=documents
+GET /api/v1/collections?entity=documents
 
 
 ### Convención de nombres 
@@ -2244,7 +1759,6 @@ Los endpoints se sirven mediante clases que extienden a ApiController, un tipo d
 Un usuario (sin ser Admin pero con los permisos correctos) podría crear otros usuarios y éstos le pertencerán así que podrá visualizarlos o modificarlos a su gusto pero como consecuencia de la implementan del ACL, el campo belongs_to apuntará al "creador" y como consecuencia el propio usuario podría no tener permisos suficientes para mpdificar sus propios datos personales. Este problema se soluciona al utilizar el endpoint /api/v1/me
 
 Otro endpoint adicional es /api/v1/trash_can que corresponde a una papelera de registros y se explica en la sección correspondiente. 
-
 
 # Funcionalidad out-the-box de la API
 
@@ -2461,7 +1975,7 @@ When a record is softly deleted then it can be seen at trash_can where is posibl
         "cost": "230"
     }
 
-# El endpoint /me
+# /me
 
 The simple way to perform CRUD operations on the current user is using /api/v1/me endpoint.
 
@@ -2481,18 +1995,6 @@ The simple way to perform CRUD operations on the current user is using /api/v1/m
         "error": "",
         "error_detail": ""
     }
-
-Si se hace un DELETE sobre /me el usuario sufre un borrado (lógico) pero si se quiere des-activar la cuenta puede usarse PATCH:
-
-Desactivar cuenta
-
-	PATCH /api/v1/me
-
-	{
-		"active": 0
-	}
-
-Ahora al intentar renovar el token o loguearse, se informará que la cuenta está "pendiente de activación".
 
 
 ### Las respuestas de la API
@@ -2565,9 +2067,6 @@ Es posible calcular directamente en la base de datos las funciones min(), max(),
 
 Ejemplos:
 
-GET /api/v1/products?props=count(*)
-GET /api/v1/products?props=count(description)
-GET /api/v1/products?props=sum(cost)
 GET /api/v1/products?size=2L&props=avg(cost)
 GET /api/v1/products?size=2L&props=avg(cost) as prom
 GET /api/v1/products?size=2L&props=sum(cost) as suma
@@ -2692,30 +2191,31 @@ created_by
 
 Para generar modelos, controladores y apis se utiliza el comando make de la siguiente forma: 
 
-	php com make schema SuperAwesome [-f | --force]
-    php com make schema super_awesome  [-f | --force] [ --from:db_connection ]
+	make schema SuperAwesome [-f | --force]
+    make schema super_awesome  [-f | --force]
 
-    php com make model SuperAwesomeModel  [-f | --force]
-    php com make model SuperAwesome [-f | --force]
-    php com make model super_awesome  [-f | --force] [ --from:db_connection ]
+    make model SuperAwesomeModel  [-f | --force]
+    make model SuperAwesome [-f | --force]
+    make model super_awesome  [-f | --force]
 
-    php com make controller SuperAwesome  [-f | --force]
+    make controller SuperAwesome  [-f | --force]
 
-    php com make api SuperAwesome  [-f | --force]
-    php com make api super_awesome  [-f | --force]
+    make api SuperAwesome  [-f | --force]
+    make api super_awesome  [-f | --force]
 
-    php com make any SuperAwesome  [-s | --schema ] 
+    make any SuperAwesome  [-s | --schema ] 
                             [-m | --model] 
                             [-c | --controller ] 
                             [-a | --api ] 
                             [-f | --force]
+
 Ejemplo:
     
-    php com make any baz -s -m -a -f
+    make any baz -s -m -a -f
 
 Lo anterior es equivalente a:
 
-	php com make any baz -samf
+	make any baz -samf
 
 <-- solo existen (hasta ahora) los atajos -sam y -samf 
 
@@ -2725,11 +2225,6 @@ Para controladores es posible especificar una ruta interior a apps\controllers:
 
 <-- el index.php está en la carpeta public
 
-
-Para generar schemas o models de una DB que no es la default se debe especificar la conexión. Ej:
-
-	php com make schema cotizaciones --from:db3
-	php com make model cotizaciones --from:db3
 
 Es posible ignorar controladores, api resful controllers, modelos y schemas colocándo sus nombres en el siguiente archivo en /apps:
 
@@ -2752,210 +2247,6 @@ Puede observarse que:
 	- Se pueden especificar solo los nombres de los archivos -sin ruta-
 	- Se pueden anular los ignore comentando la línea con una #almohadilla 
 	
-
-# Migrations
-
-Los archivos de migraciones son creados con el comando "make migrate" o "migrations make":
-
-	$ php com migrations make create_cables
-o
-	$ php com make migration create_cables
-
-
-Para ejecutar las migraciones pendiente es con "migrations migrate"
-
-	$ php com migrations migrate
-
-	Migrating '2020_10_28_161483_create_cables.php'
-	Migrated  '2020_10_28_161483_create_cables.php' --ok
-	Migrating '2020_10_28_161757_create_cable_categories.php'
-	Migrated  '2020_10_28_161757_create_cable_categories.php' --ok
-
-Para volver para atrás migraciones con "migrations rollback"	
-
-	$ php com migrations rollback [--step==N | --all]
-
-	Rolling back '2020_10_28_161483_create_cables.php'
-	Rolled back  '2020_10_28_161483_create_cables.php' --ok
-	Rolling back '2020_10_28_161757_create_cable_categories.php'
-	Rolled back  '2020_10_28_161757_create_cable_categories.php' --ok
-
-<-- por defecto solo regresa una migración hacia atrás
-
-
-# Multitenant
-
-El método DB::getConnection() permite especificar opcionalmente el identificador de la conexión a base de datos a la que nos queremos conectar y la clase Model acepta una conexión así que es posible hacer lo siguiente:
-
-Ej:
-
-	$conn = DB::getConnection('db2');
-
-	$m = (new Model())
-		->setConn($conn)
-		->table('cables');
-		
-	dd($m->get());
-
-
-Otra forma de seleccionar una base de datos es cambiar la conexión por defecto:
-
-Ej:
-
-	Factory::config()['db_connection_default'] = 'db2';
-
-	$m = (new Model(true))
-		->table('cables');
-		
-	dd($m->get());
-
-o
-
-	Factory::config()['db_connection_default'] = 'db2';
-
-	$m = (new CablesModel())
-	->connect();
-
-	dd($m->get());
-
-<-- require de la clase CablesModel y del schema CablesSchema
-
-o 
-
-	Factory::config()['db_connection_default'] = 'db2';
-
-	$m = DB::table('cables');
-	dd($m->get());
-
-
-Ej. con migraciones:
-
-	Factory::config()['db_connection_default'] = 'db2';
-
-	$sc = new Schema('cables');
-
-	$sc
-	->int('id')->unsigned()->auto()->pri()
-	->varchar('nombre', 40)
-	->float('calibre')
-
-	->create();
-
-Para generar el archivo de migración anterior (las primeras dos líneas) se puede usar --to combinado con --table:
-
-	php com make migration creacion_tabla_cables_bla_bla --to=db2 --table=cables
-
-
-Especificamente sobre migraciones, al trabajar con múltiples bases de datos hay que tener en cuenta que el método fresh() que comienza haciendo DROP TABLEs sobre la DB por seleccionada por defecto por lo que si queremos correr migraciones sobre la DB_B pero tenemos seleccionada la DB_A, comenzará eliminando todas las tablas de DB_A pero podemos especificar el id de conexión al que se conectará y sobre el cual hará los DROP TABLEs:
-
-	php com migrations fresh --from=db_b --force
-
-
-# Tenancy a nivel de API Rest
-
-Permitir elegir la DB (en realidad la conexión a dicha DB) desde los endpoints para sistemas donde cada cliente tenga su propia base de datos.
-
-El tenant-id permitir que se pueda especificar no solo desde la url y del header sino dentro del payload del access_token 
-
-  ?tenantid=<id>
-o
-  X-TENANT-ID (header)
-
-para JWT incluirlo en el payload como "tenantid"
-
-  {
-    “sub”: “1234567890”,
-    “name”: “<user-name>”,
-    “iat”: 1516239022,
-    “userid”: “<user-id>”,
-    “tenantid”: “<tenant-id>”
-  }
-
-El tenantid identifica la conexión de base de datos a fin de poder seleccionarla.
-
-https://stackoverflow.com/questions/13761336/rest-api-with-multi-tenant-database-separated-by-client/13764490#13764490
-https://medium.com/@vivekmadurai/multi-tenancy-in-rest-api-a570d728620c
-https://dzone.com/articles/multi-tenancy-in-the-api-world-made-easy
-
-
-Ventajas del multi-tenant implementado con múltiples DB(s) ->
-
-  - Ofrecen seguridad extrema (al sistema) si cada usuario solo puede operar sobre una DB en particular. 
-  
-  Para que tenga sentido habría que crear un usuario del motor de DB (mysql, etc) para manejar cada DB con permisos restringidos a esa DB.
-
-  - Si las DB están distribuidas en distintos servidores (accesibles via API por ejemplo) se puede distrubuir la carga de un servidor creando nuevos usuarios (ej: vendedores) en otro servidor cuando ese esté saturado.
-
-
-# Service Providers
-
-El framework provee una forma de "plugins" o "paquetes" inspirada en la de Laravel. Los paquetes pueden alojarse en cualquier parte pero en /packages hay un paquete de demostración.
-
-El primer paso es crear la ruta donde alojaremos el paquete y por convención (inspirada en Laravel) será dentro de /packages. Cada paquete tiene un nombre conformado por dos partes: [VENDOR or CREATOR] / [PACKAGE NAME]
-
-Luego debemos inicializar Composer dentro del directorio creado lo que generará el archivo composer.json
-
-	composer init
-
-Los paquetes deben registrarse en config.php agregándose a $providers[] 
-
-	/*
-		Service Providers
-	*/
-
-	'providers' => [
-		devdojo\calculator\CalculatorServiceProvider::class,
-		// ...
-    ],
-
-
-Además debe registrarse en Composer (composer.json a nivel de root) agregando el bloque:
-
-	"autoload": {
-		"classmap": [
-			"database"
-		],
-		"psr-4": {
-			"App\\": "app/",
-			"Devdojo\\Calculator\\": "packages/devdojo/calculator/src"
-		}
-	},
-
-y correr el comando
-
-	composer dump-autoload
-	
-
-Actualmente el soporte solo cubre la rutas con funciones anónimas y controladores. Falta agregar soporte para migraciones, traducciones, vistas, etc.
-
-Los paquetes funcionan *solamente* con rutas y *no* con el FrontController.
-
-Un Service Provider debe extender la clase ServiceProvider y de mínima implementar el método boot() al inicio de la aplicación.
-
-	/**
-     * Bootstrap the application services.
-     *
-     * @return void
-     */
-    public function boot()
-    {
-        
-    }
-
-    /**
-     * Register the application services.
-     *
-     * @return void
-     */
-    public function register()
-    {
-       
-    }     
-
-
-Leer 
-https://devdojo.com/devdojo/how-to-create-a-laravel-package
-
 
 # NGINX web server
 

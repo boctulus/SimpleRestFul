@@ -69,13 +69,11 @@ class Debug
 
 		if ($pre) {
 			self::pre(function() use ($var, $msg){ 
-				$ret = self::export($var, $msg); 
+				echo self::export($var, $msg); 
 			});
 		} else {
-			$ret = self::export($var, $msg);
+			echo self::export($var, $msg);
 		}
-		
-		echo $ret;
 	}
 
 }
